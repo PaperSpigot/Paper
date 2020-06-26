@@ -1,0 +1,113 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Fri, 26 Jun 2020 17:07:25 +0200
+Subject: [PATCH] Add Raw Byte Entity Serialization
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index b11383b35662b1e59b89e916e55340cee2726944..f2ee58ce71798975bed06b09b6a881f296da7431 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -1543,6 +1543,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+         }
+     }
+ 
++    // Paper start - entity serialization api
++    public boolean serializeEntity(NBTTagCompound compound) {
++        List<Entity> pass = new java.util.ArrayList<>(passengers);
++        passengers.clear();
++        boolean result = d(compound); // Obf helper?
++        passengers.addAll(pass);
++        return result;
++    }
++    // Paper end
+     public boolean d(NBTTagCompound nbttagcompound) {
+         return this.isPassenger() ? false : this.a_(nbttagcompound);
+     }
+diff --git a/src/main/java/net/minecraft/server/EntityTypes.java b/src/main/java/net/minecraft/server/EntityTypes.java
+index b9fe08301409bc1f0d61a7566c26e720ff720d80..66773661b86ea9249ed8538e70cea554a1ccbf4b 100644
+--- a/src/main/java/net/minecraft/server/EntityTypes.java
++++ b/src/main/java/net/minecraft/server/EntityTypes.java
+@@ -312,6 +312,7 @@ public class EntityTypes<T extends Entity> {
+         return this.be.create(this, world);
+     }
+ 
++    public static Optional<Entity> loadEntityFixedData(NBTTagCompound nbttagcompound, World world) { return a(nbttagcompound, world); } // Paper - OBFHELPER
+     public static Optional<Entity> a(NBTTagCompound nbttagcompound, World world) {
+         return SystemUtils.a(a(nbttagcompound).map((entitytypes) -> {
+             return entitytypes.a(world);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 821417610fdb23791bd83e263977026b9d09e31a..ee7e1b835432805209515d3a1670a5f5907c0b67 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -156,6 +156,7 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
+ import org.bukkit.craftbukkit.util.CraftChatMessage;
+ import org.bukkit.craftbukkit.util.CraftVector;
+ import org.bukkit.entity.Pose;
++import org.bukkit.event.entity.CreatureSpawnEvent; // Paper
+ import org.bukkit.event.entity.EntityDamageEvent;
+ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+ import org.bukkit.metadata.MetadataValue;
+@@ -1065,5 +1066,12 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+     public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
+         return getHandle().spawnReason;
+     }
++
++    @Override
++    public boolean spawnAt(Location location, CreatureSpawnEvent.SpawnReason spawnReason) {
++        entity.world = ((CraftWorld) location.getWorld()).getHandle();
++        entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
++        return !entity.valid && entity.world.addEntity(entity, spawnReason);
++    }
+     // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index a855895d546be98c2890d195d858c0cb20e91012..99985755a4ddf5b1b491f780aa222650700c4f06 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -31,15 +31,20 @@ import net.minecraft.server.MojangsonParser;
+ import net.minecraft.server.NBTBase;
+ import net.minecraft.server.NBTTagCompound;
+ import net.minecraft.server.SharedConstants;
++import net.minecraft.server.EntityTypes; // Paper
+ import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+ import org.bukkit.NamespacedKey;
+ import org.bukkit.UnsafeValues;
++import org.bukkit.World; // Paper
+ import org.bukkit.advancement.Advancement;
+ import org.bukkit.block.data.BlockData;
++import org.bukkit.craftbukkit.CraftWorld; // Paper
+ import org.bukkit.craftbukkit.block.data.CraftBlockData;
++import org.bukkit.craftbukkit.entity.CraftEntity; // Paper
+ import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.craftbukkit.legacy.CraftLegacy;
++import org.bukkit.entity.Entity; // Paper
+ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.material.MaterialData;
+ import org.bukkit.plugin.InvalidPluginException;
+@@ -371,6 +376,24 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
+         return compound;
+     }
++
++    @Override
++    public byte[] serializeEntity(Entity entity) {
++        Preconditions.checkNotNull(entity, "null cannot be serialized");
++        Preconditions.checkArgument(entity instanceof CraftEntity, "non-CraftEntity cannot be serialized");
++        return serializeNbtToBytes(((CraftEntity) entity).getHandle().save(new NBTTagCompound()), true);
++    }
++
++    @Override
++    public Entity deserializeEntity(byte[] data, World world) {
++        NBTTagCompound compound = deserializeNbtFromBytes(data, true);
++        Dynamic<NBTBase> converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.ENTITY, new Dynamic<>(DynamicOpsNBT.a, compound), compound.getInt("DataVersion"), getDataVersion());
++        compound = (NBTTagCompound) converted.getValue();
++        compound.remove("UUID"); // Make the server make a new UUID for the entity; makes entities always spawnable.
++        net.minecraft.server.Entity entity = EntityTypes.loadEntityFixedData(compound, ((CraftWorld) world).getHandle())
++            .orElseThrow(() -> new IllegalArgumentException("unknown ID was found for the data; did you downgrade?"));
++        return entity.getBukkitEntity();
++    }
+     // Paper end
+ 
+     /**

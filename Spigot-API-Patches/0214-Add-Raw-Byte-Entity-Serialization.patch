@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Fri, 26 Jun 2020 17:07:40 +0200
+Subject: [PATCH] Add Raw Byte Entity Serialization
+
+
+diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
+index d3ec5084e33dff038d54cdd2aeb703a3eb25f7a7..8abaa1f9d8c5df99c2edba9737dc34a316d9e6e5 100644
+--- a/src/main/java/org/bukkit/UnsafeValues.java
++++ b/src/main/java/org/bukkit/UnsafeValues.java
+@@ -2,6 +2,7 @@ package org.bukkit;
+ 
+ import org.bukkit.advancement.Advancement;
+ import org.bukkit.block.data.BlockData;
++import org.bukkit.entity.Entity; // Paper
+ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.material.MaterialData;
+ import org.bukkit.plugin.InvalidPluginException;
+@@ -94,5 +95,9 @@ public interface UnsafeValues {
+     byte[] serializeItem(ItemStack item);
+ 
+     ItemStack deserializeItem(byte[] data);
++
++    byte[] serializeEntity(Entity entity);
++
++    Entity deserializeEntity(byte[] data, World world);
+     // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index 3f0f38031000a4eda25584d069939f40fbfb026b..8c2ea6d7e7e95df3ad598cc2e241fb3a3f5db584 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -658,5 +658,24 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     @NotNull
+     org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason();
++
++    /**
++     * Spawn this entity in the world at the given {@link Location} with the default spawn reason.
++     *
++     * @param location The location at which to spawn the entity.
++     * @return Whether the entity was successfully spawned.
++     */
++    default boolean spawnAt(Location location) {
++        return spawnAt(location, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
++    }
++
++    /**
++     * Spawn this entity in the world at the given {@link Location} with the reason given.
++     *
++     * @param location The location at which to spawn the entity.
++     * @param spawnReason The reason for which the entity was spawned.
++     * @return Whether the entity was successfully spawned.
++     */
++    boolean spawnAt(Location location, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason);
+     // Paper end
+ }
