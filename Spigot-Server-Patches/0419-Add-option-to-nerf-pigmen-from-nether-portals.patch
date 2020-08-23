@@ -5,12 +5,12 @@ Subject: [PATCH] Add option to nerf pigmen from nether portals
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 9bd64034587217743157a81c04fc20751474e21d..796c5a0b110009b479f5c9eef17e2605b564ce09 100644
+index d449d802d7695de3375bbca48e25d69c5f329a78..8d41126fcd6203f11dd111f5d2e85e04dc7aa705 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -591,4 +591,9 @@ public class PaperWorldConfig {
-         disableHopperMoveEvents = getBoolean("hopper.disable-move-event", disableHopperMoveEvents);
-         log("Hopper Move Item Events: " + (disableHopperMoveEvents ? "disabled" : "enabled"));
+@@ -594,4 +594,9 @@ public class PaperWorldConfig {
+         hoppersIgnoreOccludingBlocks = getBoolean("hopper.ignore-occluding-blocks", hoppersIgnoreOccludingBlocks);
+         log("Hoppers Ignore Occluding Blocks: " + (hoppersIgnoreOccludingBlocks ? "enabled" : "disabled"));
      }
 +
 +    public boolean nerfNetherPortalPigmen = false;
@@ -32,7 +32,7 @@ index e5b8d45ed9f62c28b0429859593d881546ccead2..77f8d5e6662fa75e622f07b3e6efae04
              }
          }
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 39a7b8743a0612f818cda3796b5f6ae1137a7eee..c49d157b8ca25f9811bf64396c207b1c1d6e085d 100644
+index 73e02dfdb96104805df298e45c22983682b4216f..7f21d1a888a371468da5d318153e22a0baf0b64c 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -194,6 +194,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke

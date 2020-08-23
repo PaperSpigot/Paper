@@ -9,25 +9,28 @@ Subject: [PATCH] Optimize Hoppers
   However, pushes do not exhibit the same behavior, so this is not something plugins could of been relying on.
 * Add option (Default on) to cooldown hoppers when they fail to move an item due to full inventory
 * Skip subsequent InventoryMoveItemEvents if a plugin does not use the item after first event fire for an iteration
-* Don't check for Entities with Inventories if the block above us is also occluding (not just Inventoried)
+* Add option (Default on) to skip checking for Entities with Inventories in above occluding blocks
 * Remove Streams from Item Suck In and restore restore 1.12 AABB checks which is simpler and no voxel allocations (was doing TWO Item Suck ins)
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index f0a28d787e06ceae71034f757637b4c90b6f3c04..9bd64034587217743157a81c04fc20751474e21d 100644
+index f0a28d787e06ceae71034f757637b4c90b6f3c04..d449d802d7695de3375bbca48e25d69c5f329a78 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -582,4 +582,13 @@ public class PaperWorldConfig {
+@@ -582,4 +582,16 @@ public class PaperWorldConfig {
      private void entitiesTargetWithFollowRange() {
          entitiesTargetWithFollowRange = getBoolean("entities-target-with-follow-range", entitiesTargetWithFollowRange);
      }
 +
 +    public boolean cooldownHopperWhenFull = true;
 +    public boolean disableHopperMoveEvents = false;
++    public boolean hoppersIgnoreOccludingBlocks = true;
 +    private void hopperOptimizations() {
 +        cooldownHopperWhenFull = getBoolean("hopper.cooldown-when-full", cooldownHopperWhenFull);
 +        log("Cooldown Hoppers when Full: " + (cooldownHopperWhenFull ? "enabled" : "disabled"));
 +        disableHopperMoveEvents = getBoolean("hopper.disable-move-event", disableHopperMoveEvents);
 +        log("Hopper Move Item Events: " + (disableHopperMoveEvents ? "disabled" : "enabled"));
++        hoppersIgnoreOccludingBlocks = getBoolean("hopper.ignore-occluding-blocks", hoppersIgnoreOccludingBlocks);
++        log("Hoppers Ignore Occluding Blocks: " + (hoppersIgnoreOccludingBlocks ? "enabled" : "disabled"));
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/IHopper.java b/src/main/java/net/minecraft/server/IHopper.java
@@ -105,7 +108,7 @@ index 2b06c95b4fac97513e706ef073fdd7418e1f092c..67fda8bd5a0ad6fea2df0066c61e006c
              this.world.b(this.position, this);
              if (!this.c.isAir()) {
 diff --git a/src/main/java/net/minecraft/server/TileEntityHopper.java b/src/main/java/net/minecraft/server/TileEntityHopper.java
-index a0a3adac3e2bc939b1809c5587929f674f4318a5..20df9bd21d0e4d2579d05d79672da2eb26478044 100644
+index a0a3adac3e2bc939b1809c5587929f674f4318a5..afba2230013db938bbaae23ef95c483b2af4c33f 100644
 --- a/src/main/java/net/minecraft/server/TileEntityHopper.java
 +++ b/src/main/java/net/minecraft/server/TileEntityHopper.java
 @@ -168,6 +168,160 @@ public class TileEntityHopper extends TileEntityLootable implements IHopper, ITi
@@ -454,7 +457,7 @@ index a0a3adac3e2bc939b1809c5587929f674f4318a5..20df9bd21d0e4d2579d05d79672da2eb
          }
  
 -        if (object == null) {
-+        if (object == null && (!optimizeEntities || !org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(block).isOccluding())) { // Paper
++        if (object == null && (!optimizeEntities || !org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(block).isOccluding()) || !world.paperConfig.hoppersIgnoreOccludingBlocks) { // Paper
              List<Entity> list = world.getEntities((Entity) null, new AxisAlignedBB(d0 - 0.5D, d1 - 0.5D, d2 - 0.5D, d0 + 0.5D, d1 + 0.5D, d2 + 0.5D), IEntitySelector.d);
  
              if (!list.isEmpty()) {
