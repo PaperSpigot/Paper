@@ -1,0 +1,209 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Mon, 12 Oct 2020 23:06:57 +0200
+Subject: [PATCH] Player Entity Tracking Events
+
+started adding disguise support
+
+diff --git a/src/main/java/io/papermc/paper/event/packet/PlayerTrackEntityEvent.java b/src/main/java/io/papermc/paper/event/packet/PlayerTrackEntityEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..953f096a67f47ce1b923236bb3eefd510919d653
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/packet/PlayerTrackEntityEvent.java
+@@ -0,0 +1,135 @@
++package io.papermc.paper.event.packet;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.EntityType;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import com.destroystokyo.paper.profile.PlayerProfile;
++
++/**
++ * Is called before a {@link Player} tracks an {@link Entity}.
++ *
++ * E.g. can be used for the following:
++ *
++ * <ul>
++ *     <li>Hiding all kind of entities by calling {@link Cancellable#setCancelled(boolean)} with value true</li>
++ *     <li>Disguising entities as others e.g. player npc.
++ *         Cancel the event and replace it with a playerpacket with the same entity id.
++ *     </li>
++ * </ul>
++ */
++public class PlayerTrackEntityEvent extends PlayerEvent implements Cancellable {
++
++    private static final HandlerList handlers = new HandlerList();
++    private final Entity entity;
++    private boolean cancelled;
++
++    private PlayerProfile playerProfile;
++    private boolean shouldHideProfileAfterwards = false;
++    private EntityType entityType;
++
++    public PlayerTrackEntityEvent(@NotNull Player player, @NotNull Entity entity) {
++        super(player);
++        this.entity = entity;
++        this.entityType = entity.getType();
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    /**
++     * Gets the entity that will be tracked
++     * @return the entity tracked
++     */
++    @NotNull
++    public Entity getEntity() {
++        return entity;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    /**
++     *  Sets a player profile info to disguise the entity as player on client side.
++     *  Automatically sets the entity type player
++     *
++     *  IMPORTANT: cannot be used in connection with {@link #disguiseAsEntityWithType(EntityType)}
++     *  as this removes the player profile.
++     *
++     * @param playerProfile the profile that defines the skin
++     * @param shouldHideProfileAfterwards defines if the player profile should be removed from player list after sending the player.
++     */
++    public void disguiseAsPlayerWithProfile(@NotNull PlayerProfile playerProfile, boolean shouldHideProfileAfterwards){
++        this.playerProfile = playerProfile;
++        this.entityType = EntityType.PLAYER;
++        this.shouldHideProfileAfterwards = shouldHideProfileAfterwards;
++    }
++
++    /**
++     *  Will disguise the entity as this entity type if set
++     *  Currently only entity types working that extends {@link org.bukkit.entity.LivingEntity}
++     *
++     * @param entityType the entity type to disguise
++     */
++    public void disguiseAsEntityWithType(@NotNull EntityType entityType){
++        if(entityType == EntityType.PLAYER) return;
++        this.playerProfile = null;
++        this.entityType = entityType;
++    }
++
++    /**
++     *  Resets the disguise state of that entity.
++     */
++    public void resetDisguise(){
++        this.playerProfile = null;
++        this.entityType = entity.getType();
++        this.shouldHideProfileAfterwards = false;
++    }
++
++    /**
++     *  Returns the player profile if player disguise is choosen
++     *
++     * @return the player profile or null if not set
++     */
++    public @Nullable PlayerProfile playerProfile(){
++        return playerProfile;
++    }
++
++    /**
++     * Returns the entity type as which the entity is displayed to the client.
++     *
++     * @return returns the set entity type or if not set the original
++     */
++    public @NotNull EntityType entityType(){
++        return entityType;
++    }
++
++    /**
++     * Returns if the player profile should be hidden in player list after sending out the skin.
++     *
++     * @return true if player profile should be removed after sending out the skin
++     */
++    public boolean shouldHideProfileAfterwards(){
++        return shouldHideProfileAfterwards;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/event/packet/PlayerUntrackEntityEvent.java b/src/main/java/io/papermc/paper/event/packet/PlayerUntrackEntityEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7f33b2b48f403c72e50243b70b03b8c349873dd3
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/packet/PlayerUntrackEntityEvent.java
+@@ -0,0 +1,55 @@
++package io.papermc.paper.event.packet;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.Event;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Is called before a {@link Player} untracks an {@link Entity}.
++ */
++public class PlayerUntrackEntityEvent extends PlayerEvent {
++
++    private static final HandlerList handlers = new HandlerList();
++    private final Entity entity;
++    private final long entityId;
++
++    public PlayerUntrackEntityEvent(@NotNull Player player, long entityId, @Nullable Entity entity) {
++        super(player);
++        this.entity = entity;
++        this.entityId = entityId;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    /**
++     * Gets the entity that will be untracked
++     * @return the entity untracked or null if entity is already removed
++     */
++    @Nullable
++    public Entity getEntity() {
++        return entity;
++    }
++
++    /**
++     * Returns the entity id that gets despawned
++     *
++     * @return entity id
++     */
++    public long getEntityId(){
++        return entityId;
++    }
++}

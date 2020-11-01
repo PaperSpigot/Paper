@@ -1,0 +1,196 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Mon, 12 Oct 2020 23:11:41 +0200
+Subject: [PATCH] Player Entity Tracking Events
+
+
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutNamedEntitySpawn.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutNamedEntitySpawn.java
+index fc897db288d04db61968a4aec12f3c8dbb6552bf..ffbbead5ed1266ed5f6531c48e7b5eacd57e10a4 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutNamedEntitySpawn.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutNamedEntitySpawn.java
+@@ -8,8 +8,9 @@ import net.minecraft.world.entity.player.EntityHuman;
+ 
+ public class PacketPlayOutNamedEntitySpawn implements Packet<PacketListenerPlayOut> {
+ 
+-    private int a;
+-    private UUID b;
++    private int a; public void setEntityId(int entityId){ this.a = entityId; } // Paper - OBFHELPER
++    private UUID b; public void setUUID(UUID uuid){ this.b = uuid; } // Paper - OBFHELPER
++    public void setPositionDirection(double x, double y, double z, float yaw, float pitch) { this.c = x; this.d = y; this.e = z; this.f = (byte)((int)(yaw * 256.0F / 360.0F)); this.g = (byte)((int)(pitch * 256.0F / 360.0F)); } // Paper - OBFHELPER
+     private double c;
+     private double d;
+     private double e;
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutPlayerInfo.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutPlayerInfo.java
+index 2758cf87fe5cb89c101f2495783c72a2fe4ad632..492a38019561e4b1b54c7ca11ea60b3c3a7a4073 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutPlayerInfo.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutPlayerInfo.java
+@@ -16,8 +16,8 @@ import net.minecraft.world.level.EnumGamemode;
+ 
+ public class PacketPlayOutPlayerInfo implements Packet<PacketListenerPlayOut> {
+ 
+-    private PacketPlayOutPlayerInfo.EnumPlayerInfoAction a;
+-    private final List<PacketPlayOutPlayerInfo.PlayerInfoData> b = Lists.newArrayList();
++    private PacketPlayOutPlayerInfo.EnumPlayerInfoAction a; public void setPlayerInfoAction(PacketPlayOutPlayerInfo.EnumPlayerInfoAction playerInfoAction) { this.a = playerInfoAction; } // Paper OBFHELPER
++    private final List<PacketPlayOutPlayerInfo.PlayerInfoData> b = Lists.newArrayList(); public final List<PacketPlayOutPlayerInfo.PlayerInfoData> getPlayerInfoDataList(){ return b; } // Paper OBFHELPER
+ 
+     public PacketPlayOutPlayerInfo() {}
+ 
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutSpawnEntityLiving.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutSpawnEntityLiving.java
+index d8613ec30328a1f8900f619d9ccfa22ca4b3db44..cf947fdebe6296028512d8071d2defcf531c4b25 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutSpawnEntityLiving.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutSpawnEntityLiving.java
+@@ -7,6 +7,7 @@ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.util.MathHelper;
+ import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.phys.Vec3D;
+ 
+ public class PacketPlayOutSpawnEntityLiving implements Packet<PacketListenerPlayOut> {
+@@ -29,7 +30,7 @@ public class PacketPlayOutSpawnEntityLiving implements Packet<PacketListenerPlay
+     public PacketPlayOutSpawnEntityLiving(EntityLiving entityliving) {
+         this.a = entityliving.getId();
+         this.b = entityliving.getUniqueID();
+-        this.c = IRegistry.ENTITY_TYPE.a((Object) entityliving.getEntityType());
++        this.c = IRegistry.ENTITY_TYPE.a(entityliving.getEntityType()); // Paper - decompile fix
+         this.d = entityliving.locX();
+         this.e = entityliving.locY();
+         this.f = entityliving.locZ();
+@@ -82,4 +83,9 @@ public class PacketPlayOutSpawnEntityLiving implements Packet<PacketListenerPlay
+     public void a(PacketListenerPlayOut packetlistenerplayout) {
+         packetlistenerplayout.a(this);
+     }
++    // Paper start - entity tracking - disguise
++    public void setEntityType(EntityTypes<?> type){
++        this.c = IRegistry.ENTITY_TYPE.a(type);
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 558af73ac16550ee6964c4dce681a404633b2552..02b97d96486c57809b586eafd80e612082e7fd99 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -141,6 +141,7 @@ import net.minecraft.world.scores.ScoreboardTeamBase;
+ import net.minecraft.world.scores.criteria.IScoreboardCriteria;
+ import io.papermc.paper.event.packet.PlayerChunkLoadEvent; // Paper
+ import io.papermc.paper.event.packet.PlayerChunkUnloadEvent; // Paper
++import io.papermc.paper.event.packet.PlayerUntrackEntityEvent; // Paper
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -623,7 +624,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
+             Integer integer;
+             while (j < i && (integer = this.removeQueue.poll()) != null) {
+-                aint[j++] = integer.intValue();
++                int entityId = integer.intValue();
++                aint[j++] = entityId;
++                if(PlayerUntrackEntityEvent.getHandlerList().getRegisteredListeners().length!=0) { new PlayerUntrackEntityEvent(getBukkitEntity(), entityId, world.getEntity(entityId) != null ? world.getEntity(entityId).getBukkitEntity() : null).callEvent(); }
+             }
+             // Paper end
+ 
+@@ -1925,6 +1928,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public void c(Entity entity) {
+         if (entity instanceof EntityHuman) {
+             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[]{entity.getId()}));
++            if(PlayerUntrackEntityEvent.getHandlerList().getRegisteredListeners().length!=0) { new PlayerUntrackEntityEvent(getBukkitEntity(), entity.getId(), entity.getBukkitEntity()).callEvent(); } // Paper
+         } else {
+             this.removeQueue.add((Integer) entity.getId()); // CraftBukkit - decompile error
+         }
+diff --git a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+index 1df8fb8cb3fcf8201e1c5fa8ca13f7a9c632c379..329f37a13c6f01609e6709c5eaff297953f9ce1a 100644
+--- a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+@@ -1,7 +1,10 @@
+ package net.minecraft.server.level;
+ 
++import com.destroystokyo.paper.profile.CraftPlayerProfile;
++import com.destroystokyo.paper.profile.PlayerProfile;
+ import com.google.common.collect.Lists;
+ import com.mojang.datafixers.util.Pair;
++import io.papermc.paper.event.packet.PlayerTrackEntityEvent; // Paper
+ import java.util.Collection;
+ import java.util.Collections;
+ import java.util.HashSet;
+@@ -9,6 +12,7 @@ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
+ import java.util.function.Consumer;
++import net.minecraft.core.IRegistry;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.game.PacketPlayOutAttachEntity;
+ import net.minecraft.network.protocol.game.PacketPlayOutEntity;
+@@ -19,6 +23,9 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
+ import net.minecraft.network.protocol.game.PacketPlayOutEntityTeleport;
+ import net.minecraft.network.protocol.game.PacketPlayOutEntityVelocity;
+ import net.minecraft.network.protocol.game.PacketPlayOutMount;
++import net.minecraft.network.protocol.game.PacketPlayOutNamedEntitySpawn;
++import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
++import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
+ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntityLiving;
+ import net.minecraft.network.protocol.game.PacketPlayOutUpdateAttributes;
+ import net.minecraft.network.syncher.DataWatcher;
+@@ -35,6 +42,7 @@ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.projectile.EntityArrow;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.ItemWorldMap;
++import net.minecraft.world.level.EnumGamemode;
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.saveddata.maps.WorldMap;
+ import net.minecraft.world.phys.Vec3D;
+@@ -42,6 +50,9 @@ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+ // CraftBukkit start
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++import org.bukkit.entity.EntityType;
++import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.player.PlayerVelocityEvent;
+ // CraftBukkit end
+@@ -310,7 +321,44 @@ public class EntityTrackerEntry {
+         Packet<?> packet = this.tracker.P();
+ 
+         this.headYaw = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+-        consumer.accept(packet);
++        // Paper start
++        if (PlayerTrackEntityEvent.getHandlerList().getRegisteredListeners().length == 0){
++            consumer.accept(packet);
++        } else {
++            PlayerTrackEntityEvent playerTrackEntityEvent = new PlayerTrackEntityEvent(entityplayer.getBukkitEntity(), tracker.getBukkitEntity());
++            if(playerTrackEntityEvent.callEvent()){
++                if(playerTrackEntityEvent.entityType() != playerTrackEntityEvent.getEntity().getType()){
++                    EntityType entityType = playerTrackEntityEvent.entityType();
++                    if(entityType == EntityType.PLAYER){
++                        PlayerProfile playerProfile = playerTrackEntityEvent.playerProfile();
++                        if(playerProfile!=null){
++                            PacketPlayOutPlayerInfo playOutPlayerInfo = new PacketPlayOutPlayerInfo();
++                            playerProfile.setId(tracker.getUniqueID());
++                            playOutPlayerInfo.setPlayerInfoAction(EnumPlayerInfoAction.ADD_PLAYER);
++                            playOutPlayerInfo.getPlayerInfoDataList().add(playOutPlayerInfo.new PlayerInfoData(
++                                CraftPlayerProfile.asAuthlib(playerProfile), 0, EnumGamemode.NOT_SET, null));
++                            consumer.accept(playOutPlayerInfo);
++                            PacketPlayOutNamedEntitySpawn packetPlayOutNamedEntitySpawn = new PacketPlayOutNamedEntitySpawn();
++                            packetPlayOutNamedEntitySpawn.setEntityId(tracker.getId());
++                            packetPlayOutNamedEntitySpawn.setUUID(tracker.getUniqueID());
++                            packetPlayOutNamedEntitySpawn.setPositionDirection(tracker.locX(), tracker.locY(), tracker.locZ(), tracker.yaw, tracker.pitch);
++                            consumer.accept(packetPlayOutNamedEntitySpawn);
++                        } else {
++                            consumer.accept(packet);
++                        }
++                    } else if(packet instanceof PacketPlayOutSpawnEntityLiving && entityType.getEntityClass() != null && LivingEntity.class.isAssignableFrom(entityType.getEntityClass())) {
++                        ((PacketPlayOutSpawnEntityLiving)packet).setEntityType(IRegistry.ENTITY_TYPE.get(
++                            CraftNamespacedKey.toMinecraft(entityType.getKey())));
++                        consumer.accept(packet);
++                    } else {
++                        consumer.accept(packet);
++                    }
++                } else {
++                    consumer.accept(packet);
++                }
++            }
++        }
++        // Paper end
+         if (!this.tracker.getDataWatcher().d()) {
+             consumer.accept(new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true));
+         }
