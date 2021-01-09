@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Tue, 29 Dec 2020 15:06:32 -0800
+Subject: [PATCH] Make ProjectileHitEvent cancellable
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 1ee09cb383d762219bda89463f4b6af807799385..7cd60c1b9c347a0d77c1f541e268450a52dd945c 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -61,7 +61,7 @@ public abstract class EntityFireball extends IProjectile {
+                 this.a(movingobjectposition);
+ 
+                 // CraftBukkit start - Fire ProjectileHitEvent
+-                if (this.dead) {
++                if (false && this.dead) { // Paper - don't call this event a second time
+                     CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
+                 }
+                 // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/IProjectile.java b/src/main/java/net/minecraft/server/IProjectile.java
+index 9f5ce64a60fe7c312399ee416b11b84213dd3bee..bbc089b41fcbe0141f13591db2cb44b9e688cac4 100644
+--- a/src/main/java/net/minecraft/server/IProjectile.java
++++ b/src/main/java/net/minecraft/server/IProjectile.java
+@@ -118,7 +118,7 @@ public abstract class IProjectile extends Entity {
+     }
+ 
+     protected void a(MovingObjectPosition movingobjectposition) {
+-        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event
++        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition)) return; // CraftBukkit - Call event // Paper - make cancellable
+         MovingObjectPosition.EnumMovingObjectType movingobjectposition_enummovingobjecttype = movingobjectposition.getType();
+ 
+         if (movingobjectposition_enummovingobjecttype == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index d8c77f70845e21b787234e1c02a1650ebc34a8a3..d6a821e656d6581938105819404d9b27326d8457 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1284,9 +1284,9 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
+-    public static void callProjectileHitEvent(Entity entity, MovingObjectPosition position) {
++    public static boolean callProjectileHitEvent(Entity entity, MovingObjectPosition position) { // Paper - make cancellable
+         if (position.getType() == MovingObjectPosition.EnumMovingObjectType.MISS) {
+-            return;
++            return true; // Paper - make cancellable
+         }
+ 
+         Block hitBlock = null;
+@@ -1303,7 +1303,13 @@ public class CraftEventFactory {
+         }
+ 
+         ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity(), hitEntity, hitBlock, hitFace);
+-        entity.world.getServer().getPluginManager().callEvent(event);
++        // Paper start - make cancellable
++        boolean cancelled = !event.callEvent();
++        if (!cancelled && hitEntity != null) {
++            cancelled = callProjectileCollideEvent(entity.getBukkitEntity(), (MovingObjectPositionEntity) position).isCancelled();
++        }
++        return !cancelled;
++        // Paper end
+     }
+ 
+     public static ExpBottleEvent callExpBottleEvent(Entity entity, int exp) {

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Tue, 29 Dec 2020 15:05:50 -0800
+Subject: [PATCH] Make ProjectileHitEvent cancellable
+
+
+diff --git a/src/main/java/org/bukkit/event/entity/ProjectileHitEvent.java b/src/main/java/org/bukkit/event/entity/ProjectileHitEvent.java
+index 809c1098c16fe52eda47ae2335afab30e36746b2..4a734be2ca03711edf7c885242550701d8e5771c 100644
+--- a/src/main/java/org/bukkit/event/entity/ProjectileHitEvent.java
++++ b/src/main/java/org/bukkit/event/entity/ProjectileHitEvent.java
+@@ -10,12 +10,14 @@ import org.jetbrains.annotations.Nullable;
+ 
+ /**
+  * Called when a projectile hits an object
++ * <p> This Event is made cancellable by Paper
+  */
+-public class ProjectileHitEvent extends EntityEvent {
++public class ProjectileHitEvent extends EntityEvent implements org.bukkit.event.Cancellable { // Paper - implements Cancellable
+     private static final HandlerList handlers = new HandlerList();
+     private final Entity hitEntity;
+     private final Block hitBlock;
+     private final BlockFace hitFace;
++    private boolean cancelled; // Paper
+ 
+     public ProjectileHitEvent(@NotNull final Projectile projectile) {
+         this(projectile, null, null);
+@@ -88,4 +90,15 @@ public class ProjectileHitEvent extends EntityEvent {
+         return handlers;
+     }
+ 
++    // Paper start
++    @Override
++    public boolean isCancelled() {
++        return this.cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++    // Paper end
+ }
