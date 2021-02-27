@@ -6,10 +6,10 @@ Subject: [PATCH] Add PreDragonRespawnEvent and DragonRespawnEvent
 
 diff --git a/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java b/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c59c045ff7db14a6757aedd692e5597c1b34b7e4
+index 0000000000000000000000000000000000000000..c255f3d26fbdda9dda7733f43f80544816026f1b
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,53 @@
 +package io.papermc.paper.event.world;
 +
 +import org.bukkit.World;
@@ -30,7 +30,6 @@ index 0000000000000000000000000000000000000000..c59c045ff7db14a6757aedd692e5597c
 +
 +    public DragonRespawnEvent(@NotNull final World world, @NotNull final DragonBattle dragonBattle) {
 +        super(world);
-+        
 +        this.dragonBattle = dragonBattle;
 +    }
 +
@@ -66,7 +65,7 @@ index 0000000000000000000000000000000000000000..c59c045ff7db14a6757aedd692e5597c
 +}
 diff --git a/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java b/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a2fc3c484ce03122b44bcea80d7d3bb0160feb67
+index 0000000000000000000000000000000000000000..cb7a83b2eafcfdf7226f36bbe04674aa7a01f894
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java
 @@ -0,0 +1,68 @@
@@ -77,6 +76,7 @@ index 0000000000000000000000000000000000000000..a2fc3c484ce03122b44bcea80d7d3bb0
 +import org.bukkit.World;
 +import org.bukkit.boss.DragonBattle;
 +import org.bukkit.entity.EnderCrystal;
++import org.bukkit.entity.EnderDragon;
 +import org.bukkit.event.Cancellable;
 +import org.bukkit.event.HandlerList;
 +import org.bukkit.event.world.WorldEvent;
@@ -94,7 +94,6 @@ index 0000000000000000000000000000000000000000..a2fc3c484ce03122b44bcea80d7d3bb0
 +
 +    public PreDragonRespawnEvent(@NotNull final World world, @NotNull final DragonBattle dragonBattle, @NotNull List<EnderCrystal> enderCrystals) {
 +        super(world);
-+
 +        this.dragonBattle = dragonBattle;
 +        this.enderCrystals = enderCrystals;
 +    }
