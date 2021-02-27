@@ -1,0 +1,140 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Sat, 27 Feb 2021 07:56:31 +0000
+Subject: [PATCH] Add PreDragonRespawnEvent and DragonRespawnEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java b/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c59c045ff7db14a6757aedd692e5597c1b34b7e4
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/world/DragonRespawnEvent.java
+@@ -0,0 +1,54 @@
++package io.papermc.paper.event.world;
++
++import org.bukkit.World;
++import org.bukkit.boss.DragonBattle;
++import org.bukkit.entity.EnderDragon;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.world.WorldEvent;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called after the summon animation has ended and just before a {@link EnderDragon} is summoned into the world.
++ */
++public class DragonRespawnEvent extends WorldEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private boolean cancel = false;
++    private DragonBattle dragonBattle;
++
++    public DragonRespawnEvent(@NotNull final World world, @NotNull final DragonBattle dragonBattle) {
++        super(world);
++        
++        this.dragonBattle = dragonBattle;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancel;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancel = cancel;
++    }
++
++    /**
++     * Gets the {@link DragonBattle} associated with this event.
++     * @return {@link DragonBattle}
++     */
++    @NotNull
++    public DragonBattle getDragonBattle() {
++        return dragonBattle;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java b/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a2fc3c484ce03122b44bcea80d7d3bb0160feb67
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/world/PreDragonRespawnEvent.java
+@@ -0,0 +1,68 @@
++package io.papermc.paper.event.world;
++
++import java.util.List;
++
++import org.bukkit.World;
++import org.bukkit.boss.DragonBattle;
++import org.bukkit.entity.EnderCrystal;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.world.WorldEvent;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called when 4 {@link EnderCrystal}s are placed on the gateway frame to respawn
++ * the {@link EnderDragon} just before the animation starts.
++ */
++public class PreDragonRespawnEvent extends WorldEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private boolean cancel = false;
++    private DragonBattle dragonBattle;
++    List<EnderCrystal> enderCrystals;
++
++    public PreDragonRespawnEvent(@NotNull final World world, @NotNull final DragonBattle dragonBattle, @NotNull List<EnderCrystal> enderCrystals) {
++        super(world);
++
++        this.dragonBattle = dragonBattle;
++        this.enderCrystals = enderCrystals;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancel;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancel = cancel;
++    }
++
++    /**
++     * Gets the {@link DragonBattle} associated with this event.
++     * @return {@link DragonBattle}
++     */
++    @NotNull
++    public DragonBattle getDragonBattle() {
++        return dragonBattle;
++    }
++    
++    /**
++     * Get the 4 {@link EnderCrystal}s used to respawn the {@link EnderDragon}.
++     * @return A list of all 4 {@link EnderCrystal}s
++     */
++    @NotNull
++    public List<EnderCrystal> getEnderCrystals() {
++        return enderCrystals;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
