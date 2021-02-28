@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Josh Roy <10731363+JRoy@users.noreply.github.com>
+Date: Sat, 12 Sep 2020 22:23:28 +0000
+Subject: [PATCH] Add Server#isStarting & Bukkit#isStarting API
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 26bbfeba138f506200aad667b6f910b8fc0d2d6a..abc3ac7d18cdbd438e08876fb70fb72933c50711 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -95,6 +95,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     private PlayerList playerList;
+     private volatile boolean isRunning;
+     private volatile boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
++    private volatile boolean isStarting = true; // Paper - flag to signify if the server is still starting
+     private boolean isStopped;
+     private int ticks;
+     protected final Proxy proxy;
+@@ -746,6 +747,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     }
+     // CraftBukkit end
+ 
++    // Paper start
++    public final boolean isStarting() {
++        return isStarting;
++    }
++    // Paper end
++
+     protected void stop() {
+         // CraftBukkit start - prevent double stopping on multiple threads
+         synchronized(stopLock) {
+@@ -951,6 +958,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+                 // anything at 3+ won't be caught here but also will trip watchdog....
+                 // tasks are default scheduled at -1 + delay, and first tick will tick at 1
+                 String doneTime = String.format(java.util.Locale.ROOT, "%.3fs", (double) (SystemUtils.getMonotonicNanos() - serverStartTime) / 1.0E9D);
++                this.isStarting = false;
+                 LOGGER.info("Done ({})! For help, type \"help\"", doneTime);
+                 // Paper end
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index d8d29d14559169f5e8d8b4cf63d8b427b823eb2f..7f2a59dc6207802517ad0926990c5b862945e8c5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -2381,6 +2381,11 @@ public final class CraftServer implements Server {
+         return net.minecraft.server.MinecraftServer.getServer().hasStopped();
+     }
+ 
++    @Override
++    public boolean isStarting() {
++        return net.minecraft.server.MinecraftServer.getServer().isStarting();
++    }
++
+     private com.destroystokyo.paper.entity.ai.MobGoals mobGoals = new com.destroystokyo.paper.entity.ai.PaperMobGoals();
+     @Override
+     public com.destroystokyo.paper.entity.ai.MobGoals getMobGoals() {

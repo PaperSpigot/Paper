@@ -1,0 +1,188 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: JRoy <joshroy126@gmail.com>
+Date: Mon, 12 Oct 2020 16:12:36 -0400
+Subject: [PATCH] Add plugin reload policy
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 7b382f5ba33ed52a27cc08b08de76de463b2ad36..f0cafb5d7e5c5106df63f08409fbff22daeb551a 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -699,6 +699,27 @@ public final class Bukkit {
+         server.reload();
+     }
+ 
++    // Paper start - Add reload policy
++    /**
++     * "Safely" reloads the server by following plugin specified reload policies.
++     * <p>
++     * This method will induce the following behavior:
++     * <ul>
++     * <li>Reloads all configs
++     * <li>Reloads server icon
++     * <li>Reloads ban lists
++     * <li>Reloads all plugins that which both their dependencies and themselves meet one the following:
++     * <ul>
++     * <li>Have the {@link org.bukkit.plugin.PluginReloadPolicy#ALWAYS ALWAYS} reload policy.
++     * <li>Have the {@link org.bukkit.plugin.PluginReloadPolicy#SAME_HASH SAME_HASH} reload policy and the plugin's file is unmodified from startup.
++     * </ul>
++     * </ul>
++     */
++    public static void safeReload() {
++        server.safeReload();
++    }
++    // Paper end
++
+     /**
+      * Reload only the Minecraft data for the server. This includes custom
+      * advancements and loot tables.
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 4f5b37d489a7690de5641d9c3fcab1f9875d7b84..f0743ce3c902125d52c4421a59724828f9228430 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -592,6 +592,25 @@ public interface Server extends PluginMessageRecipient {
+      */
+     public void reload();
+ 
++    // Paper start - Add reload policy
++    /**
++     * "Safely" reloads the server by following plugin specified reload policies.
++     * <p>
++     * This method will induce the following behavior:
++     * <ul>
++     * <li>Reloads all configs
++     * <li>Reloads server icon
++     * <li>Reloads ban lists
++     * <li>Reloads all plugins that which both their dependencies and themselves meet one the following:
++     * <ul>
++     * <li>Have the {@link org.bukkit.plugin.PluginReloadPolicy#ALWAYS ALWAYS} reload policy.
++     * <li>Have the {@link org.bukkit.plugin.PluginReloadPolicy#SAME_HASH SAME_HASH} reload policy and the plugin's file is unmodified from startup.
++     * </ul>
++     * </ul>
++     */
++    void safeReload();
++    // Paper end
++
+     /**
+      * Reload only the Minecraft data for the server. This includes custom
+      * advancements and loot tables.
+diff --git a/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java b/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
+index f78a7df6e2edbbbaeb0edf4330125b2c2fa39a57..393a7b66260ae4663ed4c4ad076d2620b54847fa 100644
+--- a/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
++++ b/src/main/java/org/bukkit/plugin/PluginDescriptionFile.java
+@@ -152,6 +152,7 @@ import org.yaml.snakeyaml.nodes.Tag;
+  *main: com.captaininflamo.bukkit.inferno.Inferno
+  *depend: [NewFire, FlameWire]
+  *api-version: 1.13
++ *reload: always
+  *
+  *commands:
+  *  flagrate:
+@@ -247,6 +248,7 @@ public final class PluginDescriptionFile {
+     private PermissionDefault defaultPerm = PermissionDefault.OP;
+     private Set<PluginAwareness> awareness = ImmutableSet.of();
+     private String apiVersion = null;
++    private PluginReloadPolicy reloadPolicy = PluginReloadPolicy.SAME_HASH; // Paper - Add reload policy
+ 
+     public PluginDescriptionFile(@NotNull final InputStream stream) throws InvalidDescriptionException {
+         loadMap(asMap(YAML.get().load(stream)));
+@@ -957,6 +959,27 @@ public final class PluginDescriptionFile {
+         return apiVersion;
+     }
+ 
++    // Paper start - Add reload policy
++    /**
++     * Gives the reload policy which this plugin will follow.
++     * <ul>
++     * <li>If not specified, it will be {@link PluginReloadPolicy#SAME_HASH}.
++     * <li>It is matched using {@link PluginReloadPolicy#getByName(String)}.
++     * <li>Plugins will not follow this policy if Bukkit is told to ignore them.
++     * </ul>
++     * <p>
++     * In the plugin.yml, this entry is named <code>reload</code>.
++     * <p>
++     * Example: <blockquote><pre>reload: always</pre></blockquote>
++     *
++     * @return the plugin's reload policy
++     */
++    @NotNull
++    public PluginReloadPolicy getReloadPolicy() {
++        return reloadPolicy;
++    }
++    // Paper end
++
+     /**
+      * @return unused
+      * @deprecated unused
+@@ -1127,6 +1150,16 @@ public final class PluginDescriptionFile {
+             apiVersion = map.get("api-version").toString();
+         }
+ 
++        // Paper start - Add reload policy
++        if (map.get("reload") != null) {
++            PluginReloadPolicy policy = PluginReloadPolicy.getByName(map.get("reload").toString());
++            if (policy == null) {
++                throw new InvalidDescriptionException("reload is not a valid choice");
++            }
++            reloadPolicy = policy;
++        }
++        // Paper end
++
+         try {
+             lazyPermissions = (Map<?, ?>) map.get("permissions");
+         } catch (ClassCastException ex) {
+@@ -1201,6 +1234,8 @@ public final class PluginDescriptionFile {
+             map.put("api-version", apiVersion);
+         }
+ 
++        map.put("reload", reloadPolicy); // Paper - Add reload policy
++
+         if (classLoaderOf != null) {
+             map.put("class-loader-of", classLoaderOf);
+         }
+diff --git a/src/main/java/org/bukkit/plugin/PluginReloadPolicy.java b/src/main/java/org/bukkit/plugin/PluginReloadPolicy.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2d54564864182a73295ac28f9cf089b2c079230e
+--- /dev/null
++++ b/src/main/java/org/bukkit/plugin/PluginReloadPolicy.java
+@@ -0,0 +1,40 @@
++package org.bukkit.plugin;
++
++import org.jetbrains.annotations.NotNull;
++
++import java.util.Locale;
++
++/**
++ * Represents the behavior of a plugin when reloaded. Note that these policies
++ * only apply if the server isn't reloaded using the legacy method.
++ */
++public enum PluginReloadPolicy {
++
++    /**
++     * The plugin will always be reloaded assuming its dependencies are also reloadable.
++     */
++    ALWAYS,
++    /**
++     * The plugin will never be reloaded.
++     */
++    NEVER,
++    /**
++     * The plugin will always be reloaded assuming the plugin's file hash hasn't changed
++     * and its dependencies are also reloadable.
++     */
++    SAME_HASH;
++
++    /**
++     * Looks up a PluginReloadPolicy by possible plugin.yml values.
++     *
++     * @param name Name of the policy.
++     * @return Specified value, or null if not found.
++     */
++    public static PluginReloadPolicy getByName(@NotNull String name) {
++        try {
++            return valueOf(name.toUpperCase(Locale.ENGLISH).replaceAll("[^A-Z-]", "").replace("-", "_"));
++        } catch (IllegalArgumentException ignored) {
++            return null;
++        }
++    }
++}
