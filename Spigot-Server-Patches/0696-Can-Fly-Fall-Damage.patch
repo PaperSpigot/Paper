@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TreyRuffy <TreyRuffy@users.noreply.github.com>
+Date: Sat, 13 Mar 2021 12:59:14 -0700
+Subject: [PATCH] Can Fly Fall Damage
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index cc2127b26e41182c14fa95afde878e9b5100a117..8e3176b39c20d7d13eed4b580522e3ca317e4b86 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -72,6 +72,7 @@ public abstract class EntityHuman extends EntityLiving {
+     public EntityFishingHook hookedFish;
+     // Paper start
+     public boolean affectsSpawning = true;
++    private boolean canFlyFallDamage = false;
+     // Paper end
+ 
+     // CraftBukkit start
+@@ -1511,7 +1512,7 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+     @Override
+     public boolean b(float f, float f1) {
+-        if (this.abilities.canFly) {
++        if (this.abilities.canFly && !canFlyFallDamage) { // Paper - allow fall damage with can fly attribute
+             return false;
+         } else {
+             if (f >= 2.0F) {
+@@ -1978,6 +1979,12 @@ public abstract class EntityHuman extends EntityLiving {
+         }
+     }
+ 
++    // Paper start - Allows you to set fall damage with the can fly attribute
++    public void setCanFlyFallDamage(boolean fallDamage) {
++        this.canFlyFallDamage = fallDamage;
++    }
++    // Paper end
++
+     @Override
+     public void setFireTicks(int i) {
+         super.setFireTicks(this.abilities.isInvulnerable ? Math.min(i, 1) : i);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+index fc1cf7cc6b26171c0baf623f04f6b495d5adf517..8663315cb9bd381e88bba41eade766cce7531b25 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+@@ -698,7 +698,14 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+         teSign.isEditable = true;
+         getHandle().openSign(teSign);
+     }
++
++    // Paper - Add method to enable fall damage if you have the allowFlight attribute
++    @Override
++    public void setCanFlyFallDamage(boolean fallDamage) {
++        getHandle().setCanFlyFallDamage(fallDamage);
++    }
+     // Paper end
++
+     @Override
+     public boolean dropItem(boolean dropAll) {
+         return getHandle().dropItem(dropAll);
