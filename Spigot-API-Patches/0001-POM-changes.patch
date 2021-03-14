@@ -5,10 +5,10 @@ Subject: [PATCH] POM changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 6b1cebc7fb6760a44359d81b029c4d8843125e49..ed19c62e5a2dbc7e660eae61aef21295afdb8aaf 100644
+index 5f3253b9c4a533e746707d602d4a7988519742ef..61b8ee4e3e122dd2671f50ea3b432e4abd4600a2 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -2,34 +2,28 @@
+@@ -2,33 +2,34 @@
  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
      <modelVersion>4.0.0</modelVersion>
@@ -40,31 +40,23 @@ index 6b1cebc7fb6760a44359d81b029c4d8843125e49..ed19c62e5a2dbc7e660eae61aef21295
      </properties>
  
 -    <distributionManagement>
--        <repository>
++    <repositories>
+         <repository>
 -            <id>spigotmc-releases</id>
 -            <url>https://hub.spigotmc.org/nexus/content/repositories/releases/</url>
--        </repository>
++            <id>sonatype</id>
++            <url>https://oss.sonatype.org/content/groups/public/</url>
+         </repository>
 -        <snapshotRepository>
 -            <id>spigotmc-snapshots</id>
 -            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 -        </snapshotRepository>
 -    </distributionManagement>
--
-     <repositories>
-         <!--
-             If you are a plugin developer, please use https://hub.spigotmc.org/nexus/content/repositories/snapshots/
-@@ -41,6 +35,10 @@
-             <id>spigotmc-public</id>
-             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-         </repository>
-+        <repository>
-+            <id>sonatype</id>
-+            <url>https://oss.sonatype.org/content/groups/public/</url>
-+        </repository>
-     </repositories>
++    </repositories>
  
-     <pluginRepositories>
-@@ -57,6 +55,20 @@
+     <dependencies>
+         <dependency>
+@@ -37,6 +38,20 @@
              <version>2.6</version>
              <scope>compile</scope>
          </dependency>
@@ -85,7 +77,7 @@ index 6b1cebc7fb6760a44359d81b029c4d8843125e49..ed19c62e5a2dbc7e660eae61aef21295
          <!-- bundled with Minecraft, should be kept in sync -->
          <dependency>
              <groupId>com.google.guava</groupId>
-@@ -113,6 +125,7 @@
+@@ -93,6 +108,7 @@
      </dependencies>
  
      <build>
@@ -93,7 +85,7 @@ index 6b1cebc7fb6760a44359d81b029c4d8843125e49..ed19c62e5a2dbc7e660eae61aef21295
          <plugins>
              <plugin>
                  <groupId>net.md-5</groupId>
-@@ -131,10 +144,6 @@
+@@ -111,10 +127,6 @@
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-compiler-plugin</artifactId>
                  <version>3.8.1</version>
@@ -102,9 +94,9 @@ index 6b1cebc7fb6760a44359d81b029c4d8843125e49..ed19c62e5a2dbc7e660eae61aef21295
 -                    <compilerId>eclipse</compilerId>
 -                </configuration>
                  <dependencies>
-                     <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
                      <dependency>
-@@ -185,6 +194,7 @@
+                         <groupId>org.codehaus.plexus</groupId>
+@@ -164,6 +176,7 @@
                              </excludes>
                          </filter>
                      </filters>

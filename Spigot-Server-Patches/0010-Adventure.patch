@@ -3029,7 +3029,7 @@ index 5eaea24d253d92078709af2a7d7fd0beda3e5520..37faafaf7136e02aa1c76d841b8f47c0
      public String getDisplayName() throws IllegalStateException {
          CraftScoreboard scoreboard = checkState();
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
-index e3036fe23fa2be100044332c432d1ad5b4872823..543792033497ff416396e8d6bee6b9e831faeec8 100644
+index e3036fe23fa2be100044332c432d1ad5b4872823..5178981cd561be45b8f93e7060b13874fbd41fcf 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 @@ -28,6 +28,27 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
@@ -3075,7 +3075,7 @@ index e3036fe23fa2be100044332c432d1ad5b4872823..543792033497ff416396e8d6bee6b9e8
          ScoreboardObjective objective = board.registerObjective(name, craftCriteria.criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType));
 -        return new CraftObjective(this, objective);
 +        return new CraftObjective(this, objective);*/ // Paper
-+        return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName)); // Paper
++        return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName), renderType); // Paper
      }
  
      @Override
