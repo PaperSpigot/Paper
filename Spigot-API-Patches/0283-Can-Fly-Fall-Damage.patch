@@ -5,21 +5,28 @@ Subject: [PATCH] Can Fly Fall Damage
 
 
 diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
-index f0e0710fef5a3e0b722ece7ccf89c3d0f88f8f0f..56b0092686089d798c1dea045207c2cff0934012 100644
+index f0e0710fef5a3e0b722ece7ccf89c3d0f88f8f0f..fb44d8a9cfd94e3e70be9ac45f0c649eddb841d2 100644
 --- a/src/main/java/org/bukkit/entity/HumanEntity.java
 +++ b/src/main/java/org/bukkit/entity/HumanEntity.java
-@@ -576,6 +576,14 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder
+@@ -576,6 +576,21 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder
       * @param sign The sign to open
       */
      void openSign(@NotNull org.bukkit.block.Sign sign);
 +
-+    // Paper - Add method to enable fall damage if you have the allowFlight attribute
++    // Add method to enable fall damage if you have the allowFlight attribute
 +    /**
 +     * Allows you to enable fall damage while having the allowFlight attribute
 +     *
 +     * @param fallDamage Enables fall damage
 +     */
-+    void setCanFlyFallDamage(boolean fallDamage);
++    void setEnableFallDamageWhileAllowFlight(boolean fallDamage);
++
++    /**
++     * Allows you get if fall damage is enabled with the allowFlight attribute
++     *
++     * @return True if fall damage is enabled with the allowFlight attribute
++     */
++    boolean getEnableFallDamageWhileAllowFlight();
      // Paper end
  
      /**
