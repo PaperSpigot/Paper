@@ -5,7 +5,7 @@ Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6be5e1cd93 100644
+index 8b6cb74b255017dced20347c9fd97bbf4d834f9e..b89112912a5b70fb0d77645e4b140f3ee6e6c55a 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,15 +1,14 @@
@@ -79,7 +79,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
          <!-- deprecated API depend -->
          <dependency>
              <groupId>com.googlecode.json-simple</groupId>
-@@ -120,34 +136,22 @@
+@@ -100,34 +116,22 @@
  
      <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
      <build>
@@ -125,7 +125,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
                          </goals>
                      </execution>
                  </executions>
-@@ -157,6 +161,7 @@
+@@ -137,6 +141,7 @@
                  <artifactId>maven-jar-plugin</artifactId>
                  <version>3.2.0</version>
                  <configuration>
@@ -133,7 +133,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
                      <archive>
                          <manifest>
                              <addDefaultEntries>false</addDefaultEntries>
-@@ -164,8 +169,9 @@
+@@ -144,8 +149,9 @@
                          <manifestEntries>
                              <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
                              <Implementation-Title>CraftBukkit</Implementation-Title>
@@ -145,7 +145,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
                              <Specification-Title>Bukkit</Specification-Title>
                              <Specification-Version>${api.version}</Specification-Version>
                              <Specification-Vendor>Bukkit Team</Specification-Vendor>
-@@ -204,14 +210,23 @@
+@@ -184,14 +190,23 @@
                              <goal>shade</goal>
                          </goals>
                          <configuration>
@@ -170,7 +170,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
                                      </excludes>
                                  </filter>
                              </filters>
-@@ -227,10 +242,11 @@
+@@ -207,10 +222,11 @@
                                      <pattern>jline</pattern>
                                      <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
                                  </relocation>
@@ -186,7 +186,7 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
                                  <relocation>
                                      <pattern>org.apache.commons.codec</pattern>
                                      <shadedPattern>org.bukkit.craftbukkit.libs.org.apache.commons.codec</shadedPattern>
-@@ -272,10 +288,6 @@
+@@ -252,10 +268,6 @@
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-compiler-plugin</artifactId>
                  <version>3.8.1</version>
@@ -195,8 +195,8 @@ index a9d4c697fd52614cff7f035b5e9c7c52c925065b..301bee0db7b1118b2a6588c7ecfa9a6b
 -                    <compilerId>eclipse</compilerId>
 -                </configuration>
                  <dependencies>
-                     <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
                      <dependency>
+                         <groupId>org.codehaus.plexus</groupId>
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
 index 60ede7442b2d9a63fcd765aff29a96c9130aebac..3f52c19b6b797e26b3dcedcec2afd28c478e7091 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
