@@ -110,10 +110,10 @@ index 0000000000000000000000000000000000000000..2bfab782472b0b4f3a9cbb2b51183f28
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a6e2e3ac478801c30459a39e020a0f4354f4636b
+index 0000000000000000000000000000000000000000..bba2dbaf9549690d929f546c2a4a845b03e86130
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java
-@@ -0,0 +1,632 @@
+@@ -0,0 +1,627 @@
 +package com.destroystokyo.paper.antixray;
 +
 +import java.util.ArrayList;
@@ -212,12 +212,7 @@ index 0000000000000000000000000000000000000000..a6e2e3ac478801c30459a39e020a0f43
 +
 +            // Don't obfuscate air because air causes unnecessary block updates and causes block updates to fail in the void
 +            if (block != null && !block.getBlockData().isAir()) {
-+                // Replace all block states of a specified block
-+                // No OBFHELPER for nms.BlockStateList#a() due to too many decompile errors
-+                // The OBFHELPER should be getBlockDataList()
-+                for (IBlockData blockData : block.getStates().a()) {
-+                    obfuscateGlobal[ChunkSection.GLOBAL_PALETTE.getOrCreateIdFor(blockData)] = true;
-+                }
++                obfuscateGlobal[ChunkSection.GLOBAL_PALETTE.getOrCreateIdFor(block.getBlockData())] = true;
 +            }
 +        }
 +
