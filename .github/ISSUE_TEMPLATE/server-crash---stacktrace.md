@@ -1,6 +1,7 @@
 ---
 name: Server crash / Stacktrace
 about: Report server crashes and/or scary stacktraces
+labels: "type: bug"
 
 ---
 

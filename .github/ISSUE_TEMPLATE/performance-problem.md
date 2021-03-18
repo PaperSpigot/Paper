@@ -1,6 +1,7 @@
 ---
 name: Performance problem
 about: Report performance problems or areas of concern
+labels: "type: performance"
 
 ---
 

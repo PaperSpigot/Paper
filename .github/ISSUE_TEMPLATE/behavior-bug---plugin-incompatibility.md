@@ -1,6 +1,7 @@
 ---
 name: Behavior Bug / Plugin Incompatibility
 about: Server Bug or Plugin Incompatibility
+labels: "type: bug"
 
 ---
 
