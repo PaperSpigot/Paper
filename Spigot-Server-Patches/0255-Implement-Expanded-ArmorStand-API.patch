@@ -7,11 +7,11 @@ Add the following:
 - Add proper methods for getting and setting items in both hands. Deprecates old methods
 - Enable/Disable slot interactions
 
-diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
-index 9a3183e55fcb6809d2b324ad52e27f3e77d8fcb2..abcf3ab8bab2ca98ab0f7e852b8185e27949a210 100644
---- a/src/main/java/net/minecraft/server/EntityArmorStand.java
-+++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
-@@ -395,6 +395,7 @@ public class EntityArmorStand extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index 829013f57128cc6c92a45098c6883f2305cf4ea5..e97d25339b37a70f91022dcb021bbe82fb8f5eda 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -430,6 +430,7 @@ public class EntityArmorStand extends EntityLiving {
          return enumitemslot;
      }
  
@@ -20,10 +20,18 @@ index 9a3183e55fcb6809d2b324ad52e27f3e77d8fcb2..abcf3ab8bab2ca98ab0f7e852b8185e2
          return (this.disabledSlots & 1 << enumitemslot.getSlotFlag()) != 0 || enumitemslot.a() == EnumItemSlot.Function.HAND && !this.hasArms();
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-index 6ff7a59cc7052e900516a89db8daf0720c64a1ac..557cdb6ca007c617278e8cf723a2a11eae67d57d 100644
+index 6f922e4cbb095439fcd76ee0d0c08bc4160b8107..103f935d9b7a2cbe9639528c587d8ac2e5f14d07 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-@@ -239,5 +239,78 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
+@@ -1,6 +1,7 @@
+ package org.bukkit.craftbukkit.entity;
+ 
+ import net.minecraft.core.Vector3f;
++import net.minecraft.world.entity.EnumItemSlot;
+ import net.minecraft.world.entity.decoration.EntityArmorStand;
+ import org.bukkit.craftbukkit.CraftEquipmentSlot;
+ import org.bukkit.craftbukkit.CraftServer;
+@@ -239,5 +240,78 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
      public void setCanMove(boolean move) {
          getHandle().canMove = move;
      }
@@ -76,7 +84,7 @@ index 6ff7a59cc7052e900516a89db8daf0720c64a1ac..557cdb6ca007c617278e8cf723a2a11e
 +        int disabled = 0;
 +        for (org.bukkit.inventory.EquipmentSlot slot : slots) {
 +            if (slot == org.bukkit.inventory.EquipmentSlot.OFF_HAND) continue;
-+            net.minecraft.server.EnumItemSlot nmsSlot = org.bukkit.craftbukkit.CraftEquipmentSlot.getNMS(slot);
++            EnumItemSlot nmsSlot = org.bukkit.craftbukkit.CraftEquipmentSlot.getNMS(slot);
 +            disabled += (1 << nmsSlot.getSlotFlag()) + (1 << (nmsSlot.getSlotFlag() + 8)) + (1 << (nmsSlot.getSlotFlag() + 16));
 +        }
 +        getHandle().disabledSlots = disabled;

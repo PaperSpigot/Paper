@@ -27,22 +27,38 @@ and then catch exceptions and close if they fire.
 
 Part of this commit was authored by: Spottedleaf
 
-diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a45411343affc81 100644
---- a/src/main/java/net/minecraft/server/NetworkManager.java
-+++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -65,6 +65,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+diff --git a/src/main/java/net/minecraft/network/NetworkManager.java b/src/main/java/net/minecraft/network/NetworkManager.java
+index 6d40ade5a52383ed86d28d272c3dc83dbdcbd218..ab70eeaeca222de7de7cab1b3db14b2c4761c3c3 100644
+--- a/src/main/java/net/minecraft/network/NetworkManager.java
++++ b/src/main/java/net/minecraft/network/NetworkManager.java
+@@ -25,8 +25,15 @@ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.protocol.EnumProtocolDirection;
+ import net.minecraft.network.protocol.Packet;
++import net.minecraft.network.protocol.game.PacketPlayOutBoss;
++import net.minecraft.network.protocol.game.PacketPlayOutChat;
++import net.minecraft.network.protocol.game.PacketPlayOutKeepAlive;
+ import net.minecraft.network.protocol.game.PacketPlayOutKickDisconnect;
++import net.minecraft.network.protocol.game.PacketPlayOutTabComplete;
++import net.minecraft.network.protocol.game.PacketPlayOutTitle;
+ import net.minecraft.server.CancelledPacketHandleException;
++import net.minecraft.server.MCUtil;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.network.LoginListener;
+ import net.minecraft.server.network.PlayerConnection;
+ import net.minecraft.util.LazyInitVar;
+@@ -75,6 +82,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      public int protocolVersion;
      public java.net.InetSocketAddress virtualHost;
      private static boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush");
 +    // Optimize network
-+    boolean isPending = true;
-+    boolean queueImmunity = false;
-+    EnumProtocol protocol;
++    public boolean isPending = true;
++    public boolean queueImmunity = false;
++    public EnumProtocol protocol;
      // Paper end
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
-@@ -88,6 +92,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -98,6 +109,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      }
  
      public void setProtocol(EnumProtocol enumprotocol) {
@@ -50,12 +66,12 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
          this.channel.attr(NetworkManager.c).set(enumprotocol);
          this.channel.config().setAutoRead(true);
          NetworkManager.LOGGER.debug("Enabled auto read");
-@@ -158,19 +163,84 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -168,19 +180,84 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
          Validate.notNull(packetlistener, "packetListener", new Object[0]);
          this.packetListener = packetlistener;
      }
 +    // Paper start
-+    EntityPlayer getPlayer() {
++    public EntityPlayer getPlayer() {
 +        if (packetListener instanceof PlayerConnection) {
 +            return ((PlayerConnection) packetListener).player;
 +        } else {
@@ -140,7 +156,7 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
      }
  
      private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
-@@ -184,51 +254,116 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -194,51 +271,116 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
              this.channel.config().setAutoRead(false);
          }
  
@@ -267,7 +283,7 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
  
      public void a() {
          this.p();
-@@ -261,9 +396,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -271,9 +413,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
          return this.socketAddress;
      }
  
@@ -289,7 +305,7 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
          // Spigot End
          if (this.channel.isOpen()) {
              this.channel.close(); // We can't wait as this may be called from an event loop.
-@@ -331,7 +478,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -341,7 +495,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      public void handleDisconnection() {
          if (this.channel != null && !this.channel.isOpen()) {
              if (this.o) {
@@ -298,7 +314,7 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
              } else {
                  this.o = true;
                  if (this.k() != null) {
-@@ -339,7 +486,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -349,7 +503,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                  } else if (this.j() != null) {
                      this.j().a(new ChatMessage("multiplayer.disconnect.generic"));
                  }
@@ -307,18 +323,18 @@ index 511a480aa962fd2659e929bb274297db6baf437e..06d8ad7f57aa629c3c6060545a454113
                  // Paper start - Add PlayerConnectionCloseEvent
                  final PacketListener packetListener = this.j();
                  if (packetListener instanceof PlayerConnection) {
-diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index 2d8e6a2f4a0c3c5d74a647d7164b0028781d3bf5..545dbe6ddcce1d172f465b4a7ab85654ee5fdbb4 100644
---- a/src/main/java/net/minecraft/server/Packet.java
-+++ b/src/main/java/net/minecraft/server/Packet.java
+diff --git a/src/main/java/net/minecraft/network/protocol/Packet.java b/src/main/java/net/minecraft/network/protocol/Packet.java
+index 0783b0777c8d7788bbf6780b464b709bf6dc2191..b644c91cecd8a347319dfe8c8923fd05919a9795 100644
+--- a/src/main/java/net/minecraft/network/protocol/Packet.java
++++ b/src/main/java/net/minecraft/network/protocol/Packet.java
 @@ -1,5 +1,6 @@
- package net.minecraft.server;
+ package net.minecraft.network.protocol;
  
 +import io.netty.channel.ChannelFuture; // Paper
  import java.io.IOException;
- 
- public interface Packet<T extends PacketListener> {
-@@ -11,6 +12,20 @@ public interface Packet<T extends PacketListener> {
+ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.PacketListener;
+@@ -13,6 +14,20 @@ public interface Packet<T extends PacketListener> {
      void a(T t0);
  
      // Paper start
@@ -339,10 +355,10 @@ index 2d8e6a2f4a0c3c5d74a647d7164b0028781d3bf5..545dbe6ddcce1d172f465b4a7ab85654
      default boolean packetTooLarge(NetworkManager manager) {
          return false;
      }
-diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 8fcd8f4056620713d0c02fdd9b829053ba95e851..5f4dacf9c93c2495a07df2647fe0411f796da6af 100644
---- a/src/main/java/net/minecraft/server/ServerConnection.java
-+++ b/src/main/java/net/minecraft/server/ServerConnection.java
+diff --git a/src/main/java/net/minecraft/server/network/ServerConnection.java b/src/main/java/net/minecraft/server/network/ServerConnection.java
+index d992cb5cd827e0fe655809e1088939cdad9c2301..dc362724ea0cc1b2f9d9ceffff483217b4356c40 100644
+--- a/src/main/java/net/minecraft/server/network/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/network/ServerConnection.java
 @@ -16,6 +16,7 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
  import io.netty.channel.nio.NioEventLoopGroup;
  import io.netty.channel.socket.ServerSocketChannel;
@@ -351,7 +367,7 @@ index 8fcd8f4056620713d0c02fdd9b829053ba95e851..5f4dacf9c93c2495a07df2647fe0411f
  import io.netty.handler.timeout.ReadTimeoutHandler;
  import java.io.IOException;
  import java.net.InetAddress;
-@@ -41,10 +42,12 @@ public class ServerConnection {
+@@ -54,10 +55,12 @@ public class ServerConnection {
      private final List<NetworkManager> connectedChannels = Collections.synchronizedList(Lists.newArrayList());
      // Paper start - prevent blocking on adding a new network manager while the server is ticking
      private final java.util.Queue<NetworkManager> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
@@ -364,7 +380,7 @@ index 8fcd8f4056620713d0c02fdd9b829053ba95e851..5f4dacf9c93c2495a07df2647fe0411f
          }
      }
      // Paper end
-@@ -79,6 +82,7 @@ public class ServerConnection {
+@@ -92,6 +95,7 @@ public class ServerConnection {
                          ;
                      }
  

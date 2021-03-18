@@ -48,69 +48,11 @@ index 0000000000000000000000000000000000000000..f699ce18ca044f813e194ef2786b7ea8
 +        return internalTask;
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 0d0f36c62d260390827321aa6472f51a3a204c95..01655fd86f9a3218036f8b5404e233d32e0904a5 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -1,5 +1,6 @@
- package net.minecraft.server;
- 
-+import com.destroystokyo.paper.exception.ServerInternalException;
- import com.google.common.collect.Maps;
- import com.google.common.collect.Sets;
- import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-@@ -619,10 +620,15 @@ public class Chunk implements IChunkAccess {
-             this.tileEntities.remove(blockposition);
-             // Paper end
-         } else {
--            System.out.println("Attempted to place a tile entity (" + tileentity + ") at " + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ()
--                + " (" + getType(blockposition) + ") where there was no entity tile!");
--            System.out.println("Chunk coordinates: " + (this.loc.x * 16) + "," + (this.loc.z * 16));
--            new Exception().printStackTrace();
-+            // Paper start
-+            ServerInternalException e = new ServerInternalException(
-+                    "Attempted to place a tile entity (" + tileentity + ") at " + tileentity.position.getX() + ","
-+                            + tileentity.position.getY() + "," + tileentity.position.getZ()
-+                            + " (" + getType(blockposition) + ") where there was no entity tile!\n" +
-+                            "Chunk coordinates: " + (this.loc.x * 16) + "," + (this.loc.z * 16));
-+            e.printStackTrace();
-+            ServerInternalException.reportInternalException(e);
-+            // Paper end
-             // CraftBukkit end
-         }
-     }
-diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
-index bf0ccfb9bf20422b90ef26370d113b49be7d730b..060887d765604e4be82913607bb6266a278f5db6 100644
---- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
-+++ b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
-@@ -1,5 +1,6 @@
- package net.minecraft.server;
- 
-+import com.destroystokyo.paper.exception.ServerInternalException;
- import com.google.common.collect.Lists;
- import com.google.common.collect.Maps;
- import com.google.common.io.Files;
-@@ -353,6 +354,7 @@ public class NameReferencingFileConverter {
-                             root = NBTCompressedStreamTools.a(new java.io.FileInputStream(file5));
-                         } catch (Exception exception) {
-                             exception.printStackTrace();
-+                            ServerInternalException.reportInternalException(exception); // Paper
-                         }
- 
-                         if (root != null) {
-@@ -366,6 +368,7 @@ public class NameReferencingFileConverter {
-                                 NBTCompressedStreamTools.a(root, new java.io.FileOutputStream(file2));
-                             } catch (Exception exception) {
-                                 exception.printStackTrace();
-+                                ServerInternalException.reportInternalException(exception); // Paper
-                             }
-                        }
-                         // CraftBukkit end
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 2ba10ed683788219c734a565a163ba553ec72c75..612eb16bce1bce1cad40ea0f279d2b8397263dea 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -762,6 +762,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index e9657faf0a24aee8444372e6f1ca0d971339ce5a..e8150c456efe72a561d6a6a7647eca05fbc8bd94 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -807,6 +807,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  return true;
              } catch (Exception exception) {
                  PlayerChunkMap.LOGGER.error("Failed to save chunk {},{}", chunkcoordintpair.x, chunkcoordintpair.z, exception);
@@ -118,67 +60,46 @@ index 2ba10ed683788219c734a565a163ba553ec72c75..612eb16bce1bce1cad40ea0f279d2b83
                  return false;
              }
          }
-diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
-index 135f38cc5d5d2fa3866aa1063df49a96b5e72ac2..f722b148464b7b8e515dba25aeffe8dfd3c0d6c3 100644
---- a/src/main/java/net/minecraft/server/RegionFile.java
-+++ b/src/main/java/net/minecraft/server/RegionFile.java
-@@ -261,6 +261,7 @@ public class RegionFile implements AutoCloseable {
-                     return true;
-                 }
-             } catch (IOException ioexception) {
-+                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
-                 return false;
-             }
-         }
-@@ -333,6 +334,7 @@ public class RegionFile implements AutoCloseable {
-             filechannel.write(bytebuffer);
-         } catch (Throwable throwable1) {
-             throwable = throwable1;
-+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(throwable); // Paper
-             throw throwable1;
-         } finally {
-             if (filechannel != null) {
-diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index d787fab2c25e31ca6caa56c5e47409512c5ac568..137ee1b453b80e96c1a8fa3271f6350f9294cafb 100644
---- a/src/main/java/net/minecraft/server/SpawnerCreature.java
-+++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
-@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
+diff --git a/src/main/java/net/minecraft/server/players/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/players/NameReferencingFileConverter.java
+index 107979178e8be5ee6cf885d42f992fabf3bd00b0..8a343a857dc4661ba256e39cf391dd2c7a1cc970 100644
+--- a/src/main/java/net/minecraft/server/players/NameReferencingFileConverter.java
++++ b/src/main/java/net/minecraft/server/players/NameReferencingFileConverter.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server.players;
  
- // CraftBukkit start
 +import com.destroystokyo.paper.exception.ServerInternalException;
- import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
- // CraftBukkit end
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.io.Files;
+@@ -363,6 +364,7 @@ public class NameReferencingFileConverter {
+                             root = NBTCompressedStreamTools.a(new java.io.FileInputStream(file5));
+                         } catch (Exception exception) {
+                             exception.printStackTrace();
++                            ServerInternalException.reportInternalException(exception); // Paper
+                         }
  
-@@ -268,6 +269,7 @@ public final class SpawnerCreature {
-             }
-         } catch (Exception exception) {
-             SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
-+            ServerInternalException.reportInternalException(exception); // Paper
-             return null;
-         }
-     }
-@@ -374,6 +376,7 @@ public final class SpawnerCreature {
-                                 entity = biomesettingsmobs_c.c.a((World) worldaccess.getMinecraftWorld());
+                         if (root != null) {
+@@ -376,6 +378,7 @@ public class NameReferencingFileConverter {
+                                 NBTCompressedStreamTools.a(root, new java.io.FileOutputStream(file2));
                              } catch (Exception exception) {
-                                 SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
+                                 exception.printStackTrace();
 +                                ServerInternalException.reportInternalException(exception); // Paper
-                                 continue;
                              }
- 
-diff --git a/src/main/java/net/minecraft/server/VillageSiege.java b/src/main/java/net/minecraft/server/VillageSiege.java
-index 1844a6504acc420bdfaaf8f045c569e970d055db..d6aadbda5c5a17976659f57ee04cf9b917e09160 100644
---- a/src/main/java/net/minecraft/server/VillageSiege.java
-+++ b/src/main/java/net/minecraft/server/VillageSiege.java
+                        }
+                         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java b/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
+index 928ca3189af1ddaba797628a087cd6c6a9016f5c..eaa97eb11d893266253fb108249ced1e0e96a4dc 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
++++ b/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
 @@ -1,5 +1,7 @@
- package net.minecraft.server;
+ package net.minecraft.world.entity.ai.village;
  
 +import com.destroystokyo.paper.exception.ServerInternalException;
 +
  import java.util.Iterator;
  import javax.annotation.Nullable;
- import org.apache.logging.log4j.LogManager;
-@@ -104,6 +106,7 @@ public class VillageSiege implements MobSpawner {
+ import net.minecraft.core.BaseBlockPosition;
+@@ -119,6 +121,7 @@ public class VillageSiege implements MobSpawner {
                  entityzombie.prepare(worldserver, worldserver.getDamageScaler(entityzombie.getChunkCoordinates()), EnumMobSpawn.EVENT, (GroupDataEntity) null, (NBTTagCompound) null);
              } catch (Exception exception) {
                  VillageSiege.LOGGER.warn("Failed to create zombie for village siege at {}", vec3d, exception);
@@ -186,12 +107,32 @@ index 1844a6504acc420bdfaaf8f045c569e970d055db..d6aadbda5c5a17976659f57ee04cf9b9
                  return;
              }
  
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index eb0af6775d60e2cd610dde6e7c4874d4b01d6054..3638ae7c0eba5b1ef811bc1629334e9c483bef6f 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
+diff --git a/src/main/java/net/minecraft/world/level/SpawnerCreature.java b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+index 2d02b2fc502a0f7e541f7943ed647ff7177acee8..fd0595fd584046326eccacdf0a6afe40c5e84eed 100644
+--- a/src/main/java/net/minecraft/world/level/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+@@ -301,6 +301,7 @@ public final class SpawnerCreature {
+             }
+         } catch (Exception exception) {
+             SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
++            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
+             return null;
+         }
+     }
+@@ -407,6 +408,7 @@ public final class SpawnerCreature {
+                                 entity = biomesettingsmobs_c.c.a((World) worldaccess.getMinecraftWorld());
+                             } catch (Exception exception) {
+                                 SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
++                                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
+                                 continue;
+                             }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 33469b719d679c65d4bcb8366008e6e107eb3a0b..01cb0c8dd9875986e0c08371e876f0dba3f0cf5a 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
 @@ -1,5 +1,10 @@
- package net.minecraft.server;
+ package net.minecraft.world.level;
  
 +import co.aikar.timings.Timing;
 +import co.aikar.timings.Timings;
@@ -201,12 +142,12 @@ index eb0af6775d60e2cd610dde6e7c4874d4b01d6054..3638ae7c0eba5b1ef811bc1629334e9c
  import com.google.common.collect.Lists;
  import com.mojang.serialization.Codec;
  import java.io.IOException;
-@@ -685,8 +690,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -737,8 +742,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                          gameprofilerfiller.exit();
                      } catch (Throwable throwable) {
                          // Paper start - Prevent tile entity and entity crashes
 -                        System.err.println("TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ());
-+                        String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
++                        String msg = "TileEntity threw exception at " + tileentity.getWorld().getWorld().getName() + ":" + tileentity.getPosition().getX() + "," + tileentity.getPosition().getY() + "," + tileentity.getPosition().getZ();
 +                        System.err.println(msg);
                          throwable.printStackTrace();
 +                        getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable)));
@@ -214,7 +155,7 @@ index eb0af6775d60e2cd610dde6e7c4874d4b01d6054..3638ae7c0eba5b1ef811bc1629334e9c
                          tilesThisCycle--;
                          this.tileEntityListTick.remove(tileTickPosition--);
                          continue;
-@@ -756,8 +764,10 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -808,8 +816,10 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
              consumer.accept(entity);
          } catch (Throwable throwable) {
              // Paper start - Prevent tile entity and entity crashes
@@ -226,11 +167,62 @@ index eb0af6775d60e2cd610dde6e7c4874d4b01d6054..3638ae7c0eba5b1ef811bc1629334e9c
              entity.dead = true;
              return;
              // Paper end
-diff --git a/src/main/java/net/minecraft/server/WorldPersistentData.java b/src/main/java/net/minecraft/server/WorldPersistentData.java
-index 141a8e31151010e5a0bd8d4661033f109f6a2e67..138c6d707e33cd352aa4b26dfb279c5b77448de0 100644
---- a/src/main/java/net/minecraft/server/WorldPersistentData.java
-+++ b/src/main/java/net/minecraft/server/WorldPersistentData.java
-@@ -144,6 +144,7 @@ public class WorldPersistentData {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index a2d80c2c8e4f080f60746548f75631c5946ba8e2..4b3de29b1a6e9d75b28962073c62bbe8d666165f 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.world.level.chunk;
+ 
++import com.destroystokyo.paper.exception.ServerInternalException;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+@@ -655,10 +656,15 @@ public class Chunk implements IChunkAccess {
+             this.tileEntities.remove(blockposition);
+             // Paper end
+         } else {
+-            System.out.println("Attempted to place a tile entity (" + tileentity + ") at " + tileentity.getPosition().getX() + "," + tileentity.getPosition().getY() + "," + tileentity.getPosition().getZ()
+-                + " (" + getType(blockposition) + ") where there was no entity tile!");
+-            System.out.println("Chunk coordinates: " + (this.loc.x * 16) + "," + (this.loc.z * 16));
+-            new Exception().printStackTrace();
++            // Paper start
++            ServerInternalException e = new ServerInternalException(
++                    "Attempted to place a tile entity (" + tileentity + ") at " + tileentity.getPosition().getX() + ","
++                            + tileentity.getPosition().getY() + "," + tileentity.getPosition().getZ()
++                            + " (" + getType(blockposition) + ") where there was no entity tile!\n" +
++                            "Chunk coordinates: " + (this.loc.x * 16) + "," + (this.loc.z * 16));
++            e.printStackTrace();
++            ServerInternalException.reportInternalException(e);
++            // Paper end
+             // CraftBukkit end
+         }
+     }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+index f2694e46123ac2edcfdc53ef1abae283227eaa51..7f695f2b49df3400cd263fd6ffff77e753a65ea1 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+@@ -264,6 +264,7 @@ public class RegionFile implements AutoCloseable {
+                     return true;
+                 }
+             } catch (IOException ioexception) {
++                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
+                 return false;
+             }
+         }
+@@ -336,6 +337,7 @@ public class RegionFile implements AutoCloseable {
+             filechannel.write(bytebuffer);
+         } catch (Throwable throwable1) {
+             throwable = throwable1;
++            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(throwable); // Paper
+             throw throwable1;
+         } finally {
+             if (filechannel != null) {
+diff --git a/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java b/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
+index 3910daeaa177639fa8055301304634c2014dc20f..d61960d80599dc5e7b70cc990e4b0b174eb6e34e 100644
+--- a/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
++++ b/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
+@@ -150,6 +150,7 @@ public class WorldPersistentData {
              }
          } catch (Throwable throwable6) {
              throwable = throwable6;

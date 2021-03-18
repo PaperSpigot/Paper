@@ -28,11 +28,11 @@ index d16ae924bcbe31c964f7fb448757c748e5c4418c..4bba6977a0287837b8927718c040ac61
 +        }
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 48ebaa4cdb5d5f52334e7bd4f80309a10ecedfa9..8850047050ca8a608c156b63bc6e05eaef140d03 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -415,9 +415,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index dce47ec1fc186d12ffa30bfd3d71870aecb95d40..cf92de7c138ef9cbbc1263bee29b9d0017b45827 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -500,9 +500,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
              this.fallDistance *= 0.5F;
          }
  
@@ -49,7 +49,7 @@ index 48ebaa4cdb5d5f52334e7bd4f80309a10ecedfa9..8850047050ca8a608c156b63bc6e05ea
  
          if (!this.world.isClientSide) {
              this.setFlag(0, this.fireTicks > 0);
-@@ -510,6 +517,17 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -595,6 +602,17 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          this.setFireTicks(0);
      }
  
@@ -67,11 +67,11 @@ index 48ebaa4cdb5d5f52334e7bd4f80309a10ecedfa9..8850047050ca8a608c156b63bc6e05ea
      protected void an() {
          this.die();
      }
-diff --git a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-index dcd381069c2fd4d037ae0bcf710b9ff6ee30bb8f..35b5d41084b47de6a1185e23970ebe21875668d6 100644
---- a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-+++ b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-@@ -292,9 +292,15 @@ public abstract class EntityMinecartAbstract extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
+index 37785b27c3d9ffd010f09f53b2ca09941f609872..1f94cc096d95129d85a6278b1e369729df93d27d 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
+@@ -330,9 +330,15 @@ public abstract class EntityMinecartAbstract extends Entity {
              this.setDamage(this.getDamage() - 1.0F);
          }
  

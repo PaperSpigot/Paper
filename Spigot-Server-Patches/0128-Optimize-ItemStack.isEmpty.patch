@@ -5,11 +5,11 @@ Subject: [PATCH] Optimize ItemStack.isEmpty()
 
 Remove hashMap lookup every check, simplify code to remove ternary
 
-diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
-index eee69f9ac8936cf7ad84629aba91bf09371762f3..2b2f5a8ac100c93b4c17d808b19a8252ed175760 100644
---- a/src/main/java/net/minecraft/server/ItemStack.java
-+++ b/src/main/java/net/minecraft/server/ItemStack.java
-@@ -154,7 +154,7 @@ public final class ItemStack {
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index d7c5065457d910f3e5481fda046d368d5f66f67b..58045d500a6fbb7eb568f48c7d8ce7730d357577 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -208,7 +208,7 @@ public final class ItemStack {
      }
  
      public boolean isEmpty() {

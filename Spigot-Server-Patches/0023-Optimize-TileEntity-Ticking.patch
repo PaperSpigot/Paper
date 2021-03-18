@@ -28,11 +28,11 @@ index d4ebcf8f66197299256bd6b65710a1488c90ea41..c9164dfdb27ddf3709129c8aec54903a
                  pair("gamerules", toObjectMapper(world.getWorld().getGameRules(), rule -> {
                      return pair(rule, world.getWorld().getGameRuleValue(rule));
                  })),
-diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
-index 1441d096d44ea653539ba20ccda94eb62ffc32df..fb7c0d45765e36181c809b250ba4eee5d21c5894 100644
---- a/src/main/java/net/minecraft/server/BlockChest.java
-+++ b/src/main/java/net/minecraft/server/BlockChest.java
-@@ -10,8 +10,8 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockChest.java b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+index 60e7dc1910ae9214d84d65b011cfec278b6b32ae..b229faad99120c67b089f7680d800fbe594fe7da 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockChest.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+@@ -54,8 +54,8 @@ import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  public class BlockChest extends BlockChestAbstract<TileEntityChest> implements IBlockWaterlogged {
  
      public static final BlockStateDirection FACING = BlockFacingHorizontal.FACING;
@@ -43,23 +43,19 @@ index 1441d096d44ea653539ba20ccda94eb62ffc32df..fb7c0d45765e36181c809b250ba4eee5
      protected static final VoxelShape e = Block.a(1.0D, 0.0D, 0.0D, 15.0D, 14.0D, 15.0D);
      protected static final VoxelShape f = Block.a(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 16.0D);
      protected static final VoxelShape g = Block.a(0.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
-diff --git a/src/main/java/net/minecraft/server/IBlockDataHolder.java b/src/main/java/net/minecraft/server/IBlockDataHolder.java
-index 98616f0db75d0e2b2e960dbf88289c87ba426ab6..b19c694cf01bc868dd7c4ec6432b613d19f2ca40 100644
---- a/src/main/java/net/minecraft/server/IBlockDataHolder.java
-+++ b/src/main/java/net/minecraft/server/IBlockDataHolder.java
-@@ -83,6 +83,7 @@ public abstract class IBlockDataHolder<O, S> {
-         return Collections.unmodifiableCollection(this.b.keySet());
-     }
- 
-+    public <T extends Comparable<T>> boolean contains(IBlockState<T> iblockstate) { return this.b(iblockstate); } // Paper - OBFHELPER
-     public <T extends Comparable<T>> boolean b(IBlockState<T> iblockstate) {
-         return this.b.containsKey(iblockstate);
-     }
-diff --git a/src/main/java/net/minecraft/server/TileEntityChest.java b/src/main/java/net/minecraft/server/TileEntityChest.java
-index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d107c7a72d 100644
---- a/src/main/java/net/minecraft/server/TileEntityChest.java
-+++ b/src/main/java/net/minecraft/server/TileEntityChest.java
-@@ -8,7 +8,7 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
+index eed95b370d1d624ffc6b7a35357b7028ec58c584..51167d776c710decb0107bebcb35bdf43103772b 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
+@@ -8,6 +8,7 @@ import net.minecraft.core.NonNullList;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffect;
+ import net.minecraft.sounds.SoundEffects;
+@@ -33,7 +34,7 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
  import org.bukkit.entity.HumanEntity;
  // CraftBukkit end
  
@@ -68,7 +64,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
  
      private NonNullList<ItemStack> items;
      protected float a;
-@@ -86,14 +86,20 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -111,14 +112,20 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
          return nbttagcompound;
      }
  
@@ -91,7 +87,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
          this.b = this.a;
          float f = 0.1F;
  
-@@ -107,8 +113,11 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -132,8 +139,11 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
          if (this.viewingCount > 0 && this.a == 0.0F) {
              this.playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
          }
@@ -104,7 +100,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
              float f1 = this.a;
  
              if (this.viewingCount > 0) {
-@@ -124,8 +133,11 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -149,8 +159,11 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
              float f2 = 0.5F;
  
              if (this.a < 0.5F && f1 >= 0.5F) {
@@ -117,7 +113,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
  
              if (this.a < 0.0F) {
                  this.a = 0.0F;
-@@ -164,6 +176,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -189,6 +202,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
      }
  
      public void playOpenSound(SoundEffect soundeffect) {
@@ -125,7 +121,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
          BlockPropertyChestType blockpropertychesttype = (BlockPropertyChestType) this.getBlock().get(BlockChest.c);
  
          if (blockpropertychesttype != BlockPropertyChestType.LEFT) {
-@@ -202,6 +215,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -227,6 +241,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
  
              ++this.viewingCount;
              if (this.world == null) return; // CraftBukkit
@@ -133,7 +129,7 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
  
              // CraftBukkit start - Call redstone event
              if (this.getBlock().getBlock() == Blocks.TRAPPED_CHEST) {
-@@ -224,6 +238,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
+@@ -249,6 +264,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
              --this.viewingCount;
  
              // CraftBukkit start - Call redstone event
@@ -141,19 +137,25 @@ index 8e5ceacf7f6ed0d639d7850334d8a01a74aef6e3..54cad33750efd80b104664723e1115d1
              if (this.getBlock().getBlock() == Blocks.TRAPPED_CHEST) {
                  int newPower = Math.max(0, Math.min(15, this.viewingCount));
  
-diff --git a/src/main/java/net/minecraft/server/TileEntityEnderChest.java b/src/main/java/net/minecraft/server/TileEntityEnderChest.java
-index 4ee3520882df2f6f358f3f61dc42c20129984b72..80440aa24f546dd151e89b705322d9c3e906b139 100644
---- a/src/main/java/net/minecraft/server/TileEntityEnderChest.java
-+++ b/src/main/java/net/minecraft/server/TileEntityEnderChest.java
-@@ -1,6 +1,6 @@
- package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEnderChest.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEnderChest.java
+index 930f1bd091d9754f7ca5d9e36cdf49b2be03eb23..2bc4213c70be47ca8bbc24898cc92e43f4228821 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEnderChest.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEnderChest.java
+@@ -1,11 +1,12 @@
+ package net.minecraft.world.level.block.entity;
+ 
++import net.minecraft.server.MCUtil;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.level.block.Blocks;
  
 -public class TileEntityEnderChest extends TileEntity implements ITickable {
 +public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickable
  
      public float a;
      public float b;
-@@ -11,18 +11,28 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
+@@ -16,18 +17,28 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
          super(TileEntityTypes.ENDER_CHEST);
      }
  
@@ -183,7 +185,7 @@ index 4ee3520882df2f6f358f3f61dc42c20129984b72..80440aa24f546dd151e89b705322d9c3
  
          if (this.c > 0 && this.a == 0.0F) {
              double d1 = (double) i + 0.5D;
-@@ -30,8 +40,17 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
+@@ -35,8 +46,17 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
              d0 = (double) k + 0.5D;
              this.world.playSound((EntityHuman) null, d1, (double) j + 0.5D, d0, SoundEffects.BLOCK_ENDER_CHEST_OPEN, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
          }
@@ -202,7 +204,7 @@ index 4ee3520882df2f6f358f3f61dc42c20129984b72..80440aa24f546dd151e89b705322d9c3
              float f1 = this.a;
  
              if (this.c > 0) {
-@@ -47,11 +66,14 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
+@@ -52,11 +72,14 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
              float f2 = 0.5F;
  
              if (this.a < 0.5F && f1 >= 0.5F) {
@@ -218,7 +220,7 @@ index 4ee3520882df2f6f358f3f61dc42c20129984b72..80440aa24f546dd151e89b705322d9c3
  
              if (this.a < 0.0F) {
                  this.a = 0.0F;
-@@ -79,11 +101,13 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
+@@ -84,11 +107,13 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
      public void d() {
          ++this.c;
          this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.c);
@@ -232,3 +234,15 @@ index 4ee3520882df2f6f358f3f61dc42c20129984b72..80440aa24f546dd151e89b705322d9c3
      }
  
      public boolean a(EntityHuman entityhuman) {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java b/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
+index e4b59a85ee9b435b2e86d4c7d78b7224773f6967..ba046cffdd8331c7e0427f19fa54d0c7a99077d9 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
++++ b/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
+@@ -84,6 +84,7 @@ public abstract class IBlockDataHolder<O, S> {
+         return Collections.unmodifiableCollection(this.b.keySet());
+     }
+ 
++    public <T extends Comparable<T>> boolean contains(IBlockState<T> iblockstate) { return this.b(iblockstate); } // Paper - OBFHELPER
+     public <T extends Comparable<T>> boolean b(IBlockState<T> iblockstate) {
+         return this.b.containsKey(iblockstate);
+     }

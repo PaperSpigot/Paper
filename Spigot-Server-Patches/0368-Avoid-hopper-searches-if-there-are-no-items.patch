@@ -13,11 +13,37 @@ And since minecart hoppers are used _very_ rarely near we can avoid alot of sear
 
 Combined, this adds up a lot.
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac1712bd0fae9 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -85,6 +85,10 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/entity/IEntitySelector.java b/src/main/java/net/minecraft/world/entity/IEntitySelector.java
+index cb5cda5e6497edeb801ef712f9bd8823cb055750..1a6f8aec32af85717f5d56e0b00a02cda88ce028 100644
+--- a/src/main/java/net/minecraft/world/entity/IEntitySelector.java
++++ b/src/main/java/net/minecraft/world/entity/IEntitySelector.java
+@@ -16,6 +16,7 @@ public final class IEntitySelector {
+     public static final Predicate<Entity> c = (entity) -> {
+         return entity.isAlive() && !entity.isVehicle() && !entity.isPassenger();
+     };
++    public static final Predicate<Entity> isInventory() { return d; } // Paper - OBFHELPER
+     public static final Predicate<Entity> d = (entity) -> {
+         return entity instanceof IInventory && entity.isAlive();
+     };
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index 3fdce0e6fa34eb4b1eafc618068a3fb06abd5ec1..e7bb33125a25b9e5a68013b15d7b5b6b6769ab9b 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -32,10 +32,13 @@ import net.minecraft.server.level.PlayerChunk;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.util.EntitySlice;
+ import net.minecraft.util.MathHelper;
++import net.minecraft.world.IInventory;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityTypes;
++import net.minecraft.world.entity.IEntitySelector;
+ import net.minecraft.world.entity.boss.EntityComplexPart;
+ import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.level.ChunkCoordIntPair;
+ import net.minecraft.world.level.GeneratorAccess;
+ import net.minecraft.world.level.TickList;
+@@ -123,6 +126,10 @@ public class Chunk implements IChunkAccess {
              return removed;
          }
      }
@@ -28,7 +54,7 @@ index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac171
      // Paper end
  
      public Chunk(World world, ChunkCoordIntPair chunkcoordintpair, BiomeStorage biomestorage, ChunkConverter chunkconverter, TickList<Block> ticklist, TickList<FluidType> ticklist1, long i, @Nullable ChunkSection[] achunksection, @Nullable Consumer<Chunk> consumer) {
-@@ -544,6 +548,13 @@ public class Chunk implements IChunkAccess {
+@@ -582,6 +589,13 @@ public class Chunk implements IChunkAccess {
          entity.chunkZ = this.loc.z;
          this.entities.add(entity); // Paper - per chunk entity list
          this.entitySlices[k].add(entity);
@@ -42,7 +68,7 @@ index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac171
          entity.entitySlice = this.entitySlices[k]; // Paper
          this.markDirty(); // Paper
      }
-@@ -577,6 +588,11 @@ public class Chunk implements IChunkAccess {
+@@ -615,6 +629,11 @@ public class Chunk implements IChunkAccess {
          if (!this.entitySlices[i].remove(entity)) {
              return;
          }
@@ -54,7 +80,7 @@ index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac171
          entityCounts.decrement(entity.getMinecraftKeyString());
          this.markDirty(); // Paper
          // Paper end
-@@ -862,6 +878,14 @@ public class Chunk implements IChunkAccess {
+@@ -900,6 +919,14 @@ public class Chunk implements IChunkAccess {
          for (int k = i; k <= j; ++k) {
              Iterator iterator = this.entitySlices[k].iterator(); // Spigot
  
@@ -69,7 +95,7 @@ index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac171
              while (iterator.hasNext()) {
                  T entity = (T) iterator.next(); // CraftBukkit - decompile error
                  if (entity.shouldBeRemoved) continue; // Paper
-@@ -882,9 +906,29 @@ public class Chunk implements IChunkAccess {
+@@ -920,9 +947,29 @@ public class Chunk implements IChunkAccess {
          i = MathHelper.clamp(i, 0, this.entitySlices.length - 1);
          j = MathHelper.clamp(j, 0, this.entitySlices.length - 1);
  
@@ -99,15 +125,3 @@ index 6763ecaf5f814302c310f29e3a5a42fc1312a990..0601e9cdeb33dec82642ee9fbfaac171
              while (iterator.hasNext()) {
                  T t0 = (T) iterator.next(); // CraftBukkit - decompile error
                  if (t0.shouldBeRemoved) continue; // Paper
-diff --git a/src/main/java/net/minecraft/server/IEntitySelector.java b/src/main/java/net/minecraft/server/IEntitySelector.java
-index 3d54b7a4bf102dfc568e782706f67e4b5269eaf1..3913af9e27139538114580f7967cbf990d9307f7 100644
---- a/src/main/java/net/minecraft/server/IEntitySelector.java
-+++ b/src/main/java/net/minecraft/server/IEntitySelector.java
-@@ -11,6 +11,7 @@ public final class IEntitySelector {
-     public static final Predicate<Entity> c = (entity) -> {
-         return entity.isAlive() && !entity.isVehicle() && !entity.isPassenger();
-     };
-+    public static final Predicate<Entity> isInventory() { return d; } // Paper - OBFHELPER
-     public static final Predicate<Entity> d = (entity) -> {
-         return entity instanceof IInventory && entity.isAlive();
-     };

@@ -7,19 +7,19 @@ Fastutil maps are going to have a lower memory footprint - which
 is important because we clone chunk data after reading it for safety.
 So, reduce the impact of the clone on GC.
 
-diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
-index 9c445902e6adc05773497bc4444203ca364e4f5c..8dd91ddf9e1489ec035452c590cbd59afa44c18f 100644
---- a/src/main/java/net/minecraft/server/NBTTagCompound.java
-+++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
-@@ -20,6 +20,7 @@ import java.util.Set;
- import java.util.UUID;
- import java.util.regex.Pattern;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/nbt/NBTTagCompound.java b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
+index 2e862122fd4596c26318aac3b12165970a1660f8..e37c82c3af7c0fea9c85f7bc8d7a4df648e723ff 100644
+--- a/src/main/java/net/minecraft/nbt/NBTTagCompound.java
++++ b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
+@@ -26,6 +26,7 @@ import net.minecraft.ReportedException;
+ import net.minecraft.network.chat.ChatComponentText;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.chat.IChatMutableComponent;
 +import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap; // Paper
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-@@ -41,7 +42,7 @@ public class NBTTagCompound implements NBTBase {
+@@ -47,7 +48,7 @@ public class NBTTagCompound implements NBTBase {
              if (i > 512) {
                  throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
              } else {
@@ -28,7 +28,7 @@ index 9c445902e6adc05773497bc4444203ca364e4f5c..8dd91ddf9e1489ec035452c590cbd59a
  
                  byte b0;
  
-@@ -77,7 +78,7 @@ public class NBTTagCompound implements NBTBase {
+@@ -83,7 +84,7 @@ public class NBTTagCompound implements NBTBase {
      }
  
      public NBTTagCompound() {
@@ -37,7 +37,7 @@ index 9c445902e6adc05773497bc4444203ca364e4f5c..8dd91ddf9e1489ec035452c590cbd59a
      }
  
      @Override
-@@ -409,9 +410,17 @@ public class NBTTagCompound implements NBTBase {
+@@ -415,9 +416,17 @@ public class NBTTagCompound implements NBTBase {
  
      @Override
      public NBTTagCompound clone() {

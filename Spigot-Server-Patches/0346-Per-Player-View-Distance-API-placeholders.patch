@@ -6,28 +6,28 @@ Subject: [PATCH] Per-Player View Distance API placeholders
 I hope to look at this more in-depth soon. It appears doable.
 However this should not block the update.
 
-diff --git a/src/main/java/net/minecraft/server/EntityEnderDragon.java b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-index 90a3d3711f71209b7db89d2515377ed1818c3c83..a545a620486c7ffd9a15d903270a5091e1cacb97 100644
---- a/src/main/java/net/minecraft/server/EntityEnderDragon.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-@@ -576,9 +576,10 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+index 51993191e01f55e16667c25b8b57d6a6ddaf493b..5168a40eb53565bb3028efe559601acf72bddae5 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+@@ -625,9 +625,10 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
              if (this.deathAnimationTicks == 1 && !this.isSilent()) {
                  // CraftBukkit start - Use relative location for far away sounds
                  // this.world.b(1028, this.getChunkCoordinates(), 0);
 -                //int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16; // Paper - updated to use worlds actual view distance incase we have to uncomment this due to removal of player view distance API
 +                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16; // Paper - updated to use worlds actual view distance incase we have to uncomment this due to removal of player view distance API
-                 for (EntityPlayer player : (List<EntityPlayer>) ((WorldServer)world).getPlayers()) {
+                 for (net.minecraft.server.level.EntityPlayer player : (List<net.minecraft.server.level.EntityPlayer>) ((WorldServer)world).getPlayers()) {
 -                    final int viewDistance = player.getViewDistance(); // TODO apply view distance api patch
 +                    // final int viewDistance = player.getViewDistance(); // TODO apply view distance api patch
 +                    // Paper end
                      double deltaX = this.locX() - player.locX();
                      double deltaZ = this.locZ() - player.locZ();
                      double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
-diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
-index ad5a7cbe83fb61b79203369895e82edca2ffcb72..06cf8ca80c314b7c236984c7f6236533ae7bb4a2 100644
---- a/src/main/java/net/minecraft/server/EntityWither.java
-+++ b/src/main/java/net/minecraft/server/EntityWither.java
-@@ -208,9 +208,9 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+index 145767e8b0fc4105a0afa47af17dcdbb75e952bc..174eb12722872182b2d9b54841e5bb57893695a1 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
++++ b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+@@ -258,9 +258,9 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
                  if (!this.isSilent()) {
                      // CraftBukkit start - Use relative location for far away sounds
                      // this.world.b(1023, new BlockPosition(this), 0);
@@ -40,10 +40,10 @@ index ad5a7cbe83fb61b79203369895e82edca2ffcb72..06cf8ca80c314b7c236984c7f6236533
                          double deltaZ = this.locZ() - player.locZ();
                          double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index fffe522058144da31149e59a06263914865983ec..24cdf63dfdc222edb9677dbf62f1761a138b2a83 100644
+index e645a3386df6334e99d80ec6961399461c9545a9..43e4ade73619d430be7ee93687e98ef5a27cb329 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2235,6 +2235,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2240,6 +2240,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              super.remove();
          }
      }

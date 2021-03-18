@@ -30,10 +30,10 @@ will have plugins and worlds saving to the disk has a high potential to result
 in corruption/dataloss.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 110184bd18f689cff1f37ceefe97416b5dcfd405..3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a 100644
+index 9ae25f9496355d3114c0032731c8dcb621d243dc..7637e17e8a811214931c2df3dab50651a4cbcde6 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -93,6 +93,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -201,6 +201,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public final Map<ResourceKey<World>, WorldServer> worldServer;
      private PlayerList playerList;
      private volatile boolean isRunning;
@@ -41,7 +41,7 @@ index 110184bd18f689cff1f37ceefe97416b5dcfd405..3baf1be1b58ea53ab1ee8d388b5f9a45
      private boolean isStopped;
      private int ticks;
      protected final Proxy proxy;
-@@ -742,7 +743,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -850,7 +851,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          if (this.playerList != null) {
              MinecraftServer.LOGGER.info("Saving players");
              this.playerList.savePlayers();
@@ -50,7 +50,7 @@ index 110184bd18f689cff1f37ceefe97416b5dcfd405..3baf1be1b58ea53ab1ee8d388b5f9a45
              try { Thread.sleep(100); } catch (InterruptedException ex) {} // CraftBukkit - SPIGOT-625 - give server at least a chance to send packets
          }
  
-@@ -807,8 +808,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -915,8 +916,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          return this.isRunning;
      }
  
@@ -64,7 +64,7 @@ index 110184bd18f689cff1f37ceefe97416b5dcfd405..3baf1be1b58ea53ab1ee8d388b5f9a45
          if (flag) {
              try {
                  this.serverThread.join();
-@@ -818,6 +824,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -926,6 +932,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          }
  
      }
@@ -72,11 +72,11 @@ index 110184bd18f689cff1f37ceefe97416b5dcfd405..3baf1be1b58ea53ab1ee8d388b5f9a45
  
      // Spigot Start
      private static double calcTps(double avg, double exp, double tps)
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 1d137602b40e467020b89aa73dd67b661d3dedb7..74e55f85e2b128913015397ddec70322739e39d5 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -1082,9 +1082,15 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index eb5c22d8af3a3cfadd581d641010942caa6bed54..6c80f328016b6cd30c77b5a5b1e2f6be0b3cd2f0 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1158,9 +1158,15 @@ public abstract class PlayerList {
          entityplayer.playerInteractManager.b(worldserver.worldDataServer.getGameType()); // CraftBukkit
      }
  
@@ -92,7 +92,7 @@ index 1d137602b40e467020b89aa73dd67b661d3dedb7..74e55f85e2b128913015397ddec70322
              player.playerConnection.disconnect(PaperAdventure.asVanilla(this.server.server.shutdownMessage())); // CraftBukkit - add custom shutdown message // Paper - Adventure
          }
          // CraftBukkit end
-@@ -1097,6 +1103,7 @@ public abstract class PlayerList {
+@@ -1173,6 +1179,7 @@ public abstract class PlayerList {
          }
          // Paper end
      }
@@ -101,7 +101,7 @@ index 1d137602b40e467020b89aa73dd67b661d3dedb7..74e55f85e2b128913015397ddec70322
      // CraftBukkit start
      public void sendMessage(IChatBaseComponent[] iChatBaseComponents) {
 diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
-index 26795b22e3ebc9594af79f93506a3c217cb784e2..aefea3a9a8b9b75c62bd20018be7cd166a213001 100644
+index a45155cdd7d7a302c119f75bfe2b428ae5e8ab47..b45d7e5c108c7a8541fcbc9ad92d1a79a94746a1 100644
 --- a/src/main/java/org/spigotmc/RestartCommand.java
 +++ b/src/main/java/org/spigotmc/RestartCommand.java
 @@ -46,86 +46,134 @@ public class RestartCommand extends Command

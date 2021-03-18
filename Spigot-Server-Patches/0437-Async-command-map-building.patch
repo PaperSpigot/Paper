@@ -4,11 +4,19 @@ Date: Wed, 8 Apr 2020 02:42:14 -0500
 Subject: [PATCH] Async command map building
 
 
-diff --git a/src/main/java/net/minecraft/server/CommandDispatcher.java b/src/main/java/net/minecraft/server/CommandDispatcher.java
-index 3a91513951f635b82d3d612c29e78f9f1db4860d..4b1ea9bc39191e01f83577c7bad128cf1ab9612f 100644
---- a/src/main/java/net/minecraft/server/CommandDispatcher.java
-+++ b/src/main/java/net/minecraft/server/CommandDispatcher.java
-@@ -244,6 +244,14 @@ public class CommandDispatcher {
+diff --git a/src/main/java/net/minecraft/commands/CommandDispatcher.java b/src/main/java/net/minecraft/commands/CommandDispatcher.java
+index ddbd4c43bbe6d6a5b90f4958c4be80520a40beab..c97424b401147be53ffa7e2a2a3271d696752efe 100644
+--- a/src/main/java/net/minecraft/commands/CommandDispatcher.java
++++ b/src/main/java/net/minecraft/commands/CommandDispatcher.java
+@@ -29,6 +29,7 @@ import net.minecraft.network.chat.ChatHoverable;
+ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatMutableComponent;
+ import net.minecraft.network.protocol.game.PacketPlayOutCommands;
++import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.commands.CommandAdvancement;
+ import net.minecraft.server.commands.CommandAttribute;
+ import net.minecraft.server.commands.CommandBan;
+@@ -327,6 +328,14 @@ public class CommandDispatcher {
          if ( org.spigotmc.SpigotConfig.tabComplete < 0 ) return; // Spigot
          // CraftBukkit start
          // Register Vanilla commands into builtRoot as before
@@ -23,7 +31,7 @@ index 3a91513951f635b82d3d612c29e78f9f1db4860d..4b1ea9bc39191e01f83577c7bad128cf
          Map<CommandNode<CommandListenerWrapper>, CommandNode<ICompletionProvider>> map = Maps.newIdentityHashMap(); // Use identity to prevent aliasing issues
          RootCommandNode vanillaRoot = new RootCommandNode();
  
-@@ -261,7 +269,14 @@ public class CommandDispatcher {
+@@ -344,7 +353,14 @@ public class CommandDispatcher {
          for (CommandNode node : rootcommandnode.getChildren()) {
              bukkit.add(node.getName());
          }

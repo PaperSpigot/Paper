@@ -18,11 +18,11 @@ index e8e1e7dafaf1c105b2f58cf3e118e3d665dc50ec..3e4bd1d6718d3ad2498fe9bd72eaac45
 +        shieldBlockingDelay = getInt("game-mechanics.shield-blocking-delay", 5);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 087d961cb51dc3c9b24cf6e1785252c2c0afb296..f8c9c4e41faed2a76ca6ff4105351b09c2193cdd 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -3218,7 +3218,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 1dcdf9e328670b42d656e8ab65cb3da8a2312fe6..9f6f6ac15688a1010d466e6f0cc3ac5b8297eb21 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3311,7 +3311,7 @@ public abstract class EntityLiving extends Entity {
          if (this.isHandRaised() && !this.activeItem.isEmpty()) {
              Item item = this.activeItem.getItem();
  
@@ -31,7 +31,7 @@ index 087d961cb51dc3c9b24cf6e1785252c2c0afb296..f8c9c4e41faed2a76ca6ff4105351b09
          } else {
              return false;
          }
-@@ -3474,4 +3474,15 @@ public abstract class EntityLiving extends Entity {
+@@ -3567,4 +3567,15 @@ public abstract class EntityLiving extends Entity {
      public void broadcastItemBreak(EnumHand enumhand) {
          this.broadcastItemBreak(enumhand == EnumHand.MAIN_HAND ? EnumItemSlot.MAINHAND : EnumItemSlot.OFFHAND);
      }
@@ -48,10 +48,10 @@ index 087d961cb51dc3c9b24cf6e1785252c2c0afb296..f8c9c4e41faed2a76ca6ff4105351b09
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index e99e8e6f889edfa889619a12f9bfa4bfbde9a5a1..2e146ec4ba0c6db67c558a48ce5ec60bc2ca337f 100644
+index c43c300963bae9bca6ab9c9389dd53e42318715c..2d1c54eed8fa6885837d63014ff1f4b33dd35bd7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -710,5 +710,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -711,5 +711,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
      public void setArrowsStuck(int arrows) {
          getHandle().setArrowCount(arrows);
      }

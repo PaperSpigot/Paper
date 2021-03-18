@@ -28,7 +28,7 @@ index 545948f20efd6c8dd42140b565af94cd6b52b661..7d50aded88f5b7dfebaea1aebc86231f
 +    }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
-index 5178981cd561be45b8f93e7060b13874fbd41fcf..5a6de5e5adee73e64883b5c48d6c5c0828b8eb74 100644
+index 6ea491f6308317059c4bc6735abbdce370df0f34..88bc3fbfa3bfb27cc4f9003a99cbce6e58def98f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 @@ -19,6 +19,7 @@ import org.bukkit.scoreboard.Team;
@@ -53,12 +53,12 @@ index 5178981cd561be45b8f93e7060b13874fbd41fcf..5a6de5e5adee73e64883b5c48d6c5c08
          return new CraftObjective(this, objective);*/ // Paper
          return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName), renderType); // Paper
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
-index ca2be30609159e6ca98b363d75cbc3ac550bca31..6fa2e271f7f01cd0bf247e2071fa33bd8c5c6cbe 100644
+index 73663bcea163cda26f531902141a9ad3ad7eba57..9c30a79cc55c6455aa18e3798728deaacc3434ca 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
 @@ -30,6 +30,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
  
-     public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.server.Scoreboard scoreboardServer) {
+     public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.world.scores.Scoreboard scoreboardServer) {
          mainScoreboard = new CraftScoreboard(scoreboardServer);
 +        mainScoreboard.registeredGlobally = true; // Paper
          server = minecraftserver;

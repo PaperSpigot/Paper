@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sun, 28 Jun 2020 19:36:55 -0400
+Subject: [PATCH] Don't allow null UUID's for chat
+
+
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+index d4cf5536883192c49636177cb782a9a2f514cd87..2203a3d89a3d9f9b3b6b068f6600e79a584f8a67 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.game;
+ 
+ import java.io.IOException;
+ import java.util.UUID;
++import net.minecraft.SystemUtils;
+ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.chat.ChatMessageType;
+ import net.minecraft.network.chat.IChatBaseComponent;
+@@ -20,7 +21,7 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
+     public PacketPlayOutChat(IChatBaseComponent ichatbasecomponent, ChatMessageType chatmessagetype, UUID uuid) {
+         this.a = ichatbasecomponent;
+         this.b = chatmessagetype;
+-        this.c = uuid;
++        this.c = uuid != null ? uuid : SystemUtils.getNullUUID(); // Paper
+     }
+ 
+     @Override

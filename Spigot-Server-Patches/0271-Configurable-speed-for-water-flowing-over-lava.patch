@@ -19,11 +19,19 @@ index 5ab0e7183e48134b7a0f736462516b1a8a333b04..f280dbff4a09bc611a9ca565c6d697d0
 +        log("Water over lava flow speed: " + waterOverLavaFlowSpeed);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/BlockFluids.java b/src/main/java/net/minecraft/server/BlockFluids.java
-index 4c076dd29cc221b43f9a53e484594dbb4dee56f5..07a9d462abad9a432dd5a153277839feeabad4bf 100644
---- a/src/main/java/net/minecraft/server/BlockFluids.java
-+++ b/src/main/java/net/minecraft/server/BlockFluids.java
-@@ -76,11 +76,28 @@ public class BlockFluids extends Block implements IFluidSource {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockFluids.java b/src/main/java/net/minecraft/world/level/block/BlockFluids.java
+index 0654c77ab059dea2ad06cb16d07950e153d3f15d..0ed8d938b8fafdb03e01a00a201ba3f8597ac6e9 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockFluids.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockFluids.java
+@@ -23,6 +23,7 @@ import net.minecraft.world.level.material.Fluid;
+ import net.minecraft.world.level.material.FluidType;
+ import net.minecraft.world.level.material.FluidTypeFlowing;
+ import net.minecraft.world.level.material.FluidTypes;
++import net.minecraft.world.level.material.Material;
+ import net.minecraft.world.level.pathfinder.PathMode;
+ import net.minecraft.world.level.storage.loot.LootTableInfo;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+@@ -100,11 +101,28 @@ public class BlockFluids extends Block implements IFluidSource {
      @Override
      public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
          if (this.a(world, blockposition, iblockdata)) {
@@ -53,7 +61,7 @@ index 4c076dd29cc221b43f9a53e484594dbb4dee56f5..07a9d462abad9a432dd5a153277839fe
      @Override
      public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
          if (iblockdata.getFluid().isSource() || iblockdata1.getFluid().isSource()) {
-@@ -93,7 +110,7 @@ public class BlockFluids extends Block implements IFluidSource {
+@@ -117,7 +135,7 @@ public class BlockFluids extends Block implements IFluidSource {
      @Override
      public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
          if (this.a(world, blockposition, iblockdata)) {

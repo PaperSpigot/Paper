@@ -5,11 +5,11 @@ Subject: [PATCH] Optimize World.isLoaded(BlockPosition)Z
 
 Reduce method invocations for World.isLoaded(BlockPosition)Z
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index dbc7cbba7134ff0281c6e77cd246073bba8b9ce2..f773c19d69ebcb75cf97b07fd015baf3d6e6cae8 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -252,6 +252,10 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index d8ab2e22a5c0144decb5c657a123cc61722fcbf5..bd08ff18d8d7dbe63ed33c1efb6099b58aa02caa 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -305,6 +305,10 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          return chunk == null ? null : chunk.getFluid(blockposition);
      }
  

@@ -27,11 +27,25 @@ index e83216be5a00d5b927d8c2fc364551bd3077c974..2dc58b9f769ea43b737804456aafab47
 +        }
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java b/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-index 37ebc9f511479778c131e02b6852b27f63e75bdd..d071d66fd1215e158130d592ce62165a1f3738f9 100644
---- a/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-+++ b/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-@@ -48,7 +48,16 @@ public class LootItemFunctionExplorationMap extends LootItemFunctionConditional
+diff --git a/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java b/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
+index 764ff5d9ffb541a356a6bc8b321e619849dde747..0a34e319998a95a9654822e55a22eb964b2d626b 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
++++ b/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
+@@ -124,7 +124,8 @@ public class VillagerTrades {
+                 return null;
+             } else {
+                 WorldServer worldserver = (WorldServer) entity.world;
+-                BlockPosition blockposition = worldserver.a(this.b, entity.getChunkCoordinates(), 100, true);
++                if (!worldserver.paperConfig.enableTreasureMaps) return null; // Paper
++                BlockPosition blockposition = worldserver.a(this.b, entity.getChunkCoordinates(), 100, !worldserver.paperConfig.treasureMapsAlreadyDiscovered); // Paper
+ 
+                 if (blockposition != null) {
+                     ItemStack itemstack = ItemWorldMap.createFilledMapView(worldserver, blockposition.getX(), blockposition.getZ(), (byte) 2, true, true);
+diff --git a/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java b/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
+index 38125a60bad4830db9de3580ab6d85fd122a0689..7bf16c5a3f2bb5525ce1ca0c0190c7671fc94797 100644
+--- a/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
++++ b/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
+@@ -64,7 +64,16 @@ public class LootItemFunctionExplorationMap extends LootItemFunctionConditional
  
              if (vec3d != null) {
                  WorldServer worldserver = loottableinfo.getWorld();
@@ -49,17 +63,3 @@ index 37ebc9f511479778c131e02b6852b27f63e75bdd..d071d66fd1215e158130d592ce62165a
  
                  if (blockposition != null) {
                      ItemStack itemstack1 = ItemWorldMap.createFilledMapView(worldserver, blockposition.getX(), blockposition.getZ(), this.g, true, true);
-diff --git a/src/main/java/net/minecraft/server/VillagerTrades.java b/src/main/java/net/minecraft/server/VillagerTrades.java
-index 4f7944d7fdaf02bae40ee71a18bd1c9bb4eb891b..49f9ae86512ad679aaa71992de2284e024591101 100644
---- a/src/main/java/net/minecraft/server/VillagerTrades.java
-+++ b/src/main/java/net/minecraft/server/VillagerTrades.java
-@@ -91,7 +91,8 @@ public class VillagerTrades {
-                 return null;
-             } else {
-                 WorldServer worldserver = (WorldServer) entity.world;
--                BlockPosition blockposition = worldserver.a(this.b, entity.getChunkCoordinates(), 100, true);
-+                if (!worldserver.paperConfig.enableTreasureMaps) return null; // Paper
-+                BlockPosition blockposition = worldserver.a(this.b, entity.getChunkCoordinates(), 100, !worldserver.paperConfig.treasureMapsAlreadyDiscovered); // Paper
- 
-                 if (blockposition != null) {
-                     ItemStack itemstack = ItemWorldMap.createFilledMapView(worldserver, blockposition.getX(), blockposition.getZ(), (byte) 2, true, true);

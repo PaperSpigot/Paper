@@ -4,11 +4,11 @@ Date: Mon, 6 Jul 2020 20:46:50 -0700
 Subject: [PATCH] Improve inlinig for some hot IBlockData methods
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockBase.java b/src/main/java/net/minecraft/server/BlockBase.java
-index 868d942d83d57b07523f82252815ffd3593273bb..1f334d63282bd5c23dc3b275a220f09e60c34537 100644
---- a/src/main/java/net/minecraft/server/BlockBase.java
-+++ b/src/main/java/net/minecraft/server/BlockBase.java
-@@ -338,7 +338,14 @@ public abstract class BlockBase {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+index 07985725b6edb0a1a4c2b5c64e947ff2a0121e72..ac3709c8158d42ccafd457cfa44a16dc8c9eb949 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+@@ -390,7 +390,14 @@ public abstract class BlockBase {
          }
          // Paper end
  
@@ -23,7 +23,7 @@ index 868d942d83d57b07523f82252815ffd3593273bb..1f334d63282bd5c23dc3b275a220f09e
              if (!this.getBlock().o()) {
                  this.a = new BlockBase.BlockData.Cache(this.p());
              }
-@@ -377,19 +384,19 @@ public abstract class BlockBase {
+@@ -429,19 +436,19 @@ public abstract class BlockBase {
              return this.getBlock().d(this.p(), iblockaccess, blockposition);
          }
  
@@ -47,7 +47,7 @@ index 868d942d83d57b07523f82252815ffd3593273bb..1f334d63282bd5c23dc3b275a220f09e
              return this.f;
          }
  
-@@ -455,7 +462,7 @@ public abstract class BlockBase {
+@@ -507,7 +514,7 @@ public abstract class BlockBase {
              }
          }
  
@@ -56,7 +56,7 @@ index 868d942d83d57b07523f82252815ffd3593273bb..1f334d63282bd5c23dc3b275a220f09e
              return this.k;
          }
  
-@@ -627,12 +634,12 @@ public abstract class BlockBase {
+@@ -679,12 +686,12 @@ public abstract class BlockBase {
              return this.getBlock().a(block);
          }
  
@@ -73,11 +73,11 @@ index 868d942d83d57b07523f82252815ffd3593273bb..1f334d63282bd5c23dc3b275a220f09e
          }
  
          public SoundEffectType getStepSound() {
-diff --git a/src/main/java/net/minecraft/server/Fluid.java b/src/main/java/net/minecraft/server/Fluid.java
-index 05fa52c0b12f159788ec3f2b769753b6bd29578c..ff2fb72f710dd5aa5126b1550c5ff11087d7e63e 100644
---- a/src/main/java/net/minecraft/server/Fluid.java
-+++ b/src/main/java/net/minecraft/server/Fluid.java
-@@ -9,8 +9,12 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
+diff --git a/src/main/java/net/minecraft/world/level/material/Fluid.java b/src/main/java/net/minecraft/world/level/material/Fluid.java
+index 9a93b204973eef4c02a52f33fd9578a43603ed98..147e628bd562da4cf6f07218724a9d6c79d26e38 100644
+--- a/src/main/java/net/minecraft/world/level/material/Fluid.java
++++ b/src/main/java/net/minecraft/world/level/material/Fluid.java
+@@ -20,8 +20,12 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
  
      public static final Codec<Fluid> a = a((Codec) IRegistry.FLUID, FluidType::h).stable();
  
@@ -90,7 +90,7 @@ index 05fa52c0b12f159788ec3f2b769753b6bd29578c..ff2fb72f710dd5aa5126b1550c5ff110
      }
  
      public FluidType getType() {
-@@ -22,7 +26,7 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
+@@ -33,7 +37,7 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
      }
  
      public boolean isEmpty() {

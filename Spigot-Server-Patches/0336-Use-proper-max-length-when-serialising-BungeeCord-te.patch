@@ -5,12 +5,12 @@ Subject: [PATCH] Use proper max length when serialising BungeeCord text
  component
 
 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutChat.java b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-index b9cb21c5eb6f4a0318c3c63ec66f88b1750782ac..18528c792ae12bd8753e8529f4b73b76407e67dc 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-@@ -4,7 +4,7 @@ import java.io.IOException;
- import java.util.UUID;
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+index c47427fd2eed173726cb856aae62c02a2b46bbf0..d4cf5536883192c49636177cb782a9a2f514cd87 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+@@ -8,7 +8,7 @@ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.protocol.Packet;
  
  public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
 -
@@ -18,7 +18,7 @@ index b9cb21c5eb6f4a0318c3c63ec66f88b1750782ac..18528c792ae12bd8753e8529f4b73b76
      private IChatBaseComponent a;
      public net.kyori.adventure.text.Component adventure$message; // Paper
      public net.md_5.bungee.api.chat.BaseComponent[] components; // Spigot
-@@ -38,9 +38,9 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
+@@ -42,9 +42,9 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
              //packetdataserializer.a(net.md_5.bungee.chat.ComponentSerializer.toString(components)); // Paper - comment, replaced with below
              // Paper start - don't nest if we don't need to so that we can preserve formatting
              if (this.components.length == 1) {

@@ -5,27 +5,27 @@ Subject: [PATCH] Only send Dragon/Wither Death sounds to same world
 
 Also fix view distance lookup
 
-diff --git a/src/main/java/net/minecraft/server/EntityEnderDragon.java b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-index 48f3695861ad7f9c480d3bdf68c6820c2ca0a00a..81c926e506c1b6e5c0d909b71f1db81beb645699 100644
---- a/src/main/java/net/minecraft/server/EntityEnderDragon.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-@@ -570,8 +570,9 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+index 6c58cf9d39cc0f0eb0dc7ddb126b8a3cf6a08fe7..74802de01dba30e38e09f6fc1f61e7bb64cf5f09 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+@@ -619,8 +619,9 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
              if (this.deathAnimationTicks == 1 && !this.isSilent()) {
                  // CraftBukkit start - Use relative location for far away sounds
                  // this.world.b(1028, this.getChunkCoordinates(), 0);
 -                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
--                for (EntityPlayer player : (List<EntityPlayer>) MinecraftServer.getServer().getPlayerList().players) {
+-                for (net.minecraft.server.level.EntityPlayer player : this.world.getMinecraftServer().getPlayerList().players) {
 +                //int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16; // Paper - updated to use worlds actual view distance incase we have to uncomment this due to removal of player view distance API
-+                for (EntityPlayer player : (List<EntityPlayer>) ((WorldServer)world).getPlayers()) {
++                for (net.minecraft.server.level.EntityPlayer player : (List<net.minecraft.server.level.EntityPlayer>) ((WorldServer)world).getPlayers()) {
 +                    final int viewDistance = player.getViewDistance(); // TODO apply view distance api patch
                      double deltaX = this.locX() - player.locX();
                      double deltaZ = this.locZ() - player.locZ();
                      double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
-diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
-index b9501a2f5f60b70eb7f0b4ac8ef6c883585adaa5..ad5a7cbe83fb61b79203369895e82edca2ffcb72 100644
---- a/src/main/java/net/minecraft/server/EntityWither.java
-+++ b/src/main/java/net/minecraft/server/EntityWither.java
-@@ -208,8 +208,9 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+index f74949c855aea32ceb16d8cb07f266d50045b57e..145767e8b0fc4105a0afa47af17dcdbb75e952bc 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
++++ b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+@@ -258,8 +258,9 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
                  if (!this.isSilent()) {
                      // CraftBukkit start - Use relative location for far away sounds
                      // this.world.b(1023, new BlockPosition(this), 0);

@@ -8,39 +8,23 @@ Subject: [PATCH] Fix Old Sign Conversion
 2) New Mojang Schematic system has Tile Entities in the new converted format, but missing the Bukkit.isConverted flag
    This causes Igloos and such to render broken signs. We fix this by ignoring sign conversion for Defined Structures
 
-diff --git a/src/main/java/net/minecraft/server/DefinedStructure.java b/src/main/java/net/minecraft/server/DefinedStructure.java
-index 58e9c99b44fd8e77e62c4098d9872d5378d4f5e5..8974d7944f159b9346680c639daf0f8c06767cfe 100644
---- a/src/main/java/net/minecraft/server/DefinedStructure.java
-+++ b/src/main/java/net/minecraft/server/DefinedStructure.java
-@@ -242,9 +242,11 @@ public class DefinedStructure {
-                                         definedstructure_blockinfo.c.setLong("LootTableSeed", random.nextLong());
-                                     }
- 
-+                                    tileentity.isLoadingStructure = true; // Paper
-                                     tileentity.load(definedstructure_blockinfo.b, definedstructure_blockinfo.c);
-                                     tileentity.a(definedstructureinfo.c());
-                                     tileentity.a(definedstructureinfo.d());
-+                                    tileentity.isLoadingStructure = false; // Paper
-                                 }
-                             }
- 
-diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
-index 5414858ba241c13d4e568191d11111d3d3ec3fc4..524f84ad2c50f8b837eefd0465901b1e22359410 100644
---- a/src/main/java/net/minecraft/server/TileEntity.java
-+++ b/src/main/java/net/minecraft/server/TileEntity.java
-@@ -23,6 +23,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index 58789a6e285c31947508deae37caefe7e182278c..9b44ca96669ce423e5649f11743226dfdd9ce746 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -34,6 +34,7 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
      public CraftPersistentDataContainer persistentDataContainer;
      // CraftBukkit end
      private static final Logger LOGGER = LogManager.getLogger();
-+    boolean isLoadingStructure = false; // Paper
++    public boolean isLoadingStructure = false; // Paper
      private final TileEntityTypes<?> tileType; public TileEntityTypes getTileEntityType() { return tileType; } // Paper - OBFHELPER
      @Nullable
      protected World world;
-diff --git a/src/main/java/net/minecraft/server/TileEntitySign.java b/src/main/java/net/minecraft/server/TileEntitySign.java
-index 810603bc03950580aa4d81233a9dd1c2f51d8a0b..5d0c5d856a66ce6c0594b618e8f6e892585ce665 100644
---- a/src/main/java/net/minecraft/server/TileEntitySign.java
-+++ b/src/main/java/net/minecraft/server/TileEntitySign.java
-@@ -58,13 +58,14 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index 29db550d91cf9e5a23052772df6e482a5e2b0b90..ec550aaa4e7943af4ecdd2275f1f32c21edf770a 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -78,13 +78,14 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
              }
  
              try {
@@ -57,3 +41,19 @@ index 810603bc03950580aa4d81233a9dd1c2f51d8a0b..5d0c5d856a66ce6c0594b618e8f6e892
  
                  if (this.world instanceof WorldServer) {
                      try {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructure.java b/src/main/java/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructure.java
+index a2bc771df054923a9a96c0024a426ef707624359..9b82ff37faaafc3a799413f6949fb88a993aa9a0 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructure.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructure.java
+@@ -278,9 +278,11 @@ public class DefinedStructure {
+                                         definedstructure_blockinfo.c.setLong("LootTableSeed", random.nextLong());
+                                     }
+ 
++                                    tileentity.isLoadingStructure = true; // Paper
+                                     tileentity.load(definedstructure_blockinfo.b, definedstructure_blockinfo.c);
+                                     tileentity.a(definedstructureinfo.c());
+                                     tileentity.a(definedstructureinfo.d());
++                                    tileentity.isLoadingStructure = false; // Paper
+                                 }
+                             }
+ 

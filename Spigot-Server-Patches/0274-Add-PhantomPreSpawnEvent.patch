@@ -4,11 +4,11 @@ Date: Sat, 25 Aug 2018 19:56:51 -0500
 Subject: [PATCH] Add PhantomPreSpawnEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPhantom.java b/src/main/java/net/minecraft/server/EntityPhantom.java
-index c5ac72e2d5ffdfe0e605a4f2b9003ac6125a1e2b..1afcf17a8ca4eb17125e2a9d066c5a15a3818417 100644
---- a/src/main/java/net/minecraft/server/EntityPhantom.java
-+++ b/src/main/java/net/minecraft/server/EntityPhantom.java
-@@ -125,6 +125,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityPhantom.java b/src/main/java/net/minecraft/world/entity/monster/EntityPhantom.java
+index 6053894c5250e9a1a0c4aa2d681127dfd652b34f..6c498d4345df35a411d155799ac56e47c9c48114 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityPhantom.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityPhantom.java
+@@ -161,6 +161,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
          }
  
          this.setSize(nbttagcompound.getInt("Size"));
@@ -20,7 +20,7 @@ index c5ac72e2d5ffdfe0e605a4f2b9003ac6125a1e2b..1afcf17a8ca4eb17125e2a9d066c5a15
      }
  
      @Override
-@@ -134,6 +139,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
+@@ -170,6 +175,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
          nbttagcompound.setInt("AY", this.d.getY());
          nbttagcompound.setInt("AZ", this.d.getZ());
          nbttagcompound.setInt("Size", this.getSize());
@@ -32,7 +32,7 @@ index c5ac72e2d5ffdfe0e605a4f2b9003ac6125a1e2b..1afcf17a8ca4eb17125e2a9d066c5a15
      }
  
      @Override
-@@ -180,6 +190,14 @@ public class EntityPhantom extends EntityFlying implements IMonster {
+@@ -216,6 +226,15 @@ public class EntityPhantom extends EntityFlying implements IMonster {
          return entitysize.a(f);
      }
  
@@ -42,16 +42,25 @@ index c5ac72e2d5ffdfe0e605a4f2b9003ac6125a1e2b..1afcf17a8ca4eb17125e2a9d066c5a15
 +    public java.util.UUID getSpawningEntity() {
 +        return spawningEntity;
 +    }
++    public void setSpawningEntity(java.util.UUID entity) { this.spawningEntity = entity; }
 +    // Paper end
 +
      class b extends PathfinderGoal {
  
          private final PathfinderTargetCondition b;
-diff --git a/src/main/java/net/minecraft/server/MobSpawnerPhantom.java b/src/main/java/net/minecraft/server/MobSpawnerPhantom.java
-index 8947c7dfb0d7520b6a8fb0a75ddaf8163fd4baa5..2e3d8d78c7a2b6c9a76c3446f8532137c537c79c 100644
---- a/src/main/java/net/minecraft/server/MobSpawnerPhantom.java
-+++ b/src/main/java/net/minecraft/server/MobSpawnerPhantom.java
-@@ -53,8 +53,17 @@ public class MobSpawnerPhantom implements MobSpawner {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPhantom.java b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPhantom.java
+index cfc32acee1e456a0fda12a5faa4035e29d0c3d5e..96a5a6569387a25b15a06aaab3bd9d033547e875 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPhantom.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPhantom.java
+@@ -4,6 +4,7 @@ import java.util.Iterator;
+ import java.util.Random;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.stats.ServerStatisticManager;
+@@ -73,8 +74,17 @@ public class MobSpawnerPhantom implements MobSpawner {
                                              int k = 1 + random.nextInt(difficultydamagescaler.a().a() + 1);
  
                                              for (int l = 0; l < k; ++l) {
@@ -66,12 +75,12 @@ index 8947c7dfb0d7520b6a8fb0a75ddaf8163fd4baa5..2e3d8d78c7a2b6c9a76c3446f8532137
 +                                                // Paper end
                                                  EntityPhantom entityphantom = (EntityPhantom) EntityTypes.PHANTOM.a((World) worldserver);
 -
-+                                                entityphantom.spawningEntity = entityhuman.uniqueID; // Paper
++                                                entityphantom.setSpawningEntity(entityhuman.getUniqueID()); // Paper
                                                  entityphantom.setPositionRotation(blockposition1, 0.0F, 0.0F);
                                                  groupdataentity = entityphantom.prepare(worldserver, difficultydamagescaler, EnumMobSpawn.NATURAL, groupdataentity, (NBTTagCompound) null);
                                                  worldserver.addAllEntities(entityphantom, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPhantom.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPhantom.java
-index 9f9ee9239037acced498bbebe0ea396473b487ec..2b97313694605171ea4627edde036e3754b5e03b 100644
+index 6ec7cf434b6586342da3f351466f5c7d72df290d..0cea1d8e23da3a79ef06e43752665a5401b01b4b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPhantom.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPhantom.java
 @@ -35,4 +35,10 @@ public class CraftPhantom extends CraftFlying implements Phantom {

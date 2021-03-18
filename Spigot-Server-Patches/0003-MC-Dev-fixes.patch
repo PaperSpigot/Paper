@@ -4,10 +4,309 @@ Date: Wed, 30 Mar 2016 19:36:20 -0400
 Subject: [PATCH] MC Dev fixes
 
 
-diff --git a/src/main/java/net/minecraft/server/ArraySetSorted.java b/src/main/java/net/minecraft/server/ArraySetSorted.java
-index a3afe60b0d85cf90bf7a170dc0a0b61a796381a7..85f799a713db0c822d46b689010f9f6bd43f5280 100644
---- a/src/main/java/net/minecraft/server/ArraySetSorted.java
-+++ b/src/main/java/net/minecraft/server/ArraySetSorted.java
+diff --git a/src/main/java/net/minecraft/SystemUtils.java b/src/main/java/net/minecraft/SystemUtils.java
+index 14b1a51b9b675aa175c32990402551fa43ec1599..bc7757b929ecce998094ddcdf51a4703e165a6d6 100644
+--- a/src/main/java/net/minecraft/SystemUtils.java
++++ b/src/main/java/net/minecraft/SystemUtils.java
+@@ -65,8 +65,8 @@ public class SystemUtils {
+         return Collectors.toMap(Entry::getKey, Entry::getValue);
+     }
+ 
+-    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, Object object) {
+-        return iblockstate.a((Comparable) object);
++    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T object) { // Paper - decompile fix
++        return iblockstate.a(object); // Paper - decompile fix
+     }
+ 
+     public static String a(String s, @Nullable MinecraftKey minecraftkey) {
+@@ -234,8 +234,8 @@ public class SystemUtils {
+     public static <T> T b(Iterable<T> iterable, @Nullable T t0) {
+         Iterator<T> iterator = iterable.iterator();
+ 
+-        Object object;
+-        Object object1;
++        T object; // Paper - decompile fix
++        T object1; // Paper - decompile fix
+ 
+         for (object1 = null; iterator.hasNext(); object1 = object) {
+             object = iterator.next();
+@@ -260,7 +260,7 @@ public class SystemUtils {
+     }
+ 
+     public static <K> Strategy<K> k() {
+-        return SystemUtils.IdentityHashingStrategy.INSTANCE;
++        return (Strategy<K>) SystemUtils.IdentityHashingStrategy.INSTANCE; // Paper - decompile fix
+     }
+ 
+     public static <V> CompletableFuture<List<V>> b(List<? extends CompletableFuture<? extends V>> list) {
+@@ -271,7 +271,7 @@ public class SystemUtils {
+         list.forEach((completablefuture1) -> {
+             int i = list1.size();
+ 
+-            list1.add((Object) null);
++            list1.add(null); // Paper - decompile fix
+             acompletablefuture[i] = completablefuture1.whenComplete((object, throwable) -> {
+                 if (throwable != null) {
+                     completablefuture.completeExceptionally(throwable);
+diff --git a/src/main/java/net/minecraft/core/BlockPosition.java b/src/main/java/net/minecraft/core/BlockPosition.java
+index f85889a232998520761731a17f3d293d3360fe2c..76675ad1633dbaebb180842b9914fac18741c62e 100644
+--- a/src/main/java/net/minecraft/core/BlockPosition.java
++++ b/src/main/java/net/minecraft/core/BlockPosition.java
+@@ -241,8 +241,8 @@ public class BlockPosition extends BaseBlockPosition {
+         };
+     }
+ 
+-    public static Iterable<BlockPosition> a(BlockPosition blockposition, int i, int j, int k) {
+-        int l = i + j + k;
++    public static Iterable<BlockPosition> a(BlockPosition blockposition, int p_i, int p_j, int p_k) { // Paper - decompile issues - variable name conflicts to inner class field refs
++        int l_decompiled = p_i + p_j + p_k; // Paper - decompile issues
+         int i1 = blockposition.getX();
+         int j1 = blockposition.getY();
+         int k1 = blockposition.getZ();
+@@ -270,15 +270,15 @@ public class BlockPosition extends BaseBlockPosition {
+                                 ++this.l;
+                                 if (this.l > this.j) {
+                                     ++this.i;
+-                                    if (this.i > l) {
++                                    if (this.i > l_decompiled) { // Paper - use proper l above (first line of this method)
+                                         return (BlockPosition) this.endOfData();
+                                     }
+ 
+-                                    this.j = Math.min(i, this.i);
++                                    this.j = Math.min(p_i, this.i); // Paper - decompile issues
+                                     this.l = -this.j;
+                                 }
+ 
+-                                this.k = Math.min(j, this.i - Math.abs(this.l));
++                                this.k = Math.min(p_j, this.i - Math.abs(this.l)); // Paper - decompile issues
+                                 this.m = -this.k;
+                             }
+ 
+@@ -286,7 +286,7 @@ public class BlockPosition extends BaseBlockPosition {
+                             int i2 = this.m;
+                             int j2 = this.i - Math.abs(l1) - Math.abs(i2);
+ 
+-                            if (j2 <= k) {
++                            if (j2 <= p_k) { // Paper - decompile issues
+                                 this.n = j2 != 0;
+                                 blockposition_mutableblockposition = this.h.d(i1 + l1, j1 + i2, k1 + j2);
+                             }
+@@ -355,13 +355,13 @@ public class BlockPosition extends BaseBlockPosition {
+         };
+     }
+ 
+-    public static Iterable<BlockPosition.MutableBlockPosition> a(BlockPosition blockposition, int i, EnumDirection enumdirection, EnumDirection enumdirection1) {
++    public static Iterable<BlockPosition.MutableBlockPosition> a(BlockPosition blockposition, int I, EnumDirection enumdirection, EnumDirection enumdirection1) { // Paper - decompile fix
+         Validate.validState(enumdirection.n() != enumdirection1.n(), "The two directions cannot be on the same axis", new Object[0]);
+         return () -> {
+             return new AbstractIterator<BlockPosition.MutableBlockPosition>() {
+                 private final EnumDirection[] e = new EnumDirection[]{enumdirection, enumdirection1, enumdirection.opposite(), enumdirection1.opposite()};
+                 private final BlockPosition.MutableBlockPosition f = blockposition.i().c(enumdirection1);
+-                private final int g = 4 * i;
++                private final int g = 4 * I;
+                 private int h = -1;
+                 private int i;
+                 private int j;
+diff --git a/src/main/java/net/minecraft/core/RegistryBlockID.java b/src/main/java/net/minecraft/core/RegistryBlockID.java
+index b173ed8a6abeee41ce48e03f6403f2eb4978155b..e543b6927280a14e1d1220534758289934e31282 100644
+--- a/src/main/java/net/minecraft/core/RegistryBlockID.java
++++ b/src/main/java/net/minecraft/core/RegistryBlockID.java
+@@ -27,7 +27,7 @@ public class RegistryBlockID<T> implements Registry<T> {
+         this.b.put(t0, i);
+ 
+         while (this.c.size() <= i) {
+-            this.c.add((Object) null);
++            this.c.add(null); // Paper - decompile fix
+         }
+ 
+         this.c.set(i, t0);
+@@ -41,6 +41,13 @@ public class RegistryBlockID<T> implements Registry<T> {
+         this.a(t0, this.a);
+     }
+ 
++    // Paper start - decompile fix
++    @Override
++    public int a(T t) {
++        return getId(t);
++    }
++    // Paper end
++
+     public int getId(T t0) {
+         Integer integer = (Integer) this.b.get(t0);
+ 
+diff --git a/src/main/java/net/minecraft/nbt/NBTBase.java b/src/main/java/net/minecraft/nbt/NBTBase.java
+index 170a65cb13e7b87f64cd28331431ba55d53702cd..d6e51f82f6df2d7058806f3e483766e18398af77 100644
+--- a/src/main/java/net/minecraft/nbt/NBTBase.java
++++ b/src/main/java/net/minecraft/nbt/NBTBase.java
+@@ -20,7 +20,7 @@ public interface NBTBase {
+ 
+     NBTTagType<?> b();
+ 
+-    NBTBase clone();
++    public NBTBase clone(); // Paper - decompile fix
+ 
+     default String asString() {
+         return this.toString();
+diff --git a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
+index 020c041461aaf771d5ec35a9afc6c4b914966d64..f792ac1639e16522695082caed754b1c2cb333b9 100644
+--- a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
++++ b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
+@@ -17,6 +17,7 @@ import java.util.zip.GZIPOutputStream;
+ import net.minecraft.CrashReport;
+ import net.minecraft.CrashReportSystemDetails;
+ import net.minecraft.ReportedException;
++import io.netty.buffer.ByteBufInputStream; // Paper
+ 
+ public class NBTCompressedStreamTools {
+ 
+@@ -136,7 +137,7 @@ public class NBTCompressedStreamTools {
+ 
+     public static NBTTagCompound a(DataInput datainput, NBTReadLimiter nbtreadlimiter) throws IOException {
+         // Spigot start
+-        if ( datainput instanceof io.netty.buffer.ByteBufInputStream )
++        if ( datainput instanceof ByteBufInputStream) // Paper
+         {
+             datainput = new DataInputStream(new org.spigotmc.LimitStream((InputStream) datainput, nbtreadlimiter));
+         }
+diff --git a/src/main/java/net/minecraft/nbt/NBTTagList.java b/src/main/java/net/minecraft/nbt/NBTTagList.java
+index 35cca76fb7c7aa736e64185b44016e65cfaef6cd..4f6f6f51f9807bafa88482c0fe776c8b163107d7 100644
+--- a/src/main/java/net/minecraft/nbt/NBTTagList.java
++++ b/src/main/java/net/minecraft/nbt/NBTTagList.java
+@@ -53,7 +53,7 @@ public class NBTTagList extends NBTList<NBTBase> {
+             return "TAG_List";
+         }
+     };
+-    private static final ByteSet b = new ByteOpenHashSet(Arrays.asList(1, 2, 3, 4, 5, 6));
++    private static final ByteSet b = new ByteOpenHashSet(Arrays.asList((byte) 1, (byte) 2, (byte) 3, (byte) 4, (byte) 5, (byte) 6)); // Paper - decompiler fix
+     private final List<NBTBase> list;
+     private byte type;
+ 
+diff --git a/src/main/java/net/minecraft/network/EnumProtocol.java b/src/main/java/net/minecraft/network/EnumProtocol.java
+index ab08336043d4f558434ed1f38d25cc555ace1ac0..a892521db1197369bf6363bd2f5da24bf53643ab 100644
+--- a/src/main/java/net/minecraft/network/EnumProtocol.java
++++ b/src/main/java/net/minecraft/network/EnumProtocol.java
+@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
+ import net.minecraft.SystemUtils;
+ import net.minecraft.network.protocol.EnumProtocolDirection;
+ import net.minecraft.network.protocol.Packet;
++import net.minecraft.network.protocol.game.PacketListenerPlayIn;
++import net.minecraft.network.protocol.game.PacketListenerPlayOut;
+ import net.minecraft.network.protocol.game.PacketPlayInAbilities;
+ import net.minecraft.network.protocol.game.PacketPlayInAdvancements;
+ import net.minecraft.network.protocol.game.PacketPlayInArmAnimation;
+@@ -146,24 +148,30 @@ import net.minecraft.network.protocol.game.PacketPlayOutWindowItems;
+ import net.minecraft.network.protocol.game.PacketPlayOutWorldBorder;
+ import net.minecraft.network.protocol.game.PacketPlayOutWorldEvent;
+ import net.minecraft.network.protocol.game.PacketPlayOutWorldParticles;
++import net.minecraft.network.protocol.handshake.PacketHandshakingInListener;
+ import net.minecraft.network.protocol.handshake.PacketHandshakingInSetProtocol;
+ import net.minecraft.network.protocol.login.PacketLoginInCustomPayload;
+ import net.minecraft.network.protocol.login.PacketLoginInEncryptionBegin;
++import net.minecraft.network.protocol.login.PacketLoginInListener;
+ import net.minecraft.network.protocol.login.PacketLoginInStart;
+ import net.minecraft.network.protocol.login.PacketLoginOutCustomPayload;
+ import net.minecraft.network.protocol.login.PacketLoginOutDisconnect;
+ import net.minecraft.network.protocol.login.PacketLoginOutEncryptionBegin;
++import net.minecraft.network.protocol.login.PacketLoginOutListener;
+ import net.minecraft.network.protocol.login.PacketLoginOutSetCompression;
+ import net.minecraft.network.protocol.login.PacketLoginOutSuccess;
++import net.minecraft.network.protocol.status.PacketStatusInListener;
+ import net.minecraft.network.protocol.status.PacketStatusInPing;
+ import net.minecraft.network.protocol.status.PacketStatusInStart;
++import net.minecraft.network.protocol.status.PacketStatusOutListener;
+ import net.minecraft.network.protocol.status.PacketStatusOutPong;
+ import net.minecraft.network.protocol.status.PacketStatusOutServerInfo;
+ import org.apache.logging.log4j.LogManager;
+ 
+ public enum EnumProtocol {
+ 
+-    HANDSHAKING(-1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketHandshakingInSetProtocol.class, PacketHandshakingInSetProtocol::new))), PLAY(0, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketPlayOutSpawnEntity.class, PacketPlayOutSpawnEntity::new).a(PacketPlayOutSpawnEntityExperienceOrb.class, PacketPlayOutSpawnEntityExperienceOrb::new).a(PacketPlayOutSpawnEntityLiving.class, PacketPlayOutSpawnEntityLiving::new).a(PacketPlayOutSpawnEntityPainting.class, PacketPlayOutSpawnEntityPainting::new).a(PacketPlayOutNamedEntitySpawn.class, PacketPlayOutNamedEntitySpawn::new).a(PacketPlayOutAnimation.class, PacketPlayOutAnimation::new).a(PacketPlayOutStatistic.class, PacketPlayOutStatistic::new).a(PacketPlayOutBlockBreak.class, PacketPlayOutBlockBreak::new).a(PacketPlayOutBlockBreakAnimation.class, PacketPlayOutBlockBreakAnimation::new).a(PacketPlayOutTileEntityData.class, PacketPlayOutTileEntityData::new).a(PacketPlayOutBlockAction.class, PacketPlayOutBlockAction::new).a(PacketPlayOutBlockChange.class, PacketPlayOutBlockChange::new).a(PacketPlayOutBoss.class, PacketPlayOutBoss::new).a(PacketPlayOutServerDifficulty.class, PacketPlayOutServerDifficulty::new).a(PacketPlayOutChat.class, PacketPlayOutChat::new).a(PacketPlayOutTabComplete.class, PacketPlayOutTabComplete::new).a(PacketPlayOutCommands.class, PacketPlayOutCommands::new).a(PacketPlayOutTransaction.class, PacketPlayOutTransaction::new).a(PacketPlayOutCloseWindow.class, PacketPlayOutCloseWindow::new).a(PacketPlayOutWindowItems.class, PacketPlayOutWindowItems::new).a(PacketPlayOutWindowData.class, PacketPlayOutWindowData::new).a(PacketPlayOutSetSlot.class, PacketPlayOutSetSlot::new).a(PacketPlayOutSetCooldown.class, PacketPlayOutSetCooldown::new).a(PacketPlayOutCustomPayload.class, PacketPlayOutCustomPayload::new).a(PacketPlayOutCustomSoundEffect.class, PacketPlayOutCustomSoundEffect::new).a(PacketPlayOutKickDisconnect.class, PacketPlayOutKickDisconnect::new).a(PacketPlayOutEntityStatus.class, PacketPlayOutEntityStatus::new).a(PacketPlayOutExplosion.class, PacketPlayOutExplosion::new).a(PacketPlayOutUnloadChunk.class, PacketPlayOutUnloadChunk::new).a(PacketPlayOutGameStateChange.class, PacketPlayOutGameStateChange::new).a(PacketPlayOutOpenWindowHorse.class, PacketPlayOutOpenWindowHorse::new).a(PacketPlayOutKeepAlive.class, PacketPlayOutKeepAlive::new).a(PacketPlayOutMapChunk.class, PacketPlayOutMapChunk::new).a(PacketPlayOutWorldEvent.class, PacketPlayOutWorldEvent::new).a(PacketPlayOutWorldParticles.class, PacketPlayOutWorldParticles::new).a(PacketPlayOutLightUpdate.class, PacketPlayOutLightUpdate::new).a(PacketPlayOutLogin.class, PacketPlayOutLogin::new).a(PacketPlayOutMap.class, PacketPlayOutMap::new).a(PacketPlayOutOpenWindowMerchant.class, PacketPlayOutOpenWindowMerchant::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMove.class, PacketPlayOutEntity.PacketPlayOutRelEntityMove::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook.class, PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook::new).a(PacketPlayOutEntity.PacketPlayOutEntityLook.class, PacketPlayOutEntity.PacketPlayOutEntityLook::new).a(PacketPlayOutEntity.class, PacketPlayOutEntity::new).a(PacketPlayOutVehicleMove.class, PacketPlayOutVehicleMove::new).a(PacketPlayOutOpenBook.class, PacketPlayOutOpenBook::new).a(PacketPlayOutOpenWindow.class, PacketPlayOutOpenWindow::new).a(PacketPlayOutOpenSignEditor.class, PacketPlayOutOpenSignEditor::new).a(PacketPlayOutAutoRecipe.class, PacketPlayOutAutoRecipe::new).a(PacketPlayOutAbilities.class, PacketPlayOutAbilities::new).a(PacketPlayOutCombatEvent.class, PacketPlayOutCombatEvent::new).a(PacketPlayOutPlayerInfo.class, PacketPlayOutPlayerInfo::new).a(PacketPlayOutLookAt.class, PacketPlayOutLookAt::new).a(PacketPlayOutPosition.class, PacketPlayOutPosition::new).a(PacketPlayOutRecipes.class, PacketPlayOutRecipes::new).a(PacketPlayOutEntityDestroy.class, PacketPlayOutEntityDestroy::new).a(PacketPlayOutRemoveEntityEffect.class, PacketPlayOutRemoveEntityEffect::new).a(PacketPlayOutResourcePackSend.class, PacketPlayOutResourcePackSend::new).a(PacketPlayOutRespawn.class, PacketPlayOutRespawn::new).a(PacketPlayOutEntityHeadRotation.class, PacketPlayOutEntityHeadRotation::new).a(PacketPlayOutMultiBlockChange.class, PacketPlayOutMultiBlockChange::new).a(PacketPlayOutSelectAdvancementTab.class, PacketPlayOutSelectAdvancementTab::new).a(PacketPlayOutWorldBorder.class, PacketPlayOutWorldBorder::new).a(PacketPlayOutCamera.class, PacketPlayOutCamera::new).a(PacketPlayOutHeldItemSlot.class, PacketPlayOutHeldItemSlot::new).a(PacketPlayOutViewCentre.class, PacketPlayOutViewCentre::new).a(PacketPlayOutViewDistance.class, PacketPlayOutViewDistance::new).a(PacketPlayOutSpawnPosition.class, PacketPlayOutSpawnPosition::new).a(PacketPlayOutScoreboardDisplayObjective.class, PacketPlayOutScoreboardDisplayObjective::new).a(PacketPlayOutEntityMetadata.class, PacketPlayOutEntityMetadata::new).a(PacketPlayOutAttachEntity.class, PacketPlayOutAttachEntity::new).a(PacketPlayOutEntityVelocity.class, PacketPlayOutEntityVelocity::new).a(PacketPlayOutEntityEquipment.class, PacketPlayOutEntityEquipment::new).a(PacketPlayOutExperience.class, PacketPlayOutExperience::new).a(PacketPlayOutUpdateHealth.class, PacketPlayOutUpdateHealth::new).a(PacketPlayOutScoreboardObjective.class, PacketPlayOutScoreboardObjective::new).a(PacketPlayOutMount.class, PacketPlayOutMount::new).a(PacketPlayOutScoreboardTeam.class, PacketPlayOutScoreboardTeam::new).a(PacketPlayOutScoreboardScore.class, PacketPlayOutScoreboardScore::new).a(PacketPlayOutUpdateTime.class, PacketPlayOutUpdateTime::new).a(PacketPlayOutTitle.class, PacketPlayOutTitle::new).a(PacketPlayOutEntitySound.class, PacketPlayOutEntitySound::new).a(PacketPlayOutNamedSoundEffect.class, PacketPlayOutNamedSoundEffect::new).a(PacketPlayOutStopSound.class, PacketPlayOutStopSound::new).a(PacketPlayOutPlayerListHeaderFooter.class, PacketPlayOutPlayerListHeaderFooter::new).a(PacketPlayOutNBTQuery.class, PacketPlayOutNBTQuery::new).a(PacketPlayOutCollect.class, PacketPlayOutCollect::new).a(PacketPlayOutEntityTeleport.class, PacketPlayOutEntityTeleport::new).a(PacketPlayOutAdvancements.class, PacketPlayOutAdvancements::new).a(PacketPlayOutUpdateAttributes.class, PacketPlayOutUpdateAttributes::new).a(PacketPlayOutEntityEffect.class, PacketPlayOutEntityEffect::new).a(PacketPlayOutRecipeUpdate.class, PacketPlayOutRecipeUpdate::new).a(PacketPlayOutTags.class, PacketPlayOutTags::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketPlayInTeleportAccept.class, PacketPlayInTeleportAccept::new).a(PacketPlayInTileNBTQuery.class, PacketPlayInTileNBTQuery::new).a(PacketPlayInDifficultyChange.class, PacketPlayInDifficultyChange::new).a(PacketPlayInChat.class, PacketPlayInChat::new).a(PacketPlayInClientCommand.class, PacketPlayInClientCommand::new).a(PacketPlayInSettings.class, PacketPlayInSettings::new).a(PacketPlayInTabComplete.class, PacketPlayInTabComplete::new).a(PacketPlayInTransaction.class, PacketPlayInTransaction::new).a(PacketPlayInEnchantItem.class, PacketPlayInEnchantItem::new).a(PacketPlayInWindowClick.class, PacketPlayInWindowClick::new).a(PacketPlayInCloseWindow.class, PacketPlayInCloseWindow::new).a(PacketPlayInCustomPayload.class, PacketPlayInCustomPayload::new).a(PacketPlayInBEdit.class, PacketPlayInBEdit::new).a(PacketPlayInEntityNBTQuery.class, PacketPlayInEntityNBTQuery::new).a(PacketPlayInUseEntity.class, PacketPlayInUseEntity::new).a(PacketPlayInJigsawGenerate.class, PacketPlayInJigsawGenerate::new).a(PacketPlayInKeepAlive.class, PacketPlayInKeepAlive::new).a(PacketPlayInDifficultyLock.class, PacketPlayInDifficultyLock::new).a(PacketPlayInFlying.PacketPlayInPosition.class, PacketPlayInFlying.PacketPlayInPosition::new).a(PacketPlayInFlying.PacketPlayInPositionLook.class, PacketPlayInFlying.PacketPlayInPositionLook::new).a(PacketPlayInFlying.PacketPlayInLook.class, PacketPlayInFlying.PacketPlayInLook::new).a(PacketPlayInFlying.class, PacketPlayInFlying::new).a(PacketPlayInVehicleMove.class, PacketPlayInVehicleMove::new).a(PacketPlayInBoatMove.class, PacketPlayInBoatMove::new).a(PacketPlayInPickItem.class, PacketPlayInPickItem::new).a(PacketPlayInAutoRecipe.class, PacketPlayInAutoRecipe::new).a(PacketPlayInAbilities.class, PacketPlayInAbilities::new).a(PacketPlayInBlockDig.class, PacketPlayInBlockDig::new).a(PacketPlayInEntityAction.class, PacketPlayInEntityAction::new).a(PacketPlayInSteerVehicle.class, PacketPlayInSteerVehicle::new).a(PacketPlayInRecipeSettings.class, PacketPlayInRecipeSettings::new).a(PacketPlayInRecipeDisplayed.class, PacketPlayInRecipeDisplayed::new).a(PacketPlayInItemName.class, PacketPlayInItemName::new).a(PacketPlayInResourcePackStatus.class, PacketPlayInResourcePackStatus::new).a(PacketPlayInAdvancements.class, PacketPlayInAdvancements::new).a(PacketPlayInTrSel.class, PacketPlayInTrSel::new).a(PacketPlayInBeacon.class, PacketPlayInBeacon::new).a(PacketPlayInHeldItemSlot.class, PacketPlayInHeldItemSlot::new).a(PacketPlayInSetCommandBlock.class, PacketPlayInSetCommandBlock::new).a(PacketPlayInSetCommandMinecart.class, PacketPlayInSetCommandMinecart::new).a(PacketPlayInSetCreativeSlot.class, PacketPlayInSetCreativeSlot::new).a(PacketPlayInSetJigsaw.class, PacketPlayInSetJigsaw::new).a(PacketPlayInStruct.class, PacketPlayInStruct::new).a(PacketPlayInUpdateSign.class, PacketPlayInUpdateSign::new).a(PacketPlayInArmAnimation.class, PacketPlayInArmAnimation::new).a(PacketPlayInSpectate.class, PacketPlayInSpectate::new).a(PacketPlayInUseItem.class, PacketPlayInUseItem::new).a(PacketPlayInBlockPlace.class, PacketPlayInBlockPlace::new))), STATUS(1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketStatusInStart.class, PacketStatusInStart::new).a(PacketStatusInPing.class, PacketStatusInPing::new)).a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketStatusOutServerInfo.class, PacketStatusOutServerInfo::new).a(PacketStatusOutPong.class, PacketStatusOutPong::new))), LOGIN(2, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketLoginOutDisconnect.class, PacketLoginOutDisconnect::new).a(PacketLoginOutEncryptionBegin.class, PacketLoginOutEncryptionBegin::new).a(PacketLoginOutSuccess.class, PacketLoginOutSuccess::new).a(PacketLoginOutSetCompression.class, PacketLoginOutSetCompression::new).a(PacketLoginOutCustomPayload.class, PacketLoginOutCustomPayload::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketLoginInStart.class, PacketLoginInStart::new).a(PacketLoginInEncryptionBegin.class, PacketLoginInEncryptionBegin::new).a(PacketLoginInCustomPayload.class, PacketLoginInCustomPayload::new)));
++    // Paper - fix decompile error - add generic names to < > like PacketListenerPlayOut
++    HANDSHAKING(-1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketHandshakingInListener>()).a(PacketHandshakingInSetProtocol.class, PacketHandshakingInSetProtocol::new))), PLAY(0, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketListenerPlayOut>()).a(PacketPlayOutSpawnEntity.class, PacketPlayOutSpawnEntity::new).a(PacketPlayOutSpawnEntityExperienceOrb.class, PacketPlayOutSpawnEntityExperienceOrb::new).a(PacketPlayOutSpawnEntityLiving.class, PacketPlayOutSpawnEntityLiving::new).a(PacketPlayOutSpawnEntityPainting.class, PacketPlayOutSpawnEntityPainting::new).a(PacketPlayOutNamedEntitySpawn.class, PacketPlayOutNamedEntitySpawn::new).a(PacketPlayOutAnimation.class, PacketPlayOutAnimation::new).a(PacketPlayOutStatistic.class, PacketPlayOutStatistic::new).a(PacketPlayOutBlockBreak.class, PacketPlayOutBlockBreak::new).a(PacketPlayOutBlockBreakAnimation.class, PacketPlayOutBlockBreakAnimation::new).a(PacketPlayOutTileEntityData.class, PacketPlayOutTileEntityData::new).a(PacketPlayOutBlockAction.class, PacketPlayOutBlockAction::new).a(PacketPlayOutBlockChange.class, PacketPlayOutBlockChange::new).a(PacketPlayOutBoss.class, PacketPlayOutBoss::new).a(PacketPlayOutServerDifficulty.class, PacketPlayOutServerDifficulty::new).a(PacketPlayOutChat.class, PacketPlayOutChat::new).a(PacketPlayOutTabComplete.class, PacketPlayOutTabComplete::new).a(PacketPlayOutCommands.class, PacketPlayOutCommands::new).a(PacketPlayOutTransaction.class, PacketPlayOutTransaction::new).a(PacketPlayOutCloseWindow.class, PacketPlayOutCloseWindow::new).a(PacketPlayOutWindowItems.class, PacketPlayOutWindowItems::new).a(PacketPlayOutWindowData.class, PacketPlayOutWindowData::new).a(PacketPlayOutSetSlot.class, PacketPlayOutSetSlot::new).a(PacketPlayOutSetCooldown.class, PacketPlayOutSetCooldown::new).a(PacketPlayOutCustomPayload.class, PacketPlayOutCustomPayload::new).a(PacketPlayOutCustomSoundEffect.class, PacketPlayOutCustomSoundEffect::new).a(PacketPlayOutKickDisconnect.class, PacketPlayOutKickDisconnect::new).a(PacketPlayOutEntityStatus.class, PacketPlayOutEntityStatus::new).a(PacketPlayOutExplosion.class, PacketPlayOutExplosion::new).a(PacketPlayOutUnloadChunk.class, PacketPlayOutUnloadChunk::new).a(PacketPlayOutGameStateChange.class, PacketPlayOutGameStateChange::new).a(PacketPlayOutOpenWindowHorse.class, PacketPlayOutOpenWindowHorse::new).a(PacketPlayOutKeepAlive.class, PacketPlayOutKeepAlive::new).a(PacketPlayOutMapChunk.class, PacketPlayOutMapChunk::new).a(PacketPlayOutWorldEvent.class, PacketPlayOutWorldEvent::new).a(PacketPlayOutWorldParticles.class, PacketPlayOutWorldParticles::new).a(PacketPlayOutLightUpdate.class, PacketPlayOutLightUpdate::new).a(PacketPlayOutLogin.class, PacketPlayOutLogin::new).a(PacketPlayOutMap.class, PacketPlayOutMap::new).a(PacketPlayOutOpenWindowMerchant.class, PacketPlayOutOpenWindowMerchant::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMove.class, PacketPlayOutEntity.PacketPlayOutRelEntityMove::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook.class, PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook::new).a(PacketPlayOutEntity.PacketPlayOutEntityLook.class, PacketPlayOutEntity.PacketPlayOutEntityLook::new).a(PacketPlayOutEntity.class, PacketPlayOutEntity::new).a(PacketPlayOutVehicleMove.class, PacketPlayOutVehicleMove::new).a(PacketPlayOutOpenBook.class, PacketPlayOutOpenBook::new).a(PacketPlayOutOpenWindow.class, PacketPlayOutOpenWindow::new).a(PacketPlayOutOpenSignEditor.class, PacketPlayOutOpenSignEditor::new).a(PacketPlayOutAutoRecipe.class, PacketPlayOutAutoRecipe::new).a(PacketPlayOutAbilities.class, PacketPlayOutAbilities::new).a(PacketPlayOutCombatEvent.class, PacketPlayOutCombatEvent::new).a(PacketPlayOutPlayerInfo.class, PacketPlayOutPlayerInfo::new).a(PacketPlayOutLookAt.class, PacketPlayOutLookAt::new).a(PacketPlayOutPosition.class, PacketPlayOutPosition::new).a(PacketPlayOutRecipes.class, PacketPlayOutRecipes::new).a(PacketPlayOutEntityDestroy.class, PacketPlayOutEntityDestroy::new).a(PacketPlayOutRemoveEntityEffect.class, PacketPlayOutRemoveEntityEffect::new).a(PacketPlayOutResourcePackSend.class, PacketPlayOutResourcePackSend::new).a(PacketPlayOutRespawn.class, PacketPlayOutRespawn::new).a(PacketPlayOutEntityHeadRotation.class, PacketPlayOutEntityHeadRotation::new).a(PacketPlayOutMultiBlockChange.class, PacketPlayOutMultiBlockChange::new).a(PacketPlayOutSelectAdvancementTab.class, PacketPlayOutSelectAdvancementTab::new).a(PacketPlayOutWorldBorder.class, PacketPlayOutWorldBorder::new).a(PacketPlayOutCamera.class, PacketPlayOutCamera::new).a(PacketPlayOutHeldItemSlot.class, PacketPlayOutHeldItemSlot::new).a(PacketPlayOutViewCentre.class, PacketPlayOutViewCentre::new).a(PacketPlayOutViewDistance.class, PacketPlayOutViewDistance::new).a(PacketPlayOutSpawnPosition.class, PacketPlayOutSpawnPosition::new).a(PacketPlayOutScoreboardDisplayObjective.class, PacketPlayOutScoreboardDisplayObjective::new).a(PacketPlayOutEntityMetadata.class, PacketPlayOutEntityMetadata::new).a(PacketPlayOutAttachEntity.class, PacketPlayOutAttachEntity::new).a(PacketPlayOutEntityVelocity.class, PacketPlayOutEntityVelocity::new).a(PacketPlayOutEntityEquipment.class, PacketPlayOutEntityEquipment::new).a(PacketPlayOutExperience.class, PacketPlayOutExperience::new).a(PacketPlayOutUpdateHealth.class, PacketPlayOutUpdateHealth::new).a(PacketPlayOutScoreboardObjective.class, PacketPlayOutScoreboardObjective::new).a(PacketPlayOutMount.class, PacketPlayOutMount::new).a(PacketPlayOutScoreboardTeam.class, PacketPlayOutScoreboardTeam::new).a(PacketPlayOutScoreboardScore.class, PacketPlayOutScoreboardScore::new).a(PacketPlayOutUpdateTime.class, PacketPlayOutUpdateTime::new).a(PacketPlayOutTitle.class, PacketPlayOutTitle::new).a(PacketPlayOutEntitySound.class, PacketPlayOutEntitySound::new).a(PacketPlayOutNamedSoundEffect.class, PacketPlayOutNamedSoundEffect::new).a(PacketPlayOutStopSound.class, PacketPlayOutStopSound::new).a(PacketPlayOutPlayerListHeaderFooter.class, PacketPlayOutPlayerListHeaderFooter::new).a(PacketPlayOutNBTQuery.class, PacketPlayOutNBTQuery::new).a(PacketPlayOutCollect.class, PacketPlayOutCollect::new).a(PacketPlayOutEntityTeleport.class, PacketPlayOutEntityTeleport::new).a(PacketPlayOutAdvancements.class, PacketPlayOutAdvancements::new).a(PacketPlayOutUpdateAttributes.class, PacketPlayOutUpdateAttributes::new).a(PacketPlayOutEntityEffect.class, PacketPlayOutEntityEffect::new).a(PacketPlayOutRecipeUpdate.class, PacketPlayOutRecipeUpdate::new).a(PacketPlayOutTags.class, PacketPlayOutTags::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketListenerPlayIn>()).a(PacketPlayInTeleportAccept.class, PacketPlayInTeleportAccept::new).a(PacketPlayInTileNBTQuery.class, PacketPlayInTileNBTQuery::new).a(PacketPlayInDifficultyChange.class, PacketPlayInDifficultyChange::new).a(PacketPlayInChat.class, PacketPlayInChat::new).a(PacketPlayInClientCommand.class, PacketPlayInClientCommand::new).a(PacketPlayInSettings.class, PacketPlayInSettings::new).a(PacketPlayInTabComplete.class, PacketPlayInTabComplete::new).a(PacketPlayInTransaction.class, PacketPlayInTransaction::new).a(PacketPlayInEnchantItem.class, PacketPlayInEnchantItem::new).a(PacketPlayInWindowClick.class, PacketPlayInWindowClick::new).a(PacketPlayInCloseWindow.class, PacketPlayInCloseWindow::new).a(PacketPlayInCustomPayload.class, PacketPlayInCustomPayload::new).a(PacketPlayInBEdit.class, PacketPlayInBEdit::new).a(PacketPlayInEntityNBTQuery.class, PacketPlayInEntityNBTQuery::new).a(PacketPlayInUseEntity.class, PacketPlayInUseEntity::new).a(PacketPlayInJigsawGenerate.class, PacketPlayInJigsawGenerate::new).a(PacketPlayInKeepAlive.class, PacketPlayInKeepAlive::new).a(PacketPlayInDifficultyLock.class, PacketPlayInDifficultyLock::new).a(PacketPlayInFlying.PacketPlayInPosition.class, PacketPlayInFlying.PacketPlayInPosition::new).a(PacketPlayInFlying.PacketPlayInPositionLook.class, PacketPlayInFlying.PacketPlayInPositionLook::new).a(PacketPlayInFlying.PacketPlayInLook.class, PacketPlayInFlying.PacketPlayInLook::new).a(PacketPlayInFlying.class, PacketPlayInFlying::new).a(PacketPlayInVehicleMove.class, PacketPlayInVehicleMove::new).a(PacketPlayInBoatMove.class, PacketPlayInBoatMove::new).a(PacketPlayInPickItem.class, PacketPlayInPickItem::new).a(PacketPlayInAutoRecipe.class, PacketPlayInAutoRecipe::new).a(PacketPlayInAbilities.class, PacketPlayInAbilities::new).a(PacketPlayInBlockDig.class, PacketPlayInBlockDig::new).a(PacketPlayInEntityAction.class, PacketPlayInEntityAction::new).a(PacketPlayInSteerVehicle.class, PacketPlayInSteerVehicle::new).a(PacketPlayInRecipeSettings.class, PacketPlayInRecipeSettings::new).a(PacketPlayInRecipeDisplayed.class, PacketPlayInRecipeDisplayed::new).a(PacketPlayInItemName.class, PacketPlayInItemName::new).a(PacketPlayInResourcePackStatus.class, PacketPlayInResourcePackStatus::new).a(PacketPlayInAdvancements.class, PacketPlayInAdvancements::new).a(PacketPlayInTrSel.class, PacketPlayInTrSel::new).a(PacketPlayInBeacon.class, PacketPlayInBeacon::new).a(PacketPlayInHeldItemSlot.class, PacketPlayInHeldItemSlot::new).a(PacketPlayInSetCommandBlock.class, PacketPlayInSetCommandBlock::new).a(PacketPlayInSetCommandMinecart.class, PacketPlayInSetCommandMinecart::new).a(PacketPlayInSetCreativeSlot.class, PacketPlayInSetCreativeSlot::new).a(PacketPlayInSetJigsaw.class, PacketPlayInSetJigsaw::new).a(PacketPlayInStruct.class, PacketPlayInStruct::new).a(PacketPlayInUpdateSign.class, PacketPlayInUpdateSign::new).a(PacketPlayInArmAnimation.class, PacketPlayInArmAnimation::new).a(PacketPlayInSpectate.class, PacketPlayInSpectate::new).a(PacketPlayInUseItem.class, PacketPlayInUseItem::new).a(PacketPlayInBlockPlace.class, PacketPlayInBlockPlace::new))), STATUS(1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketStatusInListener>()).a(PacketStatusInStart.class, PacketStatusInStart::new).a(PacketStatusInPing.class, PacketStatusInPing::new)).a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketStatusOutListener>()).a(PacketStatusOutServerInfo.class, PacketStatusOutServerInfo::new).a(PacketStatusOutPong.class, PacketStatusOutPong::new))), LOGIN(2, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketLoginOutListener>()).a(PacketLoginOutDisconnect.class, PacketLoginOutDisconnect::new).a(PacketLoginOutEncryptionBegin.class, PacketLoginOutEncryptionBegin::new).a(PacketLoginOutSuccess.class, PacketLoginOutSuccess::new).a(PacketLoginOutSetCompression.class, PacketLoginOutSetCompression::new).a(PacketLoginOutCustomPayload.class, PacketLoginOutCustomPayload::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketLoginInListener>()).a(PacketLoginInStart.class, PacketLoginInStart::new).a(PacketLoginInEncryptionBegin.class, PacketLoginInEncryptionBegin::new).a(PacketLoginInCustomPayload.class, PacketLoginInCustomPayload::new)));
+ 
+     private static final EnumProtocol[] e = new EnumProtocol[4];
+     private static final Map<Class<? extends Packet<?>>, EnumProtocol> f = Maps.newHashMap();
+@@ -248,7 +256,7 @@ public enum EnumProtocol {
+         private final List<Supplier<? extends Packet<T>>> b;
+ 
+         private a() {
+-            this.a = (Object2IntMap) SystemUtils.a((Object) (new Object2IntOpenHashMap()), (object2intopenhashmap) -> {
++            this.a = (Object2IntMap) SystemUtils.a(new Object2IntOpenHashMap(), (object2intopenhashmap) -> { // Paper - fix decompile error
+                 object2intopenhashmap.defaultReturnValue(-1);
+             });
+             this.b = Lists.newArrayList();
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index e4fae57da4ee232a818e608912f021694bcea0f2..078631631616874741b0e0662e51b3faadcddcec 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1665,9 +1665,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+             ResourcePackRepository resourcepackrepository = this.resourcePackRepository;
+ 
+             this.resourcePackRepository.getClass();
+-            return stream.map(resourcepackrepository::a).filter(Objects::nonNull).map(ResourcePackLoader::d).collect(ImmutableList.toImmutableList()); // CraftBukkit - decompile error
++            return stream.<ResourcePackLoader>map(resourcepackrepository::a).filter(Objects::nonNull).map(ResourcePackLoader::d).collect(ImmutableList.toImmutableList()); // CraftBukkit - decompile error // Paper - decompile error
+         }, this).thenCompose((immutablelist) -> {
+-            return DataPackResources.a(immutablelist, this.j() ? CommandDispatcher.ServerType.DEDICATED : CommandDispatcher.ServerType.INTEGRATED, this.h(), this.executorService, this);
++            return DataPackResources.a(immutablelist, this.j() ? CommandDispatcher.ServerType.DEDICATED : CommandDispatcher.ServerType.INTEGRATED, this.h(), this.executorService, this); // Paper - decompile error
+         }).thenAcceptAsync((datapackresources) -> {
+             this.dataPackResources.close();
+             this.dataPackResources = datapackresources;
+diff --git a/src/main/java/net/minecraft/server/level/LightEngineThreaded.java b/src/main/java/net/minecraft/server/level/LightEngineThreaded.java
+index 5a51f47f747382ec2a30bb47bcb1f7c61dd4c369..e066848127cb9a42e8c39422691cc65132cac6bb 100644
+--- a/src/main/java/net/minecraft/server/level/LightEngineThreaded.java
++++ b/src/main/java/net/minecraft/server/level/LightEngineThreaded.java
+@@ -179,7 +179,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+ 
+     public void queueUpdate() {
+         if ((!this.c.isEmpty() || super.a()) && this.g.compareAndSet(false, true)) {
+-            this.b.a((Object) (() -> {
++            this.b.a((() -> { // Paper - decompile error
+                 this.b();
+                 this.g.set(false);
+             }));
+diff --git a/src/main/java/net/minecraft/server/level/Ticket.java b/src/main/java/net/minecraft/server/level/Ticket.java
+index 1c500e1193296f92f03a94e2cf085b215daaad6c..51ef4adf66c1e21093e63ab46fa47e66c2425fdb 100644
+--- a/src/main/java/net/minecraft/server/level/Ticket.java
++++ b/src/main/java/net/minecraft/server/level/Ticket.java
+@@ -23,7 +23,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
+         } else {
+             int j = Integer.compare(System.identityHashCode(this.a), System.identityHashCode(ticket.a));
+ 
+-            return j != 0 ? j : this.a.a().compare(this.identifier, ticket.identifier);
++            return j != 0 ? j : this.a.a().compare(this.identifier, (T)ticket.identifier); // Paper - decompile fix
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index d1e11c1b3300ebc324ad88d05170d4b1232f2ddb..b88b0890cb5b5b0c4c2c35456fdffb02e8cfcf91 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1918,7 +1918,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             }
+ 
+             // CraftBukkit - decompile error
+-            return (String) object2intopenhashmap.object2IntEntrySet().stream().sorted(Comparator.comparing(it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<MinecraftKey>::getIntValue).reversed()).limit(5L).map((it_unimi_dsi_fastutil_objects_object2intmap_entry) -> {
++            return (String) object2intopenhashmap.object2IntEntrySet().stream().sorted(Comparator.comparing(Object2IntMap.Entry<MinecraftKey>::getIntValue).reversed()).limit(5L).map((it_unimi_dsi_fastutil_objects_object2intmap_entry) -> { // Paper - decompile fix
+                 return it_unimi_dsi_fastutil_objects_object2intmap_entry.getKey() + ":" + it_unimi_dsi_fastutil_objects_object2intmap_entry.getIntValue();
+             }).collect(Collectors.joining(","));
+         } catch (Exception exception) {
+diff --git a/src/main/java/net/minecraft/stats/ServerStatisticManager.java b/src/main/java/net/minecraft/stats/ServerStatisticManager.java
+index a920e1de04a3b3d2f794c1490075f32072f48fb2..de87ed44e09b61f6d2e6a93d770a7c37b9f95fa1 100644
+--- a/src/main/java/net/minecraft/stats/ServerStatisticManager.java
++++ b/src/main/java/net/minecraft/stats/ServerStatisticManager.java
+@@ -203,7 +203,7 @@ public class ServerStatisticManager extends StatisticManager {
+         ObjectIterator objectiterator = this.a.object2IntEntrySet().iterator();
+ 
+         while (objectiterator.hasNext()) {
+-            it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Statistic<?>> it_unimi_dsi_fastutil_objects_object2intmap_entry = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry) objectiterator.next();
++            Object2IntMap.Entry<Statistic<?>> it_unimi_dsi_fastutil_objects_object2intmap_entry = (Object2IntMap.Entry) objectiterator.next(); // Paper - decompile fix
+             Statistic<?> statistic = (Statistic) it_unimi_dsi_fastutil_objects_object2intmap_entry.getKey();
+ 
+             ((JsonObject) map.computeIfAbsent(statistic.getWrapper(), (statisticwrapper) -> {
+diff --git a/src/main/java/net/minecraft/util/ArraySetSorted.java b/src/main/java/net/minecraft/util/ArraySetSorted.java
+index e56b8e172d96c5508457fcf3f5a0cf0d2d2d8d7c..427daa94322f47b4eaf881d85a01fed239db549a 100644
+--- a/src/main/java/net/minecraft/util/ArraySetSorted.java
++++ b/src/main/java/net/minecraft/util/ArraySetSorted.java
 @@ -23,11 +23,11 @@ public class ArraySetSorted<T> extends AbstractSet<T> {
      }
  
@@ -49,178 +348,47 @@ index a3afe60b0d85cf90bf7a170dc0a0b61a796381a7..85f799a713db0c822d46b689010f9f6b
          } else {
              System.arraycopy(this.b, 0, au, 0, this.c);
              if (au.length > this.c) {
-diff --git a/src/main/java/net/minecraft/server/BiomeBase.java b/src/main/java/net/minecraft/server/BiomeBase.java
-index 3b374fb7d55de67ef8a5fb6d6ed1081e7c644a77..260fd033c1017389a6f28447a6017b0ca15514d8 100644
---- a/src/main/java/net/minecraft/server/BiomeBase.java
-+++ b/src/main/java/net/minecraft/server/BiomeBase.java
-@@ -20,8 +20,15 @@ import org.apache.logging.log4j.Logger;
- public final class BiomeBase {
+diff --git a/src/main/java/net/minecraft/util/RegistryID.java b/src/main/java/net/minecraft/util/RegistryID.java
+index d88e55c64f80707b4a9b1e271714c2dbdee9a38a..6150f7a5c5004ac79414ab22dbaa3439dc8afdb4 100644
+--- a/src/main/java/net/minecraft/util/RegistryID.java
++++ b/src/main/java/net/minecraft/util/RegistryID.java
+@@ -18,11 +18,18 @@ public class RegistryID<K> implements Registry<K> {
  
-     public static final Logger LOGGER = LogManager.getLogger();
-+    // Paper start
-+    private static class dProxy extends BiomeBase.d {
-+        private dProxy(Precipitation biomebase_precipitation, float f, TemperatureModifier biomebase_temperaturemodifier, float f1) {
-+            super(biomebase_precipitation, f, biomebase_temperaturemodifier, f1);
-+        }
-+    };
+     public RegistryID(int i) {
+         i = (int) ((float) i / 0.8F);
+-        this.b = (Object[]) (new Object[i]);
++        this.b = (K[]) (new Object[i]); // Paper - decompile fix
+         this.c = new int[i];
+-        this.d = (Object[]) (new Object[i]);
++        this.d = (K[]) (new Object[i]); // Paper - decompile fix
+     }
+ 
++    // Paper start - decompile fix
++    @Override
++    public int a(K k) {
++        return getId(k);
++    }
 +    // Paper end
-     public static final Codec<BiomeBase> b = RecordCodecBuilder.create((instance) -> {
--        return instance.group(BiomeBase.d.a.forGetter((biomebase) -> {
-+        return instance.group(dProxy.a.forGetter((biomebase) -> { // Paper
-             return biomebase.j;
-         }), BiomeBase.Geography.r.fieldOf("category").forGetter((biomebase) -> {
-             return biomebase.o;
-@@ -38,7 +45,7 @@ public final class BiomeBase {
-         })).apply(instance, BiomeBase::new);
-     });
-     public static final Codec<BiomeBase> c = RecordCodecBuilder.create((instance) -> {
--        return instance.group(BiomeBase.d.a.forGetter((biomebase) -> {
-+        return instance.group(dProxy.a.forGetter((biomebase) -> { // Paper
-             return biomebase.j;
-         }), BiomeBase.Geography.r.fieldOf("category").forGetter((biomebase) -> {
-             return biomebase.o;
-diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 420863ca190f72dd8b534859f620fd0ebeb29d70..1b2f415e3ed7f6dca12d13cd098cb4ec3af54020 100644
---- a/src/main/java/net/minecraft/server/BlockPosition.java
-+++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -235,8 +235,8 @@ public class BlockPosition extends BaseBlockPosition {
-         };
++
+     public int getId(@Nullable K k0) {
+         return this.c(this.b(k0, this.d(k0)));
      }
+@@ -56,9 +63,9 @@ public class RegistryID<K> implements Registry<K> {
+         K[] ak = this.b;
+         int[] aint = this.c;
  
--    public static Iterable<BlockPosition> a(BlockPosition blockposition, int i, int j, int k) {
--        int l = i + j + k;
-+    public static Iterable<BlockPosition> a(BlockPosition blockposition, int p_i, int p_j, int p_k) { // Paper - decompile issues - variable name conflicts to inner class field refs
-+        int l_decompiled = p_i + p_j + p_k; // Paper - decompile issues
-         int i1 = blockposition.getX();
-         int j1 = blockposition.getY();
-         int k1 = blockposition.getZ();
-@@ -264,15 +264,15 @@ public class BlockPosition extends BaseBlockPosition {
-                                 ++this.l;
-                                 if (this.l > this.j) {
-                                     ++this.i;
--                                    if (this.i > l) {
-+                                    if (this.i > l_decompiled) { // Paper - use proper l above (first line of this method)
-                                         return (BlockPosition) this.endOfData();
-                                     }
+-        this.b = (Object[]) (new Object[i]);
++        this.b = (K[]) (new Object[i]); // Paper - decompile fix
+         this.c = new int[i];
+-        this.d = (Object[]) (new Object[i]);
++        this.d = (K[]) (new Object[i]); // Paper - decompile fix
+         this.e = 0;
+         this.f = 0;
  
--                                    this.j = Math.min(i, this.i);
-+                                    this.j = Math.min(p_i, this.i); // Paper - decompile issues
-                                     this.l = -this.j;
-                                 }
- 
--                                this.k = Math.min(j, this.i - Math.abs(this.l));
-+                                this.k = Math.min(p_j, this.i - Math.abs(this.l)); // Paper - decompile issues
-                                 this.m = -this.k;
-                             }
- 
-@@ -280,7 +280,7 @@ public class BlockPosition extends BaseBlockPosition {
-                             int i2 = this.m;
-                             int j2 = this.i - Math.abs(l1) - Math.abs(i2);
- 
--                            if (j2 <= k) {
-+                            if (j2 <= p_k) { // Paper - decompile issues
-                                 this.n = j2 != 0;
-                                 blockposition_mutableblockposition = this.h.d(i1 + l1, j1 + i2, k1 + j2);
-                             }
-@@ -349,13 +349,13 @@ public class BlockPosition extends BaseBlockPosition {
-         };
-     }
- 
--    public static Iterable<BlockPosition.MutableBlockPosition> a(BlockPosition blockposition, int i, EnumDirection enumdirection, EnumDirection enumdirection1) {
-+    public static Iterable<BlockPosition.MutableBlockPosition> a(BlockPosition blockposition, int I, EnumDirection enumdirection, EnumDirection enumdirection1) { // Paper - decompile fix
-         Validate.validState(enumdirection.n() != enumdirection1.n(), "The two directions cannot be on the same axis", new Object[0]);
-         return () -> {
-             return new AbstractIterator<BlockPosition.MutableBlockPosition>() {
-                 private final EnumDirection[] e = new EnumDirection[]{enumdirection, enumdirection1, enumdirection.opposite(), enumdirection1.opposite()};
-                 private final BlockPosition.MutableBlockPosition f = blockposition.i().c(enumdirection1);
--                private final int g = 4 * i;
-+                private final int g = 4 * I;
-                 private int h = -1;
-                 private int i;
-                 private int j;
-diff --git a/src/main/java/net/minecraft/server/BlockStateEnum.java b/src/main/java/net/minecraft/server/BlockStateEnum.java
-index 771841e08591955e61c7bcc5b09c8457652c1b9c..8162c11d14b8e88c2b572f9ddf6b7a15977047f8 100644
---- a/src/main/java/net/minecraft/server/BlockStateEnum.java
-+++ b/src/main/java/net/minecraft/server/BlockStateEnum.java
-@@ -20,10 +20,10 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends IBlockState<T>
-     protected BlockStateEnum(String s, Class<T> oclass, Collection<T> collection) {
-         super(s, oclass);
-         this.a = ImmutableSet.copyOf(collection);
--        Iterator iterator = collection.iterator();
-+        Iterator<T> iterator = collection.iterator(); // Paper - decompile fix
- 
-         while (iterator.hasNext()) {
--            T t0 = (Enum) iterator.next();
-+            T t0 = iterator.next(); // Paper - Decompile fix
-             String s1 = ((INamable) t0).getName();
- 
-             if (this.b.containsKey(s1)) {
-diff --git a/src/main/java/net/minecraft/server/CraftingManager.java b/src/main/java/net/minecraft/server/CraftingManager.java
-index fdb7d96cf20b37cb7bec83f5489402167bd842d5..58ecbe1e20581dc9e78cdd2f4ece29cfa014da8a 100644
---- a/src/main/java/net/minecraft/server/CraftingManager.java
-+++ b/src/main/java/net/minecraft/server/CraftingManager.java
-@@ -64,7 +64,7 @@ public class CraftingManager extends ResourceDataJson {
-         }
- 
-         this.recipes = (Map) map1.entrySet().stream().collect(ImmutableMap.toImmutableMap(Entry::getKey, (entry1) -> {
--            return (entry1.getValue()); // CraftBukkit
-+            return entry1.getValue(); // CraftBukkit // Paper - decompile fix - *shrugs internally*
-         }));
-         CraftingManager.LOGGER.info("Loaded {} recipes", map1.size());
-     }
-diff --git a/src/main/java/net/minecraft/server/EnderDragonBattle.java b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-index 96d6c55c9a2fbb9f93d369eadaacf00b7e64b79e..e77634bb4d33716ed41468722187080ae7243f3d 100644
---- a/src/main/java/net/minecraft/server/EnderDragonBattle.java
-+++ b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-@@ -388,7 +388,7 @@ public class EnderDragonBattle {
-             }
-         }
- 
--        worldgenendtrophy.b((WorldGenFeatureConfiguration) WorldGenFeatureConfiguration.k).a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation);
-+        worldgenendtrophy.b(WorldGenFeatureConfiguration.k).a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation); // Paper - decompile fix
-     }
- 
-     private EntityEnderDragon o() {
-diff --git a/src/main/java/net/minecraft/server/EntityVindicator.java b/src/main/java/net/minecraft/server/EntityVindicator.java
-index a3c885b070336295cc059a8c525848c8405ef89f..b358070215477bcd33dcd440472db4489017135a 100644
---- a/src/main/java/net/minecraft/server/EntityVindicator.java
-+++ b/src/main/java/net/minecraft/server/EntityVindicator.java
-@@ -25,7 +25,7 @@ public class EntityVindicator extends EntityIllagerAbstract {
-         this.goalSelector.a(2, new EntityIllagerAbstract.b(this));
-         this.goalSelector.a(3, new EntityRaider.a(this, 10.0F));
-         this.goalSelector.a(4, new EntityVindicator.c(this));
--        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityRaider.class})).a());
-+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityRaider.class})).a(new Class[0])); // Paper - decompile fix
-         this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
-         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityVillagerAbstract.class, true));
-         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityIronGolem.class, true));
-diff --git a/src/main/java/net/minecraft/server/EnumProtocol.java b/src/main/java/net/minecraft/server/EnumProtocol.java
-index 1de8c7eaeb08c645058dbe1da7ca8ef91958abda..32f5470baa88c3dc80db1bb547e1c982ac90237d 100644
---- a/src/main/java/net/minecraft/server/EnumProtocol.java
-+++ b/src/main/java/net/minecraft/server/EnumProtocol.java
-@@ -13,7 +13,8 @@ import org.apache.logging.log4j.LogManager;
- 
- public enum EnumProtocol {
- 
--    HANDSHAKING(-1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketHandshakingInSetProtocol.class, PacketHandshakingInSetProtocol::new))), PLAY(0, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketPlayOutSpawnEntity.class, PacketPlayOutSpawnEntity::new).a(PacketPlayOutSpawnEntityExperienceOrb.class, PacketPlayOutSpawnEntityExperienceOrb::new).a(PacketPlayOutSpawnEntityLiving.class, PacketPlayOutSpawnEntityLiving::new).a(PacketPlayOutSpawnEntityPainting.class, PacketPlayOutSpawnEntityPainting::new).a(PacketPlayOutNamedEntitySpawn.class, PacketPlayOutNamedEntitySpawn::new).a(PacketPlayOutAnimation.class, PacketPlayOutAnimation::new).a(PacketPlayOutStatistic.class, PacketPlayOutStatistic::new).a(PacketPlayOutBlockBreak.class, PacketPlayOutBlockBreak::new).a(PacketPlayOutBlockBreakAnimation.class, PacketPlayOutBlockBreakAnimation::new).a(PacketPlayOutTileEntityData.class, PacketPlayOutTileEntityData::new).a(PacketPlayOutBlockAction.class, PacketPlayOutBlockAction::new).a(PacketPlayOutBlockChange.class, PacketPlayOutBlockChange::new).a(PacketPlayOutBoss.class, PacketPlayOutBoss::new).a(PacketPlayOutServerDifficulty.class, PacketPlayOutServerDifficulty::new).a(PacketPlayOutChat.class, PacketPlayOutChat::new).a(PacketPlayOutTabComplete.class, PacketPlayOutTabComplete::new).a(PacketPlayOutCommands.class, PacketPlayOutCommands::new).a(PacketPlayOutTransaction.class, PacketPlayOutTransaction::new).a(PacketPlayOutCloseWindow.class, PacketPlayOutCloseWindow::new).a(PacketPlayOutWindowItems.class, PacketPlayOutWindowItems::new).a(PacketPlayOutWindowData.class, PacketPlayOutWindowData::new).a(PacketPlayOutSetSlot.class, PacketPlayOutSetSlot::new).a(PacketPlayOutSetCooldown.class, PacketPlayOutSetCooldown::new).a(PacketPlayOutCustomPayload.class, PacketPlayOutCustomPayload::new).a(PacketPlayOutCustomSoundEffect.class, PacketPlayOutCustomSoundEffect::new).a(PacketPlayOutKickDisconnect.class, PacketPlayOutKickDisconnect::new).a(PacketPlayOutEntityStatus.class, PacketPlayOutEntityStatus::new).a(PacketPlayOutExplosion.class, PacketPlayOutExplosion::new).a(PacketPlayOutUnloadChunk.class, PacketPlayOutUnloadChunk::new).a(PacketPlayOutGameStateChange.class, PacketPlayOutGameStateChange::new).a(PacketPlayOutOpenWindowHorse.class, PacketPlayOutOpenWindowHorse::new).a(PacketPlayOutKeepAlive.class, PacketPlayOutKeepAlive::new).a(PacketPlayOutMapChunk.class, PacketPlayOutMapChunk::new).a(PacketPlayOutWorldEvent.class, PacketPlayOutWorldEvent::new).a(PacketPlayOutWorldParticles.class, PacketPlayOutWorldParticles::new).a(PacketPlayOutLightUpdate.class, PacketPlayOutLightUpdate::new).a(PacketPlayOutLogin.class, PacketPlayOutLogin::new).a(PacketPlayOutMap.class, PacketPlayOutMap::new).a(PacketPlayOutOpenWindowMerchant.class, PacketPlayOutOpenWindowMerchant::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMove.class, PacketPlayOutEntity.PacketPlayOutRelEntityMove::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook.class, PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook::new).a(PacketPlayOutEntity.PacketPlayOutEntityLook.class, PacketPlayOutEntity.PacketPlayOutEntityLook::new).a(PacketPlayOutEntity.class, PacketPlayOutEntity::new).a(PacketPlayOutVehicleMove.class, PacketPlayOutVehicleMove::new).a(PacketPlayOutOpenBook.class, PacketPlayOutOpenBook::new).a(PacketPlayOutOpenWindow.class, PacketPlayOutOpenWindow::new).a(PacketPlayOutOpenSignEditor.class, PacketPlayOutOpenSignEditor::new).a(PacketPlayOutAutoRecipe.class, PacketPlayOutAutoRecipe::new).a(PacketPlayOutAbilities.class, PacketPlayOutAbilities::new).a(PacketPlayOutCombatEvent.class, PacketPlayOutCombatEvent::new).a(PacketPlayOutPlayerInfo.class, PacketPlayOutPlayerInfo::new).a(PacketPlayOutLookAt.class, PacketPlayOutLookAt::new).a(PacketPlayOutPosition.class, PacketPlayOutPosition::new).a(PacketPlayOutRecipes.class, PacketPlayOutRecipes::new).a(PacketPlayOutEntityDestroy.class, PacketPlayOutEntityDestroy::new).a(PacketPlayOutRemoveEntityEffect.class, PacketPlayOutRemoveEntityEffect::new).a(PacketPlayOutResourcePackSend.class, PacketPlayOutResourcePackSend::new).a(PacketPlayOutRespawn.class, PacketPlayOutRespawn::new).a(PacketPlayOutEntityHeadRotation.class, PacketPlayOutEntityHeadRotation::new).a(PacketPlayOutMultiBlockChange.class, PacketPlayOutMultiBlockChange::new).a(PacketPlayOutSelectAdvancementTab.class, PacketPlayOutSelectAdvancementTab::new).a(PacketPlayOutWorldBorder.class, PacketPlayOutWorldBorder::new).a(PacketPlayOutCamera.class, PacketPlayOutCamera::new).a(PacketPlayOutHeldItemSlot.class, PacketPlayOutHeldItemSlot::new).a(PacketPlayOutViewCentre.class, PacketPlayOutViewCentre::new).a(PacketPlayOutViewDistance.class, PacketPlayOutViewDistance::new).a(PacketPlayOutSpawnPosition.class, PacketPlayOutSpawnPosition::new).a(PacketPlayOutScoreboardDisplayObjective.class, PacketPlayOutScoreboardDisplayObjective::new).a(PacketPlayOutEntityMetadata.class, PacketPlayOutEntityMetadata::new).a(PacketPlayOutAttachEntity.class, PacketPlayOutAttachEntity::new).a(PacketPlayOutEntityVelocity.class, PacketPlayOutEntityVelocity::new).a(PacketPlayOutEntityEquipment.class, PacketPlayOutEntityEquipment::new).a(PacketPlayOutExperience.class, PacketPlayOutExperience::new).a(PacketPlayOutUpdateHealth.class, PacketPlayOutUpdateHealth::new).a(PacketPlayOutScoreboardObjective.class, PacketPlayOutScoreboardObjective::new).a(PacketPlayOutMount.class, PacketPlayOutMount::new).a(PacketPlayOutScoreboardTeam.class, PacketPlayOutScoreboardTeam::new).a(PacketPlayOutScoreboardScore.class, PacketPlayOutScoreboardScore::new).a(PacketPlayOutUpdateTime.class, PacketPlayOutUpdateTime::new).a(PacketPlayOutTitle.class, PacketPlayOutTitle::new).a(PacketPlayOutEntitySound.class, PacketPlayOutEntitySound::new).a(PacketPlayOutNamedSoundEffect.class, PacketPlayOutNamedSoundEffect::new).a(PacketPlayOutStopSound.class, PacketPlayOutStopSound::new).a(PacketPlayOutPlayerListHeaderFooter.class, PacketPlayOutPlayerListHeaderFooter::new).a(PacketPlayOutNBTQuery.class, PacketPlayOutNBTQuery::new).a(PacketPlayOutCollect.class, PacketPlayOutCollect::new).a(PacketPlayOutEntityTeleport.class, PacketPlayOutEntityTeleport::new).a(PacketPlayOutAdvancements.class, PacketPlayOutAdvancements::new).a(PacketPlayOutUpdateAttributes.class, PacketPlayOutUpdateAttributes::new).a(PacketPlayOutEntityEffect.class, PacketPlayOutEntityEffect::new).a(PacketPlayOutRecipeUpdate.class, PacketPlayOutRecipeUpdate::new).a(PacketPlayOutTags.class, PacketPlayOutTags::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketPlayInTeleportAccept.class, PacketPlayInTeleportAccept::new).a(PacketPlayInTileNBTQuery.class, PacketPlayInTileNBTQuery::new).a(PacketPlayInDifficultyChange.class, PacketPlayInDifficultyChange::new).a(PacketPlayInChat.class, PacketPlayInChat::new).a(PacketPlayInClientCommand.class, PacketPlayInClientCommand::new).a(PacketPlayInSettings.class, PacketPlayInSettings::new).a(PacketPlayInTabComplete.class, PacketPlayInTabComplete::new).a(PacketPlayInTransaction.class, PacketPlayInTransaction::new).a(PacketPlayInEnchantItem.class, PacketPlayInEnchantItem::new).a(PacketPlayInWindowClick.class, PacketPlayInWindowClick::new).a(PacketPlayInCloseWindow.class, PacketPlayInCloseWindow::new).a(PacketPlayInCustomPayload.class, PacketPlayInCustomPayload::new).a(PacketPlayInBEdit.class, PacketPlayInBEdit::new).a(PacketPlayInEntityNBTQuery.class, PacketPlayInEntityNBTQuery::new).a(PacketPlayInUseEntity.class, PacketPlayInUseEntity::new).a(PacketPlayInJigsawGenerate.class, PacketPlayInJigsawGenerate::new).a(PacketPlayInKeepAlive.class, PacketPlayInKeepAlive::new).a(PacketPlayInDifficultyLock.class, PacketPlayInDifficultyLock::new).a(PacketPlayInFlying.PacketPlayInPosition.class, PacketPlayInFlying.PacketPlayInPosition::new).a(PacketPlayInFlying.PacketPlayInPositionLook.class, PacketPlayInFlying.PacketPlayInPositionLook::new).a(PacketPlayInFlying.PacketPlayInLook.class, PacketPlayInFlying.PacketPlayInLook::new).a(PacketPlayInFlying.class, PacketPlayInFlying::new).a(PacketPlayInVehicleMove.class, PacketPlayInVehicleMove::new).a(PacketPlayInBoatMove.class, PacketPlayInBoatMove::new).a(PacketPlayInPickItem.class, PacketPlayInPickItem::new).a(PacketPlayInAutoRecipe.class, PacketPlayInAutoRecipe::new).a(PacketPlayInAbilities.class, PacketPlayInAbilities::new).a(PacketPlayInBlockDig.class, PacketPlayInBlockDig::new).a(PacketPlayInEntityAction.class, PacketPlayInEntityAction::new).a(PacketPlayInSteerVehicle.class, PacketPlayInSteerVehicle::new).a(PacketPlayInRecipeSettings.class, PacketPlayInRecipeSettings::new).a(PacketPlayInRecipeDisplayed.class, PacketPlayInRecipeDisplayed::new).a(PacketPlayInItemName.class, PacketPlayInItemName::new).a(PacketPlayInResourcePackStatus.class, PacketPlayInResourcePackStatus::new).a(PacketPlayInAdvancements.class, PacketPlayInAdvancements::new).a(PacketPlayInTrSel.class, PacketPlayInTrSel::new).a(PacketPlayInBeacon.class, PacketPlayInBeacon::new).a(PacketPlayInHeldItemSlot.class, PacketPlayInHeldItemSlot::new).a(PacketPlayInSetCommandBlock.class, PacketPlayInSetCommandBlock::new).a(PacketPlayInSetCommandMinecart.class, PacketPlayInSetCommandMinecart::new).a(PacketPlayInSetCreativeSlot.class, PacketPlayInSetCreativeSlot::new).a(PacketPlayInSetJigsaw.class, PacketPlayInSetJigsaw::new).a(PacketPlayInStruct.class, PacketPlayInStruct::new).a(PacketPlayInUpdateSign.class, PacketPlayInUpdateSign::new).a(PacketPlayInArmAnimation.class, PacketPlayInArmAnimation::new).a(PacketPlayInSpectate.class, PacketPlayInSpectate::new).a(PacketPlayInUseItem.class, PacketPlayInUseItem::new).a(PacketPlayInBlockPlace.class, PacketPlayInBlockPlace::new))), STATUS(1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketStatusInStart.class, PacketStatusInStart::new).a(PacketStatusInPing.class, PacketStatusInPing::new)).a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketStatusOutServerInfo.class, PacketStatusOutServerInfo::new).a(PacketStatusOutPong.class, PacketStatusOutPong::new))), LOGIN(2, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<>()).a(PacketLoginOutDisconnect.class, PacketLoginOutDisconnect::new).a(PacketLoginOutEncryptionBegin.class, PacketLoginOutEncryptionBegin::new).a(PacketLoginOutSuccess.class, PacketLoginOutSuccess::new).a(PacketLoginOutSetCompression.class, PacketLoginOutSetCompression::new).a(PacketLoginOutCustomPayload.class, PacketLoginOutCustomPayload::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<>()).a(PacketLoginInStart.class, PacketLoginInStart::new).a(PacketLoginInEncryptionBegin.class, PacketLoginInEncryptionBegin::new).a(PacketLoginInCustomPayload.class, PacketLoginInCustomPayload::new)));
-+    // Paper - fix decompile error - add generic names to < > like PacketListenerPlayOut
-+    HANDSHAKING(-1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketHandshakingInListener>()).a(PacketHandshakingInSetProtocol.class, PacketHandshakingInSetProtocol::new))), PLAY(0, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketListenerPlayOut>()).a(PacketPlayOutSpawnEntity.class, PacketPlayOutSpawnEntity::new).a(PacketPlayOutSpawnEntityExperienceOrb.class, PacketPlayOutSpawnEntityExperienceOrb::new).a(PacketPlayOutSpawnEntityLiving.class, PacketPlayOutSpawnEntityLiving::new).a(PacketPlayOutSpawnEntityPainting.class, PacketPlayOutSpawnEntityPainting::new).a(PacketPlayOutNamedEntitySpawn.class, PacketPlayOutNamedEntitySpawn::new).a(PacketPlayOutAnimation.class, PacketPlayOutAnimation::new).a(PacketPlayOutStatistic.class, PacketPlayOutStatistic::new).a(PacketPlayOutBlockBreak.class, PacketPlayOutBlockBreak::new).a(PacketPlayOutBlockBreakAnimation.class, PacketPlayOutBlockBreakAnimation::new).a(PacketPlayOutTileEntityData.class, PacketPlayOutTileEntityData::new).a(PacketPlayOutBlockAction.class, PacketPlayOutBlockAction::new).a(PacketPlayOutBlockChange.class, PacketPlayOutBlockChange::new).a(PacketPlayOutBoss.class, PacketPlayOutBoss::new).a(PacketPlayOutServerDifficulty.class, PacketPlayOutServerDifficulty::new).a(PacketPlayOutChat.class, PacketPlayOutChat::new).a(PacketPlayOutTabComplete.class, PacketPlayOutTabComplete::new).a(PacketPlayOutCommands.class, PacketPlayOutCommands::new).a(PacketPlayOutTransaction.class, PacketPlayOutTransaction::new).a(PacketPlayOutCloseWindow.class, PacketPlayOutCloseWindow::new).a(PacketPlayOutWindowItems.class, PacketPlayOutWindowItems::new).a(PacketPlayOutWindowData.class, PacketPlayOutWindowData::new).a(PacketPlayOutSetSlot.class, PacketPlayOutSetSlot::new).a(PacketPlayOutSetCooldown.class, PacketPlayOutSetCooldown::new).a(PacketPlayOutCustomPayload.class, PacketPlayOutCustomPayload::new).a(PacketPlayOutCustomSoundEffect.class, PacketPlayOutCustomSoundEffect::new).a(PacketPlayOutKickDisconnect.class, PacketPlayOutKickDisconnect::new).a(PacketPlayOutEntityStatus.class, PacketPlayOutEntityStatus::new).a(PacketPlayOutExplosion.class, PacketPlayOutExplosion::new).a(PacketPlayOutUnloadChunk.class, PacketPlayOutUnloadChunk::new).a(PacketPlayOutGameStateChange.class, PacketPlayOutGameStateChange::new).a(PacketPlayOutOpenWindowHorse.class, PacketPlayOutOpenWindowHorse::new).a(PacketPlayOutKeepAlive.class, PacketPlayOutKeepAlive::new).a(PacketPlayOutMapChunk.class, PacketPlayOutMapChunk::new).a(PacketPlayOutWorldEvent.class, PacketPlayOutWorldEvent::new).a(PacketPlayOutWorldParticles.class, PacketPlayOutWorldParticles::new).a(PacketPlayOutLightUpdate.class, PacketPlayOutLightUpdate::new).a(PacketPlayOutLogin.class, PacketPlayOutLogin::new).a(PacketPlayOutMap.class, PacketPlayOutMap::new).a(PacketPlayOutOpenWindowMerchant.class, PacketPlayOutOpenWindowMerchant::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMove.class, PacketPlayOutEntity.PacketPlayOutRelEntityMove::new).a(PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook.class, PacketPlayOutEntity.PacketPlayOutRelEntityMoveLook::new).a(PacketPlayOutEntity.PacketPlayOutEntityLook.class, PacketPlayOutEntity.PacketPlayOutEntityLook::new).a(PacketPlayOutEntity.class, PacketPlayOutEntity::new).a(PacketPlayOutVehicleMove.class, PacketPlayOutVehicleMove::new).a(PacketPlayOutOpenBook.class, PacketPlayOutOpenBook::new).a(PacketPlayOutOpenWindow.class, PacketPlayOutOpenWindow::new).a(PacketPlayOutOpenSignEditor.class, PacketPlayOutOpenSignEditor::new).a(PacketPlayOutAutoRecipe.class, PacketPlayOutAutoRecipe::new).a(PacketPlayOutAbilities.class, PacketPlayOutAbilities::new).a(PacketPlayOutCombatEvent.class, PacketPlayOutCombatEvent::new).a(PacketPlayOutPlayerInfo.class, PacketPlayOutPlayerInfo::new).a(PacketPlayOutLookAt.class, PacketPlayOutLookAt::new).a(PacketPlayOutPosition.class, PacketPlayOutPosition::new).a(PacketPlayOutRecipes.class, PacketPlayOutRecipes::new).a(PacketPlayOutEntityDestroy.class, PacketPlayOutEntityDestroy::new).a(PacketPlayOutRemoveEntityEffect.class, PacketPlayOutRemoveEntityEffect::new).a(PacketPlayOutResourcePackSend.class, PacketPlayOutResourcePackSend::new).a(PacketPlayOutRespawn.class, PacketPlayOutRespawn::new).a(PacketPlayOutEntityHeadRotation.class, PacketPlayOutEntityHeadRotation::new).a(PacketPlayOutMultiBlockChange.class, PacketPlayOutMultiBlockChange::new).a(PacketPlayOutSelectAdvancementTab.class, PacketPlayOutSelectAdvancementTab::new).a(PacketPlayOutWorldBorder.class, PacketPlayOutWorldBorder::new).a(PacketPlayOutCamera.class, PacketPlayOutCamera::new).a(PacketPlayOutHeldItemSlot.class, PacketPlayOutHeldItemSlot::new).a(PacketPlayOutViewCentre.class, PacketPlayOutViewCentre::new).a(PacketPlayOutViewDistance.class, PacketPlayOutViewDistance::new).a(PacketPlayOutSpawnPosition.class, PacketPlayOutSpawnPosition::new).a(PacketPlayOutScoreboardDisplayObjective.class, PacketPlayOutScoreboardDisplayObjective::new).a(PacketPlayOutEntityMetadata.class, PacketPlayOutEntityMetadata::new).a(PacketPlayOutAttachEntity.class, PacketPlayOutAttachEntity::new).a(PacketPlayOutEntityVelocity.class, PacketPlayOutEntityVelocity::new).a(PacketPlayOutEntityEquipment.class, PacketPlayOutEntityEquipment::new).a(PacketPlayOutExperience.class, PacketPlayOutExperience::new).a(PacketPlayOutUpdateHealth.class, PacketPlayOutUpdateHealth::new).a(PacketPlayOutScoreboardObjective.class, PacketPlayOutScoreboardObjective::new).a(PacketPlayOutMount.class, PacketPlayOutMount::new).a(PacketPlayOutScoreboardTeam.class, PacketPlayOutScoreboardTeam::new).a(PacketPlayOutScoreboardScore.class, PacketPlayOutScoreboardScore::new).a(PacketPlayOutUpdateTime.class, PacketPlayOutUpdateTime::new).a(PacketPlayOutTitle.class, PacketPlayOutTitle::new).a(PacketPlayOutEntitySound.class, PacketPlayOutEntitySound::new).a(PacketPlayOutNamedSoundEffect.class, PacketPlayOutNamedSoundEffect::new).a(PacketPlayOutStopSound.class, PacketPlayOutStopSound::new).a(PacketPlayOutPlayerListHeaderFooter.class, PacketPlayOutPlayerListHeaderFooter::new).a(PacketPlayOutNBTQuery.class, PacketPlayOutNBTQuery::new).a(PacketPlayOutCollect.class, PacketPlayOutCollect::new).a(PacketPlayOutEntityTeleport.class, PacketPlayOutEntityTeleport::new).a(PacketPlayOutAdvancements.class, PacketPlayOutAdvancements::new).a(PacketPlayOutUpdateAttributes.class, PacketPlayOutUpdateAttributes::new).a(PacketPlayOutEntityEffect.class, PacketPlayOutEntityEffect::new).a(PacketPlayOutRecipeUpdate.class, PacketPlayOutRecipeUpdate::new).a(PacketPlayOutTags.class, PacketPlayOutTags::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketListenerPlayIn>()).a(PacketPlayInTeleportAccept.class, PacketPlayInTeleportAccept::new).a(PacketPlayInTileNBTQuery.class, PacketPlayInTileNBTQuery::new).a(PacketPlayInDifficultyChange.class, PacketPlayInDifficultyChange::new).a(PacketPlayInChat.class, PacketPlayInChat::new).a(PacketPlayInClientCommand.class, PacketPlayInClientCommand::new).a(PacketPlayInSettings.class, PacketPlayInSettings::new).a(PacketPlayInTabComplete.class, PacketPlayInTabComplete::new).a(PacketPlayInTransaction.class, PacketPlayInTransaction::new).a(PacketPlayInEnchantItem.class, PacketPlayInEnchantItem::new).a(PacketPlayInWindowClick.class, PacketPlayInWindowClick::new).a(PacketPlayInCloseWindow.class, PacketPlayInCloseWindow::new).a(PacketPlayInCustomPayload.class, PacketPlayInCustomPayload::new).a(PacketPlayInBEdit.class, PacketPlayInBEdit::new).a(PacketPlayInEntityNBTQuery.class, PacketPlayInEntityNBTQuery::new).a(PacketPlayInUseEntity.class, PacketPlayInUseEntity::new).a(PacketPlayInJigsawGenerate.class, PacketPlayInJigsawGenerate::new).a(PacketPlayInKeepAlive.class, PacketPlayInKeepAlive::new).a(PacketPlayInDifficultyLock.class, PacketPlayInDifficultyLock::new).a(PacketPlayInFlying.PacketPlayInPosition.class, PacketPlayInFlying.PacketPlayInPosition::new).a(PacketPlayInFlying.PacketPlayInPositionLook.class, PacketPlayInFlying.PacketPlayInPositionLook::new).a(PacketPlayInFlying.PacketPlayInLook.class, PacketPlayInFlying.PacketPlayInLook::new).a(PacketPlayInFlying.class, PacketPlayInFlying::new).a(PacketPlayInVehicleMove.class, PacketPlayInVehicleMove::new).a(PacketPlayInBoatMove.class, PacketPlayInBoatMove::new).a(PacketPlayInPickItem.class, PacketPlayInPickItem::new).a(PacketPlayInAutoRecipe.class, PacketPlayInAutoRecipe::new).a(PacketPlayInAbilities.class, PacketPlayInAbilities::new).a(PacketPlayInBlockDig.class, PacketPlayInBlockDig::new).a(PacketPlayInEntityAction.class, PacketPlayInEntityAction::new).a(PacketPlayInSteerVehicle.class, PacketPlayInSteerVehicle::new).a(PacketPlayInRecipeSettings.class, PacketPlayInRecipeSettings::new).a(PacketPlayInRecipeDisplayed.class, PacketPlayInRecipeDisplayed::new).a(PacketPlayInItemName.class, PacketPlayInItemName::new).a(PacketPlayInResourcePackStatus.class, PacketPlayInResourcePackStatus::new).a(PacketPlayInAdvancements.class, PacketPlayInAdvancements::new).a(PacketPlayInTrSel.class, PacketPlayInTrSel::new).a(PacketPlayInBeacon.class, PacketPlayInBeacon::new).a(PacketPlayInHeldItemSlot.class, PacketPlayInHeldItemSlot::new).a(PacketPlayInSetCommandBlock.class, PacketPlayInSetCommandBlock::new).a(PacketPlayInSetCommandMinecart.class, PacketPlayInSetCommandMinecart::new).a(PacketPlayInSetCreativeSlot.class, PacketPlayInSetCreativeSlot::new).a(PacketPlayInSetJigsaw.class, PacketPlayInSetJigsaw::new).a(PacketPlayInStruct.class, PacketPlayInStruct::new).a(PacketPlayInUpdateSign.class, PacketPlayInUpdateSign::new).a(PacketPlayInArmAnimation.class, PacketPlayInArmAnimation::new).a(PacketPlayInSpectate.class, PacketPlayInSpectate::new).a(PacketPlayInUseItem.class, PacketPlayInUseItem::new).a(PacketPlayInBlockPlace.class, PacketPlayInBlockPlace::new))), STATUS(1, b().a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketStatusInListener>()).a(PacketStatusInStart.class, PacketStatusInStart::new).a(PacketStatusInPing.class, PacketStatusInPing::new)).a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketStatusOutListener>()).a(PacketStatusOutServerInfo.class, PacketStatusOutServerInfo::new).a(PacketStatusOutPong.class, PacketStatusOutPong::new))), LOGIN(2, b().a(EnumProtocolDirection.CLIENTBOUND, (new EnumProtocol.a<PacketLoginOutListener>()).a(PacketLoginOutDisconnect.class, PacketLoginOutDisconnect::new).a(PacketLoginOutEncryptionBegin.class, PacketLoginOutEncryptionBegin::new).a(PacketLoginOutSuccess.class, PacketLoginOutSuccess::new).a(PacketLoginOutSetCompression.class, PacketLoginOutSetCompression::new).a(PacketLoginOutCustomPayload.class, PacketLoginOutCustomPayload::new)).a(EnumProtocolDirection.SERVERBOUND, (new EnumProtocol.a<PacketLoginInListener>()).a(PacketLoginInStart.class, PacketLoginInStart::new).a(PacketLoginInEncryptionBegin.class, PacketLoginInEncryptionBegin::new).a(PacketLoginInCustomPayload.class, PacketLoginInCustomPayload::new)));
- 
-     private static final EnumProtocol[] e = new EnumProtocol[4];
-     private static final Map<Class<? extends Packet<?>>, EnumProtocol> f = Maps.newHashMap();
-@@ -98,7 +99,7 @@ public enum EnumProtocol {
-         private final List<Supplier<? extends Packet<T>>> b;
- 
-         private a() {
--            this.a = (Object2IntMap) SystemUtils.a((Object) (new Object2IntOpenHashMap()), (object2intopenhashmap) -> {
-+            this.a = (Object2IntMap) SystemUtils.a(new Object2IntOpenHashMap(), (object2intopenhashmap) -> { // Paper - fix decompile error
-                 object2intopenhashmap.defaultReturnValue(-1);
-             });
-             this.b = Lists.newArrayList();
-diff --git a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
-index eeb45fb34b1a989f850049bf4fd59d585c79ab6d..ac2f4354e8c442a20b842f315a76a3abdcfec4dc 100644
---- a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
-+++ b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
+diff --git a/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java b/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
+index 6abf1459cc97c261daf3c116521574d31a77a338..2b2c03ab62816f3d21ef953c4a45f55e3997cca6 100644
+--- a/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
++++ b/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
 @@ -55,7 +55,7 @@ public abstract class IAsyncTaskHandler<R extends Runnable> implements Mailbox<R
              return this.executeFuture(runnable);
          } else {
@@ -247,91 +415,104 @@ index eeb45fb34b1a989f850049bf4fd59d585c79ab6d..ac2f4354e8c442a20b842f315a76a3ab
              return true;
          }
      }
-diff --git a/src/main/java/net/minecraft/server/IBlockDataHolder.java b/src/main/java/net/minecraft/server/IBlockDataHolder.java
-index 0aa642388b45db6fc9a1081dda519e34c23fefa1..98616f0db75d0e2b2e960dbf88289c87ba426ab6 100644
---- a/src/main/java/net/minecraft/server/IBlockDataHolder.java
-+++ b/src/main/java/net/minecraft/server/IBlockDataHolder.java
-@@ -27,11 +27,11 @@ public abstract class IBlockDataHolder<O, S> {
-             } else {
-                 IBlockState<?> iblockstate = (IBlockState) entry.getKey();
+diff --git a/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java b/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java
+index e872e5c9157ca499491042040f0cc0f14f7d2946..2efca1fe92b2e93dcbf5337eea8855b1b2b9a564 100644
+--- a/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java
++++ b/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java
+@@ -100,7 +100,7 @@ public class ThreadedMailbox<T> implements Mailbox<T>, AutoCloseable, Runnable {
  
--                return iblockstate.getName() + "=" + this.a(iblockstate, (Comparable) entry.getValue());
-+                return iblockstate.getName() + "=" + this.a((IBlockState) iblockstate, (Comparable) entry.getValue()); // Paper - decompile fix
-             }
+     public void run() {
+         try {
+-            this.a((i) -> {
++            this.a((int i) -> { // Paper - decompile fix
+                 return i == 0;
+             });
+         } finally {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java b/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
+index fe5dcce3873ca2724ac9d416d6f5d3c65d0fdafe..aa1d948e6aebef25f0f4c4c07f5131d2e8387e59 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
++++ b/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
+@@ -191,9 +191,9 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+     }
+ 
+     private static boolean a(ChunkSection chunksection) {
+-        Set set = VillagePlaceType.x;
++        Set<IBlockData> set = VillagePlaceType.x; // Paper - decompile error
+ 
+-        set.getClass();
++        //set.getClass(); // Paper - decompile error
+         return chunksection.a(set::contains);
+     }
+ 
+@@ -211,7 +211,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+         SectionPosition.b(new ChunkCoordIntPair(blockposition), Math.floorDiv(i, 16)).map((sectionposition) -> {
+             return Pair.of(sectionposition, this.d(sectionposition.s()));
+         }).filter((pair) -> {
+-            return !(Boolean) ((Optional) pair.getSecond()).map(VillagePlaceSection::a).orElse(false);
++            return !(Boolean) (pair.getSecond()).map(VillagePlaceSection::a).orElse(false); // Paper - decompile fix
+         }).map((pair) -> {
+             return ((SectionPosition) pair.getFirst()).r();
+         }).filter((chunkcoordintpair) -> {
+@@ -263,7 +263,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+ 
+         private final Predicate<? super VillagePlaceRecord> d;
+ 
+-        private Occupancy(Predicate predicate) {
++        private Occupancy(Predicate<? super VillagePlaceRecord> predicate) { // Paper - decompile fix
+             this.d = predicate;
          }
  
--        private <T extends Comparable<T>> String a(IBlockState<T> iblockstate, Comparable<?> comparable) {
-+        private <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T comparable) { // Paper - decompile error
-             return iblockstate.a(comparable);
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java b/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
+index fc1f0cd4b70cdd0dda538d8867fab4cb8443120e..c181d5f5e6108ade54fc97c665897d1db5e90719 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
+@@ -65,7 +65,7 @@ public class EntityVindicator extends EntityIllagerAbstract {
+         this.goalSelector.a(2, new EntityIllagerAbstract.b(this));
+         this.goalSelector.a(3, new EntityRaider.a(this, 10.0F));
+         this.goalSelector.a(4, new EntityVindicator.c(this));
+-        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityRaider.class})).a());
++        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityRaider.class})).a(new Class[0])); // Paper - decompile fix
+         this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
+         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityVillagerAbstract.class, true));
+         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityIronGolem.class, true));
+diff --git a/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java b/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
+index fe1dde99f758daa730acacc78237d92aa443ab6d..764ff5d9ffb541a356a6bc8b321e619849dde747 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
++++ b/src/main/java/net/minecraft/world/entity/npc/VillagerTrades.java
+@@ -47,12 +47,12 @@ import net.minecraft.world.level.saveddata.maps.WorldMap;
+ 
+ public class VillagerTrades {
+ 
+-    public static final Map<VillagerProfession, Int2ObjectMap<VillagerTrades.IMerchantRecipeOption[]>> a = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
++    public static final Map<VillagerProfession, Int2ObjectMap<VillagerTrades.IMerchantRecipeOption[]>> a = SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // Paper - decompile fix
+         hashmap.put(VillagerProfession.FARMER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WHEAT, 20, 16, 2), new VillagerTrades.b(Items.POTATO, 26, 16, 2), new VillagerTrades.b(Items.CARROT, 22, 16, 2), new VillagerTrades.b(Items.BEETROOT, 15, 16, 2), new VillagerTrades.h(Items.BREAD, 1, 6, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Blocks.PUMPKIN, 6, 12, 10), new VillagerTrades.h(Items.PUMPKIN_PIE, 1, 4, 5), new VillagerTrades.h(Items.APPLE, 1, 4, 16, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.COOKIE, 3, 18, 10), new VillagerTrades.b(Blocks.MELON, 4, 12, 20)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Blocks.CAKE, 1, 1, 12, 15), new VillagerTrades.i(MobEffects.NIGHT_VISION, 100, 15), new VillagerTrades.i(MobEffects.JUMP, 160, 15), new VillagerTrades.i(MobEffects.WEAKNESS, 140, 15), new VillagerTrades.i(MobEffects.BLINDNESS, 120, 15), new VillagerTrades.i(MobEffects.POISON, 280, 15), new VillagerTrades.i(MobEffects.SATURATION, 7, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.GOLDEN_CARROT, 3, 3, 30), new VillagerTrades.h(Items.GLISTERING_MELON_SLICE, 4, 3, 30)})));
+-        hashmap.put(VillagerProfession.FISHERMAN, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 20, 16, 2), new VillagerTrades.b(Items.COAL, 10, 16, 2), new VillagerTrades.g(Items.COD, 6, Items.COOKED_COD, 6, 16, 1), new VillagerTrades.h(Items.COD_BUCKET, 3, 1, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COD, 15, 16, 10), new VillagerTrades.g(Items.SALMON, 6, Items.COOKED_SALMON, 6, 16, 5), new VillagerTrades.h(Items.rn, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SALMON, 13, 16, 20), new VillagerTrades.e(Items.FISHING_ROD, 3, 3, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.TROPICAL_FISH, 6, 12, 30)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PUFFERFISH, 4, 12, 30), new VillagerTrades.c(1, 12, 30, ImmutableMap.builder().put(VillagerType.PLAINS, Items.OAK_BOAT).put(VillagerType.TAIGA, Items.SPRUCE_BOAT).put(VillagerType.SNOW, Items.SPRUCE_BOAT).put(VillagerType.DESERT, Items.JUNGLE_BOAT).put(VillagerType.JUNGLE, Items.JUNGLE_BOAT).put(VillagerType.SAVANNA, Items.ACACIA_BOAT).put(VillagerType.SWAMP, Items.DARK_OAK_BOAT).build())})));
++        hashmap.put(VillagerProfession.FISHERMAN, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 20, 16, 2), new VillagerTrades.b(Items.COAL, 10, 16, 2), new VillagerTrades.g(Items.COD, 6, Items.COOKED_COD, 6, 16, 1), new VillagerTrades.h(Items.COD_BUCKET, 3, 1, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COD, 15, 16, 10), new VillagerTrades.g(Items.SALMON, 6, Items.COOKED_SALMON, 6, 16, 5), new VillagerTrades.h(Items.rn, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SALMON, 13, 16, 20), new VillagerTrades.e(Items.FISHING_ROD, 3, 3, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.TROPICAL_FISH, 6, 12, 30)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PUFFERFISH, 4, 12, 30), new VillagerTrades.c(1, 12, 30, ImmutableMap.<VillagerType, Item>builder().put(VillagerType.PLAINS, Items.OAK_BOAT).put(VillagerType.TAIGA, Items.SPRUCE_BOAT).put(VillagerType.SNOW, Items.SPRUCE_BOAT).put(VillagerType.DESERT, Items.JUNGLE_BOAT).put(VillagerType.JUNGLE, Items.JUNGLE_BOAT).put(VillagerType.SAVANNA, Items.ACACIA_BOAT).put(VillagerType.SWAMP, Items.DARK_OAK_BOAT).build())}))); // Paper - add <VillagerType, Item> to ImmutableMap.<VillagerType, Item>.builder()
+         hashmap.put(VillagerProfession.SHEPHERD, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Blocks.WHITE_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.BROWN_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.BLACK_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.GRAY_WOOL, 18, 16, 2), new VillagerTrades.h(Items.SHEARS, 2, 1, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WHITE_DYE, 12, 16, 10), new VillagerTrades.b(Items.GRAY_DYE, 12, 16, 10), new VillagerTrades.b(Items.BLACK_DYE, 12, 16, 10), new VillagerTrades.b(Items.LIGHT_BLUE_DYE, 12, 16, 10), new VillagerTrades.b(Items.LIME_DYE, 12, 16, 10), new VillagerTrades.h(Blocks.WHITE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.ORANGE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.MAGENTA_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIGHT_BLUE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.YELLOW_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIME_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.PINK_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.GRAY_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIGHT_GRAY_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.CYAN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.PURPLE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BLUE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BROWN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.GREEN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.RED_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BLACK_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.WHITE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.ORANGE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.MAGENTA_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIGHT_BLUE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.YELLOW_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIME_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.PINK_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.GRAY_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIGHT_GRAY_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.CYAN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.PURPLE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BLUE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BROWN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.GREEN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.RED_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BLACK_CARPET, 1, 4, 16, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.YELLOW_DYE, 12, 16, 20), new VillagerTrades.b(Items.LIGHT_GRAY_DYE, 12, 16, 20), new VillagerTrades.b(Items.ORANGE_DYE, 12, 16, 20), new VillagerTrades.b(Items.RED_DYE, 12, 16, 20), new VillagerTrades.b(Items.PINK_DYE, 12, 16, 20), new VillagerTrades.h(Blocks.WHITE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.YELLOW_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.RED_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BLACK_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BLUE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BROWN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.CYAN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.GRAY_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.GREEN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIGHT_BLUE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIGHT_GRAY_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIME_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.MAGENTA_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.ORANGE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.PINK_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.PURPLE_BED, 3, 1, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BROWN_DYE, 12, 16, 30), new VillagerTrades.b(Items.PURPLE_DYE, 12, 16, 30), new VillagerTrades.b(Items.BLUE_DYE, 12, 16, 30), new VillagerTrades.b(Items.GREEN_DYE, 12, 16, 30), new VillagerTrades.b(Items.MAGENTA_DYE, 12, 16, 30), new VillagerTrades.b(Items.CYAN_DYE, 12, 16, 30), new VillagerTrades.h(Items.WHITE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BLUE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIGHT_BLUE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.RED_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.PINK_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.GREEN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIME_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.GRAY_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BLACK_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.PURPLE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.MAGENTA_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.CYAN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BROWN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.YELLOW_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.ORANGE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIGHT_GRAY_BANNER, 3, 1, 12, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.PAINTING, 2, 3, 30)})));
+         hashmap.put(VillagerProfession.FLETCHER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STICK, 32, 16, 2), new VillagerTrades.h(Items.ARROW, 1, 16, 1), new VillagerTrades.g(Blocks.GRAVEL, 10, Items.FLINT, 10, 12, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.FLINT, 26, 12, 10), new VillagerTrades.h(Items.BOW, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 14, 16, 20), new VillagerTrades.h(Items.CROSSBOW, 3, 1, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.FEATHER, 24, 16, 30), new VillagerTrades.e(Items.BOW, 2, 3, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.es, 8, 12, 30), new VillagerTrades.e(Items.CROSSBOW, 3, 3, 15), new VillagerTrades.j(Items.ARROW, 5, Items.TIPPED_ARROW, 5, 2, 12, 30)})));
+-        hashmap.put(VillagerProfession.LIBRARIAN, a(ImmutableMap.builder().put(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.d(1), new VillagerTrades.h(Blocks.BOOKSHELF, 9, 1, 12, 1)}).put(2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BOOK, 4, 12, 10), new VillagerTrades.d(5), new VillagerTrades.h(Items.rk, 1, 1, 5)}).put(3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.INK_SAC, 5, 12, 20), new VillagerTrades.d(10), new VillagerTrades.h(Items.az, 1, 4, 10)}).put(4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WRITABLE_BOOK, 2, 12, 30), new VillagerTrades.d(15), new VillagerTrades.h(Items.CLOCK, 5, 1, 15), new VillagerTrades.h(Items.COMPASS, 4, 1, 15)}).put(5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.NAME_TAG, 20, 1, 30)}).build()));
++        hashmap.put(VillagerProfession.LIBRARIAN, a(ImmutableMap.<Integer, IMerchantRecipeOption[]>builder().put(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.d(1), new VillagerTrades.h(Blocks.BOOKSHELF, 9, 1, 12, 1)}).put(2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BOOK, 4, 12, 10), new VillagerTrades.d(5), new VillagerTrades.h(Items.rk, 1, 1, 5)}).put(3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.INK_SAC, 5, 12, 20), new VillagerTrades.d(10), new VillagerTrades.h(Items.az, 1, 4, 10)}).put(4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WRITABLE_BOOK, 2, 12, 30), new VillagerTrades.d(15), new VillagerTrades.h(Items.CLOCK, 5, 1, 15), new VillagerTrades.h(Items.COMPASS, 4, 1, 15)}).put(5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.NAME_TAG, 20, 1, 30)}).build())); // Paper - add <Integer, IMerchantRecipeOption[]> to ImmutableMap.<Integer, IMerchantRecipeOption[]>.builder()
+         hashmap.put(VillagerProfession.CARTOGRAPHER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.h(Items.MAP, 7, 1, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.dP, 11, 16, 10), new VillagerTrades.k(13, StructureGenerator.MONUMENT, MapIcon.Type.MONUMENT, 12, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COMPASS, 1, 12, 20), new VillagerTrades.k(14, StructureGenerator.MANSION, MapIcon.Type.MANSION, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.ITEM_FRAME, 7, 1, 15), new VillagerTrades.h(Items.WHITE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BLUE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIGHT_BLUE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.RED_BANNER, 3, 1, 15), new VillagerTrades.h(Items.PINK_BANNER, 3, 1, 15), new VillagerTrades.h(Items.GREEN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIME_BANNER, 3, 1, 15), new VillagerTrades.h(Items.GRAY_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BLACK_BANNER, 3, 1, 15), new VillagerTrades.h(Items.PURPLE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.MAGENTA_BANNER, 3, 1, 15), new VillagerTrades.h(Items.CYAN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BROWN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.YELLOW_BANNER, 3, 1, 15), new VillagerTrades.h(Items.ORANGE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIGHT_GRAY_BANNER, 3, 1, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.GLOBE_BANNER_PATTERN, 8, 1, 30)})));
+         hashmap.put(VillagerProfession.CLERIC, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.ROTTEN_FLESH, 32, 16, 2), new VillagerTrades.h(Items.REDSTONE, 1, 2, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.GOLD_INGOT, 3, 12, 10), new VillagerTrades.h(Items.LAPIS_LAZULI, 1, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.RABBIT_FOOT, 2, 12, 20), new VillagerTrades.h(Blocks.GLOWSTONE, 4, 1, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SCUTE, 4, 12, 30), new VillagerTrades.b(Items.GLASS_BOTTLE, 9, 12, 30), new VillagerTrades.h(Items.ENDER_PEARL, 5, 1, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.NETHER_WART, 22, 12, 30), new VillagerTrades.h(Items.EXPERIENCE_BOTTLE, 3, 1, 30)})));
+         hashmap.put(VillagerProfession.ARMORER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COAL, 15, 16, 2), new VillagerTrades.h(new ItemStack(Items.IRON_LEGGINGS), 7, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_BOOTS), 4, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_HELMET), 5, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_CHESTPLATE), 9, 1, 12, 1, 0.2F)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.IRON_INGOT, 4, 12, 10), new VillagerTrades.h(new ItemStack(Items.rj), 36, 1, 12, 5, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_BOOTS), 1, 1, 12, 5, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_LEGGINGS), 3, 1, 12, 5, 0.2F)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.LAVA_BUCKET, 1, 12, 20), new VillagerTrades.b(Items.DIAMOND, 1, 12, 20), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_HELMET), 1, 1, 12, 10, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_CHESTPLATE), 4, 1, 12, 10, 0.2F), new VillagerTrades.h(new ItemStack(Items.SHIELD), 5, 1, 12, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.e(Items.DIAMOND_LEGGINGS, 14, 3, 15, 0.2F), new VillagerTrades.e(Items.DIAMOND_BOOTS, 8, 3, 15, 0.2F)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.e(Items.DIAMOND_HELMET, 8, 3, 30, 0.2F), new VillagerTrades.e(Items.DIAMOND_CHESTPLATE, 16, 3, 30, 0.2F)})));
+diff --git a/src/main/java/net/minecraft/world/item/crafting/CraftingManager.java b/src/main/java/net/minecraft/world/item/crafting/CraftingManager.java
+index 54a636a3d5fdd0107cd0a41167ab1626469fe042..5ba58bf1a47c696235e6e7a4a6815104bc23de80 100644
+--- a/src/main/java/net/minecraft/world/item/crafting/CraftingManager.java
++++ b/src/main/java/net/minecraft/world/item/crafting/CraftingManager.java
+@@ -75,7 +75,7 @@ public class CraftingManager extends ResourceDataJson {
          }
-     };
-@@ -47,11 +47,11 @@ public abstract class IBlockDataHolder<O, S> {
+ 
+         this.recipes = (Map) map1.entrySet().stream().collect(ImmutableMap.toImmutableMap(Entry::getKey, (entry1) -> {
+-            return (entry1.getValue()); // CraftBukkit
++            return entry1.getValue(); // CraftBukkit // Paper - decompile fix - *shrugs internally*
+         }));
+         CraftingManager.LOGGER.info("Loaded {} recipes", map1.size());
      }
- 
-     public <T extends Comparable<T>> S a(IBlockState<T> iblockstate) {
--        return this.set(iblockstate, (Comparable) a(iblockstate.getValues(), (Object) this.get(iblockstate)));
-+        return this.set(iblockstate, a(iblockstate.getValues(), this.get(iblockstate))); // Paper - decompile error
-     }
- 
-     protected static <T> T a(Collection<T> collection, T t0) {
--        Iterator iterator = collection.iterator();
-+        Iterator<T> iterator = collection.iterator(); // Paper
- 
-         do {
-             if (!iterator.hasNext()) {
-@@ -93,7 +93,7 @@ public abstract class IBlockDataHolder<O, S> {
-         if (comparable == null) {
-             throw new IllegalArgumentException("Cannot get property " + iblockstate + " as it does not exist in " + this.c);
-         } else {
--            return (Comparable) iblockstate.getType().cast(comparable);
-+            return iblockstate.getType().cast(comparable); // Paper - decompile error
-         }
-     }
- 
-@@ -109,7 +109,7 @@ public abstract class IBlockDataHolder<O, S> {
-         if (comparable == null) {
-             throw new IllegalArgumentException("Cannot set property " + iblockstate + " as it does not exist in " + this.c);
-         } else if (comparable == v0) {
--            return this;
-+            return (S) this; // Paper - decompile error
-         } else {
-             S s0 = this.e.get(iblockstate, v0);
- 
-@@ -161,7 +161,7 @@ public abstract class IBlockDataHolder<O, S> {
-         return codec.dispatch("Name", (iblockdataholder) -> {
-             return iblockdataholder.c;
-         }, (object) -> {
--            S s0 = (IBlockDataHolder) function.apply(object);
-+            S s0 = function.apply(object); // Paper - decompile error
- 
-             return s0.getStateMap().isEmpty() ? Codec.unit(s0) : s0.d.fieldOf("Properties").codec();
-         });
-diff --git a/src/main/java/net/minecraft/server/IBlockState.java b/src/main/java/net/minecraft/server/IBlockState.java
-index 88f1f201240ef0479c4f0f93f4caca454bbe7e9e..d63a4e4916ed5f5d901be0f4dd2c13cf66239055 100644
---- a/src/main/java/net/minecraft/server/IBlockState.java
-+++ b/src/main/java/net/minecraft/server/IBlockState.java
-@@ -16,12 +16,10 @@ public abstract class IBlockState<T extends Comparable<T>> {
-     private final Codec<IBlockState.a<T>> e;
- 
-     protected IBlockState(String s, Class<T> oclass) {
--        this.d = Codec.STRING.comapFlatMap((s1) -> {
--            return (DataResult) this.b(s1).map(DataResult::success).orElseGet(() -> {
--                return DataResult.error("Unable to read property: " + this + " with value: " + s1);
--            });
--        }, this::a);
--        this.e = this.d.xmap(this::b, IBlockState.a::b);
-+        this.d = Codec.STRING.comapFlatMap((s1) -> this.b(s1).map(DataResult::success).orElseGet(() -> { // Paper - decompile error
-+            return DataResult.error("Unable to read property: " + this + " with value: " + s1);
-+        }), this::a);
-+        this.e = this.d.xmap(this::b, (IBlockState.a<T> param) -> param.b()); // Paper - decompile fix
-         this.a = oclass;
-         this.b = s;
-     }
-diff --git a/src/main/java/net/minecraft/server/IEntityAccess.java b/src/main/java/net/minecraft/server/IEntityAccess.java
-index 931959013cf017ce622fb9f8516c5bf604eb8a69..f433e1f6e6d430bd35a0fb54ee85295ea06f53bd 100644
---- a/src/main/java/net/minecraft/server/IEntityAccess.java
-+++ b/src/main/java/net/minecraft/server/IEntityAccess.java
-@@ -158,22 +158,22 @@ public interface IEntityAccess {
+diff --git a/src/main/java/net/minecraft/world/level/IEntityAccess.java b/src/main/java/net/minecraft/world/level/IEntityAccess.java
+index d24f97593777d6929271520f7501a800f1aadaa6..4ece69851e7b05016f52c291ce911eb791cf3a23 100644
+--- a/src/main/java/net/minecraft/world/level/IEntityAccess.java
++++ b/src/main/java/net/minecraft/world/level/IEntityAccess.java
+@@ -167,22 +167,22 @@ public interface IEntityAccess {
  
      @Nullable
      default <T extends EntityLiving> T a(Class<? extends T> oclass, PathfinderTargetCondition pathfindertargetcondition, @Nullable EntityLiving entityliving, double d0, double d1, double d2, AxisAlignedBB axisalignedbb) {
@@ -358,7 +539,7 @@ index 931959013cf017ce622fb9f8516c5bf604eb8a69..f433e1f6e6d430bd35a0fb54ee85295e
  
              if (pathfindertargetcondition.a(entityliving, t1)) {
                  double d4 = t1.h(d0, d1, d2);
-@@ -206,10 +206,10 @@ public interface IEntityAccess {
+@@ -215,10 +215,10 @@ public interface IEntityAccess {
      default <T extends EntityLiving> List<T> a(Class<? extends T> oclass, PathfinderTargetCondition pathfindertargetcondition, EntityLiving entityliving, AxisAlignedBB axisalignedbb) {
          List<T> list = this.a(oclass, axisalignedbb, (Predicate) null);
          List<T> list1 = Lists.newArrayList();
@@ -371,187 +552,11 @@ index 931959013cf017ce622fb9f8516c5bf604eb8a69..f433e1f6e6d430bd35a0fb54ee85295e
  
              if (pathfindertargetcondition.a(entityliving, t0)) {
                  list1.add(t0);
-diff --git a/src/main/java/net/minecraft/server/IOWorker.java b/src/main/java/net/minecraft/server/IOWorker.java
-index c5a95f51ba43b94fd07f8df6576f45c3dd0216a3..38ccfd78639a85abcefb915c5c231be5881cebc1 100644
---- a/src/main/java/net/minecraft/server/IOWorker.java
-+++ b/src/main/java/net/minecraft/server/IOWorker.java
-@@ -83,7 +83,7 @@ public class IOWorker implements AutoCloseable {
-             return this.a(() -> {
-                 try {
-                     this.d.a();
--                    return Either.left((Object) null);
-+                    return Either.left(null); // Paper - decompile error
-                 } catch (Exception exception) {
-                     IOWorker.LOGGER.warn("Failed to synchronized chunks", exception);
-                     return Either.right(exception);
-@@ -117,13 +117,13 @@ public class IOWorker implements AutoCloseable {
-     }
- 
-     private void c() {
--        this.c.a((Object) (new PairedQueue.b(IOWorker.Priority.LOW.ordinal(), this::b)));
-+        this.c.a((new PairedQueue.b(IOWorker.Priority.LOW.ordinal(), this::b))); // Paper - decompile error
-     }
- 
-     private void a(ChunkCoordIntPair chunkcoordintpair, IOWorker.a ioworker_a) {
-         try {
-             this.d.write(chunkcoordintpair, ioworker_a.a);
--            ioworker_a.b.complete((Object) null);
-+            ioworker_a.b.complete(null); // Paper - decompile fix
-         } catch (Exception exception) {
-             IOWorker.LOGGER.error("Failed to store chunk {}", chunkcoordintpair, exception);
-             ioworker_a.b.completeExceptionally(exception);
-diff --git a/src/main/java/net/minecraft/server/LightEngineStorageSky.java b/src/main/java/net/minecraft/server/LightEngineStorageSky.java
-index 1e1f7ec6e6e6fc698a8a5118ce21321d104dc5eb..75d9065b32731dc635d9d09c48fb9643172381a9 100644
---- a/src/main/java/net/minecraft/server/LightEngineStorageSky.java
-+++ b/src/main/java/net/minecraft/server/LightEngineStorageSky.java
-@@ -28,10 +28,10 @@ public class LightEngineStorageSky extends LightEngineStorage<LightEngineStorage
-         int l = lightenginestoragesky_a.c.get(SectionPosition.f(j));
- 
-         if (l != lightenginestoragesky_a.b && k < l) {
--            NibbleArray nibblearray = this.a((LightEngineStorageArray) lightenginestoragesky_a, j);
-+            NibbleArray nibblearray = this.a(lightenginestoragesky_a, j); // Paper - decompile fix
- 
-             if (nibblearray == null) {
--                for (i = BlockPosition.f(i); nibblearray == null; nibblearray = this.a((LightEngineStorageArray) lightenginestoragesky_a, j)) {
-+                for (i = BlockPosition.f(i); nibblearray == null; nibblearray = this.a(lightenginestoragesky_a, j)) { // Paper - decompile fix
-                     j = SectionPosition.a(j, EnumDirection.UP);
-                     ++k;
-                     if (k >= l) {
-diff --git a/src/main/java/net/minecraft/server/LightEngineThreaded.java b/src/main/java/net/minecraft/server/LightEngineThreaded.java
-index 144279f278b363725bd0e2f8844f13a5ea1bb39d..f8c2b957bb5b38f05251cccf5137a9c23262c3d6 100644
---- a/src/main/java/net/minecraft/server/LightEngineThreaded.java
-+++ b/src/main/java/net/minecraft/server/LightEngineThreaded.java
-@@ -167,7 +167,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
- 
-     public void queueUpdate() {
-         if ((!this.c.isEmpty() || super.a()) && this.g.compareAndSet(false, true)) {
--            this.b.a((Object) (() -> {
-+            this.b.a((() -> { // Paper - decompile error
-                 this.b();
-                 this.g.set(false);
-             }));
-diff --git a/src/main/java/net/minecraft/server/LootEntryAbstract.java b/src/main/java/net/minecraft/server/LootEntryAbstract.java
-index 8cc8c60d3297a4ed98f3950a3971d83499ad1dfa..788078c209b8bcbd551cf0a52eb6172928d7b5f9 100644
---- a/src/main/java/net/minecraft/server/LootEntryAbstract.java
-+++ b/src/main/java/net/minecraft/server/LootEntryAbstract.java
-@@ -36,7 +36,7 @@ public abstract class LootEntryAbstract implements LootEntryChildren {
- 
-         // CraftBukkit start
-         @Override
--        public final void a(JsonObject jsonobject, T t0, JsonSerializationContext jsonserializationcontext) {
-+        public void a(JsonObject jsonobject, T t0, JsonSerializationContext jsonserializationcontext) { // Paper - remove final
-             if (!org.apache.commons.lang3.ArrayUtils.isEmpty(t0.d)) {
-                 jsonobject.add("conditions", jsonserializationcontext.serialize(t0.d));
-             }
-diff --git a/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java b/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-index 90da3e630355a127451c99ad9405829116e2c8f2..37ebc9f511479778c131e02b6852b27f63e75bdd 100644
---- a/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-+++ b/src/main/java/net/minecraft/server/LootItemFunctionExplorationMap.java
-@@ -73,7 +73,7 @@ public class LootItemFunctionExplorationMap extends LootItemFunctionConditional
-         public b() {}
- 
-         public void a(JsonObject jsonobject, LootItemFunctionExplorationMap lootitemfunctionexplorationmap, JsonSerializationContext jsonserializationcontext) {
--            super.a(jsonobject, (LootItemFunctionConditional) lootitemfunctionexplorationmap, jsonserializationcontext);
-+            super.a(jsonobject, lootitemfunctionexplorationmap, jsonserializationcontext); // Paper - decompile fix
-             if (!lootitemfunctionexplorationmap.e.equals(LootItemFunctionExplorationMap.a)) {
-                 jsonobject.add("destination", jsonserializationcontext.serialize(lootitemfunctionexplorationmap.e.i()));
-             }
-diff --git a/src/main/java/net/minecraft/server/LootSelectorEntry.java b/src/main/java/net/minecraft/server/LootSelectorEntry.java
-index 998101592723abb26c91d1f92e98be1cf24c954d..ee9069c744df63cbb7f21dd9d28d6d554593674c 100644
---- a/src/main/java/net/minecraft/server/LootSelectorEntry.java
-+++ b/src/main/java/net/minecraft/server/LootSelectorEntry.java
-@@ -123,7 +123,7 @@ public abstract class LootSelectorEntry extends LootEntryAbstract {
-         @Override
-         public T b(LootItemFunction.a lootitemfunction_a) {
-             this.c.add(lootitemfunction_a.b());
--            return (LootSelectorEntry.a) this.d();
-+            return this.d(); // Paper - decompile fix
-         }
- 
-         protected LootItemFunction[] a() {
-@@ -132,12 +132,12 @@ public abstract class LootSelectorEntry extends LootEntryAbstract {
- 
-         public T a(int i) {
-             this.a = i;
--            return (LootSelectorEntry.a) this.d();
-+            return this.d(); // Paper - decompile fix
-         }
- 
-         public T b(int i) {
-             this.b = i;
--            return (LootSelectorEntry.a) this.d();
-+            return this.d(); // Paper - decompile fix
-         }
-     }
- 
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5ead0146ca3c11c53875d323ffd22fe8e055fa7f..2c8674fbdb76a03e87f94779c30e871962de1f4c 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1558,9 +1558,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-             ResourcePackRepository resourcepackrepository = this.resourcePackRepository;
- 
-             this.resourcePackRepository.getClass();
--            return stream.map(resourcepackrepository::a).filter(Objects::nonNull).map(ResourcePackLoader::d).collect(ImmutableList.toImmutableList()); // CraftBukkit - decompile error
-+            return stream.<ResourcePackLoader>map(resourcepackrepository::a).filter(Objects::nonNull).map(ResourcePackLoader::d).collect(ImmutableList.toImmutableList()); // CraftBukkit - decompile error // Paper - decompile error
-         }, this).thenCompose((immutablelist) -> {
--            return DataPackResources.a(immutablelist, this.j() ? CommandDispatcher.ServerType.DEDICATED : CommandDispatcher.ServerType.INTEGRATED, this.h(), this.executorService, this);
-+            return DataPackResources.a((List<IResourcePack>) immutablelist, this.j() ? CommandDispatcher.ServerType.DEDICATED : CommandDispatcher.ServerType.INTEGRATED, this.h(), this.executorService, this); // Paper - decompile error
-         }).thenAcceptAsync((datapackresources) -> {
-             this.dataPackResources.close();
-             this.dataPackResources = datapackresources;
-diff --git a/src/main/java/net/minecraft/server/NBTBase.java b/src/main/java/net/minecraft/server/NBTBase.java
-index 829a7ae0a2b77205fb8e8c5754d0d4333afa224d..8b9e47b4c7f5dc464fa617a59583df9e30a54045 100644
---- a/src/main/java/net/minecraft/server/NBTBase.java
-+++ b/src/main/java/net/minecraft/server/NBTBase.java
-@@ -18,7 +18,7 @@ public interface NBTBase {
- 
-     NBTTagType<?> b();
- 
--    NBTBase clone();
-+    public NBTBase clone(); // Paper - decompile fix
- 
-     default String asString() {
-         return this.toString();
-diff --git a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-index 641d4a69cb2747417d483c56d460d12d1c6165d2..f9738fb0df2704251af0a45b56e34cc005c6ec37 100644
---- a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-+++ b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-@@ -14,6 +14,7 @@ import java.io.InputStream;
- import java.io.OutputStream;
- import java.util.zip.GZIPInputStream;
- import java.util.zip.GZIPOutputStream;
-+import io.netty.buffer.ByteBufInputStream; // Paper
- 
- public class NBTCompressedStreamTools {
- 
-@@ -133,7 +134,7 @@ public class NBTCompressedStreamTools {
- 
-     public static NBTTagCompound a(DataInput datainput, NBTReadLimiter nbtreadlimiter) throws IOException {
-         // Spigot start
--        if ( datainput instanceof io.netty.buffer.ByteBufInputStream )
-+        if ( datainput instanceof ByteBufInputStream) // Paper
-         {
-             datainput = new DataInputStream(new org.spigotmc.LimitStream((InputStream) datainput, nbtreadlimiter));
-         }
-diff --git a/src/main/java/net/minecraft/server/NBTTagList.java b/src/main/java/net/minecraft/server/NBTTagList.java
-index b8bb5027ecccfc9b664145a1bfe3755f1a8af3eb..ad8a506bb430b26fe147a657a2f826daf9bf4d45 100644
---- a/src/main/java/net/minecraft/server/NBTTagList.java
-+++ b/src/main/java/net/minecraft/server/NBTTagList.java
-@@ -51,7 +51,7 @@ public class NBTTagList extends NBTList<NBTBase> {
-             return "TAG_List";
-         }
-     };
--    private static final ByteSet b = new ByteOpenHashSet(Arrays.asList(1, 2, 3, 4, 5, 6));
-+    private static final ByteSet b = new ByteOpenHashSet(Arrays.asList((byte) 1, (byte) 2, (byte) 3, (byte) 4, (byte) 5, (byte) 6)); // Paper - decompiler fix
-     private final List<NBTBase> list;
-     private byte type;
- 
-diff --git a/src/main/java/net/minecraft/server/NextTickListEntry.java b/src/main/java/net/minecraft/server/NextTickListEntry.java
-index 8471920b8b92f0bbd0d3ee827e1b0a120f405f6c..e9c405fb5376c5733b9b0191cd5309173f4021e8 100644
---- a/src/main/java/net/minecraft/server/NextTickListEntry.java
-+++ b/src/main/java/net/minecraft/server/NextTickListEntry.java
-@@ -37,13 +37,13 @@ public class NextTickListEntry<T> {
+diff --git a/src/main/java/net/minecraft/world/level/NextTickListEntry.java b/src/main/java/net/minecraft/world/level/NextTickListEntry.java
+index 116a5e4ded3ccf935fd143f2512098c22ec2ad76..f3bcb96232d18abbcd86b079a7c5830bb30d75d2 100644
+--- a/src/main/java/net/minecraft/world/level/NextTickListEntry.java
++++ b/src/main/java/net/minecraft/world/level/NextTickListEntry.java
+@@ -38,13 +38,13 @@ public class NextTickListEntry<T> {
          return this.a.hashCode();
      }
  
@@ -569,88 +574,193 @@ index 8471920b8b92f0bbd0d3ee827e1b0a120f405f6c..e9c405fb5376c5733b9b0191cd530917
          });
      }
  
-diff --git a/src/main/java/net/minecraft/server/RegistryBlockID.java b/src/main/java/net/minecraft/server/RegistryBlockID.java
-index 7f89562e90ede1bdd06b71c0798d986ccbb7886e..06ea0c3bfcb54a5f6a42363f633800c687b6f19d 100644
---- a/src/main/java/net/minecraft/server/RegistryBlockID.java
-+++ b/src/main/java/net/minecraft/server/RegistryBlockID.java
-@@ -27,7 +27,7 @@ public class RegistryBlockID<T> implements Registry<T> {
-         this.b.put(t0, i);
+diff --git a/src/main/java/net/minecraft/world/level/biome/BiomeBase.java b/src/main/java/net/minecraft/world/level/biome/BiomeBase.java
+index 6672d74426d6a334d52f641c48d3a352c2bb6605..7147cdda756ccb3d4f6880802128f68601783883 100644
+--- a/src/main/java/net/minecraft/world/level/biome/BiomeBase.java
++++ b/src/main/java/net/minecraft/world/level/biome/BiomeBase.java
+@@ -49,8 +49,15 @@ import org.apache.logging.log4j.Logger;
+ public final class BiomeBase {
  
-         while (this.c.size() <= i) {
--            this.c.add((Object) null);
-+            this.c.add(null); // Paper - decompile fix
+     public static final Logger LOGGER = LogManager.getLogger();
++    // Paper start
++    private static class dProxy extends BiomeBase.d {
++        private dProxy(Precipitation biomebase_precipitation, float f, TemperatureModifier biomebase_temperaturemodifier, float f1) {
++            super(biomebase_precipitation, f, biomebase_temperaturemodifier, f1);
++        }
++    };
++    // Paper end
+     public static final Codec<BiomeBase> b = RecordCodecBuilder.create((instance) -> {
+-        return instance.group(BiomeBase.d.a.forGetter((biomebase) -> {
++        return instance.group(dProxy.a.forGetter((biomebase) -> { // Paper
+             return biomebase.j;
+         }), BiomeBase.Geography.r.fieldOf("category").forGetter((biomebase) -> {
+             return biomebase.o;
+@@ -67,7 +74,7 @@ public final class BiomeBase {
+         })).apply(instance, BiomeBase::new);
+     });
+     public static final Codec<BiomeBase> c = RecordCodecBuilder.create((instance) -> {
+-        return instance.group(BiomeBase.d.a.forGetter((biomebase) -> {
++        return instance.group(dProxy.a.forGetter((biomebase) -> { // Paper
+             return biomebase.j;
+         }), BiomeBase.Geography.r.fieldOf("category").forGetter((biomebase) -> {
+             return biomebase.o;
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java b/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
+index a549195e67236c0146861b896fb9e4907073af58..8d13e60f40e1b760e9e69969dc3f37bc6c70dbe9 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
+@@ -160,7 +160,7 @@ public class TileEntityPiston extends TileEntity implements ITickable {
+     private static void a(EnumDirection enumdirection, Entity entity, double d0, EnumDirection enumdirection1) {
+         TileEntityPiston.h.set(enumdirection);
+         entity.move(EnumMoveType.PISTON, new Vec3D(d0 * (double) enumdirection1.getAdjacentX(), d0 * (double) enumdirection1.getAdjacentY(), d0 * (double) enumdirection1.getAdjacentZ()));
+-        TileEntityPiston.h.set((Object) null);
++        TileEntityPiston.h.set(null); // Paper - decompile fix
+     }
+ 
+     private void g(float f) {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java b/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
+index 074bd5f060c6bb80568b72d23ce84c27ba774578..e4b59a85ee9b435b2e86d4c7d78b7224773f6967 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
++++ b/src/main/java/net/minecraft/world/level/block/state/IBlockDataHolder.java
+@@ -28,11 +28,11 @@ public abstract class IBlockDataHolder<O, S> {
+             } else {
+                 IBlockState<?> iblockstate = (IBlockState) entry.getKey();
+ 
+-                return iblockstate.getName() + "=" + this.a(iblockstate, (Comparable) entry.getValue());
++                return iblockstate.getName() + "=" + this.a((IBlockState) iblockstate, (Comparable) entry.getValue()); // Paper - decompile fix
+             }
          }
  
-         this.c.set(i, t0);
-@@ -41,6 +41,13 @@ public class RegistryBlockID<T> implements Registry<T> {
-         this.a(t0, this.a);
+-        private <T extends Comparable<T>> String a(IBlockState<T> iblockstate, Comparable<?> comparable) {
++        private <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T comparable) { // Paper - decompile error
+             return iblockstate.a(comparable);
+         }
+     };
+@@ -48,11 +48,11 @@ public abstract class IBlockDataHolder<O, S> {
      }
  
-+    // Paper start - decompile fix
-+    @Override
-+    public int a(T t) {
-+        return getId(t);
-+    }
-+    // Paper end
-+
-     public int getId(T t0) {
-         Integer integer = (Integer) this.b.get(t0);
- 
-diff --git a/src/main/java/net/minecraft/server/RegistryID.java b/src/main/java/net/minecraft/server/RegistryID.java
-index e11deed00abc10d1a9490234830803649209dfb4..5078a5ce391b445b64b2a16b123a3e3d5841619b 100644
---- a/src/main/java/net/minecraft/server/RegistryID.java
-+++ b/src/main/java/net/minecraft/server/RegistryID.java
-@@ -17,11 +17,18 @@ public class RegistryID<K> implements Registry<K> {
- 
-     public RegistryID(int i) {
-         i = (int) ((float) i / 0.8F);
--        this.b = (Object[]) (new Object[i]);
-+        this.b = (K[]) (new Object[i]); // Paper - decompile fix
-         this.c = new int[i];
--        this.d = (Object[]) (new Object[i]);
-+        this.d = (K[]) (new Object[i]); // Paper - decompile fix
+     public <T extends Comparable<T>> S a(IBlockState<T> iblockstate) {
+-        return this.set(iblockstate, (Comparable) a(iblockstate.getValues(), (Object) this.get(iblockstate)));
++        return this.set(iblockstate, a(iblockstate.getValues(), this.get(iblockstate))); // Paper - decompile error
      }
  
-+    // Paper start - decompile fix
-+    @Override
-+    public int a(K k) {
-+        return getId(k);
-+    }
-+    // Paper end
-+
-     public int getId(@Nullable K k0) {
-         return this.c(this.b(k0, this.d(k0)));
+     protected static <T> T a(Collection<T> collection, T t0) {
+-        Iterator iterator = collection.iterator();
++        Iterator<T> iterator = collection.iterator(); // Paper
+ 
+         do {
+             if (!iterator.hasNext()) {
+@@ -94,7 +94,7 @@ public abstract class IBlockDataHolder<O, S> {
+         if (comparable == null) {
+             throw new IllegalArgumentException("Cannot get property " + iblockstate + " as it does not exist in " + this.c);
+         } else {
+-            return (Comparable) iblockstate.getType().cast(comparable);
++            return iblockstate.getType().cast(comparable); // Paper - decompile error
+         }
      }
-@@ -55,9 +62,9 @@ public class RegistryID<K> implements Registry<K> {
-         K[] ak = this.b;
-         int[] aint = this.c;
  
--        this.b = (Object[]) (new Object[i]);
-+        this.b = (K[]) (new Object[i]); // Paper - decompile fix
-         this.c = new int[i];
--        this.d = (Object[]) (new Object[i]);
-+        this.d = (K[]) (new Object[i]); // Paper - decompile fix
-         this.e = 0;
-         this.f = 0;
+@@ -110,7 +110,7 @@ public abstract class IBlockDataHolder<O, S> {
+         if (comparable == null) {
+             throw new IllegalArgumentException("Cannot set property " + iblockstate + " as it does not exist in " + this.c);
+         } else if (comparable == v0) {
+-            return this;
++            return (S) this; // Paper - decompile error
+         } else {
+             S s0 = this.e.get(iblockstate, v0);
  
-diff --git a/src/main/java/net/minecraft/server/ServerStatisticManager.java b/src/main/java/net/minecraft/server/ServerStatisticManager.java
-index b9def4d603f469aa2db8c9399b5634a313aa7e44..6ee2f5ba23d573414e31ed2be228adf87e5bf46a 100644
---- a/src/main/java/net/minecraft/server/ServerStatisticManager.java
-+++ b/src/main/java/net/minecraft/server/ServerStatisticManager.java
-@@ -191,7 +191,7 @@ public class ServerStatisticManager extends StatisticManager {
-         ObjectIterator objectiterator = this.a.object2IntEntrySet().iterator();
+@@ -162,7 +162,7 @@ public abstract class IBlockDataHolder<O, S> {
+         return codec.dispatch("Name", (iblockdataholder) -> {
+             return iblockdataholder.c;
+         }, (object) -> {
+-            S s0 = (IBlockDataHolder) function.apply(object);
++            S s0 = function.apply(object); // Paper - decompile error
  
-         while (objectiterator.hasNext()) {
--            it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Statistic<?>> it_unimi_dsi_fastutil_objects_object2intmap_entry = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry) objectiterator.next();
-+            Object2IntMap.Entry<Statistic<?>> it_unimi_dsi_fastutil_objects_object2intmap_entry = (Object2IntMap.Entry) objectiterator.next(); // Paper - decompile fix
-             Statistic<?> statistic = (Statistic) it_unimi_dsi_fastutil_objects_object2intmap_entry.getKey();
+             return s0.getStateMap().isEmpty() ? Codec.unit(s0) : s0.d.fieldOf("Properties").codec();
+         });
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
+index a6aaf0efed5a9c5e458ca04a80a7a5e71a31d886..de85894beae7ee7d276cf2af3daa77377ce131c3 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
+@@ -21,10 +21,10 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends IBlockState<T>
+     protected BlockStateEnum(String s, Class<T> oclass, Collection<T> collection) {
+         super(s, oclass);
+         this.a = ImmutableSet.copyOf(collection);
+-        Iterator iterator = collection.iterator();
++        Iterator<T> iterator = collection.iterator(); // Paper - decompile fix
  
-             ((JsonObject) map.computeIfAbsent(statistic.getWrapper(), (statisticwrapper) -> {
-diff --git a/src/main/java/net/minecraft/server/StructureGenerator.java b/src/main/java/net/minecraft/server/StructureGenerator.java
-index e0e1a133e16b52732963df202202c50a63aa34a1..a8e3bbd18e08678e55aa88b09a9f7feb37ab4761 100644
---- a/src/main/java/net/minecraft/server/StructureGenerator.java
-+++ b/src/main/java/net/minecraft/server/StructureGenerator.java
-@@ -38,13 +38,13 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
+         while (iterator.hasNext()) {
+-            T t0 = (Enum) iterator.next();
++            T t0 = iterator.next(); // Paper - Decompile fix
+             String s1 = ((INamable) t0).getName();
+ 
+             if (this.b.containsKey(s1)) {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java b/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
+index 3e6ba74027685c6190426c825736e84cda87ca63..e3969bad5be64bb41e2973751605d6820c16f021 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
+@@ -17,12 +17,10 @@ public abstract class IBlockState<T extends Comparable<T>> {
+     private final Codec<IBlockState.a<T>> e;
+ 
+     protected IBlockState(String s, Class<T> oclass) {
+-        this.d = Codec.STRING.comapFlatMap((s1) -> {
+-            return (DataResult) this.b(s1).map(DataResult::success).orElseGet(() -> {
+-                return DataResult.error("Unable to read property: " + this + " with value: " + s1);
+-            });
+-        }, this::a);
+-        this.e = this.d.xmap(this::b, IBlockState.a::b);
++        this.d = Codec.STRING.comapFlatMap((s1) -> this.b(s1).map(DataResult::success).orElseGet(() -> { // Paper - decompile error
++            return DataResult.error("Unable to read property: " + this + " with value: " + s1);
++        }), this::a);
++        this.e = this.d.xmap(this::b, (IBlockState.a<T> param) -> param.b()); // Paper - decompile fix
+         this.a = oclass;
+         this.b = s;
+     }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/IOWorker.java b/src/main/java/net/minecraft/world/level/chunk/storage/IOWorker.java
+index 88c2643a18165bd7a9e6e056b926d6e894ff60d4..859561a5dccba6548967b685b20e8fcfc296db2a 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/IOWorker.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/IOWorker.java
+@@ -89,7 +89,7 @@ public class IOWorker implements AutoCloseable {
+             return this.a(() -> {
+                 try {
+                     this.d.a();
+-                    return Either.left((Object) null);
++                    return Either.left(null); // Paper - decompile error
+                 } catch (Exception exception) {
+                     IOWorker.LOGGER.warn("Failed to synchronized chunks", exception);
+                     return Either.right(exception);
+@@ -123,13 +123,13 @@ public class IOWorker implements AutoCloseable {
+     }
+ 
+     private void c() {
+-        this.c.a((Object) (new PairedQueue.b(IOWorker.Priority.LOW.ordinal(), this::b)));
++        this.c.a((new PairedQueue.b(IOWorker.Priority.LOW.ordinal(), this::b))); // Paper - decompile error
+     }
+ 
+     private void a(ChunkCoordIntPair chunkcoordintpair, IOWorker.a ioworker_a) {
+         try {
+             this.d.write(chunkcoordintpair, ioworker_a.a);
+-            ioworker_a.b.complete((Object) null);
++            ioworker_a.b.complete(null); // Paper - decompile fix
+         } catch (Exception exception) {
+             IOWorker.LOGGER.error("Failed to store chunk {}", chunkcoordintpair, exception);
+             ioworker_a.b.completeExceptionally(exception);
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index 6fb0c92e7cb6117d919af613dae87fa4e99f5081..f727cc456bd23816c4e70be83c395d1d8ca7d876 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -430,7 +430,7 @@ public class EnderDragonBattle {
+             }
+         }
+ 
+-        worldgenendtrophy.b((WorldGenFeatureConfiguration) WorldGenFeatureConfiguration.k).a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation);
++        worldgenendtrophy.b(WorldGenFeatureConfiguration.k).a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation); // Paper - decompile fix
+     }
+ 
+     private EntityEnderDragon o() {
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+index 44ad3fb2551f681b58b82e7c4f56bbc5a3b4486e..6724927be178cb9a358a9276d01894a63154b7b3 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+@@ -71,13 +71,13 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
      public static final StructureGenerator<WorldGenFeatureVillageConfiguration> BASTION_REMNANT = a("Bastion_Remnant", new WorldGenFeatureBastionRemnant(WorldGenFeatureVillageConfiguration.a), WorldGenStage.Decoration.SURFACE_STRUCTURES);
      public static final List<StructureGenerator<?>> t = ImmutableList.of(StructureGenerator.PILLAGER_OUTPOST, StructureGenerator.VILLAGE, StructureGenerator.NETHER_FOSSIL);
      private static final MinecraftKey w = new MinecraftKey("jigsaw");
@@ -666,147 +776,112 @@ index e0e1a133e16b52732963df202202c50a63aa34a1..a8e3bbd18e08678e55aa88b09a9f7feb
      }
  
      public StructureGenerator(Codec<C> codec) {
-diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index 7b17c95ff7b529a62be60e9599149a7880d60ac5..5f3a960b3303c48b039630b39975d6ef549a4dbe 100644
---- a/src/main/java/net/minecraft/server/SystemUtils.java
-+++ b/src/main/java/net/minecraft/server/SystemUtils.java
-@@ -59,8 +59,8 @@ public class SystemUtils {
-         return Collectors.toMap(Entry::getKey, Entry::getValue);
-     }
+diff --git a/src/main/java/net/minecraft/world/level/lighting/LightEngineStorageSky.java b/src/main/java/net/minecraft/world/level/lighting/LightEngineStorageSky.java
+index 52564cce4146f49a906729b3ed9488a7a829ea3f..befc8f846c772d58ee687ad427bb71206b4dc43e 100644
+--- a/src/main/java/net/minecraft/world/level/lighting/LightEngineStorageSky.java
++++ b/src/main/java/net/minecraft/world/level/lighting/LightEngineStorageSky.java
+@@ -34,10 +34,10 @@ public class LightEngineStorageSky extends LightEngineStorage<LightEngineStorage
+         int l = lightenginestoragesky_a.c.get(SectionPosition.f(j));
  
--    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, Object object) {
--        return iblockstate.a((Comparable) object);
-+    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T object) { // Paper - decompile fix
-+        return iblockstate.a(object); // Paper - decompile fix
-     }
+         if (l != lightenginestoragesky_a.b && k < l) {
+-            NibbleArray nibblearray = this.a((LightEngineStorageArray) lightenginestoragesky_a, j);
++            NibbleArray nibblearray = this.a(lightenginestoragesky_a, j); // Paper - decompile fix
  
-     public static String a(String s, @Nullable MinecraftKey minecraftkey) {
-@@ -228,8 +228,8 @@ public class SystemUtils {
-     public static <T> T b(Iterable<T> iterable, @Nullable T t0) {
-         Iterator<T> iterator = iterable.iterator();
- 
--        Object object;
--        Object object1;
-+        T object; // Paper - decompile fix
-+        T object1; // Paper - decompile fix
- 
-         for (object1 = null; iterator.hasNext(); object1 = object) {
-             object = iterator.next();
-@@ -254,7 +254,7 @@ public class SystemUtils {
-     }
- 
-     public static <K> Strategy<K> k() {
--        return SystemUtils.IdentityHashingStrategy.INSTANCE;
-+        return (Strategy<K>) SystemUtils.IdentityHashingStrategy.INSTANCE; // Paper - decompile fix
-     }
- 
-     public static <V> CompletableFuture<List<V>> b(List<? extends CompletableFuture<? extends V>> list) {
-@@ -265,7 +265,7 @@ public class SystemUtils {
-         list.forEach((completablefuture1) -> {
-             int i = list1.size();
- 
--            list1.add((Object) null);
-+            list1.add(null); // Paper - decompile fix
-             acompletablefuture[i] = completablefuture1.whenComplete((object, throwable) -> {
-                 if (throwable != null) {
-                     completablefuture.completeExceptionally(throwable);
-diff --git a/src/main/java/net/minecraft/server/ThreadedMailbox.java b/src/main/java/net/minecraft/server/ThreadedMailbox.java
-index 1b2aa8f74a424c0d313de7d71e691d5c2a963b0b..b7af235dc2841dc9c8296805624f6ee763b86dfb 100644
---- a/src/main/java/net/minecraft/server/ThreadedMailbox.java
-+++ b/src/main/java/net/minecraft/server/ThreadedMailbox.java
-@@ -99,7 +99,7 @@ public class ThreadedMailbox<T> implements Mailbox<T>, AutoCloseable, Runnable {
- 
-     public void run() {
-         try {
--            this.a((i) -> {
-+            this.a((int i) -> { // Paper - decompile fix
-                 return i == 0;
-             });
-         } finally {
-diff --git a/src/main/java/net/minecraft/server/Ticket.java b/src/main/java/net/minecraft/server/Ticket.java
-index ee2059cf8ef0a0372e02b91a4bf6fa8a0ab31bca..77bb6b092a0763ff27f90f0401a8a81b15aebb8c 100644
---- a/src/main/java/net/minecraft/server/Ticket.java
-+++ b/src/main/java/net/minecraft/server/Ticket.java
-@@ -23,7 +23,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
+             if (nibblearray == null) {
+-                for (i = BlockPosition.f(i); nibblearray == null; nibblearray = this.a((LightEngineStorageArray) lightenginestoragesky_a, j)) {
++                for (i = BlockPosition.f(i); nibblearray == null; nibblearray = this.a(lightenginestoragesky_a, j)) { // Paper - decompile fix
+                     j = SectionPosition.a(j, EnumDirection.UP);
+                     ++k;
+                     if (k >= l) {
+diff --git a/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java b/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
+index 45c1d79e0bb2fcffea31513c3d003d28140146b9..3910daeaa177639fa8055301304634c2014dc20f 100644
+--- a/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
++++ b/src/main/java/net/minecraft/world/level/storage/WorldPersistentData.java
+@@ -44,7 +44,7 @@ public class WorldPersistentData {
+         if (t0 != null) {
+             return t0;
          } else {
-             int j = Integer.compare(System.identityHashCode(this.a), System.identityHashCode(ticket.a));
+-            T t1 = (PersistentBase) supplier.get();
++            T t1 = supplier.get(); // Paper - decompile fix
  
--            return j != 0 ? j : this.a.a().compare(this.identifier, ticket.identifier);
-+            return j != 0 ? j : this.a.a().compare(this.identifier, (T)ticket.identifier); // Paper - decompile fix
+             this.a(t1);
+             return t1;
+@@ -53,7 +53,7 @@ public class WorldPersistentData {
+ 
+     @Nullable
+     public <T extends PersistentBase> T b(Supplier<T> supplier, String s) {
+-        PersistentBase persistentbase = (PersistentBase) this.data.get(s);
++        T persistentbase = (T) this.data.get(s); // Paper - decompile fix
+ 
+         if (persistentbase == null && !this.data.containsKey(s)) {
+             persistentbase = this.c(supplier, s);
+@@ -69,7 +69,7 @@ public class WorldPersistentData {
+             File file = this.a(s);
+ 
+             if (file.exists()) {
+-                T t0 = (PersistentBase) supplier.get();
++                T t0 = supplier.get(); // Paper - decompile fix
+                 NBTTagCompound nbttagcompound = this.a(s, SharedConstants.getGameVersion().getWorldVersion());
+ 
+                 t0.a(nbttagcompound.getCompound("data"));
+diff --git a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootEntryAbstract.java b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootEntryAbstract.java
+index 9421e175fffab7014461aa02e7e36d719837ec11..b6abbe9f1de66cd8e9d2e7127813ce56a0446faf 100644
+--- a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootEntryAbstract.java
++++ b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootEntryAbstract.java
+@@ -43,7 +43,7 @@ public abstract class LootEntryAbstract implements LootEntryChildren {
+ 
+         // CraftBukkit start
+         @Override
+-        public final void a(JsonObject jsonobject, T t0, JsonSerializationContext jsonserializationcontext) {
++        public void a(JsonObject jsonobject, T t0, JsonSerializationContext jsonserializationcontext) { // Paper - remove final
+             if (!org.apache.commons.lang3.ArrayUtils.isEmpty(t0.d)) {
+                 jsonobject.add("conditions", jsonserializationcontext.serialize(t0.d));
+             }
+diff --git a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootSelectorEntry.java b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootSelectorEntry.java
+index 0e3fe138fc11bd7e648296922c651cecaab8e71e..ceb9a1e1b1d55a0a8cd74189450f356b9ad4c46c 100644
+--- a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootSelectorEntry.java
++++ b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootSelectorEntry.java
+@@ -132,7 +132,7 @@ public abstract class LootSelectorEntry extends LootEntryAbstract {
+         @Override
+         public T b(LootItemFunction.a lootitemfunction_a) {
+             this.c.add(lootitemfunction_a.b());
+-            return (LootSelectorEntry.a) this.d();
++            return this.d(); // Paper - decompile fix
+         }
+ 
+         protected LootItemFunction[] a() {
+@@ -141,12 +141,12 @@ public abstract class LootSelectorEntry extends LootEntryAbstract {
+ 
+         public T a(int i) {
+             this.a = i;
+-            return (LootSelectorEntry.a) this.d();
++            return this.d(); // Paper - decompile fix
+         }
+ 
+         public T b(int i) {
+             this.b = i;
+-            return (LootSelectorEntry.a) this.d();
++            return this.d(); // Paper - decompile fix
          }
      }
  
-diff --git a/src/main/java/net/minecraft/server/TileEntityPiston.java b/src/main/java/net/minecraft/server/TileEntityPiston.java
-index d11d94405c8a6581c632e23ae98eb23e0e43e994..8b2758377b70aaf7a9d21a28d4bbe16389f22403 100644
---- a/src/main/java/net/minecraft/server/TileEntityPiston.java
-+++ b/src/main/java/net/minecraft/server/TileEntityPiston.java
-@@ -137,7 +137,7 @@ public class TileEntityPiston extends TileEntity implements ITickable {
-     private static void a(EnumDirection enumdirection, Entity entity, double d0, EnumDirection enumdirection1) {
-         TileEntityPiston.h.set(enumdirection);
-         entity.move(EnumMoveType.PISTON, new Vec3D(d0 * (double) enumdirection1.getAdjacentX(), d0 * (double) enumdirection1.getAdjacentY(), d0 * (double) enumdirection1.getAdjacentZ()));
--        TileEntityPiston.h.set((Object) null);
-+        TileEntityPiston.h.set(null); // Paper - decompile fix
-     }
+diff --git a/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java b/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
+index f516e7440ed306b1ace9b35ae82f70ca69df51f3..38125a60bad4830db9de3580ab6d85fd122a0689 100644
+--- a/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
++++ b/src/main/java/net/minecraft/world/level/storage/loot/functions/LootItemFunctionExplorationMap.java
+@@ -89,7 +89,7 @@ public class LootItemFunctionExplorationMap extends LootItemFunctionConditional
+         public b() {}
  
-     private void g(float f) {
-diff --git a/src/main/java/net/minecraft/server/VillagePlace.java b/src/main/java/net/minecraft/server/VillagePlace.java
-index fffdc4392cbcbdd51c0437b0b783aab5a34183f8..d6aca683465c6898536507fab9e6888fef2e77e5 100644
---- a/src/main/java/net/minecraft/server/VillagePlace.java
-+++ b/src/main/java/net/minecraft/server/VillagePlace.java
-@@ -180,9 +180,9 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
-     }
- 
-     private static boolean a(ChunkSection chunksection) {
--        Set set = VillagePlaceType.x;
-+        Set<IBlockData> set = VillagePlaceType.x; // Paper - decompile error
- 
--        set.getClass();
-+        //set.getClass(); // Paper - decompile error
-         return chunksection.a(set::contains);
-     }
- 
-@@ -200,7 +200,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
-         SectionPosition.b(new ChunkCoordIntPair(blockposition), Math.floorDiv(i, 16)).map((sectionposition) -> {
-             return Pair.of(sectionposition, this.d(sectionposition.s()));
-         }).filter((pair) -> {
--            return !(Boolean) ((Optional) pair.getSecond()).map(VillagePlaceSection::a).orElse(false);
-+            return !(Boolean) (pair.getSecond()).map(VillagePlaceSection::a).orElse(false); // Paper - decompile fix
-         }).map((pair) -> {
-             return ((SectionPosition) pair.getFirst()).r();
-         }).filter((chunkcoordintpair) -> {
-@@ -252,7 +252,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
- 
-         private final Predicate<? super VillagePlaceRecord> d;
- 
--        private Occupancy(Predicate predicate) {
-+        private Occupancy(Predicate<? super VillagePlaceRecord> predicate) { // Paper - decompile fix
-             this.d = predicate;
-         }
- 
-diff --git a/src/main/java/net/minecraft/server/VillagerTrades.java b/src/main/java/net/minecraft/server/VillagerTrades.java
-index a047e8f54e2e1960f4d8be8a05255c774ac2c221..4f7944d7fdaf02bae40ee71a18bd1c9bb4eb891b 100644
---- a/src/main/java/net/minecraft/server/VillagerTrades.java
-+++ b/src/main/java/net/minecraft/server/VillagerTrades.java
-@@ -14,12 +14,12 @@ import javax.annotation.Nullable;
- 
- public class VillagerTrades {
- 
--    public static final Map<VillagerProfession, Int2ObjectMap<VillagerTrades.IMerchantRecipeOption[]>> a = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
-+    public static final Map<VillagerProfession, Int2ObjectMap<VillagerTrades.IMerchantRecipeOption[]>> a = SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // Paper - decompile fix
-         hashmap.put(VillagerProfession.FARMER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WHEAT, 20, 16, 2), new VillagerTrades.b(Items.POTATO, 26, 16, 2), new VillagerTrades.b(Items.CARROT, 22, 16, 2), new VillagerTrades.b(Items.BEETROOT, 15, 16, 2), new VillagerTrades.h(Items.BREAD, 1, 6, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Blocks.PUMPKIN, 6, 12, 10), new VillagerTrades.h(Items.PUMPKIN_PIE, 1, 4, 5), new VillagerTrades.h(Items.APPLE, 1, 4, 16, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.COOKIE, 3, 18, 10), new VillagerTrades.b(Blocks.MELON, 4, 12, 20)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Blocks.CAKE, 1, 1, 12, 15), new VillagerTrades.i(MobEffects.NIGHT_VISION, 100, 15), new VillagerTrades.i(MobEffects.JUMP, 160, 15), new VillagerTrades.i(MobEffects.WEAKNESS, 140, 15), new VillagerTrades.i(MobEffects.BLINDNESS, 120, 15), new VillagerTrades.i(MobEffects.POISON, 280, 15), new VillagerTrades.i(MobEffects.SATURATION, 7, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.GOLDEN_CARROT, 3, 3, 30), new VillagerTrades.h(Items.GLISTERING_MELON_SLICE, 4, 3, 30)})));
--        hashmap.put(VillagerProfession.FISHERMAN, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 20, 16, 2), new VillagerTrades.b(Items.COAL, 10, 16, 2), new VillagerTrades.g(Items.COD, 6, Items.COOKED_COD, 6, 16, 1), new VillagerTrades.h(Items.COD_BUCKET, 3, 1, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COD, 15, 16, 10), new VillagerTrades.g(Items.SALMON, 6, Items.COOKED_SALMON, 6, 16, 5), new VillagerTrades.h(Items.rn, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SALMON, 13, 16, 20), new VillagerTrades.e(Items.FISHING_ROD, 3, 3, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.TROPICAL_FISH, 6, 12, 30)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PUFFERFISH, 4, 12, 30), new VillagerTrades.c(1, 12, 30, ImmutableMap.builder().put(VillagerType.PLAINS, Items.OAK_BOAT).put(VillagerType.TAIGA, Items.SPRUCE_BOAT).put(VillagerType.SNOW, Items.SPRUCE_BOAT).put(VillagerType.DESERT, Items.JUNGLE_BOAT).put(VillagerType.JUNGLE, Items.JUNGLE_BOAT).put(VillagerType.SAVANNA, Items.ACACIA_BOAT).put(VillagerType.SWAMP, Items.DARK_OAK_BOAT).build())})));
-+        hashmap.put(VillagerProfession.FISHERMAN, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 20, 16, 2), new VillagerTrades.b(Items.COAL, 10, 16, 2), new VillagerTrades.g(Items.COD, 6, Items.COOKED_COD, 6, 16, 1), new VillagerTrades.h(Items.COD_BUCKET, 3, 1, 16, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COD, 15, 16, 10), new VillagerTrades.g(Items.SALMON, 6, Items.COOKED_SALMON, 6, 16, 5), new VillagerTrades.h(Items.rn, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SALMON, 13, 16, 20), new VillagerTrades.e(Items.FISHING_ROD, 3, 3, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.TROPICAL_FISH, 6, 12, 30)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PUFFERFISH, 4, 12, 30), new VillagerTrades.c(1, 12, 30, ImmutableMap.<VillagerType, Item>builder().put(VillagerType.PLAINS, Items.OAK_BOAT).put(VillagerType.TAIGA, Items.SPRUCE_BOAT).put(VillagerType.SNOW, Items.SPRUCE_BOAT).put(VillagerType.DESERT, Items.JUNGLE_BOAT).put(VillagerType.JUNGLE, Items.JUNGLE_BOAT).put(VillagerType.SAVANNA, Items.ACACIA_BOAT).put(VillagerType.SWAMP, Items.DARK_OAK_BOAT).build())}))); // Paper - add <VillagerType, Item> to ImmutableMap.<VillagerType, Item>.builder()
-         hashmap.put(VillagerProfession.SHEPHERD, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Blocks.WHITE_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.BROWN_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.BLACK_WOOL, 18, 16, 2), new VillagerTrades.b(Blocks.GRAY_WOOL, 18, 16, 2), new VillagerTrades.h(Items.SHEARS, 2, 1, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WHITE_DYE, 12, 16, 10), new VillagerTrades.b(Items.GRAY_DYE, 12, 16, 10), new VillagerTrades.b(Items.BLACK_DYE, 12, 16, 10), new VillagerTrades.b(Items.LIGHT_BLUE_DYE, 12, 16, 10), new VillagerTrades.b(Items.LIME_DYE, 12, 16, 10), new VillagerTrades.h(Blocks.WHITE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.ORANGE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.MAGENTA_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIGHT_BLUE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.YELLOW_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIME_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.PINK_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.GRAY_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.LIGHT_GRAY_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.CYAN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.PURPLE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BLUE_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BROWN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.GREEN_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.RED_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.BLACK_WOOL, 1, 1, 16, 5), new VillagerTrades.h(Blocks.WHITE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.ORANGE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.MAGENTA_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIGHT_BLUE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.YELLOW_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIME_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.PINK_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.GRAY_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.LIGHT_GRAY_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.CYAN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.PURPLE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BLUE_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BROWN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.GREEN_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.RED_CARPET, 1, 4, 16, 5), new VillagerTrades.h(Blocks.BLACK_CARPET, 1, 4, 16, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.YELLOW_DYE, 12, 16, 20), new VillagerTrades.b(Items.LIGHT_GRAY_DYE, 12, 16, 20), new VillagerTrades.b(Items.ORANGE_DYE, 12, 16, 20), new VillagerTrades.b(Items.RED_DYE, 12, 16, 20), new VillagerTrades.b(Items.PINK_DYE, 12, 16, 20), new VillagerTrades.h(Blocks.WHITE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.YELLOW_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.RED_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BLACK_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BLUE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.BROWN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.CYAN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.GRAY_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.GREEN_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIGHT_BLUE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIGHT_GRAY_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.LIME_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.MAGENTA_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.ORANGE_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.PINK_BED, 3, 1, 12, 10), new VillagerTrades.h(Blocks.PURPLE_BED, 3, 1, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BROWN_DYE, 12, 16, 30), new VillagerTrades.b(Items.PURPLE_DYE, 12, 16, 30), new VillagerTrades.b(Items.BLUE_DYE, 12, 16, 30), new VillagerTrades.b(Items.GREEN_DYE, 12, 16, 30), new VillagerTrades.b(Items.MAGENTA_DYE, 12, 16, 30), new VillagerTrades.b(Items.CYAN_DYE, 12, 16, 30), new VillagerTrades.h(Items.WHITE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BLUE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIGHT_BLUE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.RED_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.PINK_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.GREEN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIME_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.GRAY_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BLACK_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.PURPLE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.MAGENTA_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.CYAN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.BROWN_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.YELLOW_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.ORANGE_BANNER, 3, 1, 12, 15), new VillagerTrades.h(Items.LIGHT_GRAY_BANNER, 3, 1, 12, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.PAINTING, 2, 3, 30)})));
-         hashmap.put(VillagerProfession.FLETCHER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STICK, 32, 16, 2), new VillagerTrades.h(Items.ARROW, 1, 16, 1), new VillagerTrades.g(Blocks.GRAVEL, 10, Items.FLINT, 10, 12, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.FLINT, 26, 12, 10), new VillagerTrades.h(Items.BOW, 2, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.STRING, 14, 16, 20), new VillagerTrades.h(Items.CROSSBOW, 3, 1, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.FEATHER, 24, 16, 30), new VillagerTrades.e(Items.BOW, 2, 3, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.es, 8, 12, 30), new VillagerTrades.e(Items.CROSSBOW, 3, 3, 15), new VillagerTrades.j(Items.ARROW, 5, Items.TIPPED_ARROW, 5, 2, 12, 30)})));
--        hashmap.put(VillagerProfession.LIBRARIAN, a(ImmutableMap.builder().put(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.d(1), new VillagerTrades.h(Blocks.BOOKSHELF, 9, 1, 12, 1)}).put(2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BOOK, 4, 12, 10), new VillagerTrades.d(5), new VillagerTrades.h(Items.rk, 1, 1, 5)}).put(3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.INK_SAC, 5, 12, 20), new VillagerTrades.d(10), new VillagerTrades.h(Items.az, 1, 4, 10)}).put(4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WRITABLE_BOOK, 2, 12, 30), new VillagerTrades.d(15), new VillagerTrades.h(Items.CLOCK, 5, 1, 15), new VillagerTrades.h(Items.COMPASS, 4, 1, 15)}).put(5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.NAME_TAG, 20, 1, 30)}).build()));
-+        hashmap.put(VillagerProfession.LIBRARIAN, a(ImmutableMap.<Integer, IMerchantRecipeOption[]>builder().put(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.d(1), new VillagerTrades.h(Blocks.BOOKSHELF, 9, 1, 12, 1)}).put(2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.BOOK, 4, 12, 10), new VillagerTrades.d(5), new VillagerTrades.h(Items.rk, 1, 1, 5)}).put(3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.INK_SAC, 5, 12, 20), new VillagerTrades.d(10), new VillagerTrades.h(Items.az, 1, 4, 10)}).put(4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.WRITABLE_BOOK, 2, 12, 30), new VillagerTrades.d(15), new VillagerTrades.h(Items.CLOCK, 5, 1, 15), new VillagerTrades.h(Items.COMPASS, 4, 1, 15)}).put(5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.NAME_TAG, 20, 1, 30)}).build())); // Paper - add <Integer, IMerchantRecipeOption[]> to ImmutableMap.<Integer, IMerchantRecipeOption[]>.builder()
-         hashmap.put(VillagerProfession.CARTOGRAPHER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.PAPER, 24, 16, 2), new VillagerTrades.h(Items.MAP, 7, 1, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.dP, 11, 16, 10), new VillagerTrades.k(13, StructureGenerator.MONUMENT, MapIcon.Type.MONUMENT, 12, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COMPASS, 1, 12, 20), new VillagerTrades.k(14, StructureGenerator.MANSION, MapIcon.Type.MANSION, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.ITEM_FRAME, 7, 1, 15), new VillagerTrades.h(Items.WHITE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BLUE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIGHT_BLUE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.RED_BANNER, 3, 1, 15), new VillagerTrades.h(Items.PINK_BANNER, 3, 1, 15), new VillagerTrades.h(Items.GREEN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIME_BANNER, 3, 1, 15), new VillagerTrades.h(Items.GRAY_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BLACK_BANNER, 3, 1, 15), new VillagerTrades.h(Items.PURPLE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.MAGENTA_BANNER, 3, 1, 15), new VillagerTrades.h(Items.CYAN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.BROWN_BANNER, 3, 1, 15), new VillagerTrades.h(Items.YELLOW_BANNER, 3, 1, 15), new VillagerTrades.h(Items.ORANGE_BANNER, 3, 1, 15), new VillagerTrades.h(Items.LIGHT_GRAY_BANNER, 3, 1, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.h(Items.GLOBE_BANNER_PATTERN, 8, 1, 30)})));
-         hashmap.put(VillagerProfession.CLERIC, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.ROTTEN_FLESH, 32, 16, 2), new VillagerTrades.h(Items.REDSTONE, 1, 2, 1)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.GOLD_INGOT, 3, 12, 10), new VillagerTrades.h(Items.LAPIS_LAZULI, 1, 1, 5)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.RABBIT_FOOT, 2, 12, 20), new VillagerTrades.h(Blocks.GLOWSTONE, 4, 1, 12, 10)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.SCUTE, 4, 12, 30), new VillagerTrades.b(Items.GLASS_BOTTLE, 9, 12, 30), new VillagerTrades.h(Items.ENDER_PEARL, 5, 1, 15)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.NETHER_WART, 22, 12, 30), new VillagerTrades.h(Items.EXPERIENCE_BOTTLE, 3, 1, 30)})));
-         hashmap.put(VillagerProfession.ARMORER, a(ImmutableMap.of(1, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.COAL, 15, 16, 2), new VillagerTrades.h(new ItemStack(Items.IRON_LEGGINGS), 7, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_BOOTS), 4, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_HELMET), 5, 1, 12, 1, 0.2F), new VillagerTrades.h(new ItemStack(Items.IRON_CHESTPLATE), 9, 1, 12, 1, 0.2F)}, 2, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.IRON_INGOT, 4, 12, 10), new VillagerTrades.h(new ItemStack(Items.rj), 36, 1, 12, 5, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_BOOTS), 1, 1, 12, 5, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_LEGGINGS), 3, 1, 12, 5, 0.2F)}, 3, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.b(Items.LAVA_BUCKET, 1, 12, 20), new VillagerTrades.b(Items.DIAMOND, 1, 12, 20), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_HELMET), 1, 1, 12, 10, 0.2F), new VillagerTrades.h(new ItemStack(Items.CHAINMAIL_CHESTPLATE), 4, 1, 12, 10, 0.2F), new VillagerTrades.h(new ItemStack(Items.SHIELD), 5, 1, 12, 10, 0.2F)}, 4, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.e(Items.DIAMOND_LEGGINGS, 14, 3, 15, 0.2F), new VillagerTrades.e(Items.DIAMOND_BOOTS, 8, 3, 15, 0.2F)}, 5, new VillagerTrades.IMerchantRecipeOption[]{new VillagerTrades.e(Items.DIAMOND_HELMET, 8, 3, 30, 0.2F), new VillagerTrades.e(Items.DIAMOND_CHESTPLATE, 16, 3, 30, 0.2F)})));
-diff --git a/src/main/java/net/minecraft/server/VoxelShapeMergerList.java b/src/main/java/net/minecraft/server/VoxelShapeMergerList.java
-index e8daa74986f07163fd5318f431398b4f0efde6e8..71d2ae2a9c5a05351241b5a313e66ca15b0624ef 100644
---- a/src/main/java/net/minecraft/server/VoxelShapeMergerList.java
-+++ b/src/main/java/net/minecraft/server/VoxelShapeMergerList.java
+         public void a(JsonObject jsonobject, LootItemFunctionExplorationMap lootitemfunctionexplorationmap, JsonSerializationContext jsonserializationcontext) {
+-            super.a(jsonobject, (LootItemFunctionConditional) lootitemfunctionexplorationmap, jsonserializationcontext);
++            super.a(jsonobject, lootitemfunctionexplorationmap, jsonserializationcontext); // Paper - decompile fix
+             if (!lootitemfunctionexplorationmap.e.equals(LootItemFunctionExplorationMap.a)) {
+                 jsonobject.add("destination", jsonserializationcontext.serialize(lootitemfunctionexplorationmap.e.i()));
+             }
+diff --git a/src/main/java/net/minecraft/world/phys/shapes/VoxelShapeMergerList.java b/src/main/java/net/minecraft/world/phys/shapes/VoxelShapeMergerList.java
+index afd30320da51bf467d66e94f682936ed8db96d90..c58d380b96e81d65d7c254a9e53017e5157769b0 100644
+--- a/src/main/java/net/minecraft/world/phys/shapes/VoxelShapeMergerList.java
++++ b/src/main/java/net/minecraft/world/phys/shapes/VoxelShapeMergerList.java
 @@ -38,7 +38,7 @@ public final class VoxelShapeMergerList implements VoxelShapeMerger {
              double d1 = flag4 ? doublelist.getDouble(i++) : doublelist1.getDouble(j++);
  
@@ -816,47 +891,3 @@ index e8daa74986f07163fd5318f431398b4f0efde6e8..71d2ae2a9c5a05351241b5a313e66ca1
                      this.b.add(i - 1);
                      this.c.add(j - 1);
                      this.a.add(d1);
-diff --git a/src/main/java/net/minecraft/server/WorldPersistentData.java b/src/main/java/net/minecraft/server/WorldPersistentData.java
-index 83d799bec90693e0fbbf8a7f3bc4f569b5c0ead9..141a8e31151010e5a0bd8d4661033f109f6a2e67 100644
---- a/src/main/java/net/minecraft/server/WorldPersistentData.java
-+++ b/src/main/java/net/minecraft/server/WorldPersistentData.java
-@@ -38,7 +38,7 @@ public class WorldPersistentData {
-         if (t0 != null) {
-             return t0;
-         } else {
--            T t1 = (PersistentBase) supplier.get();
-+            T t1 = supplier.get(); // Paper - decompile fix
- 
-             this.a(t1);
-             return t1;
-@@ -47,7 +47,7 @@ public class WorldPersistentData {
- 
-     @Nullable
-     public <T extends PersistentBase> T b(Supplier<T> supplier, String s) {
--        PersistentBase persistentbase = (PersistentBase) this.data.get(s);
-+        T persistentbase = (T) this.data.get(s); // Paper - decompile fix
- 
-         if (persistentbase == null && !this.data.containsKey(s)) {
-             persistentbase = this.c(supplier, s);
-@@ -63,7 +63,7 @@ public class WorldPersistentData {
-             File file = this.a(s);
- 
-             if (file.exists()) {
--                T t0 = (PersistentBase) supplier.get();
-+                T t0 = supplier.get(); // Paper - decompile fix
-                 NBTTagCompound nbttagcompound = this.a(s, SharedConstants.getGameVersion().getWorldVersion());
- 
-                 t0.a(nbttagcompound.getCompound("data"));
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 4955ec276c389158727fb98710dd700145c31be8..f1c206b6b506aff09c484730dd2d5ce796c3c2ab 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1809,7 +1809,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-             }
- 
-             // CraftBukkit - decompile error
--            return (String) object2intopenhashmap.object2IntEntrySet().stream().sorted(Comparator.comparing(it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<MinecraftKey>::getIntValue).reversed()).limit(5L).map((it_unimi_dsi_fastutil_objects_object2intmap_entry) -> {
-+            return (String) object2intopenhashmap.object2IntEntrySet().stream().sorted(Comparator.comparing(Object2IntMap.Entry<MinecraftKey>::getIntValue).reversed()).limit(5L).map((it_unimi_dsi_fastutil_objects_object2intmap_entry) -> { // Paper - decompile fix
-                 return it_unimi_dsi_fastutil_objects_object2intmap_entry.getKey() + ":" + it_unimi_dsi_fastutil_objects_object2intmap_entry.getIntValue();
-             }).collect(Collectors.joining(","));
-         } catch (Exception exception) {

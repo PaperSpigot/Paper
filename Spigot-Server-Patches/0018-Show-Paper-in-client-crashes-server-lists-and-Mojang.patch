@@ -6,10 +6,10 @@ Subject: [PATCH] Show 'Paper' in client crashes, server lists, and Mojang
 
 
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
-index aab33df7a36eb69300fedfce733985d6c239ca01..550232cb3819138b3bae0fa1c51429485e8bc593 100644
+index a5171d28b960b12c2743ea68a36d747bc967697d..a0f53c9eff04a40780b3ba568dbfc5bbe9bd8504 100644
 --- a/src/main/java/net/minecraft/server/EULA.java
 +++ b/src/main/java/net/minecraft/server/EULA.java
-@@ -70,7 +70,7 @@ public class EULA {
+@@ -72,7 +72,7 @@ public class EULA {
                      Properties properties = new Properties();
  
                      properties.setProperty("eula", "false");
@@ -19,10 +19,10 @@ index aab33df7a36eb69300fedfce733985d6c239ca01..550232cb3819138b3bae0fa1c5142948
                      throwable = throwable1;
                      throw throwable1;
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c1a651a1c2d5ffed80e4517e465901bb39274548..82768ab4663b6dc220212581f92bf8c5188c73b5 100644
+index 422ee5fb0d917399b2b1e5d893219405c5dbe82d..60a768ea8ffa965dd309c05bebddf5563b5e1992 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1225,7 +1225,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1332,7 +1332,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      }
  
      public String getServerModName() {
@@ -32,7 +32,7 @@ index c1a651a1c2d5ffed80e4517e465901bb39274548..82768ab4663b6dc220212581f92bf8c5
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 17f4e5a6fcf58ba74678f8a004fc3d5f4a81ae50..6352c45db0053ce75356494ffa3b31b42d6e6414 100644
+index 2f6b49e3ae7a7407eaec9810af8bf72e3a4896de..1818a6af3a55d15be698d5219e0eea63e2077611 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -226,7 +226,7 @@ import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -76,7 +76,7 @@ index 3a6578170765a472d36b169b999e9dc57bf8070b..a34b1ba17e6f7121ed70c3d95ec8f4aa
                  net.minecraft.server.Main.main(options);
              } catch (Throwable t) {
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index d7adcdceecb48d8ae605ddd305dcc06ec05ed3dd..bf240231b70dbaf71f359318e5c0f8ba1490a067 100644
+index b4eeeb0d001e692180874bd26385a0e786a8b752..1b3a14784cac8e855633fae6172ad5479ebe9877 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -19,7 +19,7 @@ public class WatchdogThread extends Thread
@@ -104,7 +104,7 @@ index d7adcdceecb48d8ae605ddd305dcc06ec05ed3dd..bf240231b70dbaf71f359318e5c0f8ba
 -                log.log( Level.SEVERE, "Spigot version: " + Bukkit.getServer().getVersion() );
 +                log.log( Level.SEVERE, "Paper version: " + Bukkit.getServer().getVersion() );
                  //
-                 if ( net.minecraft.server.World.lastPhysicsProblem != null )
+                 if ( net.minecraft.world.level.World.lastPhysicsProblem != null )
                  {
 @@ -82,7 +82,7 @@ public class WatchdogThread extends Thread
                  }

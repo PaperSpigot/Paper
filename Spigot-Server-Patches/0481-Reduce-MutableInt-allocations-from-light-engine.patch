@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Mon, 27 Apr 2020 02:48:06 -0700
+Subject: [PATCH] Reduce MutableInt allocations from light engine
+
+We can abuse the fact light is single threaded and share an instance
+per light engine instance
+
+diff --git a/src/main/java/net/minecraft/world/level/lighting/LightEngineBlock.java b/src/main/java/net/minecraft/world/level/lighting/LightEngineBlock.java
+index 2a0a5a70c795ba33780c8db774eaf9769a85daa7..f6198069e3ca421b4f551939263c7cf8bd5b754e 100644
+--- a/src/main/java/net/minecraft/world/level/lighting/LightEngineBlock.java
++++ b/src/main/java/net/minecraft/world/level/lighting/LightEngineBlock.java
+@@ -16,6 +16,7 @@ public final class LightEngineBlock extends LightEngineLayer<LightEngineStorageB
+ 
+     private static final EnumDirection[] e = EnumDirection.values();
+     private final BlockPosition.MutableBlockPosition f = new BlockPosition.MutableBlockPosition();
++    private final MutableInt mutableint = new MutableInt(); // Paper
+ 
+     public LightEngineBlock(ILightAccess ilightaccess) {
+         super(ilightaccess, EnumSkyBlock.BLOCK, new LightEngineStorageBlock(ilightaccess));
+@@ -47,7 +48,7 @@ public final class LightEngineBlock extends LightEngineLayer<LightEngineStorageB
+             if (enumdirection == null) {
+                 return 15;
+             } else {
+-                MutableInt mutableint = new MutableInt();
++                //MutableInt mutableint = new MutableInt(); // Paper - share mutableint, single threaded
+                 IBlockData iblockdata = this.a(j, mutableint);
+ 
+                 if (mutableint.getValue() >= 15) {
+diff --git a/src/main/java/net/minecraft/world/level/lighting/LightEngineSky.java b/src/main/java/net/minecraft/world/level/lighting/LightEngineSky.java
+index 113c575a16121aa1146f21a6f41ebd9d12a0c924..37fa5faea6e2972e3eb8a3cbd1913ef38dc9456f 100644
+--- a/src/main/java/net/minecraft/world/level/lighting/LightEngineSky.java
++++ b/src/main/java/net/minecraft/world/level/lighting/LightEngineSky.java
+@@ -15,6 +15,7 @@ public final class LightEngineSky extends LightEngineLayer<LightEngineStorageSky
+ 
+     private static final EnumDirection[] e = EnumDirection.values();
+     private static final EnumDirection[] f = new EnumDirection[]{EnumDirection.NORTH, EnumDirection.SOUTH, EnumDirection.WEST, EnumDirection.EAST};
++    private final MutableInt mutableint = new MutableInt(); // Paper
+ 
+     public LightEngineSky(ILightAccess ilightaccess) {
+         super(ilightaccess, EnumSkyBlock.SKY, new LightEngineStorageSky(ilightaccess));
+@@ -36,7 +37,7 @@ public final class LightEngineSky extends LightEngineLayer<LightEngineStorageSky
+             if (k >= 15) {
+                 return k;
+             } else {
+-                MutableInt mutableint = new MutableInt();
++                //MutableInt mutableint = new MutableInt(); // Paper - share mutableint, single threaded
+                 IBlockData iblockdata = this.a(j, mutableint);
+ 
+                 if (mutableint.getValue() >= 15) {

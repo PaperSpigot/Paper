@@ -5,7 +5,7 @@ Subject: [PATCH] Add toggle for always placing the dragon egg
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 4735dcba31b556fafe9c7d7440c89e940755c81f..ac96011d4e104c99bb37833d91b8121f03b9d349 100644
+index 849603de7c918788f1f80d7effb93658a69b0fd6..1ceacb6bbfe99069763845a8aef48a3fb4841e32 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -794,4 +794,9 @@ public class PaperWorldConfig {
@@ -18,11 +18,11 @@ index 4735dcba31b556fafe9c7d7440c89e940755c81f..ac96011d4e104c99bb37833d91b8121f
 +        enderDragonsDeathAlwaysPlacesDragonEgg = getBoolean("ender-dragons-death-always-places-dragon-egg", enderDragonsDeathAlwaysPlacesDragonEgg);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EnderDragonBattle.java b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-index 38dc6086d18951e065d4048d1d8eee288c5c5fd1..7f11adbc5d8527b50f7657d46459516a471017b3 100644
---- a/src/main/java/net/minecraft/server/EnderDragonBattle.java
-+++ b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-@@ -358,7 +358,7 @@ public class EnderDragonBattle {
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index c0a6b340810b8ea4f454290b1ac22316ff0e6e22..80fcceec519ef59d057d27a81fcd0649a20447da 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -400,7 +400,7 @@ public class EnderDragonBattle {
              this.bossBattle.setVisible(false);
              this.generateExitPortal(true);
              this.n();

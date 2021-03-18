@@ -12,11 +12,11 @@ contention situations.
 
 And this is extremely a low contention situation.
 
-diff --git a/src/main/java/net/minecraft/server/DataPaletteBlock.java b/src/main/java/net/minecraft/server/DataPaletteBlock.java
-index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b74955f75339 100644
---- a/src/main/java/net/minecraft/server/DataPaletteBlock.java
-+++ b/src/main/java/net/minecraft/server/DataPaletteBlock.java
-@@ -23,7 +23,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java b/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
+index 8928157b01bb4f0dfe043732777b33708c23cda7..cc0c5995dc3840ce66ea849849f7c37555d3b5e6 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
++++ b/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
+@@ -32,7 +32,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
      private int i; private int getBitsPerObject() { return this.i; } // Paper - OBFHELPER
      private final ReentrantLock j = new ReentrantLock();
  
@@ -25,7 +25,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
          if (this.j.isLocked() && !this.j.isHeldByCurrentThread()) {
              String s = (String) Thread.getAllStackTraces().keySet().stream().filter(Objects::nonNull).map((thread) -> {
                  return thread.getName() + ": \n\tat " + (String) Arrays.stream(thread.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
-@@ -35,11 +35,11 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -44,11 +44,11 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
              throw new ReportedException(crashreport);
          } else {
              this.j.lock();
@@ -39,7 +39,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
      }
  
      public DataPaletteBlock(DataPalette<T> datapalette, RegistryBlockID<T> registryblockid, Function<NBTTagCompound, T> function, Function<T, NBTTagCompound> function1, T t0) {
-@@ -75,7 +75,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -84,7 +84,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
      }
  
      @Override
@@ -48,7 +48,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
          this.a();
          DataBits databits = this.a;
          DataPalette<T> datapalette = this.h;
-@@ -98,18 +98,18 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -107,18 +107,18 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
      }
  
      public T setBlock(int i, int j, int k, T t0) {
@@ -72,7 +72,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
          int j = this.h.a(t0);
          int k = this.a.a(i, j);
          T t1 = this.h.a(k);
-@@ -134,7 +134,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -143,7 +143,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
      }
  
      public void writeDataPaletteBlock(PacketDataSerializer packetDataSerializer) { this.b(packetDataSerializer); } // Paper - OBFHELPER
@@ -81,7 +81,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
          this.a();
          packetdataserializer.writeByte(this.i);
          this.h.b(packetdataserializer);
-@@ -142,7 +142,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -151,7 +151,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
          this.b();
      }
  
@@ -90,7 +90,7 @@ index eabc9d7b934f27c823e012f3f10fffc23b461292..f4c1b8d32b239c44e70d3fa6d094b749
          this.a();
          int i = Math.max(4, MathHelper.e(nbttaglist.size()));
  
-@@ -175,7 +175,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+@@ -184,7 +184,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
          this.b();
      }
  

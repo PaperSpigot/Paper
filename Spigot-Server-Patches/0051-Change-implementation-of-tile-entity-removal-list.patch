@@ -5,11 +5,11 @@ Subject: [PATCH] Change implementation of (tile)entity removal list
 
 use sets for faster removal
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 564e252a366ed5df602ea4d608f482c80a187606..895436e36e6ef6f78dfd42e3ef3a0132506663f2 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -37,7 +37,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 26d9388badb0328735abf0319a42bd633c90dc4b..33469b719d679c65d4bcb8366008e6e107eb3a0b 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -89,7 +89,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      public final List<TileEntity> tileEntityList = Lists.newArrayList();
      public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
      protected final List<TileEntity> tileEntityListPending = Lists.newArrayList();

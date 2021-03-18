@@ -5,11 +5,24 @@ Subject: [PATCH] Add World Util Methods
 
 Methods that can be used for other patches to help improve logic.
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 1c54c081c6ea1f422c19db1aa9e1935ce066d910..4aa4a8d10b5126125ae420037c5e1faabdbe147b 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -245,11 +245,27 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index eddfbd25953e8ef410f1617a1edecbc7d07696c0..b04a6cd626fceed26aec6121e20fb1b6dd1c716d 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -197,7 +197,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     public final Convertable.ConversionSession convertable;
+     public final UUID uuid;
+ 
+-    public Chunk getChunkIfLoaded(int x, int z) {
++    @Override public Chunk getChunkIfLoaded(int x, int z) { // Paper - this was added in world too but keeping here for NMS ABI
+         return this.chunkProvider.getChunkAt(x, z, false);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index b0ad55f35285cc1bc339859a8deae65e930082b8..067f5e46ad2f28ab119db77b19c4897bed9b3d80 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -297,11 +297,27 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      }
  
      @Override
@@ -38,11 +51,11 @@ index 1c54c081c6ea1f422c19db1aa9e1935ce066d910..4aa4a8d10b5126125ae420037c5e1faa
      // Paper end
  
      @Override
-diff --git a/src/main/java/net/minecraft/server/WorldBorder.java b/src/main/java/net/minecraft/server/WorldBorder.java
-index bb0f30f182856d2701fde9b1a65eeb987462104a..717f495abd63218bb7ce9241e7cfeac809ef02de 100644
---- a/src/main/java/net/minecraft/server/WorldBorder.java
-+++ b/src/main/java/net/minecraft/server/WorldBorder.java
-@@ -21,6 +21,7 @@ public class WorldBorder {
+diff --git a/src/main/java/net/minecraft/world/level/border/WorldBorder.java b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+index 2bb03f1cb9671a7754a68059219f783d4508eeb9..f16c76df5d7b184d57f4cc397f069eac9cc430cb 100644
+--- a/src/main/java/net/minecraft/world/level/border/WorldBorder.java
++++ b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+@@ -31,6 +31,7 @@ public class WorldBorder {
  
      public WorldBorder() {}
  
@@ -50,16 +63,3 @@ index bb0f30f182856d2701fde9b1a65eeb987462104a..717f495abd63218bb7ce9241e7cfeac8
      public boolean a(BlockPosition blockposition) {
          return (double) (blockposition.getX() + 1) > this.e() && (double) blockposition.getX() < this.g() && (double) (blockposition.getZ() + 1) > this.f() && (double) blockposition.getZ() < this.h();
      }
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 07f2cf8461343f054828a32f8bf48563321e666a..6a57b9337d3f345197a127b16e3799d0c58fab2d 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -88,7 +88,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-     public final Convertable.ConversionSession convertable;
-     public final UUID uuid;
- 
--    public Chunk getChunkIfLoaded(int x, int z) {
-+    @Override public Chunk getChunkIfLoaded(int x, int z) { // Paper - this was added in world too but keeping here for NMS ABI
-         return this.chunkProvider.getChunkAt(x, z, false);
-     }
- 

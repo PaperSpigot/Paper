@@ -10,19 +10,19 @@ to the nearest Integer when updating its current cook time.
 
 Modified by: Eric Su <ericsu@alumni.usc.edu>
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
-index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef51159e9406b 100644
---- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
-+++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
-@@ -11,6 +11,7 @@ import java.util.Map;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+index deaa4c136c23dc6c258cc1ce68523b3c007c80f9..e630e8d3e115d2a0177849ad8258a2304b9d3e9d 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.phys.Vec3D;
  
  // CraftBukkit start
 +import java.util.List;
  import org.bukkit.craftbukkit.block.CraftBlock;
  import org.bukkit.craftbukkit.entity.CraftHumanEntity;
  import org.bukkit.craftbukkit.inventory.CraftItemStack;
-@@ -29,6 +30,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+@@ -58,6 +59,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
      protected NonNullList<ItemStack> items;
      public int burnTime;
      private int ticksForCurrentFuel;
@@ -30,7 +30,7 @@ index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef511
      public int cookTime;
      public int cookTimeTotal;
      protected final IContainerProperties b;
-@@ -229,6 +231,11 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+@@ -258,6 +260,11 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
              this.n.put(new MinecraftKey(s), nbttagcompound1.getInt(s));
          }
  
@@ -42,7 +42,7 @@ index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef511
      }
  
      @Override
-@@ -237,6 +244,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+@@ -266,6 +273,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
          nbttagcompound.setShort("BurnTime", (short) this.burnTime);
          nbttagcompound.setShort("CookTime", (short) this.cookTime);
          nbttagcompound.setShort("CookTimeTotal", (short) this.cookTimeTotal);
@@ -50,7 +50,7 @@ index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef511
          ContainerUtil.a(nbttagcompound, this.items);
          NBTTagCompound nbttagcompound1 = new NBTTagCompound();
  
-@@ -297,7 +305,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+@@ -326,7 +334,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
  
                  if (this.isBurning() && this.canBurn(irecipe)) {
                      ++this.cookTime;
@@ -59,7 +59,7 @@ index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef511
                          this.cookTime = 0;
                          this.cookTimeTotal = this.getRecipeCookingTime();
                          this.burn(irecipe);
-@@ -397,9 +405,13 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+@@ -426,9 +434,13 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
          }
      }
  
@@ -76,7 +76,7 @@ index af4db22cf87433fcd4f59be207257a8d7c255883..abc76807595611d35c86f500ef1ef511
      public static boolean isFuel(ItemStack itemstack) {
          return f().containsKey(itemstack.getItem());
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java b/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
-index 27c8cc130e7466c396b514dd77f1385f967bebdb..298e75d72b889396a15907e713c29430c168b915 100644
+index 760fe719f2f8836c41f6a49d8a795703b2474390..86ad5f78eecc01863897838cb1f311f5dd3d996d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
 @@ -63,4 +63,20 @@ public abstract class CraftFurnace<T extends TileEntityFurnace> extends CraftCon

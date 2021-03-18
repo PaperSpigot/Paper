@@ -4,21 +4,21 @@ Date: Fri, 26 Feb 2021 16:24:25 -0600
 Subject: [PATCH] Expose Tracked Players
 
 
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index d8787985ab4c94e9808332c15b3d16d4b52ba195..e87e1b04e13593f1efa4d1c59cb9e433f2b3c694 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -80,7 +80,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index f7223f214f911dd25abcf3a52745588ec630241d..7abeeefeb579a43bc9ee85fd4150afacfb11c802 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -172,7 +172,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
      private CraftEntity bukkitEntity;
  
 -    PlayerChunkMap.EntityTracker tracker; // Paper
 +    public PlayerChunkMap.EntityTracker tracker; // Paper package private -> public
-     boolean collisionLoadChunks = false; // Paper
-     Throwable addedToWorldStack; // Paper - entity debug
+     public boolean collisionLoadChunks = false; // Paper
+     public Throwable addedToWorldStack; // Paper - entity debug
      public CraftEntity getBukkitEntity() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 756009d20b23b2e5c51e72e61348bd60d93a7c11..f965b071cd2f6a70a216679e4f19956115edee4f 100644
+index e97ad53eb8bdc4c71d8014d060710cb3a29ab7f8..e5549439b3d4d608cf37dd33b6c8c9e10dfe9328 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -16,6 +16,7 @@ import java.net.InetSocketAddress;
@@ -29,7 +29,7 @@ index 756009d20b23b2e5c51e72e61348bd60d93a7c11..f965b071cd2f6a70a216679e4f199561
  import java.util.HashMap;
  import java.util.HashSet;
  import java.util.LinkedHashMap;
-@@ -2297,6 +2298,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2306,6 +2307,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  

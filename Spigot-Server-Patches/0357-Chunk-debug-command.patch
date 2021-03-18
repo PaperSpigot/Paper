@@ -32,20 +32,22 @@ https://bugs.mojang.com/browse/MC-141484?focusedCommentId=528273&page=com.atlass
 https://bugs.mojang.com/browse/MC-141484?focusedCommentId=528577&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-528577
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index aa606e66c874d5147074b85cc9a5ceef71175740..7dfed07e54f1f0be0c01ee161f56dc421b91baaa 100644
+index b67bd98cca4a06bc0ebaed577195dffc3b3251ec..a7a02072e5c7ce62cbecbb638fcc74abf2fb57ee 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-@@ -10,8 +10,10 @@ import net.minecraft.server.ChunkCoordIntPair;
- import net.minecraft.server.ChunkProviderServer;
- import net.minecraft.server.Entity;
- import net.minecraft.server.EntityTypes;
-+import net.minecraft.server.MCUtil;
- import net.minecraft.server.MinecraftKey;
+@@ -9,10 +9,12 @@ import com.google.common.collect.Maps;
+ import net.minecraft.resources.MinecraftKey;
  import net.minecraft.server.MinecraftServer;
-+import net.minecraft.server.PlayerChunk;
- import net.minecraft.server.WorldServer;
+ import net.minecraft.server.level.ChunkProviderServer;
++import net.minecraft.server.level.PlayerChunk;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.level.ChunkCoordIntPair;
++import net.minecraft.server.MCUtil;
  import org.apache.commons.lang3.tuple.MutablePair;
  import org.apache.commons.lang3.tuple.Pair;
+ import org.bukkit.Bukkit;
 @@ -41,7 +43,7 @@ import java.util.stream.Collectors;
  
  public class PaperCommand extends Command {
@@ -205,26 +207,27 @@ index aa606e66c874d5147074b85cc9a5ceef71175740..7dfed07e54f1f0be0c01ee161f56dc42
      /*
       * Ported from MinecraftForge - author: LexManos <LexManos@gmail.com> - License: LGPLv2.1
       */
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 8017953af1df6c046a47ebe655e5d1afa68d50f8..af597b8b3157ac76456f8575a8f85a48fb0f45cd 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
- 
- public class ChunkProviderServer extends IChunkProvider {
- 
--    private static final List<ChunkStatus> b = ChunkStatus.a();
-+    private static final List<ChunkStatus> b = ChunkStatus.a(); static final List<ChunkStatus> getPossibleChunkStatuses() { return ChunkProviderServer.b; } // Paper - OBFHELPER
-     private final ChunkMapDistance chunkMapDistance;
-     public final ChunkGenerator chunkGenerator;
-     private final WorldServer world;
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 816d55b17ea531bc2f25b92c003b127fe6e04112..2507bdf7bfa65f1bc728a46322d2a570e566e32c 100644
+index 35d1444c5b75d9a3a6cface5dd70aea0a08ac89d..fbd33aef21b4539d249c367609a36491530fb7ca 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -6,7 +6,13 @@ import com.destroystokyo.paper.profile.PlayerProfile;
- import com.google.common.util.concurrent.ThreadFactoryBuilder;
- import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+@@ -9,13 +9,27 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.chat.IChatBaseComponent;
++import net.minecraft.server.level.ChunkMapDistance;
++import net.minecraft.server.level.ChunkProviderServer;
++import net.minecraft.server.level.EntityPlayer;
++import net.minecraft.server.level.PlayerChunk;
++import net.minecraft.server.level.PlayerChunkMap;
++import net.minecraft.server.level.Ticket;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.level.ChunkCoordIntPair;
+ import net.minecraft.world.level.RayTrace;
+ import net.minecraft.world.level.World;
++import net.minecraft.world.level.chunk.ChunkStatus;
++import net.minecraft.world.level.chunk.IChunkAccess;
  import org.apache.commons.lang.exception.ExceptionUtils;
 +import com.google.gson.JsonArray;
 +import com.google.gson.JsonObject;
@@ -236,7 +239,7 @@ index 816d55b17ea531bc2f25b92c003b127fe6e04112..2507bdf7bfa65f1bc728a46322d2a570
  import org.bukkit.Location;
  import org.bukkit.block.BlockFace;
  import org.bukkit.craftbukkit.CraftWorld;
-@@ -15,8 +21,11 @@ import org.spigotmc.AsyncCatcher;
+@@ -24,8 +38,11 @@ import org.spigotmc.AsyncCatcher;
  
  import javax.annotation.Nonnull;
  import javax.annotation.Nullable;
@@ -248,7 +251,7 @@ index 816d55b17ea531bc2f25b92c003b127fe6e04112..2507bdf7bfa65f1bc728a46322d2a570
  import java.util.concurrent.CompletableFuture;
  import java.util.concurrent.ExecutionException;
  import java.util.concurrent.LinkedBlockingQueue;
-@@ -522,4 +531,170 @@ public final class MCUtil {
+@@ -531,4 +548,170 @@ public final class MCUtil {
  
          return null;
      }
@@ -419,11 +422,24 @@ index 816d55b17ea531bc2f25b92c003b127fe6e04112..2507bdf7bfa65f1bc728a46322d2a570
 +        }
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index eefd94ef237657625f2e7b19099d802e7680b50a..b7af53dbf3139d7d51069e11388b945785cb47f6 100644
---- a/src/main/java/net/minecraft/server/PlayerChunk.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunk.java
-@@ -29,7 +29,7 @@ public class PlayerChunk {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index eb576566708d50c002e73aa746d2bc58b9b04c2b..b80c3bd702141ca4a88078386845d731b3ecc539 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -46,7 +46,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap; // Paper
+ 
+ public class ChunkProviderServer extends IChunkProvider {
+ 
+-    private static final List<ChunkStatus> b = ChunkStatus.a();
++    private static final List<ChunkStatus> b = ChunkStatus.a(); public static final List<ChunkStatus> getPossibleChunkStatuses() { return ChunkProviderServer.b; } // Paper - OBFHELPER
+     private final ChunkMapDistance chunkMapDistance;
+     public final ChunkGenerator chunkGenerator;
+     private final WorldServer world;
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunk.java b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+index 2c3d9a5d118cc4f3b5e78daf943911bb7386488a..9891cf98f8c740f84f9135ee8176e67abb648b3a 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunk.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+@@ -54,7 +54,7 @@ public class PlayerChunk {
      public int oldTicketLevel;
      private int ticketLevel;
      private int n;
@@ -432,23 +448,23 @@ index eefd94ef237657625f2e7b19099d802e7680b50a..b7af53dbf3139d7d51069e11388b9457
      private boolean p;
      private final ShortSet[] dirtyBlocks;
      private int r;
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 8370bb32f9ca5c88cea52b90a6f361ad5333bbb2..21c261e3cb4d82e358a8e5c1151f59e68b483fd5 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -60,7 +60,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index aeed11cfee42fbde2c2e5731f46ac24de6469e0e..a0fcd20d4a7e951437756edb60a44c627612e04c 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -106,7 +106,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      public final Long2ObjectLinkedOpenHashMap<PlayerChunk> updatingChunks = new Long2ObjectLinkedOpenHashMap();
      public volatile Long2ObjectLinkedOpenHashMap<PlayerChunk> visibleChunks;
      private final Long2ObjectLinkedOpenHashMap<PlayerChunk> pendingUnload;
 -    private final LongSet loadedChunks;
-+    final LongSet loadedChunks; // Paper - private -> package
++    public final LongSet loadedChunks; // Paper - private -> public
      public final WorldServer world;
      private final LightEngineThreaded lightEngine;
      private final IAsyncTaskHandler<Runnable> executor;
-diff --git a/src/main/java/net/minecraft/server/Ticket.java b/src/main/java/net/minecraft/server/Ticket.java
-index 77bb6b092a0763ff27f90f0401a8a81b15aebb8c..7a8397815a5b7f79f3e3a0348aeedf63fe879f8f 100644
---- a/src/main/java/net/minecraft/server/Ticket.java
-+++ b/src/main/java/net/minecraft/server/Ticket.java
+diff --git a/src/main/java/net/minecraft/server/level/Ticket.java b/src/main/java/net/minecraft/server/level/Ticket.java
+index 51ef4adf66c1e21093e63ab46fa47e66c2425fdb..e06fe77f6ea05a93e95fce223bcfd0d16394f96f 100644
+--- a/src/main/java/net/minecraft/server/level/Ticket.java
++++ b/src/main/java/net/minecraft/server/level/Ticket.java
 @@ -6,8 +6,8 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
  
      private final TicketType<T> a;

@@ -7,11 +7,11 @@ Subject: [PATCH] Avoid error bubbling up when item stack is empty in fishing
 This can realistically only happen if there's custom loot active on fishing
 which can return 0 items. This would disconnect the player who's fishing.
 
-diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
-index fac695125da50bb33b68f317339832a26f7625a6..3580f40b2bb30bceca0ce374edb29608168a00c0 100644
---- a/src/main/java/net/minecraft/server/EntityFishingHook.java
-+++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
-@@ -446,9 +446,15 @@ public class EntityFishingHook extends IProjectile {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
+index d40b056b2ff14033113bd7108a3295f8783b8bdf..addea9c1309a308b76c93ee71e839c915bc773e8 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
+@@ -484,9 +484,15 @@ public class EntityFishingHook extends IProjectile {
  
                  while (iterator.hasNext()) {
                      ItemStack itemstack1 = (ItemStack) iterator.next();
@@ -29,7 +29,7 @@ index fac695125da50bb33b68f317339832a26f7625a6..3580f40b2bb30bceca0ce374edb29608
                      playerFishEvent.setExpToDrop(this.random.nextInt(6) + 1);
                      this.world.getServer().getPluginManager().callEvent(playerFishEvent);
  
-@@ -461,8 +467,12 @@ public class EntityFishingHook extends IProjectile {
+@@ -499,8 +505,12 @@ public class EntityFishingHook extends IProjectile {
                      double d2 = entityhuman.locZ() - this.locZ();
                      double d3 = 0.1D;
  

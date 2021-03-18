@@ -4,19 +4,19 @@ Date: Mon, 25 Jan 2021 14:53:57 +0100
 Subject: [PATCH] add DragonEggFormEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EnderDragonBattle.java b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-index 7f11adbc5d8527b50f7657d46459516a471017b3..0d8fba494ed11ad79201dfd1c7f3ad5b288ca0ca 100644
---- a/src/main/java/net/minecraft/server/EnderDragonBattle.java
-+++ b/src/main/java/net/minecraft/server/EnderDragonBattle.java
-@@ -15,6 +15,7 @@ import java.util.function.Predicate;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index 80fcceec519ef59d057d27a81fcd0649a20447da..0ab6319aa3e4e1f5679f37be36999ca56ca2484c 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -57,6 +57,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.WorldGenFeature
+ import net.minecraft.world.phys.AxisAlignedBB;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
 +import io.papermc.paper.event.block.DragonEggFormEvent; // Paper - DragonEggFormEvent
  
  public class EnderDragonBattle {
  
-@@ -358,9 +359,24 @@ public class EnderDragonBattle {
+@@ -400,9 +401,24 @@ public class EnderDragonBattle {
              this.bossBattle.setVisible(false);
              this.generateExitPortal(true);
              this.n();
@@ -42,11 +42,11 @@ index 7f11adbc5d8527b50f7657d46459516a471017b3..0d8fba494ed11ad79201dfd1c7f3ad5b
  
              this.previouslyKilled = true;
              this.dragonKilled = true;
-diff --git a/src/main/java/net/minecraft/server/WorldGenEndTrophy.java b/src/main/java/net/minecraft/server/WorldGenEndTrophy.java
-index dde3c2553adf29b6c97aa9a17b666f2e8ad4d2e6..441f3b6d57f128644ad952ab7f2d090d2140bd0c 100644
---- a/src/main/java/net/minecraft/server/WorldGenEndTrophy.java
-+++ b/src/main/java/net/minecraft/server/WorldGenEndTrophy.java
-@@ -5,7 +5,7 @@ import java.util.Random;
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/WorldGenEndTrophy.java b/src/main/java/net/minecraft/world/level/levelgen/feature/WorldGenEndTrophy.java
+index 18395a3b4a7df1c99e952b9c8e738f165648eba5..851b8c2a86d7155278b49c44c6db8b1cbd2065f2 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/WorldGenEndTrophy.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/WorldGenEndTrophy.java
+@@ -14,7 +14,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.WorldGenFeature
  
  public class WorldGenEndTrophy extends WorldGenerator<WorldGenFeatureEmptyConfiguration> {
  
@@ -55,7 +55,7 @@ index dde3c2553adf29b6c97aa9a17b666f2e8ad4d2e6..441f3b6d57f128644ad952ab7f2d090d
      private final boolean ab;
  
      public WorldGenEndTrophy(boolean flag) {
-@@ -13,7 +13,7 @@ public class WorldGenEndTrophy extends WorldGenerator<WorldGenFeatureEmptyConfig
+@@ -22,7 +22,7 @@ public class WorldGenEndTrophy extends WorldGenerator<WorldGenFeatureEmptyConfig
          this.ab = flag;
      }
  

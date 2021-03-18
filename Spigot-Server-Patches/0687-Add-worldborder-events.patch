@@ -4,21 +4,21 @@ Date: Mon, 4 Jan 2021 22:40:34 -0800
 Subject: [PATCH] Add worldborder events
 
 
-diff --git a/src/main/java/net/minecraft/server/WorldBorder.java b/src/main/java/net/minecraft/server/WorldBorder.java
-index f011869880fedae4b69e505491e8bdbc5f51dfba..6e82c1d1b272a95144bfc78d34b630c24466fa3e 100644
---- a/src/main/java/net/minecraft/server/WorldBorder.java
-+++ b/src/main/java/net/minecraft/server/WorldBorder.java
-@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
- import com.mojang.serialization.DynamicLike;
- import java.util.Iterator;
- import java.util.List;
+diff --git a/src/main/java/net/minecraft/world/level/border/WorldBorder.java b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+index bedaa9dd6390e81df5872c2dd6e202a038367bf6..3c25021835d6d8fd112fc89636616bfd744e7f1a 100644
+--- a/src/main/java/net/minecraft/world/level/border/WorldBorder.java
++++ b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+@@ -14,6 +14,9 @@ import net.minecraft.world.phys.AxisAlignedBB;
+ import net.minecraft.world.phys.shapes.OperatorBoolean;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ import net.minecraft.world.phys.shapes.VoxelShapes;
 +import io.papermc.paper.event.world.border.WorldBorderBoundsChangeFinishEvent; // Paper
 +import io.papermc.paper.event.world.border.WorldBorderCenterChangeEvent; // Paper
 +import io.papermc.paper.event.world.border.WorldBorderBoundsChangeEvent; // Paper
  
  public class WorldBorder {
  
-@@ -92,15 +95,19 @@ public class WorldBorder {
+@@ -102,15 +105,19 @@ public class WorldBorder {
      }
  
      public void setCenter(double d0, double d1) {
@@ -41,7 +41,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..6e82c1d1b272a95144bfc78d34b630c2
          }
  
      }
-@@ -118,25 +125,43 @@ public class WorldBorder {
+@@ -128,25 +135,43 @@ public class WorldBorder {
      }
  
      public void setSize(double d0) {
@@ -89,7 +89,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..6e82c1d1b272a95144bfc78d34b630c2
          }
  
      }
-@@ -424,11 +449,11 @@ public class WorldBorder {
+@@ -434,11 +459,11 @@ public class WorldBorder {
  
      class b implements WorldBorder.a {
  
@@ -104,7 +104,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..6e82c1d1b272a95144bfc78d34b630c2
  
          private b(double d0, double d1, long i) {
              this.b = d0;
-@@ -483,6 +508,7 @@ public class WorldBorder {
+@@ -493,6 +518,7 @@ public class WorldBorder {
  
          @Override
          public WorldBorder.a l() {
@@ -112,7 +112,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..6e82c1d1b272a95144bfc78d34b630c2
              return (WorldBorder.a) (this.g() <= 0L ? WorldBorder.this.new d(this.c) : this);
          }
  
-@@ -504,6 +530,7 @@ public class WorldBorder {
+@@ -514,6 +540,7 @@ public class WorldBorder {
  
          double e();
  

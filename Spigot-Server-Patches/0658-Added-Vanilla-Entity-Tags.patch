@@ -6,16 +6,15 @@ Subject: [PATCH] Added Vanilla Entity Tags
 
 diff --git a/src/main/java/io/papermc/paper/CraftEntityTag.java b/src/main/java/io/papermc/paper/CraftEntityTag.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4a689a2769ac343c2ffab49631c416014ce46d02
+index 0000000000000000000000000000000000000000..2ca8e1bade5450a14125b77540792e0b18c3e19b
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/CraftEntityTag.java
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,29 @@
 +package io.papermc.paper;
 +
-+import net.minecraft.server.Entity;
-+import net.minecraft.server.EntityTypes;
-+import net.minecraft.server.MinecraftKey;
-+import net.minecraft.server.Tags;
++import net.minecraft.resources.MinecraftKey;
++import net.minecraft.tags.Tags;
++import net.minecraft.world.entity.EntityTypes;
 +import org.bukkit.craftbukkit.tag.CraftTag;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.entity.EntityType;
@@ -41,7 +40,7 @@ index 0000000000000000000000000000000000000000..4a689a2769ac343c2ffab49631c41601
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index c1c087cf9a3addef41d9dbec76f23177176dd44f..db0f0550ea011ff8222473de9940e4bfdc7b9e06 100644
+index fe2ad3f9298af4d405711b4798e34ae484a19db9..a4755e2cdb40afe6af47435f92963a53d7b719c7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2216,6 +2216,11 @@ public final class CraftServer implements Server {
@@ -57,7 +56,7 @@ index c1c087cf9a3addef41d9dbec76f23177176dd44f..db0f0550ea011ff8222473de9940e4bf
                  throw new IllegalArgumentException();
          }
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index db241142e892940571c39e95f2dce648e79702bb..00e53d577b1dcaccb409e62d35165ee015de9330 100644
+index 4b7ca6d2e13fad43a75a345608b739f47adba738..ca911ed346daf8c43b7b6e0acabf9ac0c64223aa 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -98,8 +98,17 @@ public final class CraftMagicNumbers implements UnsafeValues {
@@ -65,14 +64,14 @@ index db241142e892940571c39e95f2dce648e79702bb..00e53d577b1dcaccb409e62d35165ee0
      private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
      private static final Map<Material, FluidType> MATERIAL_FLUID = new HashMap<>();
 +    // Paper start
-+    private static final Map<org.bukkit.entity.EntityType, net.minecraft.server.EntityTypes<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap<>();
-+    private static final Map<net.minecraft.server.EntityTypes<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap<>();
++    private static final Map<org.bukkit.entity.EntityType, net.minecraft.world.entity.EntityTypes<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap<>();
++    private static final Map<net.minecraft.world.entity.EntityTypes<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap<>();
  
      static {
 +        for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
 +            if (type == org.bukkit.entity.EntityType.UNKNOWN) continue;
-+            ENTITY_TYPE_ENTITY_TYPES.put(type, net.minecraft.server.IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())));
-+            ENTITY_TYPES_ENTITY_TYPE.put(net.minecraft.server.IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())), type);
++            ENTITY_TYPE_ENTITY_TYPES.put(type, IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())));
++            ENTITY_TYPES_ENTITY_TYPE.put(IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())), type);
 +        }
 +        // Paper end
          for (Block block : IRegistry.BLOCK) {
@@ -83,10 +82,10 @@ index db241142e892940571c39e95f2dce648e79702bb..00e53d577b1dcaccb409e62d35165ee0
          return CraftNamespacedKey.toMinecraft(mat.getKey());
      }
 +    // Paper start
-+    public static net.minecraft.server.EntityTypes<?> getEntityTypes(org.bukkit.entity.EntityType type) {
++    public static net.minecraft.world.entity.EntityTypes<?> getEntityTypes(org.bukkit.entity.EntityType type) {
 +        return ENTITY_TYPE_ENTITY_TYPES.get(type);
 +    }
-+    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.server.EntityTypes<?> entityTypes) {
++    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.world.entity.EntityTypes<?> entityTypes) {
 +        return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
 +    }
 +    // Paper end

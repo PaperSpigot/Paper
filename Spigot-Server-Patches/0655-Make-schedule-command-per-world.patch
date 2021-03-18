@@ -4,11 +4,11 @@ Date: Mon, 4 Jan 2021 19:52:44 -0800
 Subject: [PATCH] Make schedule command per-world
 
 
-diff --git a/src/main/java/net/minecraft/server/CommandSchedule.java b/src/main/java/net/minecraft/server/CommandSchedule.java
-index c4cb8fb2b611cc8e2df82497a7248e106cdc188e..4f167cace29637ca5c4624a2628e1df7066bb0de 100644
---- a/src/main/java/net/minecraft/server/CommandSchedule.java
-+++ b/src/main/java/net/minecraft/server/CommandSchedule.java
-@@ -19,7 +19,7 @@ public class CommandSchedule {
+diff --git a/src/main/java/net/minecraft/server/commands/CommandSchedule.java b/src/main/java/net/minecraft/server/commands/CommandSchedule.java
+index b88a91072032b75f83d811d63e1b5e3808faa9be..440b25dde0299037032d535c4c751f252775d6ad 100644
+--- a/src/main/java/net/minecraft/server/commands/CommandSchedule.java
++++ b/src/main/java/net/minecraft/server/commands/CommandSchedule.java
+@@ -32,7 +32,7 @@ public class CommandSchedule {
          return new ChatMessage("commands.schedule.cleared.failure", new Object[]{object});
      });
      private static final SuggestionProvider<CommandListenerWrapper> c = (commandcontext, suggestionsbuilder) -> {
@@ -16,8 +16,8 @@ index c4cb8fb2b611cc8e2df82497a7248e106cdc188e..4f167cace29637ca5c4624a2628e1df7
 +        return ICompletionProvider.b((Iterable) ((CommandListenerWrapper) commandcontext.getSource()).getWorld().worldDataServer.H().u().a(), suggestionsbuilder); // Paper
      };
  
-     public static void a(com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> com_mojang_brigadier_commanddispatcher) {
-@@ -42,7 +42,7 @@ public class CommandSchedule {
+     public static void a(CommandDispatcher<CommandListenerWrapper> commanddispatcher) {
+@@ -55,7 +55,7 @@ public class CommandSchedule {
          } else {
              long j = commandlistenerwrapper.getWorld().getTime() + (long) i;
              MinecraftKey minecraftkey = (MinecraftKey) pair.getFirst();
@@ -26,7 +26,7 @@ index c4cb8fb2b611cc8e2df82497a7248e106cdc188e..4f167cace29637ca5c4624a2628e1df7
  
              ((Either) pair.getSecond()).ifLeft((customfunction) -> {
                  String s = minecraftkey.toString();
-@@ -68,7 +68,7 @@ public class CommandSchedule {
+@@ -81,7 +81,7 @@ public class CommandSchedule {
      }
  
      private static int a(CommandListenerWrapper commandlistenerwrapper, String s) throws CommandSyntaxException {

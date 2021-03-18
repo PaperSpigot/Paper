@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: BillyGalbreath <Blake.Galbreath@GMail.com>
+Date: Sun, 23 Aug 2020 16:32:11 +0200
+Subject: [PATCH] Add moon phase API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 1d1b150215c1e226fa2583829f0260cba4133f23..4fe821c5bac2f713529668b2001f95cc3cb2c388 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -328,6 +328,11 @@ public class CraftWorld implements World {
+     public int getPlayerCount() {
+         return world.players.size();
+     }
++
++    @Override
++    public io.papermc.paper.world.MoonPhase getMoonPhase() {
++        return io.papermc.paper.world.MoonPhase.getPhase(getFullTime() / 24000L);
++    }
+     // Paper end
+ 
+     private static final Random rand = new Random();

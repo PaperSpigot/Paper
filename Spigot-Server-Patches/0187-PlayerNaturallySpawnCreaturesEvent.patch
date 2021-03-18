@@ -8,11 +8,11 @@ from triggering monster spawns on a server.
 
 Also a highly more effecient way to blanket block spawns in a world
 
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index a066026bce318683dcc022920dad39d7ec25e485..8017953af1df6c046a47ebe655e5d1afa68d50f8 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -589,6 +589,15 @@ public class ChunkProviderServer extends IChunkProvider {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 95af66ebb7849cbf2bcad6bc52aeb85ab2601b6c..eb576566708d50c002e73aa746d2bc58b9b04c2b 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -611,6 +611,15 @@ public class ChunkProviderServer extends IChunkProvider {
              this.world.getMethodProfiler().exit();
              //List<PlayerChunk> list = Lists.newArrayList(this.playerChunkMap.f()); // Paper
              //Collections.shuffle(list); // Paper
@@ -28,18 +28,18 @@ index a066026bce318683dcc022920dad39d7ec25e485..8017953af1df6c046a47ebe655e5d1af
              this.playerChunkMap.f().forEach((playerchunk) -> { // Paper - no... just no...
                  Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
  
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 7a9e237d23051b43fe0ac3720cd6a36faabc9dd2..42bf31bd9569a8f1c2b36f1c3a2c5c0d805c9b5d 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index afa87cf70ad978161853771c59f5a4906733cab3..8b79d547a3296f056731cbb66508494d84809e94 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -1,5 +1,6 @@
- package net.minecraft.server;
+ package net.minecraft.server.level;
  
 +import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent;
  import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfile;
  import com.mojang.datafixers.util.Either;
-@@ -100,6 +101,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -227,6 +228,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean sentListPacket = false;
      public Integer clientViewDistance;
      // CraftBukkit end
@@ -47,11 +47,11 @@ index 7a9e237d23051b43fe0ac3720cd6a36faabc9dd2..42bf31bd9569a8f1c2b36f1c3a2c5c0d
  
      public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleHashSet; // Paper
  
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 02a516ddabda08db33c94cce2d19d9e77666e074..8bfa412b0d3f881f694abec89101e15aa2d00bb7 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -913,12 +913,23 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 56f83a930c3dad1a1de366bff530131d92b4893c..c6b9b02e6d31bebb3f8c0cadd68e4b5c47fab090 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -958,12 +958,23 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          chunkRange = (chunkRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : chunkRange;
          chunkRange = (chunkRange > 8) ? 8 : chunkRange;
  

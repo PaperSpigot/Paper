@@ -7,15 +7,15 @@ Implements Pathfinding API for mobs
 
 diff --git a/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..af1bac9680028130e99c5e7130f258c196b33275
+index 0000000000000000000000000000000000000000..9a3edd114c4736b1843844c6ca49da7aea7983d1
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
 @@ -0,0 +1,141 @@
 +package com.destroystokyo.paper.entity;
 +
-+import net.minecraft.server.EntityInsentient;
-+import net.minecraft.server.PathEntity;
-+import net.minecraft.server.PathPoint;
++import net.minecraft.world.entity.EntityInsentient;
++import net.minecraft.world.level.pathfinder.PathEntity;
++import net.minecraft.world.level.pathfinder.PathPoint;
 +import org.apache.commons.lang.Validate;
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.entity.CraftLivingEntity;
@@ -152,11 +152,11 @@ index 0000000000000000000000000000000000000000..af1bac9680028130e99c5e7130f258c1
 +        return new Location(entity.world.getWorld(), point.getX(), point.getY(), point.getZ());
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed401e22a388 100644
---- a/src/main/java/net/minecraft/server/NavigationAbstract.java
-+++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -79,7 +79,7 @@ public abstract class NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+index d134333c736dc1ee1c722d680d7a9c22c1b265bd..06d05b511d623d0247d44989bee85b383a8fb52f 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+@@ -100,7 +100,7 @@ public abstract class NavigationAbstract {
      }
  
      @Nullable
@@ -165,7 +165,7 @@ index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed40
          return this.a(new BlockPosition(d0, d1, d2), i);
      }
  
-@@ -104,7 +104,7 @@ public abstract class NavigationAbstract {
+@@ -125,7 +125,7 @@ public abstract class NavigationAbstract {
      }
  
      @Nullable
@@ -174,7 +174,7 @@ index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed40
          return this.a(ImmutableSet.of(entity.getChunkCoordinates()), entity, 16, true, i); // Paper
      }
  
-@@ -169,6 +169,7 @@ public abstract class NavigationAbstract {
+@@ -190,6 +190,7 @@ public abstract class NavigationAbstract {
          return pathentity != null && this.a(pathentity, d0);
      }
  
@@ -182,7 +182,7 @@ index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed40
      public boolean a(@Nullable PathEntity pathentity, double d0) {
          if (pathentity == null) {
              this.c = null;
-@@ -196,7 +197,7 @@ public abstract class NavigationAbstract {
+@@ -217,7 +218,7 @@ public abstract class NavigationAbstract {
          }
      }
  
@@ -191,7 +191,7 @@ index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed40
      public PathEntity k() {
          return this.c;
      }
-@@ -320,6 +321,7 @@ public abstract class NavigationAbstract {
+@@ -341,6 +342,7 @@ public abstract class NavigationAbstract {
          return !this.m();
      }
  
@@ -199,11 +199,11 @@ index ee7b1f25ba8b6b4318e332b739359db6ddd58b62..64b991859f0f3ca7d932b8acc8aeed40
      public void o() {
          this.c = null;
      }
-diff --git a/src/main/java/net/minecraft/server/PathEntity.java b/src/main/java/net/minecraft/server/PathEntity.java
-index bf9f9166f265e9f79c6c964a31a08c85cef95746..c81a5d50c480b064ab60ed6f25f9e2c0bedb6ece 100644
---- a/src/main/java/net/minecraft/server/PathEntity.java
-+++ b/src/main/java/net/minecraft/server/PathEntity.java
-@@ -5,13 +5,14 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/level/pathfinder/PathEntity.java b/src/main/java/net/minecraft/world/level/pathfinder/PathEntity.java
+index 606027de777750f6d2ab0d7f1ef387ed4f0c6092..81c3cb9da3f901d2bcf384f7113bdc5c60f9962f 100644
+--- a/src/main/java/net/minecraft/world/level/pathfinder/PathEntity.java
++++ b/src/main/java/net/minecraft/world/level/pathfinder/PathEntity.java
+@@ -8,13 +8,14 @@ import net.minecraft.world.phys.Vec3D;
  
  public class PathEntity {
  
@@ -220,7 +220,7 @@ index bf9f9166f265e9f79c6c964a31a08c85cef95746..c81a5d50c480b064ab60ed6f25f9e2c0
  
      public PathEntity(List<PathPoint> list, BlockPosition blockposition, boolean flag) {
          this.a = list;
-@@ -33,7 +34,7 @@ public class PathEntity {
+@@ -36,7 +37,7 @@ public class PathEntity {
      }
  
      @Nullable
@@ -229,7 +229,7 @@ index bf9f9166f265e9f79c6c964a31a08c85cef95746..c81a5d50c480b064ab60ed6f25f9e2c0
          return !this.a.isEmpty() ? (PathPoint) this.a.get(this.a.size() - 1) : null;
      }
  
-@@ -81,7 +82,7 @@ public class PathEntity {
+@@ -84,7 +85,7 @@ public class PathEntity {
          return this.a(entity, this.e);
      }
  
@@ -238,11 +238,11 @@ index bf9f9166f265e9f79c6c964a31a08c85cef95746..c81a5d50c480b064ab60ed6f25f9e2c0
          return ((PathPoint) this.a.get(this.e)).a();
      }
  
-diff --git a/src/main/java/net/minecraft/server/PathPoint.java b/src/main/java/net/minecraft/server/PathPoint.java
-index b69d6bc433711e94e3fbfa2a89c091209c95484d..e9fb295bdf727cd4543cbe5a18447ceba3d41ee0 100644
---- a/src/main/java/net/minecraft/server/PathPoint.java
-+++ b/src/main/java/net/minecraft/server/PathPoint.java
-@@ -2,9 +2,9 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/level/pathfinder/PathPoint.java b/src/main/java/net/minecraft/world/level/pathfinder/PathPoint.java
+index 43cc9430972a18cbf03a590d576ed200e3836017..c260b0ca70cb18811158761c574aee9c3166da28 100644
+--- a/src/main/java/net/minecraft/world/level/pathfinder/PathPoint.java
++++ b/src/main/java/net/minecraft/world/level/pathfinder/PathPoint.java
+@@ -5,9 +5,9 @@ import net.minecraft.util.MathHelper;
  
  public class PathPoint {
  
@@ -255,11 +255,11 @@ index b69d6bc433711e94e3fbfa2a89c091209c95484d..e9fb295bdf727cd4543cbe5a18447ceb
      private final int m;
      public int d = -1;
      public float e;
-diff --git a/src/main/java/net/minecraft/server/PathfinderAbstract.java b/src/main/java/net/minecraft/server/PathfinderAbstract.java
-index fca9ed99d6c11badb85e0c06cd6872dca85d6f8d..5cfcac3bc29e3f3d139b10209f5082cba292a434 100644
---- a/src/main/java/net/minecraft/server/PathfinderAbstract.java
-+++ b/src/main/java/net/minecraft/server/PathfinderAbstract.java
-@@ -11,9 +11,9 @@ public abstract class PathfinderAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/pathfinder/PathfinderAbstract.java b/src/main/java/net/minecraft/world/level/pathfinder/PathfinderAbstract.java
+index f2080bd50db04af6eabec4b4b757d6dadfb1a2f5..88be03bd77656235322522c3782b9f9a878b86b1 100644
+--- a/src/main/java/net/minecraft/world/level/pathfinder/PathfinderAbstract.java
++++ b/src/main/java/net/minecraft/world/level/pathfinder/PathfinderAbstract.java
+@@ -16,9 +16,9 @@ public abstract class PathfinderAbstract {
      protected int d;
      protected int e;
      protected int f;
@@ -273,7 +273,7 @@ index fca9ed99d6c11badb85e0c06cd6872dca85d6f8d..5cfcac3bc29e3f3d139b10209f5082cb
      public PathfinderAbstract() {}
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
-index 90e63fbf292488732434ed9cf20645d8306eb21d..c89bc7024b650c3b6d2c551f0e4e156975570cca 100644
+index eb275ac45def34d5bb1ed696b4f6a4d53d282ab3..28a4e90130f51fd2fda7003fde5b4d0a410e1aef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 @@ -12,8 +12,11 @@ import org.bukkit.loot.LootTable;

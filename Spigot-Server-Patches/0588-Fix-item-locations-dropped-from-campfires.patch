@@ -5,11 +5,19 @@ Subject: [PATCH] Fix item locations dropped from campfires
 
 Fixes #4259 by not flooring the blockposition among other weirdness
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityCampfire.java b/src/main/java/net/minecraft/server/TileEntityCampfire.java
-index 51e9cba5c9c99f2b73052e8fae499b68e6fae2a2..c56c588f508b51677c599412215f043aa0a35f98 100644
---- a/src/main/java/net/minecraft/server/TileEntityCampfire.java
-+++ b/src/main/java/net/minecraft/server/TileEntityCampfire.java
-@@ -75,7 +75,11 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
+index df010dc740f2dd647a418ba4e425ce3a3b1d79e2..62a19f39405cff27f34a3b98fb9310b1c9c27563 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
+@@ -14,6 +14,7 @@ import net.minecraft.world.Clearable;
+ import net.minecraft.world.ContainerUtil;
+ import net.minecraft.world.InventorySubcontainer;
+ import net.minecraft.world.InventoryUtils;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.crafting.RecipeCampfire;
+ import net.minecraft.world.item.crafting.Recipes;
+@@ -92,7 +93,11 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
                      result = blockCookEvent.getResult();
                      itemstack1 = CraftItemStack.asNMSCopy(result);
                      // CraftBukkit end

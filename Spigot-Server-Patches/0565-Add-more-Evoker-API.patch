@@ -4,11 +4,11 @@ Date: Sun, 23 Aug 2020 15:28:35 +0200
 Subject: [PATCH] Add more Evoker API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityEvoker.java b/src/main/java/net/minecraft/server/EntityEvoker.java
-index 757cae8d6de2ff90efa9402c24172b17b1ef266d..f40fbef32f2fc1f37f2065ad598f013766cf12f2 100644
---- a/src/main/java/net/minecraft/server/EntityEvoker.java
-+++ b/src/main/java/net/minecraft/server/EntityEvoker.java
-@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityEvoker.java b/src/main/java/net/minecraft/world/entity/monster/EntityEvoker.java
+index 64bfd84e8a5a0c2b1fec7044b688c7cc1083f18a..2aa6b6ca93c25c59ad224348aad1bb34d9bbc6a3 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityEvoker.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityEvoker.java
+@@ -40,7 +40,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  
  public class EntityEvoker extends EntityIllagerWizard {
  
@@ -17,7 +17,7 @@ index 757cae8d6de2ff90efa9402c24172b17b1ef266d..f40fbef32f2fc1f37f2065ad598f0137
  
      public EntityEvoker(EntityTypes<? extends EntityEvoker> entitytypes, World world) {
          super(entitytypes, world);
-@@ -24,7 +24,7 @@ public class EntityEvoker extends EntityIllagerWizard {
+@@ -59,7 +59,7 @@ public class EntityEvoker extends EntityIllagerWizard {
          this.goalSelector.a(8, new PathfinderGoalRandomStroll(this, 0.6D));
          this.goalSelector.a(9, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F, 1.0F));
          this.goalSelector.a(10, new PathfinderGoalLookAtPlayer(this, EntityInsentient.class, 8.0F));
@@ -27,10 +27,17 @@ index 757cae8d6de2ff90efa9402c24172b17b1ef266d..f40fbef32f2fc1f37f2065ad598f0137
          this.targetSelector.a(3, (new PathfinderGoalNearestAttackableTarget<>(this, EntityVillagerAbstract.class, false)).a(300));
          this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityIronGolem.class, false));
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEvoker.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEvoker.java
-index 0636d264731f1f346360ffecb4271b5e561b8eaf..bc397f34f3d0819b9568322872e0238ef8fd22a7 100644
+index 5e8e9d95068342661a962aae9878a7eafaa06207..75a7832e9841921497a9a2d1cfd1b05807fe6ede 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEvoker.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEvoker.java
-@@ -36,4 +36,17 @@ public class CraftEvoker extends CraftSpellcaster implements Evoker {
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.entity;
+ 
++import net.minecraft.world.entity.animal.EntitySheep;
+ import net.minecraft.world.entity.monster.EntityEvoker;
+ import net.minecraft.world.entity.monster.EntityIllagerWizard;
+ import org.bukkit.craftbukkit.CraftServer;
+@@ -36,4 +37,17 @@ public class CraftEvoker extends CraftSpellcaster implements Evoker {
      public void setCurrentSpell(Evoker.Spell spell) {
          getHandle().setSpell(spell == null ? EntityIllagerWizard.Spell.NONE : EntityIllagerWizard.Spell.a(spell.ordinal()));
      }
@@ -38,7 +45,7 @@ index 0636d264731f1f346360ffecb4271b5e561b8eaf..bc397f34f3d0819b9568322872e0238e
 +    // Paper start
 +    @Override
 +    public org.bukkit.entity.Sheep getWololoTarget() {
-+        net.minecraft.server.EntitySheep sheep = getHandle().getWololoTarget();
++        EntitySheep sheep = getHandle().getWololoTarget();
 +        return sheep == null ? null : (org.bukkit.entity.Sheep) sheep.getBukkitEntity();
 +    }
 +

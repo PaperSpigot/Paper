@@ -7,11 +7,19 @@ EntityLiving#applyInstantEffect() immediately kills the player and drops their i
 Before this patch, instant effects would be applied before the potion ItemStack is removed and replaced with a glass bottle. This caused the potion ItemStack to be dropped before it was supposed to be removed from the inventory. It also caused the glass bottle to be put into a dead player's inventory.
 This patch makes it so that instant effects are applied after the potion ItemStack is removed, and the glass bottle is only put into the player's inventory if the player is not dead. Otherwise, the glass bottle is dropped on the ground.
 
-diff --git a/src/main/java/net/minecraft/server/ItemPotion.java b/src/main/java/net/minecraft/server/ItemPotion.java
-index 7862b63a245222d9a3d0896bdb2741b0e5e7ac40..d4389768963f40cb7b4bca950631d9f50f634543 100644
---- a/src/main/java/net/minecraft/server/ItemPotion.java
-+++ b/src/main/java/net/minecraft/server/ItemPotion.java
-@@ -22,6 +22,7 @@ public class ItemPotion extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemPotion.java b/src/main/java/net/minecraft/world/item/ItemPotion.java
+index b197fe561ab735e80d8bf29ac16eacfaf3fc2d21..ca2f8d522d7f2305f161cb4aa611226355ea5789 100644
+--- a/src/main/java/net/minecraft/world/item/ItemPotion.java
++++ b/src/main/java/net/minecraft/world/item/ItemPotion.java
+@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.item.alchemy.PotionRegistry;
+ import net.minecraft.world.item.alchemy.PotionUtil;
+ import net.minecraft.world.item.alchemy.Potions;
++import net.minecraft.world.level.GameRules;
+ import net.minecraft.world.level.World;
+ 
+ public class ItemPotion extends Item {
+@@ -36,6 +37,7 @@ public class ItemPotion extends Item {
              CriterionTriggers.z.a((EntityPlayer) entityhuman, itemstack);
          }
  
@@ -19,7 +27,7 @@ index 7862b63a245222d9a3d0896bdb2741b0e5e7ac40..d4389768963f40cb7b4bca950631d9f5
          if (!world.isClientSide) {
              List<MobEffect> list = PotionUtil.getEffects(itemstack);
              Iterator iterator = list.iterator();
-@@ -30,7 +31,7 @@ public class ItemPotion extends Item {
+@@ -44,7 +46,7 @@ public class ItemPotion extends Item {
                  MobEffect mobeffect = (MobEffect) iterator.next();
  
                  if (mobeffect.getMobEffect().isInstant()) {
@@ -28,7 +36,7 @@ index 7862b63a245222d9a3d0896bdb2741b0e5e7ac40..d4389768963f40cb7b4bca950631d9f5
                  } else {
                      entityliving.addEffect(new MobEffect(mobeffect), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.POTION_DRINK); // CraftBukkit
                  }
-@@ -44,7 +45,20 @@ public class ItemPotion extends Item {
+@@ -58,7 +60,20 @@ public class ItemPotion extends Item {
              }
          }
  

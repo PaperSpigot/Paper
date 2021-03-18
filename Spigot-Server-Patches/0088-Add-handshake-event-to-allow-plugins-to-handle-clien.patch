@@ -5,11 +5,11 @@ Subject: [PATCH] Add handshake event to allow plugins to handle client
  handshaking logic themselves
 
 
-diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 69fd0a7b230c6f6eb46a43477465f77b265cc3c9..bad5d4f165d1e469ed583b036f78e467b94691fd 100644
---- a/src/main/java/net/minecraft/server/HandshakeListener.java
-+++ b/src/main/java/net/minecraft/server/HandshakeListener.java
-@@ -14,7 +14,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index b1714750538a0107d9922812d08471921b755925..31011ec34e5eeae29705f6ec167fb2e832284873 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -25,7 +25,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
      // CraftBukkit end
      private static final IChatBaseComponent a = new ChatComponentText("Ignoring status request");
      private final MinecraftServer b;
@@ -18,7 +18,7 @@ index 69fd0a7b230c6f6eb46a43477465f77b265cc3c9..bad5d4f165d1e469ed583b036f78e467
  
      public HandshakeListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
          this.b = minecraftserver;
-@@ -73,8 +73,34 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -84,8 +84,34 @@ public class HandshakeListener implements PacketHandshakingInListener {
                      this.c.close(chatmessage);
                  } else {
                      this.c.setPacketListener(new LoginListener(this.b, this.c));

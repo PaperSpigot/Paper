@@ -4,11 +4,11 @@ Date: Fri, 19 Apr 2019 12:41:13 -0500
 Subject: [PATCH] Mob Spawner API Enhancements
 
 
-diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66d112b68a 100644
---- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-+++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -47,6 +47,7 @@ public abstract class MobSpawnerAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+index 34bcee4ff55ba118ba393e94b3c25ee2b84feaa2..5538404456dfee42257fad9040fcc0fefdfc5fab 100644
+--- a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
++++ b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+@@ -65,6 +65,7 @@ public abstract class MobSpawnerAbstract {
          this.mobs.clear(); // CraftBukkit - SPIGOT-3496, MC-92282
      }
  
@@ -16,7 +16,7 @@ index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66
      private boolean h() {
          BlockPosition blockposition = this.b();
  
-@@ -203,6 +204,7 @@ public abstract class MobSpawnerAbstract {
+@@ -221,6 +222,7 @@ public abstract class MobSpawnerAbstract {
          }
      }
  
@@ -24,7 +24,7 @@ index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66
      private void i() {
          if (this.maxSpawnDelay <= this.minSpawnDelay) {
              this.spawnDelay = this.minSpawnDelay;
-@@ -220,7 +222,13 @@ public abstract class MobSpawnerAbstract {
+@@ -238,7 +240,13 @@ public abstract class MobSpawnerAbstract {
      }
  
      public void a(NBTTagCompound nbttagcompound) {
@@ -38,7 +38,7 @@ index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66
          this.mobs.clear();
          if (nbttagcompound.hasKeyOfType("SpawnPotentials", 9)) {
              NBTTagList nbttaglist = nbttagcompound.getList("SpawnPotentials", 10);
-@@ -235,10 +243,15 @@ public abstract class MobSpawnerAbstract {
+@@ -253,10 +261,15 @@ public abstract class MobSpawnerAbstract {
          } else if (!this.mobs.isEmpty()) {
              this.setSpawnData((MobSpawnerData) WeightedRandom.a(this.a().random, this.mobs));
          }
@@ -57,7 +57,7 @@ index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66
              this.spawnCount = nbttagcompound.getShort("SpawnCount");
          }
  
-@@ -263,9 +276,20 @@ public abstract class MobSpawnerAbstract {
+@@ -281,9 +294,20 @@ public abstract class MobSpawnerAbstract {
          if (minecraftkey == null) {
              return nbttagcompound;
          } else {
@@ -82,17 +82,24 @@ index c3a5db97fd85b31c6b4bce93527b9d0e16a79a45..c2e830db7aa2944a477624e149a3ba66
              nbttagcompound.setShort("MaxNearbyEntities", (short) this.maxNearbyEntities);
              nbttagcompound.setShort("RequiredPlayerRange", (short) this.requiredPlayerRange);
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
-index 5c4c3c70c7450a3e556d664a1bf6bcaf8e3a571c..0bf61322031734039115a93ead841d089ad134b9 100644
+index 28295ebd338806a35cbef164cb014abfe7dae769..3d29be926e36b9a5a981eea1f2a1ec54a4c43393 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
-@@ -8,6 +8,14 @@ import org.bukkit.Material;
+@@ -1,13 +1,21 @@
+ package org.bukkit.craftbukkit.block;
+ 
+ import com.google.common.base.Preconditions;
++import net.minecraft.core.IRegistry;
++import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.world.entity.EntityTypes;
++import net.minecraft.world.level.MobSpawnerData;
+ import net.minecraft.world.level.block.entity.TileEntityMobSpawner;
+ import org.bukkit.Material;
  import org.bukkit.block.Block;
  import org.bukkit.block.CreatureSpawner;
  import org.bukkit.entity.EntityType;
 +// Paper start
-+import net.minecraft.server.IRegistry;
-+import net.minecraft.server.MobSpawnerData;
-+import net.minecraft.server.NBTTagCompound;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 +import org.bukkit.inventory.ItemStack;
@@ -119,7 +126,7 @@ index 5c4c3c70c7450a3e556d664a1bf6bcaf8e3a571c..0bf61322031734039115a93ead841d08
 +    @Override
 +    public void setSpawnedItem(ItemStack itemStack) {
 +        Preconditions.checkArgument(itemStack != null && !itemStack.getType().isAir(), "spawners cannot spawn air");
-+        net.minecraft.server.ItemStack item = CraftItemStack.asNMSCopy(itemStack);
++        net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(itemStack);
 +        NBTTagCompound compound = new NBTTagCompound();
 +        NBTTagCompound entity = new NBTTagCompound();
 +        entity.setString("id", IRegistry.ENTITY_TYPE.getKey(EntityTypes.ITEM).toString());

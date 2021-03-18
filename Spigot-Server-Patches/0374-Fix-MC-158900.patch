@@ -6,11 +6,11 @@ Subject: [PATCH] Fix MC-158900
 The problem was we were checking isExpired() on the entry, but if it
 was expired at that point, then it would be null.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 10d03c4d2c31b47d2964bd9c6af7ce8e5aa74393..e0f075aade555ad3129ec0de47ee0ef0263953fe 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -530,8 +530,10 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index ae0aaaf129c44901ac72c67e50c663333ab57f9d..f1dd51f30a40613a1fa1e00be43d21684ea9c274 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -607,8 +607,10 @@ public abstract class PlayerList {
          Player player = entity.getBukkitEntity();
          PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
  

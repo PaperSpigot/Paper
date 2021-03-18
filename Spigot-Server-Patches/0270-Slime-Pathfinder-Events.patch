@@ -4,13 +4,13 @@ Date: Fri, 24 Aug 2018 08:18:42 -0500
 Subject: [PATCH] Slime Pathfinder Events
 
 
-diff --git a/src/main/java/net/minecraft/server/EntitySlime.java b/src/main/java/net/minecraft/server/EntitySlime.java
-index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10975ffc79 100644
---- a/src/main/java/net/minecraft/server/EntitySlime.java
-+++ b/src/main/java/net/minecraft/server/EntitySlime.java
-@@ -6,6 +6,14 @@ import java.util.Optional;
- import java.util.Random;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntitySlime.java b/src/main/java/net/minecraft/world/entity/monster/EntitySlime.java
+index 01d5b0db9a34d88172e8c7c84c4e1d0b2562217c..40e39e382092b1a8f831da0cea1557a781c98600 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntitySlime.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntitySlime.java
+@@ -45,6 +45,14 @@ import net.minecraft.world.level.levelgen.SeededRandom;
+ import net.minecraft.world.level.storage.loot.LootTables;
+ import net.minecraft.world.phys.Vec3D;
  
 +// Paper start
 +import com.destroystokyo.paper.event.entity.SlimeChangeDirectionEvent;
@@ -23,7 +23,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
  // CraftBukkit start
  import java.util.ArrayList;
  import java.util.List;
-@@ -66,6 +74,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -105,6 +113,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
      @Override
      public void saveData(NBTTagCompound nbttagcompound) {
          super.saveData(nbttagcompound);
@@ -31,7 +31,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          nbttagcompound.setInt("Size", this.getSize() - 1);
          nbttagcompound.setBoolean("wasOnGround", this.bp);
      }
-@@ -80,6 +89,11 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -119,6 +128,11 @@ public class EntitySlime extends EntityInsentient implements IMonster {
  
          this.setSize(i + 1, false);
          super.loadData(nbttagcompound);
@@ -43,7 +43,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          this.bp = nbttagcompound.getBoolean("wasOnGround");
      }
  
-@@ -359,7 +373,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -398,7 +412,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
  
          @Override
          public boolean a() {
@@ -52,7 +52,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          }
  
          @Override
-@@ -380,7 +394,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -419,7 +433,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
  
          @Override
          public boolean a() {
@@ -61,7 +61,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          }
  
          @Override
-@@ -406,14 +420,18 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -445,14 +459,18 @@ public class EntitySlime extends EntityInsentient implements IMonster {
  
          @Override
          public boolean a() {
@@ -82,7 +82,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
              }
  
              ((EntitySlime.ControllerMoveSlime) this.a.getControllerMove()).a(this.b, false);
-@@ -434,7 +452,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -473,7 +491,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
          public boolean a() {
              EntityLiving entityliving = this.a.getGoalTarget();
  
@@ -99,7 +99,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          }
  
          @Override
-@@ -447,7 +473,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -486,7 +512,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
          public boolean b() {
              EntityLiving entityliving = this.a.getGoalTarget();
  
@@ -116,7 +116,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
          }
  
          @Override
-@@ -455,6 +489,13 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -494,6 +528,13 @@ public class EntitySlime extends EntityInsentient implements IMonster {
              this.a.a((Entity) this.a.getGoalTarget(), 10.0F, 10.0F);
              ((EntitySlime.ControllerMoveSlime) this.a.getControllerMove()).a(this.a.yaw, this.a.eL());
          }
@@ -130,7 +130,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
      }
  
      static class ControllerMoveSlime extends ControllerMove {
-@@ -513,4 +554,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
+@@ -552,4 +593,15 @@ public class EntitySlime extends EntityInsentient implements IMonster {
              }
          }
      }
@@ -147,7 +147,7 @@ index d774a0893b2e6599bade3a9edf22668a30587503..60818e1a7ce9c637bef8dc05de8cba10
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
-index ce6ed6e890795ff2840c800a8fd56fdc618b383a..6e9f1b66dfc12491c945f87c51e81aa02424e885 100644
+index aa0ac8d8493dc79dda3fed2ff4d80c5b7a7e3df6..cf5c6030105e56813f526e710e5db0c59d88c99e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftSlime.java
 @@ -35,4 +35,14 @@ public class CraftSlime extends CraftMob implements Slime {

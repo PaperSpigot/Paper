@@ -25,24 +25,11 @@ index c611b5a63498f5ad1f50a75ccd5d7299e27df7e3..9d1cddc6038f0fd0286e4a32013ae98f
 +        log("Parrots are unaffected by player movement: " + parrotsHangOnBetter);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index ed2c39502a123063996c7d36cacf5a7164d75438..62c914893ffd40c0e88a9d11f04fb5c7dea9063a 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -436,7 +436,7 @@ public abstract class EntityHuman extends EntityLiving {
-         this.j(this.getShoulderEntityLeft());
-         this.j(this.getShoulderEntityRight());
-         if (!this.world.isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.isFlying || this.isSleeping()) {
--            this.releaseShoulderEntities();
-+            if (!this.world.paperConfig.parrotsHangOnBetter) this.releaseShoulderEntities(); // Paper - Hang on!
-         }
- 
-     }
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 9c25c0e60d9ebeac7ff93f41d0624961811de164..b6f68a8d1eb523fa0e33fae717249bbba2c0715b 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1905,6 +1905,13 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index bc0b1d0cc9c54d53c68ee59b0a707e0335297441..62fb502adf8cd7095e4826eb72ab39cf0bcc6d55 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2050,6 +2050,13 @@ public class PlayerConnection implements PacketListenerPlayIn {
          switch (packetplayinentityaction.c()) {
              case PRESS_SHIFT_KEY:
                  this.player.setSneaking(true);
@@ -56,3 +43,16 @@ index 9c25c0e60d9ebeac7ff93f41d0624961811de164..b6f68a8d1eb523fa0e33fae717249bbb
                  break;
              case RELEASE_SHIFT_KEY:
                  this.player.setSneaking(false);
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index e3e3426a00128b56d523bb43a59b814b915ad0ff..ba26fc2405e17d582da971d03147fb1865e9b546 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -532,7 +532,7 @@ public abstract class EntityHuman extends EntityLiving {
+         this.j(this.getShoulderEntityLeft());
+         this.j(this.getShoulderEntityRight());
+         if (!this.world.isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.isFlying || this.isSleeping()) {
+-            this.releaseShoulderEntities();
++            if (!this.world.paperConfig.parrotsHangOnBetter) this.releaseShoulderEntities(); // Paper - Hang on!
+         }
+ 
+     }

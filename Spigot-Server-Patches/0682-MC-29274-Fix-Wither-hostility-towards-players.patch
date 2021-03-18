@@ -5,7 +5,7 @@ Subject: [PATCH] MC-29274: Fix Wither hostility towards players
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 0776e68340b0510cc99084bea80791d562dfea40..b473709774fbbd502d5e04c98041ae7c829b4083 100644
+index d2f6e1308a4dfec663770e2c7f4de0cf22402a97..3e6132211912d29e34c94042b0819f11a3bd123e 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -804,4 +804,10 @@ public class PaperWorldConfig {
@@ -19,11 +19,11 @@ index 0776e68340b0510cc99084bea80791d562dfea40..b473709774fbbd502d5e04c98041ae7c
 +        log("Withers properly target players: " + fixWitherTargetingBug);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
-index 2e623ef9be036ea467e9e41817c2eced018f8f93..b1159f0258eca2bee52ec0939ba86792d24a1f99 100644
---- a/src/main/java/net/minecraft/server/EntityWither.java
-+++ b/src/main/java/net/minecraft/server/EntityWither.java
-@@ -54,6 +54,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+index 891905712903bf3ba241187791cfa995375430d5..229eabe0510e6c3660236ed0fb3e80d41074642c 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
++++ b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+@@ -104,6 +104,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
          this.goalSelector.a(6, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
          this.goalSelector.a(7, new PathfinderGoalRandomLookaround(this));
          this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, new Class[0]));

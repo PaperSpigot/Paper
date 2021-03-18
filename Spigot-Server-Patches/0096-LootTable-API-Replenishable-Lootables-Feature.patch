@@ -43,15 +43,15 @@ index 5baccb8d50c135ab20c38ffd0690f585514ce5af..eb04fdb172a50ec1f5b7fe78fa0e7655
  }
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperLootableBlockInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableBlockInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d6fce3112ebd8ef208c6fe45e0d887ec778fc092
+index 0000000000000000000000000000000000000000..5dfc3c8008d64ad4ed71b4904c897f5005491349
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableBlockInventory.java
 @@ -0,0 +1,33 @@
 +package com.destroystokyo.paper.loottable;
 +
-+import net.minecraft.server.BlockPosition;
-+import net.minecraft.server.TileEntityLootable;
-+import net.minecraft.server.World;
++import net.minecraft.core.BlockPosition;
++import net.minecraft.world.level.World;
++import net.minecraft.world.level.block.entity.TileEntityLootable;
 +import org.bukkit.Chunk;
 +import org.bukkit.block.Block;
 +
@@ -82,18 +82,18 @@ index 0000000000000000000000000000000000000000..d6fce3112ebd8ef208c6fe45e0d887ec
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperLootableEntityInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableEntityInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5e637782d555cd68952e8bdbd47a63a636348ec6
+index 0000000000000000000000000000000000000000..019a06fa2b43cacd3bbd4d58aba71b3728f37581
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableEntityInventory.java
 @@ -0,0 +1,28 @@
 +package com.destroystokyo.paper.loottable;
 +
-+import net.minecraft.server.World;
++import net.minecraft.world.level.World;
 +import org.bukkit.entity.Entity;
 +
 +public interface PaperLootableEntityInventory extends LootableEntityInventory, PaperLootableInventory {
 +
-+    net.minecraft.server.Entity getHandle();
++    net.minecraft.world.entity.Entity getHandle();
 +
 +    @Override
 +    default LootableInventory getAPILootableInventory() {
@@ -116,13 +116,13 @@ index 0000000000000000000000000000000000000000..5e637782d555cd68952e8bdbd47a63a6
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..856843fc917ff6a7252b7900f7772cc9debe3649
+index 0000000000000000000000000000000000000000..59e8aea749bbba079e3304d9a5854280db2692e9
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventory.java
 @@ -0,0 +1,71 @@
 +package com.destroystokyo.paper.loottable;
 +
-+import net.minecraft.server.World;
++import net.minecraft.world.level.World;
 +import org.bukkit.loot.Lootable;
 +
 +import java.util.UUID;
@@ -193,14 +193,16 @@ index 0000000000000000000000000000000000000000..856843fc917ff6a7252b7900f7772cc9
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventoryData.java b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventoryData.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b5401eaf974857455c17c3f9cfdedf2eb4bde321
+index 0000000000000000000000000000000000000000..904332454ede006f4ee33337d46b11674d78bef7
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperLootableInventoryData.java
-@@ -0,0 +1,179 @@
+@@ -0,0 +1,181 @@
 +package com.destroystokyo.paper.loottable;
 +
 +import com.destroystokyo.paper.PaperWorldConfig;
-+import net.minecraft.server.*;
++import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.nbt.NBTTagList;
++import net.minecraft.world.entity.player.EntityHuman;
 +import org.bukkit.entity.Player;
 +import org.bukkit.loot.LootTable;
 +
@@ -378,16 +380,15 @@ index 0000000000000000000000000000000000000000..b5401eaf974857455c17c3f9cfdedf2e
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperMinecartLootableInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperMinecartLootableInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8c1fa60a55570be91ab5ea63cb2005caa09e3600
+index 0000000000000000000000000000000000000000..c682bd7700d8103533026d46cfc63a7abde5a5f4
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperMinecartLootableInventory.java
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,62 @@
 +package com.destroystokyo.paper.loottable;
 +
-+import net.minecraft.server.Entity;
-+import net.minecraft.server.EntityMinecartContainer;
-+import net.minecraft.server.MinecraftKey;
-+import net.minecraft.server.World;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.vehicle.EntityMinecartContainer;
++import net.minecraft.world.level.World;
 +import org.bukkit.Bukkit;
 +import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 +
@@ -447,16 +448,15 @@ index 0000000000000000000000000000000000000000..8c1fa60a55570be91ab5ea63cb2005ca
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperTileEntityLootableInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperTileEntityLootableInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a1923aff2b5e2e867670a5a064a767915fc1cc2a
+index 0000000000000000000000000000000000000000..9dae34370d014a291f025f83b55e18bff4619a23
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/loottable/PaperTileEntityLootableInventory.java
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,65 @@
 +package com.destroystokyo.paper.loottable;
 +
 +import net.minecraft.server.MCUtil;
-+import net.minecraft.server.MinecraftKey;
-+import net.minecraft.server.TileEntityLootable;
-+import net.minecraft.server.World;
++import net.minecraft.world.level.World;
++import net.minecraft.world.level.block.entity.TileEntityLootable;
 +import org.bukkit.Bukkit;
 +import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 +
@@ -517,11 +517,11 @@ index 0000000000000000000000000000000000000000..a1923aff2b5e2e867670a5a064a76791
 +        return tileEntityLootable.getWorld();
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 487d041999fd1edc4b48790dbc975cf8cea8ba54..0dd63d2e0ed16eb08cf97dbf8c293e24a5a1bda9 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -73,6 +73,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 6cbb797cb0de4b26d8ddd7f0bf567f49bd36f9c0..2b1b46bda48c0b137fe914c47a387e6e72a1be40 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -158,6 +158,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      };
      // Paper end
  
@@ -529,11 +529,11 @@ index 487d041999fd1edc4b48790dbc975cf8cea8ba54..0dd63d2e0ed16eb08cf97dbf8c293e24
      private CraftEntity bukkitEntity;
  
      public CraftEntity getBukkitEntity() {
-diff --git a/src/main/java/net/minecraft/server/EntityMinecartContainer.java b/src/main/java/net/minecraft/server/EntityMinecartContainer.java
-index 3258bf53761dbed2bfe9fd92e011161b914796d0..8e13aebb7043ddfb4b1c02bac46081eb15e906bf 100644
---- a/src/main/java/net/minecraft/server/EntityMinecartContainer.java
-+++ b/src/main/java/net/minecraft/server/EntityMinecartContainer.java
-@@ -20,6 +20,7 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java
+index c4b970c37b1792ac0022936f2df4740183621a0d..0166d11cb540a536390f486e1069d6119d8d23d6 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartContainer.java
+@@ -46,6 +46,7 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
      public long lootTableSeed;
  
      // CraftBukkit start
@@ -541,7 +541,7 @@ index 3258bf53761dbed2bfe9fd92e011161b914796d0..8e13aebb7043ddfb4b1c02bac46081eb
      public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
      private int maxStack = MAX_STACK;
  
-@@ -177,12 +178,13 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
+@@ -203,12 +204,13 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
      @Override
      protected void saveData(NBTTagCompound nbttagcompound) {
          super.saveData(nbttagcompound);
@@ -556,7 +556,7 @@ index 3258bf53761dbed2bfe9fd92e011161b914796d0..8e13aebb7043ddfb4b1c02bac46081eb
              ContainerUtil.a(nbttagcompound, this.items);
          }
  
-@@ -191,11 +193,12 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
+@@ -217,11 +219,12 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
      @Override
      protected void loadData(NBTTagCompound nbttagcompound) {
          super.loadData(nbttagcompound);
@@ -570,7 +570,7 @@ index 3258bf53761dbed2bfe9fd92e011161b914796d0..8e13aebb7043ddfb4b1c02bac46081eb
              ContainerUtil.b(nbttagcompound, this.items);
          }
  
-@@ -226,14 +229,15 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
+@@ -252,14 +255,15 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
      }
  
      public void d(@Nullable EntityHuman entityhuman) {
@@ -588,11 +588,11 @@ index 3258bf53761dbed2bfe9fd92e011161b914796d0..8e13aebb7043ddfb4b1c02bac46081eb
              LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).set(LootContextParameters.ORIGIN, this.getPositionVector()).a(this.lootTableSeed);
  
              if (entityhuman != null) {
-diff --git a/src/main/java/net/minecraft/server/TileEntityLootable.java b/src/main/java/net/minecraft/server/TileEntityLootable.java
-index 9265bc7331f5d3cb43394a7457ab89140b731c8b..d9be182a574daaedcc7a106c759c2bde2e4eb19a 100644
---- a/src/main/java/net/minecraft/server/TileEntityLootable.java
-+++ b/src/main/java/net/minecraft/server/TileEntityLootable.java
-@@ -8,6 +8,7 @@ public abstract class TileEntityLootable extends TileEntityContainer {
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityLootable.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityLootable.java
+index 62e6833a90d7adae3c7df33e3bc73b4288e0370b..1508e267a38555820e2d31f3075adca185fbd4b6 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityLootable.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityLootable.java
+@@ -27,6 +27,7 @@ public abstract class TileEntityLootable extends TileEntityContainer {
      @Nullable
      public MinecraftKey lootTable;
      public long lootTableSeed;
@@ -600,7 +600,7 @@ index 9265bc7331f5d3cb43394a7457ab89140b731c8b..d9be182a574daaedcc7a106c759c2bde
  
      protected TileEntityLootable(TileEntityTypes<?> tileentitytypes) {
          super(tileentitytypes);
-@@ -23,16 +24,19 @@ public abstract class TileEntityLootable extends TileEntityContainer {
+@@ -42,16 +43,19 @@ public abstract class TileEntityLootable extends TileEntityContainer {
      }
  
      protected boolean b(NBTTagCompound nbttagcompound) {
@@ -621,7 +621,7 @@ index 9265bc7331f5d3cb43394a7457ab89140b731c8b..d9be182a574daaedcc7a106c759c2bde
          if (this.lootTable == null) {
              return false;
          } else {
-@@ -41,19 +45,20 @@ public abstract class TileEntityLootable extends TileEntityContainer {
+@@ -60,19 +64,20 @@ public abstract class TileEntityLootable extends TileEntityContainer {
                  nbttagcompound.setLong("LootTableSeed", this.lootTableSeed);
              }
  
@@ -646,7 +646,7 @@ index 9265bc7331f5d3cb43394a7457ab89140b731c8b..d9be182a574daaedcc7a106c759c2bde
  
              if (entityhuman != null) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
-index df71eb9672ecc69ac92c773925d9b692ad343fee..8a7e9302b4b6be086144add8df610b76b58e00d6 100644
+index 524f27830752f424493c3ae8d793b871f6495594..dcf3f9265b0b00a7bbb9ff428e10da3c198ba08a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
 @@ -64,7 +64,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
@@ -659,7 +659,7 @@ index df71eb9672ecc69ac92c773925d9b692ad343fee..8a7e9302b4b6be086144add8df610b76
      }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftChest.java b/src/main/java/org/bukkit/craftbukkit/block/CraftChest.java
-index 89df1d7f8b1221014affec459244223491fafaa2..c0fed05d3b68258a61980bdb84fe16dd6adba4c5 100644
+index 486fa8937d644f59a770db163482259525a7e465..54eb170fd533b0e91572601268fcbc167ed9bb5c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftChest.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftChest.java
 @@ -12,8 +12,9 @@ import org.bukkit.craftbukkit.CraftWorld;
@@ -674,26 +674,19 @@ index 89df1d7f8b1221014affec459244223491fafaa2..c0fed05d3b68258a61980bdb84fe16dd
      public CraftChest(final Block block) {
          super(block, TileEntityChest.class);
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftLootable.java b/src/main/java/org/bukkit/craftbukkit/block/CraftLootable.java
-index e1ad26a242b9bff8f5a567c24cf58b2150c24144..678aa09d477f653461276e5eab277e1abc253dd8 100644
+index f0a7e61a26c4668a9aa823d641f29bdecd42dd1f..3512054ede5fd1dd7605444e827e30a0be47f935 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftLootable.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftLootable.java
-@@ -1,5 +1,6 @@
- package org.bukkit.craftbukkit.block;
- 
-+import com.destroystokyo.paper.loottable.PaperLootableBlockInventory;
- import net.minecraft.server.MinecraftKey;
- import net.minecraft.server.TileEntityLootable;
- import org.bukkit.Bukkit;
-@@ -10,7 +11,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+@@ -10,7 +10,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
  import org.bukkit.loot.LootTable;
  import org.bukkit.loot.Lootable;
  
 -public abstract class CraftLootable<T extends TileEntityLootable> extends CraftContainer<T> implements Nameable, Lootable {
-+public abstract class CraftLootable<T extends TileEntityLootable> extends CraftContainer<T> implements Nameable, Lootable, PaperLootableBlockInventory { // Paper
++public abstract class CraftLootable<T extends TileEntityLootable> extends CraftContainer<T> implements Nameable, Lootable, com.destroystokyo.paper.loottable.PaperLootableBlockInventory { // Paper
  
      public CraftLootable(Block block, Class<T> tileEntityClass) {
          super(block, tileEntityClass);
-@@ -54,7 +55,7 @@ public abstract class CraftLootable<T extends TileEntityLootable> extends CraftC
+@@ -54,7 +54,7 @@ public abstract class CraftLootable<T extends TileEntityLootable> extends CraftC
          setLootTable(getLootTable(), seed);
      }
  
@@ -703,27 +696,20 @@ index e1ad26a242b9bff8f5a567c24cf58b2150c24144..678aa09d477f653461276e5eab277e1a
          getSnapshot().setLootTable(key, seed);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartChest.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartChest.java
-index e05624e6432f55c3efff3f9d765975557d1be16f..ab4807b2cd3cdcd61d8ac4ae2825df69dd2b7c64 100644
+index cbd121c21adfaf098dadca33de16a2e68d83c19a..d9a2552782c9242fb84cc0c8309a614a44777509 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartChest.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartChest.java
-@@ -1,5 +1,6 @@
- package org.bukkit.craftbukkit.entity;
- 
-+import com.destroystokyo.paper.loottable.PaperLootableEntityInventory; // Paper
- import net.minecraft.server.EntityMinecartChest;
- import org.bukkit.craftbukkit.CraftServer;
- import org.bukkit.craftbukkit.inventory.CraftInventory;
-@@ -8,7 +9,7 @@ import org.bukkit.entity.minecart.StorageMinecart;
+@@ -8,7 +8,7 @@ import org.bukkit.entity.minecart.StorageMinecart;
  import org.bukkit.inventory.Inventory;
  
  @SuppressWarnings("deprecation")
 -public class CraftMinecartChest extends CraftMinecartContainer implements StorageMinecart {
-+public class CraftMinecartChest extends CraftMinecartContainer implements StorageMinecart, PaperLootableEntityInventory { // Paper
++public class CraftMinecartChest extends CraftMinecartContainer implements StorageMinecart, com.destroystokyo.paper.loottable.PaperLootableEntityInventory { // Paper
      private final CraftInventory inventory;
  
      public CraftMinecartChest(CraftServer server, EntityMinecartChest entity) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartContainer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartContainer.java
-index 2d776b520bd9b0b8f7475f10e59b02b2ad7b9d8b..fcc9787848c0a0a4025bdf698debf9592c818bff 100644
+index 5ffb8108f456c2f7f3ed1a25249baccb4cbf4add..bf8b5b25d1af0c5129261e10abf2866521b2c375 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartContainer.java
 @@ -47,7 +47,7 @@ public abstract class CraftMinecartContainer extends CraftMinecart implements Lo
@@ -736,22 +722,15 @@ index 2d776b520bd9b0b8f7475f10e59b02b2ad7b9d8b..fcc9787848c0a0a4025bdf698debf959
          getHandle().setLootTable(newKey, seed);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartHopper.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartHopper.java
-index 334bd5bb3ffc8b2bcdfca3995cdbe543cee8f311..f5b31237fc6e62345edcc3d6b02ff9e94237ae31 100644
+index 17a42aec76f32a28b0c9885c60d1ed50c6727161..bfdcf01d2c6570493e86330d56500427dbb23146 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartHopper.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartHopper.java
-@@ -1,5 +1,6 @@
- package org.bukkit.craftbukkit.entity;
- 
-+import com.destroystokyo.paper.loottable.PaperLootableEntityInventory; // Paper
- import net.minecraft.server.EntityMinecartHopper;
- import org.bukkit.craftbukkit.CraftServer;
- import org.bukkit.craftbukkit.inventory.CraftInventory;
-@@ -7,7 +8,7 @@ import org.bukkit.entity.EntityType;
+@@ -7,7 +7,7 @@ import org.bukkit.entity.EntityType;
  import org.bukkit.entity.minecart.HopperMinecart;
  import org.bukkit.inventory.Inventory;
  
 -public final class CraftMinecartHopper extends CraftMinecartContainer implements HopperMinecart {
-+public final class CraftMinecartHopper extends CraftMinecartContainer implements HopperMinecart, PaperLootableEntityInventory { // Paper
++public final class CraftMinecartHopper extends CraftMinecartContainer implements HopperMinecart, com.destroystokyo.paper.loottable.PaperLootableEntityInventory { // Paper
      private final CraftInventory inventory;
  
      public CraftMinecartHopper(CraftServer server, EntityMinecartHopper entity) {

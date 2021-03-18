@@ -5,11 +5,11 @@ Subject: [PATCH] Fix SpongeAbsortEvent handling
 
 Only process drops when the block is actually going to be removed
 
-diff --git a/src/main/java/net/minecraft/server/Block.java b/src/main/java/net/minecraft/server/Block.java
-index cee4e952c96b9f55c57186ac96aa730e656e1f16..05d9f842a990243c4ec83e62e177c818b5f94e8c 100644
---- a/src/main/java/net/minecraft/server/Block.java
-+++ b/src/main/java/net/minecraft/server/Block.java
-@@ -189,6 +189,7 @@ public class Block extends BlockBase implements IMaterial {
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index 615a4418fd276cd3e0b3686d962ebaf13ef5d4be..e5c43b383a93fac76333a67b41535ab009d1dcf3 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -228,6 +228,7 @@ public class Block extends BlockBase implements IMaterial {
  
      }
  
@@ -17,11 +17,11 @@ index cee4e952c96b9f55c57186ac96aa730e656e1f16..05d9f842a990243c4ec83e62e177c818
      public static void a(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition, @Nullable TileEntity tileentity) {
          if (generatoraccess instanceof WorldServer) {
              a(iblockdata, (WorldServer) generatoraccess, blockposition, tileentity).forEach((itemstack) -> {
-diff --git a/src/main/java/net/minecraft/server/BlockSponge.java b/src/main/java/net/minecraft/server/BlockSponge.java
-index 4666e3aedc3d614eb38a08bd34f402b24bd1d0b6..7a2130d74e787f82b771d4efa8d3f15804f05940 100644
---- a/src/main/java/net/minecraft/server/BlockSponge.java
-+++ b/src/main/java/net/minecraft/server/BlockSponge.java
-@@ -116,8 +116,11 @@ public class BlockSponge extends Block {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockSponge.java b/src/main/java/net/minecraft/world/level/block/BlockSponge.java
+index ef48ad0ab68e2e050bc8aca484d850297990b78e..d80eee47390ab202eea0368571421bbc94655ab1 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockSponge.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockSponge.java
+@@ -129,8 +129,11 @@ public class BlockSponge extends Block {
                          // NOP
                      } else if (material == Material.WATER_PLANT || material == Material.REPLACEABLE_WATER_PLANT) {
                          TileEntity tileentity = iblockdata.getBlock().isTileEntity() ? world.getTileEntity(blockposition2) : null;

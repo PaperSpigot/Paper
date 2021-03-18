@@ -87,10 +87,10 @@ index ddbc8cb712c50038922eded75dd6ca85fe851078..78271b400c79578d043b20a5389a37b1
          version = getInt("config-version", 20);
          set("config-version", 20);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 2438a50ca1923b028c4848c80248bac61b80d1af..2285612851d28c8cae31fc5f99584e6434450d80 100644
+index fd07b682bec1bb534f42350ef95c7da7191b027e..ed5712cc7c070f44500e5c1a1d41cd26bdd13fec 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -109,6 +109,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -218,6 +218,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      private int F;
      private int G;
      public final long[] h; public long[] getTickTimes() { return h; } // Paper - OBFHELPER
@@ -102,7 +102,7 @@ index 2438a50ca1923b028c4848c80248bac61b80d1af..2285612851d28c8cae31fc5f99584e64
      @Nullable
      private KeyPair H;
      @Nullable
-@@ -1211,6 +1216,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1320,6 +1325,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          this.ag = this.ag * 0.8F + (float) l / 1000000.0F * 0.19999999F;
          long i1 = SystemUtils.getMonotonicNanos();
  
@@ -115,7 +115,7 @@ index 2438a50ca1923b028c4848c80248bac61b80d1af..2285612851d28c8cae31fc5f99584e64
          this.circularTimer.a(i1 - i);
          this.methodProfiler.exit();
          org.spigotmc.WatchdogThread.tick(); // Spigot
-@@ -2183,4 +2194,30 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -2292,4 +2303,30 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public ITextFilter a(EntityPlayer entityplayer) {
          return null;
      }
@@ -147,7 +147,7 @@ index 2438a50ca1923b028c4848c80248bac61b80d1af..2285612851d28c8cae31fc5f99584e64
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index cb8008e2336b220289ba9bea442e5e734dbfac26..b9f685f39f943701889b55b02330bb9e834941ed 100644
+index cfacac7233c6e1f1a34aee1b5d26a072949fd512..f8e053a1c128b345051d00307997eb2bea79a98d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2196,6 +2196,16 @@ public final class CraftServer implements Server {

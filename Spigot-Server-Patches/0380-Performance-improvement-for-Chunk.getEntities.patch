@@ -10,7 +10,7 @@ operation. This patch will reduce the load of plugins which for example
 implement custom moblimits and depend on Chunk.getEntities().
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
-index f09e783e38bbe4d8e825abf77884b9cb307bcce4..531d5e41dfbfbfe8da0676207f6325a0bca97a9a 100644
+index c36f55f178166eb099cc5c64784be5a9f4750199..8ade81a693286cdf65f8c0eeca2121a217c90350 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 @@ -117,14 +117,14 @@ public class CraftChunk implements Chunk {
@@ -19,14 +19,14 @@ index f09e783e38bbe4d8e825abf77884b9cb307bcce4..531d5e41dfbfbfe8da0676207f6325a0
          for (int i = 0; i < 16; i++) {
 -
 -            for (Object obj : chunk.entitySlices[i].toArray()) {
--                if (!(obj instanceof net.minecraft.server.Entity)) {
+-                if (!(obj instanceof net.minecraft.world.entity.Entity)) {
 +            // Paper start - speed up (was with chunk.entitySlices[i].toArray() and cast checks which costs a lot of performance if called often)
-+            for (net.minecraft.server.Entity entity : chunk.entitySlices[i]) {
++            for (net.minecraft.world.entity.Entity entity : chunk.entitySlices[i]) {
 +                if (entity == null) {
                      continue;
                  }
 -
--                entities[index++] = ((net.minecraft.server.Entity) obj).getBukkitEntity();
+-                entities[index++] = ((net.minecraft.world.entity.Entity) obj).getBukkitEntity();
 +                entities[index++] = entity.getBukkitEntity();
              }
 +            // Paper end

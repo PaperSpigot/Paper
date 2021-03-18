@@ -7,7 +7,7 @@ This allows you to create already filled textures on Skulls to avoid texture loo
 which commonly cause rate limit issues with Mojang API
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
-index 20588598386a4f479e6a58b294149bed789c63ce..ecc32c2fb1e8e1ac03074102b982adb4cda169db 100644
+index 80ee7ab69ff70431d51321d403e5e3400a24bd67..00fb749f4d181d8d830496cf741d589e10af5098 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
 @@ -1,5 +1,7 @@
@@ -48,18 +48,18 @@ index 20588598386a4f479e6a58b294149bed789c63ce..ecc32c2fb1e8e1ac03074102b982adb4
      public BlockFace getRotation() {
          BlockData blockData = getBlockData();
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
-index 58aeeff96a92b5ba0c3435c680885ad3bc4f4ce6..fba6c1f454fdee3541393e6803d7249cf1fbe6d2 100644
+index 8298ae9bf1c5635f08552c15f004b3d0f6e9f19b..6db0d35eba647a0e81ca464fa52dc4a404ddd2ab 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
-@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap.Builder;
- import com.mojang.authlib.GameProfile;
- import java.util.Map;
- import java.util.UUID;
+@@ -8,6 +8,8 @@ import net.minecraft.nbt.GameProfileSerializer;
+ import net.minecraft.nbt.NBTBase;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.world.level.block.entity.TileEntitySkull;
 +import com.destroystokyo.paper.profile.CraftPlayerProfile;
 +import com.destroystokyo.paper.profile.PlayerProfile;
- import net.minecraft.server.GameProfileSerializer;
- import net.minecraft.server.NBTBase;
- import net.minecraft.server.NBTTagCompound;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+ import org.bukkit.OfflinePlayer;
 @@ -18,6 +20,7 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
  import org.bukkit.craftbukkit.util.CraftMagicNumbers;
  import org.bukkit.inventory.meta.SkullMeta;
@@ -88,3 +88,12 @@ index 58aeeff96a92b5ba0c3435c680885ad3bc4f4ce6..fba6c1f454fdee3541393e6803d7249c
      @Override
      public OfflinePlayer getOwningPlayer() {
          if (hasOwner()) {
+@@ -175,7 +191,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
+         } else {
+             // Paper start - Use Online Players Skull
+             GameProfile newProfile = null;
+-            net.minecraft.server.EntityPlayer player = net.minecraft.server.MinecraftServer.getServer().getPlayerList().getPlayer(name);
++            net.minecraft.server.level.EntityPlayer player = net.minecraft.server.MinecraftServer.getServer().getPlayerList().getPlayer(name);
+             if (player != null) newProfile = player.getProfile();
+             if (newProfile == null) newProfile = new GameProfile(null, name);
+             setProfile(newProfile);

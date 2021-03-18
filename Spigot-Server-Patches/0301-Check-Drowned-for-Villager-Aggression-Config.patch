@@ -4,11 +4,11 @@ Date: Wed, 10 Oct 2018 21:22:44 -0500
 Subject: [PATCH] Check Drowned for Villager Aggression Config
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityDrowned.java b/src/main/java/net/minecraft/server/EntityDrowned.java
-index 9c507cb0810029e3c5d7cb1055da170469315596..9ae0897bfd6a4577901d9189d0dba22f3ec2110c 100644
---- a/src/main/java/net/minecraft/server/EntityDrowned.java
-+++ b/src/main/java/net/minecraft/server/EntityDrowned.java
-@@ -31,7 +31,7 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityDrowned.java b/src/main/java/net/minecraft/world/entity/monster/EntityDrowned.java
+index c3457fc7c0f72af79b12dc50c270ca24b7590c22..e4794760fc918cccbdc3f8d10ab21dd9b6f29e8e 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityDrowned.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityDrowned.java
+@@ -82,7 +82,7 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
          this.goalSelector.a(7, new PathfinderGoalRandomStroll(this, 1.0D));
          this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityDrowned.class})).a(EntityPigZombie.class));
          this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, this::i));

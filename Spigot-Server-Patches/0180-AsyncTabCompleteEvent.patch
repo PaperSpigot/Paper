@@ -13,11 +13,11 @@ completion, such as offline players.
 
 Also adds isCommand and getLocation to the sync TabCompleteEvent
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 1b1de63c405a1e9a62787be11ac1ee3029ffc828..297593d412706e3ea583ac9bbd5c9e15b711d312 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -566,10 +566,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 54a5b988e5dc8eec35cf91d45f282926d81a0043..cbffc7e1cf7ca7597517cdae12ec9be5efe97217 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -711,10 +711,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
      @Override
      public void a(PacketPlayInTabComplete packetplayintabcomplete) {
@@ -30,7 +30,7 @@ index 1b1de63c405a1e9a62787be11ac1ee3029ffc828..297593d412706e3ea583ac9bbd5c9e15
              return;
          }
          // CraftBukkit end
-@@ -579,12 +579,35 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -724,12 +724,35 @@ public class PlayerConnection implements PacketListenerPlayIn {
              stringreader.skip();
          }
  
@@ -72,7 +72,7 @@ index 1b1de63c405a1e9a62787be11ac1ee3029ffc828..297593d412706e3ea583ac9bbd5c9e15
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 01cd09eae054de89dfa910980974e12d6350eae5..7d470b42e6aca9539b102c189c7a2fd848995d55 100644
+index 7d2fc05ddb18369aed29595e3c0dcbf6db136309..f1d4e2ac2823e2246463350b21f28c6d32f4f2c5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1844,7 +1844,7 @@ public final class CraftServer implements Server {

@@ -7,11 +7,11 @@ This will take a Bukkit ItemStack and run it through any conversions a server pr
 to ensure it meets latest minecraft expectations.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
-index a50eb746b8774a089c39652d534920acf708b137..83fb73ccde7809c6f712af35400d607fcd791882 100644
+index 6d320bbe0c75cc0df504faacf0f7d24804b90d5f..6e748e57c4818e11ac6d4c693bc4f6e1e889f4f8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 @@ -341,5 +341,11 @@ public final class CraftItemFactory implements ItemFactory {
-         final net.minecraft.server.NBTTagCompound tag = CraftItemStack.asNMSCopy(item).getTag();
+         final net.minecraft.nbt.NBTTagCompound tag = CraftItemStack.asNMSCopy(item).getTag();
          return net.kyori.adventure.text.event.HoverEvent.showItem(op.apply(net.kyori.adventure.text.event.HoverEvent.ShowItem.of(item.getType().getKey(), item.getAmount(), io.papermc.paper.adventure.PaperAdventure.asBinaryTagHolder(tag))));
      }
 +

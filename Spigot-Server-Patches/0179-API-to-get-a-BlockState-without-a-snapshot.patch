@@ -12,11 +12,11 @@ also Avoid NPE during CraftBlockEntityState load if could not get TE
 
 If Tile Entity was null, correct Sign to return empty lines instead of null
 
-diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
-index 524f84ad2c50f8b837eefd0465901b1e22359410..c6ae3d3f9d7957d4bbe0b4e2613558e5cd9dd9ec 100644
---- a/src/main/java/net/minecraft/server/TileEntity.java
-+++ b/src/main/java/net/minecraft/server/TileEntity.java
-@@ -36,6 +36,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index fd6364dfc68c2eb9f560e7bc403dea874193828e..3ff9e389fcf15044c2740fb884c9438428d7a681 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -47,6 +47,7 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
      public TileEntity(TileEntityTypes<?> tileentitytypes) {
          this.position = BlockPosition.ZERO;
          this.tileType = tileentitytypes;
@@ -24,16 +24,16 @@ index 524f84ad2c50f8b837eefd0465901b1e22359410..c6ae3d3f9d7957d4bbe0b4e2613558e5
      }
  
      // Paper start
-@@ -84,7 +85,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
+@@ -95,7 +96,7 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
      public void load(IBlockData iblockdata, NBTTagCompound nbttagcompound) {
          this.position = new BlockPosition(nbttagcompound.getInt("x"), nbttagcompound.getInt("y"), nbttagcompound.getInt("z"));
          // CraftBukkit start - read container
 -        this.persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 +        this.persistentDataContainer.clear(); // Paper - clear instead of reinit
  
-         NBTBase persistentDataTag = nbttagcompound.get("PublicBukkitValues");
+         net.minecraft.nbt.NBTBase persistentDataTag = nbttagcompound.get("PublicBukkitValues");
          if (persistentDataTag instanceof NBTTagCompound) {
-@@ -234,7 +235,12 @@ public abstract class TileEntity implements KeyedObject { // Paper
+@@ -245,7 +246,12 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
      }
  
      // CraftBukkit start - add method
@@ -46,7 +46,7 @@ index 524f84ad2c50f8b837eefd0465901b1e22359410..c6ae3d3f9d7957d4bbe0b4e2613558e5
          if (world == null) return null;
          // Spigot start
          org.bukkit.block.Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
-@@ -243,7 +249,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
+@@ -254,7 +260,7 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
              return null;
          }
          // Spigot end
@@ -56,7 +56,7 @@ index 524f84ad2c50f8b837eefd0465901b1e22359410..c6ae3d3f9d7957d4bbe0b4e2613558e5
          return null;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 5de8463c94612edd11e02ac5d9757382c9598e7d..661bb54c27966c8050644b293d99dfe86e3c04ce 100644
+index 7654c0f8b57785225ecaa0c22e34c92f1d058d21..e4fe55bb830cd43680de9d61652448b1ea879063 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -316,6 +316,20 @@ public class CraftBlock implements Block {
@@ -81,7 +81,7 @@ index 5de8463c94612edd11e02ac5d9757382c9598e7d..661bb54c27966c8050644b293d99dfe8
  
          switch (material) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
-index 8a7e9302b4b6be086144add8df610b76b58e00d6..cca1c2ca5c1fe91fda30ace6f06a343b7850842e 100644
+index dcf3f9265b0b00a7bbb9ff428e10da3c198ba08a..2f0b48869077c27d0cacea81a99c9e34ff59c684 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockEntityState.java
 @@ -26,20 +26,40 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
@@ -131,7 +131,7 @@ index 8a7e9302b4b6be086144add8df610b76b58e00d6..cca1c2ca5c1fe91fda30ace6f06a343b
  
      private T createSnapshot(T tileEntity) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/persistence/CraftPersistentDataContainer.java b/src/main/java/org/bukkit/craftbukkit/persistence/CraftPersistentDataContainer.java
-index 58e2db5da178af6a8c30f563353fefe720ff9781..b704f550de290e0bc1235bf7e68c7eb347162c69 100644
+index f342feee4e2274cdc51fef6caace52cc31eefb18..a4c888236bf09a25f234831a041ca5a4a2c972ef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/persistence/CraftPersistentDataContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/persistence/CraftPersistentDataContainer.java
 @@ -155,4 +155,10 @@ public final class CraftPersistentDataContainer implements PersistentDataContain

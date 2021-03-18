@@ -5,11 +5,11 @@ Subject: [PATCH] Prevent Pathfinding out of World Border
 
 This prevents Entities from trying to run outside of the World Border
 
-diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index 5a8fbad220ed535a79539a4e25830c370ca1c89c..ee7b1f25ba8b6b4318e332b739359db6ddd58b62 100644
---- a/src/main/java/net/minecraft/server/NavigationAbstract.java
-+++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -127,7 +127,7 @@ public abstract class NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+index d71a6e5991629ce59c8529d7cc8064960e385236..d134333c736dc1ee1c722d680d7a9c22c1b265bd 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+@@ -148,7 +148,7 @@ public abstract class NavigationAbstract {
              // Paper start - Pathfind event
              boolean copiedSet = false;
              for (BlockPosition possibleTarget : set) {

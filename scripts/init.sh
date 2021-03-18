@@ -7,8 +7,8 @@ basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/work"
 minecraftversion=$(cat "$workdir/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
 spigotdecompiledir="$workdir/Minecraft/$minecraftversion/spigot"
-nms="$spigotdecompiledir/net/minecraft/server"
-cb="src/main/java/net/minecraft/server"
+nms="$spigotdecompiledir"
+cb="src/main/java"
 gitcmd="git -c commit.gpgsign=false"
 
 # https://stackoverflow.com/a/38595160
@@ -45,31 +45,31 @@ done
 echo "Applying CraftBukkit patches to NMS..."
 cd "$workdir/CraftBukkit"
 $gitcmd checkout -B patched HEAD >/dev/null 2>&1
-rm -rf "$cb"
-mkdir -p "$cb"
+rm -rf "$cb/net"
 # create baseline NMS import so we can see diff of what CB changed
-for file in $(ls nms-patches)
+while IFS= read -r -d '' file
 do
-    patchFile="nms-patches/$file"
-    file="$(echo "$file" | cut -d. -f1).java"
+    patchFile="$file"
+    file="$(echo "$file" | cut -d "/" -f2- | cut -d. -f1).java"
+    mkdir -p "$(dirname $cb/"$file")"
     cp "$nms/$file" "$cb/$file"
-done
+done <   <(find nms-patches -type f -print0)
 $gitcmd add src
 $gitcmd commit -m "Minecraft $ $(date)" --author="Vanilla <auto@mated.null>"
 
 # apply patches
-for file in $(ls nms-patches)
+while IFS= read -r -d '' file
 do
-    patchFile="nms-patches/$file"
-    file="$(echo "$file" | cut -d. -f1).java"
+    patchFile="$file"
+    file="$(echo "$file" | cut -d "/" -f2- | cut -d. -f1).java"
 
     echo "Patching $file < $patchFile"
     set +e
     strip_cr "$nms/$file" > /dev/null
     set -e
 
-    "$patch" -s -d src/main/java/ "net/minecraft/server/$file" < "$patchFile"
-done
+    "$patch" -d src/main/java -p 1 < "$patchFile"
+done <   <(find nms-patches -type f -print0)
 
 $gitcmd add src
 $gitcmd commit -m "CraftBukkit $ $(date)" --author="CraftBukkit <auto@mated.null>"

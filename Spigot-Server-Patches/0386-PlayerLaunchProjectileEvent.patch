@@ -4,10 +4,10 @@ Date: Sat, 21 Jul 2018 03:11:03 -0500
 Subject: [PATCH] PlayerLaunchProjectileEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/InteractionResultWrapper.java b/src/main/java/net/minecraft/server/InteractionResultWrapper.java
-index d59a0b739c0b8787029969a14002042e5c288ae8..8b2fc1c0e608c911b2cdc95ef134f84e3760c05d 100644
---- a/src/main/java/net/minecraft/server/InteractionResultWrapper.java
-+++ b/src/main/java/net/minecraft/server/InteractionResultWrapper.java
+diff --git a/src/main/java/net/minecraft/world/InteractionResultWrapper.java b/src/main/java/net/minecraft/world/InteractionResultWrapper.java
+index dd17c111670e637b574f5c7f38d27848900ce194..8cecc3d909a51b1892b4a299a5e6ec3518db9b39 100644
+--- a/src/main/java/net/minecraft/world/InteractionResultWrapper.java
++++ b/src/main/java/net/minecraft/world/InteractionResultWrapper.java
 @@ -10,6 +10,7 @@ public class InteractionResultWrapper<T> {
          this.b = t0;
      }
@@ -16,11 +16,11 @@ index d59a0b739c0b8787029969a14002042e5c288ae8..8b2fc1c0e608c911b2cdc95ef134f84e
      public EnumInteractionResult a() {
          return this.a;
      }
-diff --git a/src/main/java/net/minecraft/server/ItemEgg.java b/src/main/java/net/minecraft/server/ItemEgg.java
-index f028cb04d692f848a4682aa2eeac2174eb0f6769..6ddb0237c013e5c40d6c28a300f33443f6f703a5 100644
---- a/src/main/java/net/minecraft/server/ItemEgg.java
-+++ b/src/main/java/net/minecraft/server/ItemEgg.java
-@@ -16,21 +16,35 @@ public class ItemEgg extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemEgg.java b/src/main/java/net/minecraft/world/item/ItemEgg.java
+index 2083ab6e0dc7e48d409a5ee33e712e34abd6f6bf..4b1a6ee784da4595931396a905f1358b7a13f3dd 100644
+--- a/src/main/java/net/minecraft/world/item/ItemEgg.java
++++ b/src/main/java/net/minecraft/world/item/ItemEgg.java
+@@ -25,21 +25,35 @@ public class ItemEgg extends Item {
  
              entityegg.setItem(itemstack);
              entityegg.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
@@ -31,18 +31,18 @@ index f028cb04d692f848a4682aa2eeac2174eb0f6769..6ddb0237c013e5c40d6c28a300f33443
 +            if (event.callEvent() && world.addEntity(entityegg)) {
 +                if (event.shouldConsume() && !entityhuman.abilities.canInstantlyBuild) {
 +                    itemstack.subtract(1);
-+                } else if (entityhuman instanceof EntityPlayer) {
-+                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                } else if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
++                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                }
 +
-+                world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_EGG_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
++                world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_EGG_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F / (net.minecraft.world.entity.Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
 +                entityhuman.b(StatisticList.ITEM_USED.b(this));
 +            } else {
-                 if (entityhuman instanceof EntityPlayer) {
-                     ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
+                 if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
+                     ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
                  }
 -                return InteractionResultWrapper.fail(itemstack);
-+                return new InteractionResultWrapper<ItemStack>(EnumInteractionResult.FAIL, itemstack);
++                return new InteractionResultWrapper<ItemStack>(net.minecraft.world.EnumInteractionResult.FAIL, itemstack);
              }
 -            // CraftBukkit end
 +            // Paper end
@@ -60,11 +60,11 @@ index f028cb04d692f848a4682aa2eeac2174eb0f6769..6ddb0237c013e5c40d6c28a300f33443
  
          return InteractionResultWrapper.a(itemstack, world.s_());
      }
-diff --git a/src/main/java/net/minecraft/server/ItemEnderPearl.java b/src/main/java/net/minecraft/server/ItemEnderPearl.java
-index aa7356e6a18c0bf72314e92809a4eab320d3695f..0e154ee2976694dacf8d41fcd831f21fbbda13af 100644
---- a/src/main/java/net/minecraft/server/ItemEnderPearl.java
-+++ b/src/main/java/net/minecraft/server/ItemEnderPearl.java
-@@ -16,22 +16,37 @@ public class ItemEnderPearl extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemEnderPearl.java b/src/main/java/net/minecraft/world/item/ItemEnderPearl.java
+index 5349282b9a5b43c4c3539e1677971463e2ca5a17..9896d77381e7fadf1ef2619210713e190c1445d0 100644
+--- a/src/main/java/net/minecraft/world/item/ItemEnderPearl.java
++++ b/src/main/java/net/minecraft/world/item/ItemEnderPearl.java
+@@ -25,22 +25,37 @@ public class ItemEnderPearl extends Item {
  
              entityenderpearl.setItem(itemstack);
              entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
@@ -74,20 +74,20 @@ index aa7356e6a18c0bf72314e92809a4eab320d3695f..0e154ee2976694dacf8d41fcd831f21f
 +            if (event.callEvent() && world.addEntity(entityenderpearl)) {
 +                if (event.shouldConsume() && !entityhuman.abilities.canInstantlyBuild) {
 +                    itemstack.subtract(1);
-+                } else if (entityhuman instanceof EntityPlayer) {
-+                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
++                } else if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
++                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +                }
 +
-+                world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
++                world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (net.minecraft.world.entity.Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
 +                entityhuman.b(StatisticList.ITEM_USED.b(this));
 +                entityhuman.getCooldownTracker().setCooldown(this, 20);
 +            } else {
 +                // Paper end
-                 if (entityhuman instanceof EntityPlayer) {
-                     ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
+                 if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
+                     ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
                  }
--                return new InteractionResultWrapper(EnumInteractionResult.FAIL, itemstack);
-+                return new InteractionResultWrapper<ItemStack>(EnumInteractionResult.FAIL, itemstack);
+-                return InteractionResultWrapper.fail(itemstack);
++                return new InteractionResultWrapper<ItemStack>(net.minecraft.world.EnumInteractionResult.FAIL, itemstack);
              }
          }
  
@@ -112,11 +112,25 @@ index aa7356e6a18c0bf72314e92809a4eab320d3695f..0e154ee2976694dacf8d41fcd831f21f
  
          return InteractionResultWrapper.a(itemstack, world.s_());
      }
-diff --git a/src/main/java/net/minecraft/server/ItemExpBottle.java b/src/main/java/net/minecraft/server/ItemExpBottle.java
-index 07e12714d064a2ccc7a3a50fbb88517f9a3b8b78..10abf20e907f1ea25797ff33d181de7eaed9a9da 100644
---- a/src/main/java/net/minecraft/server/ItemExpBottle.java
-+++ b/src/main/java/net/minecraft/server/ItemExpBottle.java
-@@ -15,19 +15,38 @@ public class ItemExpBottle extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemExpBottle.java b/src/main/java/net/minecraft/world/item/ItemExpBottle.java
+index 3f41fe5bf1a0cc283d6a72824779026fdad75708..cf36ec4769dc316e3ed16262043cb78cbba340ab 100644
+--- a/src/main/java/net/minecraft/world/item/ItemExpBottle.java
++++ b/src/main/java/net/minecraft/world/item/ItemExpBottle.java
+@@ -1,10 +1,13 @@
+ package net.minecraft.world.item;
+ 
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.stats.StatisticList;
+ import net.minecraft.world.EnumHand;
++import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
++import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.projectile.EntityThrownExpBottle;
+ import net.minecraft.world.level.World;
+@@ -24,19 +27,38 @@ public class ItemExpBottle extends Item {
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
          ItemStack itemstack = entityhuman.b(enumhand);
  
@@ -157,11 +171,19 @@ index 07e12714d064a2ccc7a3a50fbb88517f9a3b8b78..10abf20e907f1ea25797ff33d181de7e
  
          return InteractionResultWrapper.a(itemstack, world.s_());
      }
-diff --git a/src/main/java/net/minecraft/server/ItemFireworks.java b/src/main/java/net/minecraft/server/ItemFireworks.java
-index 885c03f62da3b14bf7aeb31f1ae6a95bc9f86de1..e775fe69ee7e555721bc73e7cb0dd3136736bc9c 100644
---- a/src/main/java/net/minecraft/server/ItemFireworks.java
-+++ b/src/main/java/net/minecraft/server/ItemFireworks.java
-@@ -20,8 +20,12 @@ public class ItemFireworks extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemFireworks.java b/src/main/java/net/minecraft/world/item/ItemFireworks.java
+index 79e9be800385b94c4493bd8970620d76bfbd65ae..e7f958d137257da912ce9b83db017b4423959943 100644
+--- a/src/main/java/net/minecraft/world/item/ItemFireworks.java
++++ b/src/main/java/net/minecraft/world/item/ItemFireworks.java
+@@ -3,6 +3,7 @@ package net.minecraft.world.item;
+ import java.util.Arrays;
+ import java.util.Comparator;
+ import net.minecraft.core.EnumDirection;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
+@@ -29,8 +30,12 @@ public class ItemFireworks extends Item {
              EntityFireworks entityfireworks = new EntityFireworks(world, itemactioncontext.getEntity(), vec3d.x + (double) enumdirection.getAdjacentX() * 0.15D, vec3d.y + (double) enumdirection.getAdjacentY() * 0.15D, vec3d.z + (double) enumdirection.getAdjacentZ() * 0.15D, itemstack);
              entityfireworks.spawningEntity = itemactioncontext.getEntity().getUniqueID(); // Paper
  
@@ -176,11 +198,19 @@ index 885c03f62da3b14bf7aeb31f1ae6a95bc9f86de1..e775fe69ee7e555721bc73e7cb0dd313
          }
  
          return EnumInteractionResult.a(world.isClientSide);
-diff --git a/src/main/java/net/minecraft/server/ItemLingeringPotion.java b/src/main/java/net/minecraft/server/ItemLingeringPotion.java
-index 685d958994bc35ad5eceba629e6743b41e2cc04b..58f7191a6980265e8fab17cf39769bbbca0ee105 100644
---- a/src/main/java/net/minecraft/server/ItemLingeringPotion.java
-+++ b/src/main/java/net/minecraft/server/ItemLingeringPotion.java
-@@ -8,7 +8,12 @@ public class ItemLingeringPotion extends ItemPotionThrowable {
+diff --git a/src/main/java/net/minecraft/world/item/ItemLingeringPotion.java b/src/main/java/net/minecraft/world/item/ItemLingeringPotion.java
+index a75f374f0639e8143772aa863666afe25d2020cf..0e073a8c23d24afb8b0198a9cfd8dc7d0b9d0a6b 100644
+--- a/src/main/java/net/minecraft/world/item/ItemLingeringPotion.java
++++ b/src/main/java/net/minecraft/world/item/ItemLingeringPotion.java
+@@ -3,6 +3,7 @@ package net.minecraft.world.item;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.world.EnumHand;
++import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.level.World;
+@@ -15,7 +16,12 @@ public class ItemLingeringPotion extends ItemPotionThrowable {
  
      @Override
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
@@ -195,11 +225,21 @@ index 685d958994bc35ad5eceba629e6743b41e2cc04b..58f7191a6980265e8fab17cf39769bbb
 +        // Paper end
      }
  }
-diff --git a/src/main/java/net/minecraft/server/ItemPotionThrowable.java b/src/main/java/net/minecraft/server/ItemPotionThrowable.java
-index dee3d4042b0cd1ace86fe1d80d894d0cc48cf941..9c84de77df7e32915a633b92c842cfb69e30e0d0 100644
---- a/src/main/java/net/minecraft/server/ItemPotionThrowable.java
-+++ b/src/main/java/net/minecraft/server/ItemPotionThrowable.java
-@@ -15,13 +15,31 @@ public class ItemPotionThrowable extends ItemPotion {
+diff --git a/src/main/java/net/minecraft/world/item/ItemPotionThrowable.java b/src/main/java/net/minecraft/world/item/ItemPotionThrowable.java
+index d050243946ad7023d5dd3958d7056cddcaf185a4..27c61fc4e61b0d76565ca6893514b3c73247c954 100644
+--- a/src/main/java/net/minecraft/world/item/ItemPotionThrowable.java
++++ b/src/main/java/net/minecraft/world/item/ItemPotionThrowable.java
+@@ -1,7 +1,9 @@
+ package net.minecraft.world.item;
+ 
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.stats.StatisticList;
+ import net.minecraft.world.EnumHand;
++import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.projectile.EntityPotion;
+@@ -22,13 +24,31 @@ public class ItemPotionThrowable extends ItemPotion {
  
              entitypotion.setItem(itemstack);
              entitypotion.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.5F, 1.0F);
@@ -232,11 +272,11 @@ index dee3d4042b0cd1ace86fe1d80d894d0cc48cf941..9c84de77df7e32915a633b92c842cfb6
  
          return InteractionResultWrapper.a(itemstack, world.s_());
      }
-diff --git a/src/main/java/net/minecraft/server/ItemSnowball.java b/src/main/java/net/minecraft/server/ItemSnowball.java
-index 19ac8cc57d6400e7574dd475dd21f2f48a954324..4242b5c4ed1e7d546fee7e2b3892b7b25e1259ff 100644
---- a/src/main/java/net/minecraft/server/ItemSnowball.java
-+++ b/src/main/java/net/minecraft/server/ItemSnowball.java
-@@ -17,14 +17,20 @@ public class ItemSnowball extends Item {
+diff --git a/src/main/java/net/minecraft/world/item/ItemSnowball.java b/src/main/java/net/minecraft/world/item/ItemSnowball.java
+index e5200b2a7d6d5c2d549e585ed157ec5217edae8e..8a1d59cb1ea5a8959c52272aa762ec35307246d7 100644
+--- a/src/main/java/net/minecraft/world/item/ItemSnowball.java
++++ b/src/main/java/net/minecraft/world/item/ItemSnowball.java
+@@ -26,14 +26,20 @@ public class ItemSnowball extends Item {
  
              entitysnowball.setItem(itemstack);
              entitysnowball.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
@@ -248,24 +288,32 @@ index 19ac8cc57d6400e7574dd475dd21f2f48a954324..4242b5c4ed1e7d546fee7e2b3892b7b2
 +                if (event.shouldConsume() && !entityhuman.abilities.canInstantlyBuild) {
 +                    // Paper end
                      itemstack.subtract(1);
-+                } else if (entityhuman instanceof EntityPlayer) {  // Paper
-+                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();  // Paper
++                } else if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {  // Paper
++                    ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();  // Paper
                  }
  
                  world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemSnowball.RANDOM.nextFloat() * 0.4F + 0.8F));
--            } else if (entityhuman instanceof EntityPlayer) {
--                ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
+-            } else if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) {
+-                ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 +            } else { // Paper
-+                if (entityhuman instanceof EntityPlayer) ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // Paper
-+                return new InteractionResultWrapper<ItemStack>(EnumInteractionResult.FAIL, itemstack); // Paper
++                if (entityhuman instanceof net.minecraft.server.level.EntityPlayer) ((net.minecraft.server.level.EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // Paper
++                return new InteractionResultWrapper<ItemStack>(net.minecraft.world.EnumInteractionResult.FAIL, itemstack); // Paper
              }
          }
          // CraftBukkit end
-diff --git a/src/main/java/net/minecraft/server/ItemSplashPotion.java b/src/main/java/net/minecraft/server/ItemSplashPotion.java
-index 3574cf875c6284687c10637159ec96a823ade2dc..c919a402e80a5c6b17fdbd99e110be1abefda747 100644
---- a/src/main/java/net/minecraft/server/ItemSplashPotion.java
-+++ b/src/main/java/net/minecraft/server/ItemSplashPotion.java
-@@ -8,7 +8,12 @@ public class ItemSplashPotion extends ItemPotionThrowable {
+diff --git a/src/main/java/net/minecraft/world/item/ItemSplashPotion.java b/src/main/java/net/minecraft/world/item/ItemSplashPotion.java
+index 98f29fac4bf087ad15f1cc7e85b408e22ec07efd..971491a461ccb7a707c6ca1a5b7c16d8823a7a80 100644
+--- a/src/main/java/net/minecraft/world/item/ItemSplashPotion.java
++++ b/src/main/java/net/minecraft/world/item/ItemSplashPotion.java
+@@ -3,6 +3,7 @@ package net.minecraft.world.item;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.world.EnumHand;
++import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.InteractionResultWrapper;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.level.World;
+@@ -15,7 +16,12 @@ public class ItemSplashPotion extends ItemPotionThrowable {
  
      @Override
      public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {

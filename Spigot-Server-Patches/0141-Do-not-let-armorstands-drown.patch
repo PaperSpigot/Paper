@@ -4,11 +4,32 @@ Date: Sat, 18 Feb 2017 19:29:58 -0600
 Subject: [PATCH] Do not let armorstands drown
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
-index 4870a6f9f894b2c9d0fea83dad0808ac6448f808..e17637cfee773b1b79c05d7a8e6558963c7a9c14 100644
---- a/src/main/java/net/minecraft/server/EntityArmorStand.java
-+++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
-@@ -837,5 +837,10 @@ public class EntityArmorStand extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 2eee92f74a7c82ec7df05db6df79743b4345cc86..3d6b8fd09c07e78c0d786dff9658eb0089f853cf 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -338,6 +338,7 @@ public abstract class EntityLiving extends Entity {
+         super.a(d0, flag, iblockdata, blockposition);
+     }
+ 
++    public boolean canBreatheUnderwater() { return this.cM(); } // Paper - OBFHELPER
+     public boolean cM() {
+         return this.getMonsterType() == EnumMonsterType.UNDEAD;
+     }
+@@ -381,7 +382,7 @@ public abstract class EntityLiving extends Entity {
+ 
+         if (this.isAlive()) {
+             if (this.a((Tag) TagsFluid.WATER) && !this.world.getType(new BlockPosition(this.locX(), this.getHeadY(), this.locZ())).a(Blocks.BUBBLE_COLUMN)) {
+-                if (!this.cM() && !MobEffectUtil.c(this) && !flag1) {
++                if (!this.canBreatheUnderwater() && !MobEffectUtil.c(this) && !flag1) {  // Paper - use OBFHELPER so it can be overridden
+                     this.setAirTicks(this.l(this.getAirTicks()));
+                     if (this.getAirTicks() == -20) {
+                         this.setAirTicks(0);
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index 2ef991aa7f739d3577fbbf4386064557e8f7c904..57e0ea95df34fab22d6c5868ab839d56a3fa85fc 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -872,5 +872,10 @@ public class EntityArmorStand extends EntityLiving {
              super.move(moveType, vec3d);
          }
      }
@@ -19,24 +40,3 @@ index 4870a6f9f894b2c9d0fea83dad0808ac6448f808..e17637cfee773b1b79c05d7a8e655896
 +    }
      // Paper end
  }
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index c2c5dbba5cc048e8fa2a4a383737330adf7b7663..2dfa2abf37994a72dfdfcc38e032626247b43fd7 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -245,6 +245,7 @@ public abstract class EntityLiving extends Entity {
-         super.a(d0, flag, iblockdata, blockposition);
-     }
- 
-+    public boolean canBreatheUnderwater() { return this.cM(); } // Paper - OBFHELPER
-     public boolean cM() {
-         return this.getMonsterType() == EnumMonsterType.UNDEAD;
-     }
-@@ -288,7 +289,7 @@ public abstract class EntityLiving extends Entity {
- 
-         if (this.isAlive()) {
-             if (this.a((Tag) TagsFluid.WATER) && !this.world.getType(new BlockPosition(this.locX(), this.getHeadY(), this.locZ())).a(Blocks.BUBBLE_COLUMN)) {
--                if (!this.cM() && !MobEffectUtil.c(this) && !flag1) {
-+                if (!this.canBreatheUnderwater() && !MobEffectUtil.c(this) && !flag1) {  // Paper - use OBFHELPER so it can be overridden
-                     this.setAirTicks(this.l(this.getAirTicks()));
-                     if (this.getAirTicks() == -20) {
-                         this.setAirTicks(0);

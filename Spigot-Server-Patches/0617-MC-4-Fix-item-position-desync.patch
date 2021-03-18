@@ -22,11 +22,50 @@ index 652d87fc5d566dba8018c81676329f0e0bca471b..c56e7fb18f9a56c8025eb70a524f028b
 +        fixEntityPositionDesync = getBoolean("settings.fix-entity-position-desync", fixEntityPositionDesync);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 0e75d97254c73b2525380024b41a42f56d87b3a5..5dfb54e17fcfe6bd30e6b2a449944606e1a0ef17 100644
---- a/src/main/java/net/minecraft/server/EntityItem.java
-+++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -524,4 +524,16 @@ public class EntityItem extends Entity {
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutEntity.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutEntity.java
+index e80429368afced0299d9f41b97251cd6c64b1759..0eed10a6c4e0c7245f219d19ed1e2e5c94364db9 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutEntity.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutEntity.java
+@@ -19,11 +19,11 @@ public class PacketPlayOutEntity implements Packet<PacketListenerPlayOut> {
+     protected boolean i;
+ 
+     public static long a(double d0) {
+-        return MathHelper.d(d0 * 4096.0D);
++        return MathHelper.d(d0 * 4096.0D); // Paper - check EntityItem#setPositionRaw on update
+     }
+ 
+     public static Vec3D a(long i, long j, long k) {
+-        return (new Vec3D((double) i, (double) j, (double) k)).a(2.44140625E-4D);
++        return (new Vec3D((double) i, (double) j, (double) k)).a(2.44140625E-4D); // Paper - check EntityItem#setPositionRaw on update
+     }
+ 
+     public PacketPlayOutEntity() {}
+diff --git a/src/main/java/net/minecraft/util/MathHelper.java b/src/main/java/net/minecraft/util/MathHelper.java
+index caa628417bb9c1c65b037e4f3f762b08272c6d09..cc566784c7dd21cc2c44e0f351347f657e57ddcf 100644
+--- a/src/main/java/net/minecraft/util/MathHelper.java
++++ b/src/main/java/net/minecraft/util/MathHelper.java
+@@ -9,7 +9,7 @@ import net.minecraft.core.BaseBlockPosition;
+ public class MathHelper {
+ 
+     public static final float a = c(2.0F);
+-    private static final float[] b = (float[]) SystemUtils.a((Object) (new float[65536]), (afloat) -> {
++    private static final float[] b = (float[]) SystemUtils.a((new float[65536]), (afloat) -> { // Paper - decompile error
+         for (int i = 0; i < afloat.length; ++i) {
+             afloat[i] = (float) Math.sin((double) i * 3.141592653589793D * 2.0D / 65536.0D);
+         }
+@@ -49,6 +49,7 @@ public class MathHelper {
+         return d0 < (double) i ? i - 1 : i;
+     }
+ 
++    public static long floorLong(double d0) { return d(d0); } // Paper - OBFHELPER
+     public static long d(double d0) {
+         long i = (long) d0;
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityItem.java b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+index 11e029f6f97f1dd9c32e311d1a3800f2fa54b91f..575833807ff647f30d7c2b7abcd01701c7dec85b 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityItem.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+@@ -550,4 +550,16 @@ public class EntityItem extends Entity {
      public Packet<?> P() {
          return new PacketPlayOutSpawnEntity(this);
      }
@@ -43,42 +82,3 @@ index 0e75d97254c73b2525380024b41a42f56d87b3a5..5dfb54e17fcfe6bd30e6b2a449944606
 +    }
 +    // Paper end - fix MC-4
  }
-diff --git a/src/main/java/net/minecraft/server/MathHelper.java b/src/main/java/net/minecraft/server/MathHelper.java
-index 1731a1bca5ad02fd8cd8701f49c10cb74ee6f503..2e7721a650c5a351b3584665bd236f92ef577761 100644
---- a/src/main/java/net/minecraft/server/MathHelper.java
-+++ b/src/main/java/net/minecraft/server/MathHelper.java
-@@ -7,7 +7,7 @@ import java.util.function.IntPredicate;
- public class MathHelper {
- 
-     public static final float a = c(2.0F);
--    private static final float[] b = (float[]) SystemUtils.a((Object) (new float[65536]), (afloat) -> {
-+    private static final float[] b = (float[]) SystemUtils.a((new float[65536]), (afloat) -> { // Paper - decompile error
-         for (int i = 0; i < afloat.length; ++i) {
-             afloat[i] = (float) Math.sin((double) i * 3.141592653589793D * 2.0D / 65536.0D);
-         }
-@@ -47,6 +47,7 @@ public class MathHelper {
-         return d0 < (double) i ? i - 1 : i;
-     }
- 
-+    public static long floorLong(double d0) { return d(d0); } // Paper - OBFHELPER
-     public static long d(double d0) {
-         long i = (long) d0;
- 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutEntity.java b/src/main/java/net/minecraft/server/PacketPlayOutEntity.java
-index e5da2b19c1177ba7f88f0aaad9d810bb313ce67b..8e48407fd405ac4c3eece7762b8155c5d0f00fa0 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutEntity.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutEntity.java
-@@ -15,11 +15,11 @@ public class PacketPlayOutEntity implements Packet<PacketListenerPlayOut> {
-     protected boolean i;
- 
-     public static long a(double d0) {
--        return MathHelper.d(d0 * 4096.0D);
-+        return MathHelper.d(d0 * 4096.0D); // Paper - check EntityItem#setPositionRaw on update
-     }
- 
-     public static Vec3D a(long i, long j, long k) {
--        return (new Vec3D((double) i, (double) j, (double) k)).a(2.44140625E-4D);
-+        return (new Vec3D((double) i, (double) j, (double) k)).a(2.44140625E-4D); // Paper - check EntityItem#setPositionRaw on update
-     }
- 
-     public PacketPlayOutEntity() {}

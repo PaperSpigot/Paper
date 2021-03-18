@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Fri, 10 Jul 2020 12:38:12 -0500
+Subject: [PATCH] Fix SPIGOT-5885 Unable to disable advancements
+
+
+diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
+index 6a15a5f7d3e82f61c0f30bb6a339215376d4867d..f34d5b214c4726f3b3b96610c1dca3d0d17a09ab 100644
+--- a/src/main/java/net/minecraft/server/Main.java
++++ b/src/main/java/net/minecraft/server/Main.java
+@@ -132,6 +132,7 @@ public class Main {
+                 return;
+             }
+ 
++            org.spigotmc.SpigotConfig.disabledAdvancements = spigotConfiguration.getStringList("advancements.disabled"); // Paper - fix SPIGOT-5885, must be set early in init
+             // Paper start - fix SPIGOT-5824
+             File file;
+             File userCacheFile = new File("usercache.json");

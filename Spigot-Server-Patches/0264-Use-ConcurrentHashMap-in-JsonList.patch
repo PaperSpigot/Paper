@@ -24,10 +24,10 @@ The point of this is readability, but does have a side-benefit of a small microp
 
 Finally, added a couple obfhelpers for the modified code
 
-diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java
-index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b47e8530c5 100644
---- a/src/main/java/net/minecraft/server/JsonList.java
-+++ b/src/main/java/net/minecraft/server/JsonList.java
+diff --git a/src/main/java/net/minecraft/server/players/JsonList.java b/src/main/java/net/minecraft/server/players/JsonList.java
+index 52256f72b00d3b868ef1a60e15a3836197c769d9..cd35b833d3047a38be980ee550641e87bd3b9b01 100644
+--- a/src/main/java/net/minecraft/server/players/JsonList.java
++++ b/src/main/java/net/minecraft/server/players/JsonList.java
 @@ -12,6 +12,8 @@ import java.io.BufferedReader;
  import java.io.BufferedWriter;
  import java.io.File;
@@ -37,7 +37,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
  import java.nio.charset.StandardCharsets;
  import java.util.Collection;
  import java.util.Iterator;
-@@ -26,7 +28,22 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -28,7 +30,22 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
      protected static final Logger LOGGER = LogManager.getLogger();
      private static final Gson b = (new GsonBuilder()).setPrettyPrinting().create();
      private final File c;
@@ -61,7 +61,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
  
      public JsonList(File file) {
          this.c = file;
-@@ -49,8 +66,13 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -51,8 +68,13 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
  
      @Nullable
      public V get(K k0) {
@@ -77,7 +77,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
      }
  
      public void remove(K k0) {
-@@ -79,9 +101,11 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -81,9 +103,11 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
      // CraftBukkit end
  
      public boolean isEmpty() {
@@ -90,7 +90,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
      protected String a(K k0) {
          return k0.toString();
      }
-@@ -90,8 +114,9 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -92,8 +116,9 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
          return this.d.containsKey(this.a(k0));
      }
  
@@ -101,7 +101,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
          Iterator iterator = this.d.values().iterator();
  
          while (iterator.hasNext()) {
-@@ -108,8 +133,10 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -110,8 +135,10 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
              K k0 = (K) iterator.next(); // CraftBukkit - decompile error
  
              this.d.remove(this.a(k0));
@@ -113,7 +113,7 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
      }
  
      protected abstract JsonListEntry<K> a(JsonObject jsonobject);
-@@ -119,6 +146,7 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+@@ -121,6 +148,7 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
      }
  
      public void save() throws IOException {
@@ -121,11 +121,11 @@ index da21918ce0339a0eb8f65ce7791a04ceb12749b7..1fc0139cb9694ddea41f57d95774c3b4
          JsonArray jsonarray = new JsonArray();
  
          this.d.values().stream().map((jsonlistentry) -> {
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index ec175cd90491c3473543daa0b565fdc453888a34..79f6984a8e5bb73daeae1725a11840556c398de2 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -542,7 +542,7 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 349bd74e7e4d1dea9587e55cb6afc1968628ca01..3aaa6313a33865b9823aa38e5d0cce7edce04592 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -618,7 +618,7 @@ public abstract class PlayerList {
          } else if (!this.isWhitelisted(gameprofile, event)) { // Paper
              //chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted"); // Paper
              //event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot // Paper - moved to isWhitelisted

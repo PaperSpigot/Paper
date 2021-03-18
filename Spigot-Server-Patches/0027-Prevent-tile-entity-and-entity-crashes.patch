@@ -4,29 +4,11 @@ Date: Tue, 1 Mar 2016 23:52:34 -0600
 Subject: [PATCH] Prevent tile entity and entity crashes
 
 
-diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
-index c8aa347baf100b25694ed9172590b073db810fe9..5414858ba241c13d4e568191d11111d3d3ec3fc4 100644
---- a/src/main/java/net/minecraft/server/TileEntity.java
-+++ b/src/main/java/net/minecraft/server/TileEntity.java
-@@ -197,7 +197,12 @@ public abstract class TileEntity implements KeyedObject { // Paper
-             return IRegistry.BLOCK_ENTITY_TYPE.getKey(this.getTileType()) + " // " + this.getClass().getCanonicalName();
-         });
-         if (this.world != null) {
--            CrashReportSystemDetails.a(crashreportsystemdetails, this.position, this.getBlock());
-+            // Paper start - Prevent TileEntity and Entity crashes
-+            IBlockData block = this.getBlock();
-+            if (block != null) {
-+                CrashReportSystemDetails.a(crashreportsystemdetails, this.position, block);
-+            }
-+            // Paper end
-             CrashReportSystemDetails.a(crashreportsystemdetails, this.position, this.world.getType(this.position));
-         }
-     }
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0f602de85bc7002150247b6cb26c6905f0e4f585..bc1946ea3060220f4598aae2e1aed3d84ab18387 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -685,11 +685,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 62735e7908f86e31f7a89ce2071ddebe176c0385..87e37c38825ad20fc11f41ea2a4512753266d2b4 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -737,11 +737,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
  
                          gameprofilerfiller.exit();
                      } catch (Throwable throwable) {
@@ -45,7 +27,7 @@ index 0f602de85bc7002150247b6cb26c6905f0e4f585..bc1946ea3060220f4598aae2e1aed3d8
                          // Spigot start
                      } finally {
                          tileentity.tickTimer.stopTiming();
-@@ -754,11 +756,12 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -806,11 +808,12 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          try {
              consumer.accept(entity);
          } catch (Throwable throwable) {
@@ -63,3 +45,21 @@ index 0f602de85bc7002150247b6cb26c6905f0e4f585..bc1946ea3060220f4598aae2e1aed3d8
          }
      }
  
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index 9ebd91e1309938f81583eb3d4dd97fd39bcc930a..58789a6e285c31947508deae37caefe7e182278c 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -208,7 +208,12 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
+             return IRegistry.BLOCK_ENTITY_TYPE.getKey(this.getTileType()) + " // " + this.getClass().getCanonicalName();
+         });
+         if (this.world != null) {
+-            CrashReportSystemDetails.a(crashreportsystemdetails, this.position, this.getBlock());
++            // Paper start - Prevent TileEntity and Entity crashes
++            IBlockData block = this.getBlock();
++            if (block != null) {
++                CrashReportSystemDetails.a(crashreportsystemdetails, this.position, block);
++            }
++            // Paper end
+             CrashReportSystemDetails.a(crashreportsystemdetails, this.position, this.world.getType(this.position));
+         }
+     }

@@ -5,11 +5,11 @@ Subject: [PATCH] Don't nest if we don't need to when cerealising text
  components
 
 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutChat.java b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-index 47328ca5e3f1e71ed25ba89df5b666f041e49b76..b9cb21c5eb6f4a0318c3c63ec66f88b1750782ac 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-@@ -35,7 +35,14 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+index bc7de641a37b2f4c8fe7ed8272c55a30ac4bc313..c47427fd2eed173726cb856aae62c02a2b46bbf0 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutChat.java
+@@ -39,7 +39,14 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
          // Paper end
          // Spigot start
          if (components != null) {

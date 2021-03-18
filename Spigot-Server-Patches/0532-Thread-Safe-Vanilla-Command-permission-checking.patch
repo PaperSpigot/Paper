@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 11 Jul 2020 03:54:28 -0400
+Subject: [PATCH] Thread Safe Vanilla Command permission checking
+
+Datapacks check this on load and are built concurrently. This was breaking them badly due
+to race conditions.
+
+Plus, .canUse we want to be safe for async anyways.
+
+diff --git a/src/main/java/com/mojang/brigadier/tree/CommandNode.java b/src/main/java/com/mojang/brigadier/tree/CommandNode.java
+index 7ef6c99d2235eed38197aa76bc9553d7efbe52a4..c0fac7369b111e65b896a15848ae22457e5e8914 100644
+--- a/src/main/java/com/mojang/brigadier/tree/CommandNode.java
++++ b/src/main/java/com/mojang/brigadier/tree/CommandNode.java
+@@ -75,10 +75,10 @@ public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
+     public synchronized boolean canUse(final S source) {
+         if (source instanceof CommandListenerWrapper) {
+             try {
+-                ((CommandListenerWrapper) source).currentCommand = this;
++                ((CommandListenerWrapper) source).currentCommand.set(this); // Paper
+                 return requirement.test(source);
+             } finally {
+-                ((CommandListenerWrapper) source).currentCommand = null;
++                ((CommandListenerWrapper) source).currentCommand.set(null); // Paper
+             }
+         }
+         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/commands/CommandListenerWrapper.java b/src/main/java/net/minecraft/commands/CommandListenerWrapper.java
+index b5ee789c8dfb7f413ab60902ff3d2ef0cf8273cd..8402af32cc476d7f468842eb4f34c7521d72bcc8 100644
+--- a/src/main/java/net/minecraft/commands/CommandListenerWrapper.java
++++ b/src/main/java/net/minecraft/commands/CommandListenerWrapper.java
+@@ -55,7 +55,7 @@ public class CommandListenerWrapper implements ICompletionProvider, com.destroys
+     private final ResultConsumer<CommandListenerWrapper> l;
+     private final ArgumentAnchor.Anchor m;
+     private final Vec2F n;
+-    public volatile CommandNode currentCommand; // CraftBukkit
++    public ThreadLocal<CommandNode> currentCommand = new ThreadLocal<>(); // CraftBukkit // Paper
+ 
+     public CommandListenerWrapper(ICommandListener icommandlistener, Vec3D vec3d, Vec2F vec2f, WorldServer worldserver, int i, String s, IChatBaseComponent ichatbasecomponent, MinecraftServer minecraftserver, @Nullable Entity entity) {
+         this(icommandlistener, vec3d, vec2f, worldserver, i, s, ichatbasecomponent, minecraftserver, entity, false, (commandcontext, flag, j) -> {
+@@ -172,9 +172,11 @@ public class CommandListenerWrapper implements ICompletionProvider, com.destroys
+     @Override
+     public boolean hasPermission(int i) {
+         // CraftBukkit start
+-        CommandNode currentCommand = this.currentCommand;
++        // Paper start - fix concurrency issue
++        CommandNode currentCommand = this.currentCommand.get();
+         if (currentCommand != null) {
+             return hasPermission(i, org.bukkit.craftbukkit.command.VanillaCommandWrapper.getPermission(currentCommand));
++            // Paper end
+         }
+         // CraftBukkit end
+ 

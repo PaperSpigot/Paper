@@ -5,11 +5,11 @@ Subject: [PATCH] Make ProjectileHitEvent Cancellable
 
 Allows cancelling things like detonating TNT from Fire Arrows
 
-diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
-index 74ca38f8e4e1addc243c3f3b57021d26f0ce3c97..0840fdf3585407ec317f0326359619220c64db78 100644
---- a/src/main/java/net/minecraft/server/EntityFireball.java
-+++ b/src/main/java/net/minecraft/server/EntityFireball.java
-@@ -71,7 +71,7 @@ public abstract class EntityFireball extends IProjectile {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+index ede7b4dbf2dce7bac83c5e17eecfdaf0e8a84fe7..b9680f6f2e30ec9397d6a9c83e79563d9253aff6 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+@@ -87,7 +87,7 @@ public abstract class EntityFireball extends IProjectile {
  
                  // CraftBukkit start - Fire ProjectileHitEvent
                  if (this.dead) {
@@ -18,11 +18,11 @@ index 74ca38f8e4e1addc243c3f3b57021d26f0ce3c97..0840fdf3585407ec317f032635961922
                  }
                  // CraftBukkit end
              }
-diff --git a/src/main/java/net/minecraft/server/IProjectile.java b/src/main/java/net/minecraft/server/IProjectile.java
-index 9f5ce64a60fe7c312399ee416b11b84213dd3bee..bbc089b41fcbe0141f13591db2cb44b9e688cac4 100644
---- a/src/main/java/net/minecraft/server/IProjectile.java
-+++ b/src/main/java/net/minecraft/server/IProjectile.java
-@@ -118,7 +118,7 @@ public abstract class IProjectile extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java b/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
+index 37b1febb45b900dfe4b225152e66bc4be83df220..9f2e7d345d98f50e6d47cbf4bb35714852fa42da 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
+@@ -130,7 +130,7 @@ public abstract class IProjectile extends Entity {
      }
  
      protected void a(MovingObjectPosition movingobjectposition) {
@@ -32,10 +32,10 @@ index 9f5ce64a60fe7c312399ee416b11b84213dd3bee..bbc089b41fcbe0141f13591db2cb44b9
  
          if (movingobjectposition_enummovingobjecttype == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 8bbce9b07afb0ba327b399bf8c13b64d6d3c6e16..579e1b3cde06a1138d90cda61a2bcf87aed3be98 100644
+index 40c56301f497f66f8e8f6c737a5c5c8a26d372df..acb65ec8bd09b642c79bb8304bd82fb22a48608b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1296,9 +1296,9 @@ public class CraftEventFactory {
+@@ -1298,9 +1298,9 @@ public class CraftEventFactory {
          return event;
      }
  
@@ -47,7 +47,7 @@ index 8bbce9b07afb0ba327b399bf8c13b64d6d3c6e16..579e1b3cde06a1138d90cda61a2bcf87
          }
  
          Block hitBlock = null;
-@@ -1315,7 +1315,7 @@ public class CraftEventFactory {
+@@ -1317,7 +1317,7 @@ public class CraftEventFactory {
          }
  
          ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity(), hitEntity, hitBlock, hitFace);

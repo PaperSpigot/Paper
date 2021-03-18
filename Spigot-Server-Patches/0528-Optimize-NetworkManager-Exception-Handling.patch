@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andrew Steinborn <git@steinborn.me>
+Date: Sun, 5 Jul 2020 22:38:18 -0400
+Subject: [PATCH] Optimize NetworkManager Exception Handling
+
+
+diff --git a/src/main/java/net/minecraft/network/EnumProtocol.java b/src/main/java/net/minecraft/network/EnumProtocol.java
+index a892521db1197369bf6363bd2f5da24bf53643ab..46d8471ba98a5f2c659d35dd86c4c20c67f1ceac 100644
+--- a/src/main/java/net/minecraft/network/EnumProtocol.java
++++ b/src/main/java/net/minecraft/network/EnumProtocol.java
+@@ -286,6 +286,7 @@ public enum EnumProtocol {
+ 
+         @Nullable
+         public Packet<?> a(int i) {
++            if (i < 0 || i >= this.b.size()) return null; // Paper
+             Supplier<? extends Packet<T>> supplier = (Supplier) this.b.get(i);
+ 
+             return supplier != null ? (Packet) supplier.get() : null;
+diff --git a/src/main/java/net/minecraft/network/PacketSplitter.java b/src/main/java/net/minecraft/network/PacketSplitter.java
+index 2c7de7ab6da2106394ec668cd7cb9be1f8dabeb3..e81bfd35b9a745eeb1457ceda5fda320654bd89a 100644
+--- a/src/main/java/net/minecraft/network/PacketSplitter.java
++++ b/src/main/java/net/minecraft/network/PacketSplitter.java
+@@ -9,11 +9,21 @@ import java.util.List;
+ 
+ public class PacketSplitter extends ByteToMessageDecoder {
+ 
++    private final byte[] lenBuf = new byte[3]; // Paper
+     public PacketSplitter() {}
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
++        // Paper start - if channel is not active just discard the packet
++        if (!channelhandlercontext.channel().isActive()) {
++            bytebuf.skipBytes(bytebuf.readableBytes());
++            return;
++        }
++        // Paper end
+         bytebuf.markReaderIndex();
+-        byte[] abyte = new byte[3];
++        // Paper start - reuse temporary length buffer
++        byte[] abyte = lenBuf;
++        java.util.Arrays.fill(abyte, (byte) 0);
++        // Paper end
+ 
+         for (int i = 0; i < abyte.length; ++i) {
+             if (!bytebuf.isReadable()) {
+diff --git a/src/main/java/net/minecraft/network/protocol/Packet.java b/src/main/java/net/minecraft/network/protocol/Packet.java
+index b644c91cecd8a347319dfe8c8923fd05919a9795..4c583593de4dc8ab27b3e1187f4dfe1740ef07a7 100644
+--- a/src/main/java/net/minecraft/network/protocol/Packet.java
++++ b/src/main/java/net/minecraft/network/protocol/Packet.java
+@@ -2,8 +2,10 @@ package net.minecraft.network.protocol;
+ 
+ import io.netty.channel.ChannelFuture; // Paper
+ import java.io.IOException;
++import net.minecraft.network.NetworkManager;
+ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.PacketListener;
++import net.minecraft.server.level.EntityPlayer;
+ 
+ public interface Packet<T extends PacketListener> {
+ 
+diff --git a/src/main/java/net/minecraft/network/protocol/PlayerConnectionUtils.java b/src/main/java/net/minecraft/network/protocol/PlayerConnectionUtils.java
+index e47da20ab8ce4da34755e105bf55d8542fb50138..67d8fe8ad036a9252c774bb6a914c8ec79981876 100644
+--- a/src/main/java/net/minecraft/network/protocol/PlayerConnectionUtils.java
++++ b/src/main/java/net/minecraft/network/protocol/PlayerConnectionUtils.java
+@@ -1,6 +1,9 @@
+ package net.minecraft.network.protocol;
+ 
++import net.minecraft.network.NetworkManager;
+ import net.minecraft.network.PacketListener;
++import net.minecraft.network.chat.ChatComponentText;
++import net.minecraft.network.protocol.game.PacketPlayOutKickDisconnect;
+ import net.minecraft.server.CancelledPacketHandleException;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.util.thread.IAsyncTaskHandler;
+@@ -31,6 +34,21 @@ public class PlayerConnectionUtils {
+                     try (Timing ignored = timing.startTiming()) { // Paper - timings
+                     packet.a(t0);
+                     } // Paper - timings
++                    // Paper start
++                    catch (Exception e) {
++                        NetworkManager networkmanager = t0.a();
++                        if (networkmanager.getPlayer() != null) {
++                            LOGGER.error("Error whilst processing packet {} for {}[{}]", packet, networkmanager.getPlayer().getName(), networkmanager.getSocketAddress(), e);
++                        } else {
++                            LOGGER.error("Error whilst processing packet {} for connection from {}", packet, networkmanager.getSocketAddress(), e);
++                        }
++                        ChatComponentText error = new ChatComponentText("Packet processing error");
++                        networkmanager.sendPacket(new PacketPlayOutKickDisconnect(error), (future) -> {
++                            networkmanager.close(error);
++                        });
++                        networkmanager.stopReading();
++                    }
++                    // Paper end
+                 } else {
+                     PlayerConnectionUtils.LOGGER.debug("Ignoring packet due to disconnection: " + packet);
+                 }

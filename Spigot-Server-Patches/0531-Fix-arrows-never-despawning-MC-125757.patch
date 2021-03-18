@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Wed, 8 Jul 2020 11:24:30 -0500
+Subject: [PATCH] Fix arrows never despawning MC-125757
+
+This forces the despawn counter to start ticking regardless of
+state after the arrow has been alive for 200 ticks (10 seconds)
+instead of getting stuck in a never despawn state (bubble columns,
+etc).
+
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+index 4cd1ddec701252269de0ce8520ee492f1e1cbacb..2f8b3587f527620152609d5be342b328a7621e0f 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+@@ -171,6 +171,7 @@ public abstract class EntityArrow extends IProjectile {
+ 
+             ++this.c;
+         } else {
++            if (ticksLived > 200) this.tickDespawnCounter(); // Paper - tick despawnCounter regardless after 10 seconds
+             this.c = 0;
+             Vec3D vec3d2 = this.getPositionVector();
+ 
+@@ -292,6 +293,7 @@ public abstract class EntityArrow extends IProjectile {
+ 
+     }
+ 
++    protected final void tickDespawnCounter() { this.h(); } // Paper - OBFHELPER
+     protected void h() {
+         ++this.despawnCounter;
+         if (this.despawnCounter >= (fromPlayer == PickupStatus.CREATIVE_ONLY ? world.paperConfig.creativeArrowDespawnRate : (fromPlayer == PickupStatus.DISALLOWED ? world.paperConfig.nonPlayerArrowDespawnRate : ((this instanceof EntityThrownTrident) ? world.spigotConfig.tridentDespawnRate : world.spigotConfig.arrowDespawnRate)))) { // Spigot // Paper - TODO: Extract this to init?

@@ -4,11 +4,11 @@ Date: Sun, 7 May 2017 06:26:09 -0500
 Subject: [PATCH] PlayerPickupItemEvent#setFlyAtPlayer
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 9b400c1f4ea807149862d30154df9b30895176da..051c97374fdbd6ff6d4eb58a3b6630ece8469967 100644
---- a/src/main/java/net/minecraft/server/EntityItem.java
-+++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -337,6 +337,7 @@ public class EntityItem extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityItem.java b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+index c486c07a358c0b444e1a1372b6d0fa2901840eac..3b72032f6f4f4bd64d1202658cc0c6ee4fb76ea9 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityItem.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+@@ -363,6 +363,7 @@ public class EntityItem extends Entity {
              // CraftBukkit start - fire PlayerPickupItemEvent
              int canHold = entityhuman.inventory.canHold(itemstack);
              int remaining = i - canHold;
@@ -16,7 +16,7 @@ index 9b400c1f4ea807149862d30154df9b30895176da..051c97374fdbd6ff6d4eb58a3b6630ec
  
              if (this.pickupDelay <= 0 && canHold > 0) {
                  itemstack.setCount(canHold);
-@@ -344,8 +345,14 @@ public class EntityItem extends Entity {
+@@ -370,8 +371,14 @@ public class EntityItem extends Entity {
                  PlayerPickupItemEvent playerEvent = new PlayerPickupItemEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
                  playerEvent.setCancelled(!entityhuman.canPickUpLoot);
                  this.world.getServer().getPluginManager().callEvent(playerEvent);
@@ -31,7 +31,7 @@ index 9b400c1f4ea807149862d30154df9b30895176da..051c97374fdbd6ff6d4eb58a3b6630ec
                      return;
                  }
  
-@@ -375,7 +382,11 @@ public class EntityItem extends Entity {
+@@ -401,7 +408,11 @@ public class EntityItem extends Entity {
              // CraftBukkit end
  
              if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(entityhuman.getUniqueID())) && entityhuman.inventory.pickup(itemstack)) {

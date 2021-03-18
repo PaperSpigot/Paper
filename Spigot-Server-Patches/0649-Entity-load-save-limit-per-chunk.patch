@@ -9,17 +9,17 @@ defaults are only included for certain entites, this allows setting
 limits for any entity type.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index c5495e02c3fe271b26f62ea2ec64e07957edf37e..234d2daecc5d0bf6a99c0a5f4a87f947a15029d9 100644
+index 946c12abc0e25ccfe09ee64a7ac8b045ba5c46a9..bda4eeb032bea452ea368c679f96b2bd93118730 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -11,6 +11,7 @@ import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.Engin
- import net.minecraft.server.EntityVindicator;
- import net.minecraft.server.EntityZombie;
- import net.minecraft.server.EnumDifficulty;
-+import net.minecraft.server.EntityTypes;
+@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
+ 
+ import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
+ import net.minecraft.world.EnumDifficulty;
++import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.entity.monster.EntityVindicator;
+ import net.minecraft.world.entity.monster.EntityZombie;
  import org.bukkit.Bukkit;
- import org.bukkit.Material;
- import org.bukkit.configuration.ConfigurationSection;
 @@ -761,4 +762,18 @@ public class PaperWorldConfig {
              EnumDifficulty.class
          );
@@ -39,11 +39,11 @@ index c5495e02c3fe271b26f62ea2ec64e07957edf37e..234d2daecc5d0bf6a99c0a5f4a87f947
 +        });
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index 8e7da2c5f3852920ec5fbcdd2bff4d299e6aa499..f51bf71c8d6eef3c054ac64765709794fcfad5ee 100644
---- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-+++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-@@ -495,11 +495,22 @@ public class ChunkRegionLoader {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+index 2e5221bc1b9e260e33f2cef2653dc59d05e2680d..4eaf497d048324a85ce49fc1c6e9559991c20df7 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+@@ -539,11 +539,22 @@ public class ChunkRegionLoader {
  
              chunk.d(false);
  
@@ -66,7 +66,7 @@ index 8e7da2c5f3852920ec5fbcdd2bff4d299e6aa499..f51bf71c8d6eef3c054ac64765709794
                      NBTTagCompound nbttagcompound4 = new NBTTagCompound();
                      // Paper start
                      if (asyncsavedata == null && !entity.dead && (int) Math.floor(entity.locX()) >> 4 != chunk.getPos().x || (int) Math.floor(entity.locZ()) >> 4 != chunk.getPos().z) {
-@@ -630,10 +641,21 @@ public class ChunkRegionLoader {
+@@ -674,10 +685,21 @@ public class ChunkRegionLoader {
          NBTTagList nbttaglist = nbttagcompound.getList("Entities", 10);
          World world = chunk.getWorld();
  

@@ -4,18 +4,18 @@ Date: Wed, 25 Nov 2020 23:20:44 -0800
 Subject: [PATCH] Implement TargetHitEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockTarget.java b/src/main/java/net/minecraft/server/BlockTarget.java
-index 23b298577d8a60ca241abc228732f66ebbe7a7b1..642d7c14bc404d94c8a4f551b984fe235a3816eb 100644
---- a/src/main/java/net/minecraft/server/BlockTarget.java
-+++ b/src/main/java/net/minecraft/server/BlockTarget.java
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockTarget.java b/src/main/java/net/minecraft/world/level/block/BlockTarget.java
+index c336490815dc17991d3d84d8c6f0fc58571a3e3a..a9316ce8eb3d8a645f4c0e41ac668a90f584c263 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockTarget.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockTarget.java
 @@ -1,5 +1,6 @@
- package net.minecraft.server;
+ package net.minecraft.world.level.block;
  
 +import io.papermc.paper.event.block.TargetHitEvent; // Paper - Need to import because 'io' class exists in nms
  import java.util.Random;
- 
- public class BlockTarget extends Block {
-@@ -14,6 +15,10 @@ public class BlockTarget extends Block {
+ import net.minecraft.advancements.CriterionTriggers;
+ import net.minecraft.core.BlockPosition;
+@@ -34,6 +35,10 @@ public class BlockTarget extends Block {
      @Override
      public void a(World world, IBlockData iblockdata, MovingObjectPositionBlock movingobjectpositionblock, IProjectile iprojectile) {
          int i = a((GeneratorAccess) world, iblockdata, movingobjectpositionblock, (Entity) iprojectile);
@@ -26,7 +26,7 @@ index 23b298577d8a60ca241abc228732f66ebbe7a7b1..642d7c14bc404d94c8a4f551b984fe23
          Entity entity = iprojectile.getShooter();
  
          if (entity instanceof EntityPlayer) {
-@@ -29,6 +34,20 @@ public class BlockTarget extends Block {
+@@ -49,6 +54,20 @@ public class BlockTarget extends Block {
          int i = a(movingobjectpositionblock, movingobjectpositionblock.getPos());
          int j = entity instanceof EntityArrow ? 20 : 8;
  

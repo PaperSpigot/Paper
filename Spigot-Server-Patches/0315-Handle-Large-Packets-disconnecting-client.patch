@@ -6,10 +6,10 @@ Subject: [PATCH] Handle Large Packets disconnecting client
 If a players inventory is too big to send in a single packet,
 split the inventory set into multiple packets instead.
 
-diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 3351389dc122b66c198fb21ff02976491e9b46d9..c90c616860b5157956250e4fe21e1764dd04881c 100644
---- a/src/main/java/net/minecraft/server/NetworkManager.java
-+++ b/src/main/java/net/minecraft/server/NetworkManager.java
+diff --git a/src/main/java/net/minecraft/network/NetworkManager.java b/src/main/java/net/minecraft/network/NetworkManager.java
+index 297820baef99e97e1216a64c527219e9ccc3e320..dc788d75a6a34fbbae990609bfbbd13ca6cdee5a 100644
+--- a/src/main/java/net/minecraft/network/NetworkManager.java
++++ b/src/main/java/net/minecraft/network/NetworkManager.java
 @@ -12,6 +12,7 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
  import io.netty.channel.local.LocalChannel;
  import io.netty.channel.local.LocalServerChannel;
@@ -18,7 +18,7 @@ index 3351389dc122b66c198fb21ff02976491e9b46d9..c90c616860b5157956250e4fe21e1764
  import io.netty.handler.timeout.TimeoutException;
  import io.netty.util.AttributeKey;
  import io.netty.util.concurrent.Future;
-@@ -97,6 +98,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -107,6 +108,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      }
  
      public void exceptionCaught(ChannelHandlerContext channelhandlercontext, Throwable throwable) {
@@ -34,28 +34,11 @@ index 3351389dc122b66c198fb21ff02976491e9b46d9..c90c616860b5157956250e4fe21e1764
          if (throwable instanceof SkipEncodeException) {
              NetworkManager.LOGGER.debug("Skipping packet due to errors", throwable.getCause());
          } else {
-diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index 601d4d0fa2a0b3e90f81aed55a2d3473c66c7875..2d8e6a2f4a0c3c5d74a647d7164b0028781d3bf5 100644
---- a/src/main/java/net/minecraft/server/Packet.java
-+++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -10,6 +10,12 @@ public interface Packet<T extends PacketListener> {
- 
-     void a(T t0);
- 
-+    // Paper start
-+    default boolean packetTooLarge(NetworkManager manager) {
-+        return false;
-+    }
-+    // Paper end
-+
-     default boolean a() {
-         return false;
-     }
-diff --git a/src/main/java/net/minecraft/server/PacketEncoder.java b/src/main/java/net/minecraft/server/PacketEncoder.java
-index d3c6bdbefb89b3e668477e0d771015e9b25c24a8..dbf85f49703f9599f6d6b441db566dd8f6d3cd4b 100644
---- a/src/main/java/net/minecraft/server/PacketEncoder.java
-+++ b/src/main/java/net/minecraft/server/PacketEncoder.java
-@@ -51,7 +51,31 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
+diff --git a/src/main/java/net/minecraft/network/PacketEncoder.java b/src/main/java/net/minecraft/network/PacketEncoder.java
+index 2f6da89d6b25ba5144ec15b1bf0e8ed13278e85e..037d989522d24a55eced1c462d40a6dc2a7ecfce 100644
+--- a/src/main/java/net/minecraft/network/PacketEncoder.java
++++ b/src/main/java/net/minecraft/network/PacketEncoder.java
+@@ -53,7 +53,31 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
                          throw throwable;
                      }
                  }
@@ -87,11 +70,28 @@ index d3c6bdbefb89b3e668477e0d771015e9b25c24a8..dbf85f49703f9599f6d6b441db566dd8
 +    }
 +    // Paper end
  }
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-index 0ef4fbb19fc816f578ad741c4406790f4185093d..34e92e544f37167317d58af4242acde49e588673 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-@@ -79,7 +79,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+diff --git a/src/main/java/net/minecraft/network/protocol/Packet.java b/src/main/java/net/minecraft/network/protocol/Packet.java
+index cd4493a023748264748d4e892815f14d8a7bd7f6..0783b0777c8d7788bbf6780b464b709bf6dc2191 100644
+--- a/src/main/java/net/minecraft/network/protocol/Packet.java
++++ b/src/main/java/net/minecraft/network/protocol/Packet.java
+@@ -12,6 +12,12 @@ public interface Packet<T extends PacketListener> {
+ 
+     void a(T t0);
+ 
++    // Paper start
++    default boolean packetTooLarge(NetworkManager manager) {
++        return false;
++    }
++    // Paper end
++
+     default boolean a() {
+         return false;
+     }
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
+index 152118729b1a95dcae05d32aa4289034ba394226..0059ede4ba3ff271d47dd38ea87fddc2399aa008 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
+@@ -91,7 +91,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
  
          int i = packetdataserializer.i();
  
@@ -100,11 +100,19 @@ index 0ef4fbb19fc816f578ad741c4406790f4185093d..34e92e544f37167317d58af4242acde4
              throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
          } else {
              this.f = new byte[i];
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutWindowItems.java b/src/main/java/net/minecraft/server/PacketPlayOutWindowItems.java
-index e32db2baf84dcb192800e6048cadf3511da28181..6fb3168fd6de0074b1b378e992e4706c50ae15ab 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutWindowItems.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutWindowItems.java
-@@ -9,6 +9,15 @@ public class PacketPlayOutWindowItems implements Packet<PacketListenerPlayOut> {
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutWindowItems.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutWindowItems.java
+index b90e35a0099a2482f8fc2998bd079fc2fe6439e6..e540f95a370c627d3d81e0d3670049d01923559d 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutWindowItems.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutWindowItems.java
+@@ -4,6 +4,7 @@ import java.io.IOException;
+ import java.util.Iterator;
+ import java.util.List;
+ import net.minecraft.core.NonNullList;
++import net.minecraft.network.NetworkManager;
+ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.world.item.ItemStack;
+@@ -13,6 +14,15 @@ public class PacketPlayOutWindowItems implements Packet<PacketListenerPlayOut> {
      private int a;
      private List<ItemStack> b;
  

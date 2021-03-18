@@ -18,44 +18,11 @@ index 6aec502eb529d4090306e12e837117cde7e114eb..290e49cf0077909ad7ab8127c01ef93c
 +        generateFlatBedrock = getBoolean("generator-settings.flat-bedrock", false);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/ChunkGeneratorAbstract.java b/src/main/java/net/minecraft/server/ChunkGeneratorAbstract.java
-index 24befd3222e73cdd5853aac502a22387b1fdf81a..4741d28aec73ffa1d5a9f60a4086eac3375c83b1 100644
---- a/src/main/java/net/minecraft/server/ChunkGeneratorAbstract.java
-+++ b/src/main/java/net/minecraft/server/ChunkGeneratorAbstract.java
-@@ -374,8 +374,8 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
-         int i = ichunkaccess.getPos().d();
-         int j = ichunkaccess.getPos().e();
-         GeneratorSettingBase generatorsettingbase = (GeneratorSettingBase) this.h.get();
--        int k = generatorsettingbase.f();
--        int l = this.x - 1 - generatorsettingbase.e();
-+        int k = generatorsettingbase.f(); final int floorHeight = k; // Paper
-+        int l = this.x - 1 - generatorsettingbase.e(); final int roofHeight = l; // Paper
-         boolean flag = true;
-         boolean flag1 = l + 4 >= 0 && l < this.x;
-         boolean flag2 = k + 4 >= 0 && k < this.x;
-@@ -389,7 +389,7 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
- 
-                 if (flag1) {
-                     for (i1 = 0; i1 < 5; ++i1) {
--                        if (i1 <= random.nextInt(5)) {
-+                        if (i1 <= (ichunkaccess.generateFlatBedrock() ? roofHeight : random.nextInt(5))) { // Paper - Configurable flat bedrock roof
-                             ichunkaccess.setType(blockposition_mutableblockposition.d(blockposition.getX(), l - i1, blockposition.getZ()), Blocks.BEDROCK.getBlockData(), false);
-                         }
-                     }
-@@ -397,7 +397,7 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
- 
-                 if (flag2) {
-                     for (i1 = 4; i1 >= 0; --i1) {
--                        if (i1 <= random.nextInt(5)) {
-+                        if (i1 <= (ichunkaccess.generateFlatBedrock() ? floorHeight : random.nextInt(5))) { // Paper - Configurable flat bedrock floor
-                             ichunkaccess.setType(blockposition_mutableblockposition.d(blockposition.getX(), k + i1, blockposition.getZ()), Blocks.BEDROCK.getBlockData(), false);
-                         }
-                     }
-diff --git a/src/main/java/net/minecraft/server/IChunkAccess.java b/src/main/java/net/minecraft/server/IChunkAccess.java
-index 887366f4c2ab608974113e75760b58c47f2afa00..180b6b58dc5663158db84b6f1257591439b48c31 100644
---- a/src/main/java/net/minecraft/server/IChunkAccess.java
-+++ b/src/main/java/net/minecraft/server/IChunkAccess.java
-@@ -12,6 +12,18 @@ import org.apache.logging.log4j.LogManager;
+diff --git a/src/main/java/net/minecraft/world/level/chunk/IChunkAccess.java b/src/main/java/net/minecraft/world/level/chunk/IChunkAccess.java
+index e570dc58efa56bd0aa5ada5575b4054ee38d505e..cdf612d7553a8f4aaebb5e0e66bd2a47a280457a 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/IChunkAccess.java
++++ b/src/main/java/net/minecraft/world/level/chunk/IChunkAccess.java
+@@ -25,6 +25,18 @@ import org.apache.logging.log4j.LogManager;
  
  public interface IChunkAccess extends IBlockAccess, IStructureAccess {
  
@@ -74,11 +41,11 @@ index 887366f4c2ab608974113e75760b58c47f2afa00..180b6b58dc5663158db84b6f12575914
      IBlockData getType(final int x, final int y, final int z); // Paper
      @Nullable
      IBlockData setType(BlockPosition blockposition, IBlockData iblockdata, boolean flag);
-diff --git a/src/main/java/net/minecraft/server/ProtoChunk.java b/src/main/java/net/minecraft/server/ProtoChunk.java
-index 912c5187a08e972fc9455aed33278387a83f03f2..5b0cd414ca1949ab53b289f7159f18da07d21f14 100644
---- a/src/main/java/net/minecraft/server/ProtoChunk.java
-+++ b/src/main/java/net/minecraft/server/ProtoChunk.java
-@@ -46,7 +46,7 @@ public class ProtoChunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ProtoChunk.java b/src/main/java/net/minecraft/world/level/chunk/ProtoChunk.java
+index 9b308a10554b037ede0c455fbd3e906021218ddc..7bfac4e852c4a6697435647dab173913df6034e9 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ProtoChunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ProtoChunk.java
+@@ -64,7 +64,7 @@ public class ProtoChunk implements IChunkAccess {
      private long s;
      private final Map<WorldGenStage.Features, BitSet> t;
      private volatile boolean u;
@@ -87,3 +54,36 @@ index 912c5187a08e972fc9455aed33278387a83f03f2..5b0cd414ca1949ab53b289f7159f18da
  
      // Paper start - Anti-Xray - Add world
      @Deprecated public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter) { this(chunkcoordintpair, chunkconverter, null); } // Notice for updates: Please make sure this constructor isn't used anywhere
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/ChunkGeneratorAbstract.java b/src/main/java/net/minecraft/world/level/levelgen/ChunkGeneratorAbstract.java
+index b137d65953fe1e44709e9a6dab3a4533df644d06..700b32322e8d0fbb8ec2824e50a340be16b48f81 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/ChunkGeneratorAbstract.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/ChunkGeneratorAbstract.java
+@@ -408,8 +408,8 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
+         int i = ichunkaccess.getPos().d();
+         int j = ichunkaccess.getPos().e();
+         GeneratorSettingBase generatorsettingbase = (GeneratorSettingBase) this.h.get();
+-        int k = generatorsettingbase.f();
+-        int l = this.x - 1 - generatorsettingbase.e();
++        int k = generatorsettingbase.f(); final int floorHeight = k; // Paper
++        int l = this.x - 1 - generatorsettingbase.e(); final int roofHeight = l; // Paper
+         boolean flag = true;
+         boolean flag1 = l + 4 >= 0 && l < this.x;
+         boolean flag2 = k + 4 >= 0 && k < this.x;
+@@ -423,7 +423,7 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
+ 
+                 if (flag1) {
+                     for (i1 = 0; i1 < 5; ++i1) {
+-                        if (i1 <= random.nextInt(5)) {
++                        if (i1 <= (ichunkaccess.generateFlatBedrock() ? roofHeight : random.nextInt(5))) { // Paper - Configurable flat bedrock roof
+                             ichunkaccess.setType(blockposition_mutableblockposition.d(blockposition.getX(), l - i1, blockposition.getZ()), Blocks.BEDROCK.getBlockData(), false);
+                         }
+                     }
+@@ -431,7 +431,7 @@ public final class ChunkGeneratorAbstract extends ChunkGenerator {
+ 
+                 if (flag2) {
+                     for (i1 = 4; i1 >= 0; --i1) {
+-                        if (i1 <= random.nextInt(5)) {
++                        if (i1 <= (ichunkaccess.generateFlatBedrock() ? floorHeight : random.nextInt(5))) { // Paper - Configurable flat bedrock floor
+                             ichunkaccess.setType(blockposition_mutableblockposition.d(blockposition.getX(), k + i1, blockposition.getZ()), Blocks.BEDROCK.getBlockData(), false);
+                         }
+                     }

@@ -4,12 +4,19 @@ Date: Sun, 5 Jul 2020 00:33:54 -0700
 Subject: [PATCH] added PlayerNameEntityEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/ItemNameTag.java b/src/main/java/net/minecraft/server/ItemNameTag.java
-index 01163ce38602f9345f00ee0535b4e73be7c6d735..a34772e329df62d9176b0aa392197e2771c69da4 100644
---- a/src/main/java/net/minecraft/server/ItemNameTag.java
-+++ b/src/main/java/net/minecraft/server/ItemNameTag.java
-@@ -1,5 +1,10 @@
- package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/item/ItemNameTag.java b/src/main/java/net/minecraft/world/item/ItemNameTag.java
+index 140a865f4f8fb3e4f787cf8d334d20fac6cb5eef..b9b2b27e534ba87a1aae3c521f393a066a18a199 100644
+--- a/src/main/java/net/minecraft/world/item/ItemNameTag.java
++++ b/src/main/java/net/minecraft/world/item/ItemNameTag.java
+@@ -1,11 +1,17 @@
+ package net.minecraft.world.item;
+ 
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.entity.EntityInsentient;
+ import net.minecraft.world.entity.EntityLiving;
+ import net.minecraft.world.entity.player.EntityHuman;
  
 +// Paper start
 +import io.papermc.paper.adventure.PaperAdventure;
@@ -19,7 +26,7 @@ index 01163ce38602f9345f00ee0535b4e73be7c6d735..a34772e329df62d9176b0aa392197e27
  public class ItemNameTag extends Item {
  
      public ItemNameTag(Item.Info item_info) {
-@@ -10,11 +15,15 @@ public class ItemNameTag extends Item {
+@@ -16,11 +22,15 @@ public class ItemNameTag extends Item {
      public EnumInteractionResult a(ItemStack itemstack, EntityHuman entityhuman, EntityLiving entityliving, EnumHand enumhand) {
          if (itemstack.hasName() && !(entityliving instanceof EntityHuman)) {
              if (!entityhuman.world.isClientSide && entityliving.isAlive()) {

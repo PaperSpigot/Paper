@@ -5,11 +5,11 @@ Subject: [PATCH] Optimize RegistryID.c()
 
 This is a frequent hotspot for world loading/saving.
 
-diff --git a/src/main/java/net/minecraft/server/RegistryID.java b/src/main/java/net/minecraft/server/RegistryID.java
-index 5078a5ce391b445b64b2a16b123a3e3d5841619b..c35764009faeb3d2bb505b135dc542c7a580f254 100644
---- a/src/main/java/net/minecraft/server/RegistryID.java
-+++ b/src/main/java/net/minecraft/server/RegistryID.java
-@@ -14,12 +14,14 @@ public class RegistryID<K> implements Registry<K> {
+diff --git a/src/main/java/net/minecraft/util/RegistryID.java b/src/main/java/net/minecraft/util/RegistryID.java
+index 6150f7a5c5004ac79414ab22dbaa3439dc8afdb4..a59dbfa01743137702b122f73c778452e63115b5 100644
+--- a/src/main/java/net/minecraft/util/RegistryID.java
++++ b/src/main/java/net/minecraft/util/RegistryID.java
+@@ -15,12 +15,14 @@ public class RegistryID<K> implements Registry<K> {
      private K[] d;
      private int e;
      private int f;
@@ -24,7 +24,7 @@ index 5078a5ce391b445b64b2a16b123a3e3d5841619b..c35764009faeb3d2bb505b135dc542c7
      }
  
      // Paper start - decompile fix
-@@ -51,9 +53,14 @@ public class RegistryID<K> implements Registry<K> {
+@@ -52,9 +54,14 @@ public class RegistryID<K> implements Registry<K> {
      }
  
      private int c() {
@@ -39,7 +39,7 @@ index 5078a5ce391b445b64b2a16b123a3e3d5841619b..c35764009faeb3d2bb505b135dc542c7
  
          return this.e;
      }
-@@ -67,6 +74,7 @@ public class RegistryID<K> implements Registry<K> {
+@@ -68,6 +75,7 @@ public class RegistryID<K> implements Registry<K> {
          this.d = (K[]) (new Object[i]); // Paper - decompile fix
          this.e = 0;
          this.f = 0;
@@ -47,7 +47,7 @@ index 5078a5ce391b445b64b2a16b123a3e3d5841619b..c35764009faeb3d2bb505b135dc542c7
  
          for (int j = 0; j < ak.length; ++j) {
              if (ak[j] != null) {
-@@ -92,6 +100,7 @@ public class RegistryID<K> implements Registry<K> {
+@@ -93,6 +101,7 @@ public class RegistryID<K> implements Registry<K> {
          this.b[k] = k0;
          this.c[k] = i;
          this.d[i] = k0;
@@ -55,7 +55,7 @@ index 5078a5ce391b445b64b2a16b123a3e3d5841619b..c35764009faeb3d2bb505b135dc542c7
          ++this.f;
          if (i == this.e) {
              ++this.e;
-@@ -156,6 +165,7 @@ public class RegistryID<K> implements Registry<K> {
+@@ -157,6 +166,7 @@ public class RegistryID<K> implements Registry<K> {
          Arrays.fill(this.d, (Object) null);
          this.e = 0;
          this.f = 0;

@@ -6,11 +6,11 @@ Subject: [PATCH] Enforce Sync Player Saves
 Saving players async is extremely dangerous. This will force it to main
 the same way we handle async chunk loads.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 5652462008dd857f2dc36b80e3fe5d3d83867ce5..1d137602b40e467020b89aa73dd67b661d3dedb7 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -971,11 +971,13 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 95ff827b1d5704d279d258bdfb43fd33ec7a9187..d7cf89f4603779ce9a2e9a6f837a81684f209826 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1047,11 +1047,13 @@ public abstract class PlayerList {
      }
  
      public void savePlayers() {

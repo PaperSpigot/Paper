@@ -18,11 +18,11 @@ index e726b6213cf2e8f5b326f05c0438b8f1ee2b73c5..edda2121f8c1046478beaa77030ebb36
 +        entitiesTargetWithFollowRange = getBoolean("entities-target-with-follow-range", entitiesTargetWithFollowRange);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoalNearestAttackableTarget.java b/src/main/java/net/minecraft/server/PathfinderGoalNearestAttackableTarget.java
-index 25a67f91e487d80d3996cc8b2544fece55059590..c0721c7fe479c8f753b8f48197a70dcd1ecfef5f 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoalNearestAttackableTarget.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoalNearestAttackableTarget.java
-@@ -25,6 +25,7 @@ public class PathfinderGoalNearestAttackableTarget<T extends EntityLiving> exten
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/target/PathfinderGoalNearestAttackableTarget.java b/src/main/java/net/minecraft/world/entity/ai/goal/target/PathfinderGoalNearestAttackableTarget.java
+index 4f0a2cbdd6d42e3e4721345e21bf0ef33ec48e1e..44f21c3f7af17e9d39777a48c6715a22fc085da6 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/target/PathfinderGoalNearestAttackableTarget.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/target/PathfinderGoalNearestAttackableTarget.java
+@@ -32,6 +32,7 @@ public class PathfinderGoalNearestAttackableTarget<T extends EntityLiving> exten
          this.b = i;
          this.a(EnumSet.of(PathfinderGoal.Type.TARGET));
          this.d = (new PathfinderTargetCondition()).a(this.k()).a(predicate);
@@ -30,11 +30,20 @@ index 25a67f91e487d80d3996cc8b2544fece55059590..c0721c7fe479c8f753b8f48197a70dcd
      }
  
      @Override
-diff --git a/src/main/java/net/minecraft/server/PathfinderTargetCondition.java b/src/main/java/net/minecraft/server/PathfinderTargetCondition.java
-index 174464273d1069ea07f12aaea116206366bad89f..253377c6238594de1f76cafcbf8223592e4d3f6b 100644
---- a/src/main/java/net/minecraft/server/PathfinderTargetCondition.java
-+++ b/src/main/java/net/minecraft/server/PathfinderTargetCondition.java
-@@ -80,7 +80,7 @@ public class PathfinderTargetCondition {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/targeting/PathfinderTargetCondition.java b/src/main/java/net/minecraft/world/entity/ai/targeting/PathfinderTargetCondition.java
+index 0de32bcf24a94efe5af922b877d4cdc3578e0cbd..e6988f7ea428f1503e3db63876b13e57f898ee30 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/targeting/PathfinderTargetCondition.java
++++ b/src/main/java/net/minecraft/world/entity/ai/targeting/PathfinderTargetCondition.java
+@@ -4,6 +4,8 @@ import java.util.function.Predicate;
+ import javax.annotation.Nullable;
+ import net.minecraft.world.entity.EntityInsentient;
+ import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.ai.attributes.AttributeModifiable;
++import net.minecraft.world.entity.ai.attributes.GenericAttributes;
+ 
+ public class PathfinderTargetCondition {
+ 
+@@ -82,7 +84,7 @@ public class PathfinderTargetCondition {
  
                  if (this.b > 0.0D) {
                      double d0 = this.g ? entityliving1.A(entityliving) : 1.0D;
@@ -43,7 +52,7 @@ index 174464273d1069ea07f12aaea116206366bad89f..253377c6238594de1f76cafcbf822359
                      double d2 = entityliving.h(entityliving1.locX(), entityliving1.locY(), entityliving1.locZ());
  
                      if (d2 > d1 * d1) {
-@@ -96,4 +96,18 @@ public class PathfinderTargetCondition {
+@@ -98,4 +100,18 @@ public class PathfinderTargetCondition {
              return true;
          }
      }

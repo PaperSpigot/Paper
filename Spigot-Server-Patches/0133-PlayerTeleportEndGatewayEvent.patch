@@ -5,11 +5,19 @@ Subject: [PATCH] PlayerTeleportEndGatewayEvent
 
 Allows you to access the Gateway being used in a teleport event
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityEndGateway.java b/src/main/java/net/minecraft/server/TileEntityEndGateway.java
-index b168fdd4df63c90eea1be4f06fb3aa36ff62deb6..91dacc5de8d695b2ea9b2f8b4547f6dbba0451ad 100644
---- a/src/main/java/net/minecraft/server/TileEntityEndGateway.java
-+++ b/src/main/java/net/minecraft/server/TileEntityEndGateway.java
-@@ -156,7 +156,7 @@ public class TileEntityEndGateway extends TileEntityEnderPortal implements ITick
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
+index 0c5d9600eadc0a550cc2d5e7b4ee665c030faa89..2808cd0b100bd65a730aba315ab47a59a4621b30 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
+@@ -10,6 +10,7 @@ import net.minecraft.data.worldgen.BiomeDecoratorGroups;
+ import net.minecraft.nbt.GameProfileSerializer;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.protocol.game.PacketPlayOutTileEntityData;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.util.MathHelper;
+@@ -180,7 +181,7 @@ public class TileEntityEndGateway extends TileEntityEnderPortal implements ITick
                      location.setPitch(player.getLocation().getPitch());
                      location.setYaw(player.getLocation().getYaw());
  

@@ -5,11 +5,11 @@ Subject: [PATCH] Optimise getType calls
 
 Remove the map lookup for converting from Block->Bukkit Material
 
-diff --git a/src/main/java/net/minecraft/server/IBlockData.java b/src/main/java/net/minecraft/server/IBlockData.java
-index 10a5901db1e0efe0b7d6958098bb0ae492a9e76f..e7aa8aca2458a7fea7bc3bf1335b04daeaba98c2 100644
---- a/src/main/java/net/minecraft/server/IBlockData.java
-+++ b/src/main/java/net/minecraft/server/IBlockData.java
-@@ -8,6 +8,19 @@ public class IBlockData extends BlockBase.BlockData {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/IBlockData.java b/src/main/java/net/minecraft/world/level/block/state/IBlockData.java
+index 9e1ebfd7befe9e2fc3396b4dcd5e8fc7c23ee305..ed28710fefee4fad96290b2d166ac9dfe3d1fa6e 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/IBlockData.java
++++ b/src/main/java/net/minecraft/world/level/block/state/IBlockData.java
+@@ -11,6 +11,19 @@ public class IBlockData extends BlockBase.BlockData {
  
      public static final Codec<IBlockData> b = a((Codec) IRegistry.BLOCK, Block::getBlockData).stable();
  
@@ -30,7 +30,7 @@ index 10a5901db1e0efe0b7d6958098bb0ae492a9e76f..e7aa8aca2458a7fea7bc3bf1335b04da
          super(block, immutablemap, mapcodec);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunkSnapshot.java b/src/main/java/org/bukkit/craftbukkit/CraftChunkSnapshot.java
-index 6cd662c9130e6282ab520d0d471f56d9a66da5ea..0160bf9e64f0a3befe60d9945648cb4dfd297877 100644
+index aa20cecc93ac53ce7f1b956ea5065ae80b55cff5..fc65c138bab242d5b533381ea496a2a48fcd91ea 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunkSnapshot.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunkSnapshot.java
 @@ -79,7 +79,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
@@ -43,7 +43,7 @@ index 6cd662c9130e6282ab520d0d471f56d9a66da5ea..0160bf9e64f0a3befe60d9945648cb4d
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 3524b677525bf2bb529b797fe1f258efb34ac3fc..3baf7b75c65c9beba40945ba904315251b5b7a64 100644
+index c0238ba202b9f6c215788671652c768948acf753..44e1d80ec871142d3b498d3897d8ceb82452c1f2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -214,7 +214,7 @@ public class CraftBlock implements Block {
@@ -56,7 +56,7 @@ index 3524b677525bf2bb529b797fe1f258efb34ac3fc..3baf7b75c65c9beba40945ba90431525
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
-index 0f89e776816ad4ecb6c3e54c2549692f1b5b6aae..36d7de6e6540e156499edb4b69b8bbaeb0d6dc54 100644
+index b7ce677572f1f5ed01f3a8caf9368222e03bb69c..1960f01b5e4d7bff96d466e9a48f1d5300f261d1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
 @@ -135,7 +135,7 @@ public class CraftBlockState implements BlockState {
@@ -69,10 +69,10 @@ index 0f89e776816ad4ecb6c3e54c2549692f1b5b6aae..36d7de6e6540e156499edb4b69b8bbae
  
      public void setFlag(int flag) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-index 590236ccc6c15f8c4ad15913fb3ac36d28414318..5207e58670b25d60886bfd66dfb9e8acd1552f5f 100644
+index 58f892478de74b853cd35ef2fec8c462e3a9ecee..1fe9b32c2a3717652be70786090a61c5fa7430cf 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-@@ -44,7 +44,7 @@ public class CraftBlockData implements BlockData {
+@@ -45,7 +45,7 @@ public class CraftBlockData implements BlockData {
  
      @Override
      public Material getMaterial() {
@@ -82,7 +82,7 @@ index 590236ccc6c15f8c4ad15913fb3ac36d28414318..5207e58670b25d60886bfd66dfb9e8ac
  
      public IBlockData getState() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java b/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
-index 948a59217cca0f8dfa9d3befb61e679a67bf29bc..1510d80891156ba97ae59e39f928b97d0226b057 100644
+index d02281f954aac8d8b65f5d36ec70f0352e4c7cdd..2194232200e90fa894b45eb265b5ed08ce1e35a3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
 @@ -73,7 +73,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {

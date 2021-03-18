@@ -5,11 +5,11 @@ Subject: [PATCH] Guardian beam workaround
 
 This patch is a workaround for MC-165595
 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutUpdateTime.java b/src/main/java/net/minecraft/server/PacketPlayOutUpdateTime.java
-index 88c3d7efaf467c1c1487f589c2cdbfb6aba734ec..1b9b43ee696575d986c25cafec07d863acb951a7 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutUpdateTime.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutUpdateTime.java
-@@ -4,7 +4,7 @@ import java.io.IOException;
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutUpdateTime.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutUpdateTime.java
+index a69e60a8934493f6786ce3d425f6dccb6e4befdd..3086ee023685781d94e2fb99fc8dff5264f01165 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutUpdateTime.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutUpdateTime.java
+@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
  
  public class PacketPlayOutUpdateTime implements Packet<PacketListenerPlayOut> {
  
@@ -18,7 +18,7 @@ index 88c3d7efaf467c1c1487f589c2cdbfb6aba734ec..1b9b43ee696575d986c25cafec07d863
      private long b;
  
      public PacketPlayOutUpdateTime() {}
-@@ -19,6 +19,9 @@ public class PacketPlayOutUpdateTime implements Packet<PacketListenerPlayOut> {
+@@ -21,6 +21,9 @@ public class PacketPlayOutUpdateTime implements Packet<PacketListenerPlayOut> {
              }
          }
  

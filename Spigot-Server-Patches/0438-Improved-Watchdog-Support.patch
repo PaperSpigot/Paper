@@ -58,10 +58,10 @@ index 0b9e689d57705965721b5c55bc45d36657f360e4..dee00aac05f1acf050f05d4db557a08d
  
          // Many servers tend to restart at a fixed time at xx:00 which causes an uneven distribution of requests on the
          // bStats backend. To circumvent this problem, we introduce some randomness into the initial and second delay.
-diff --git a/src/main/java/net/minecraft/server/CrashReport.java b/src/main/java/net/minecraft/server/CrashReport.java
-index 95e6a6de7ccfc4445d0ac19c5f874c0d533b1712..cc6e6f245ee5e73bd570cf42381bf55ee0b364d3 100644
---- a/src/main/java/net/minecraft/server/CrashReport.java
-+++ b/src/main/java/net/minecraft/server/CrashReport.java
+diff --git a/src/main/java/net/minecraft/CrashReport.java b/src/main/java/net/minecraft/CrashReport.java
+index d0fdb9ce57b22a1f582cddec9afcc35b75d58cc6..9b7a51890c667601b195ff15b2bf0d6c76c7f19f 100644
+--- a/src/main/java/net/minecraft/CrashReport.java
++++ b/src/main/java/net/minecraft/CrashReport.java
 @@ -257,6 +257,7 @@ public class CrashReport {
      }
  
@@ -70,53 +70,23 @@ index 95e6a6de7ccfc4445d0ac19c5f874c0d533b1712..cc6e6f245ee5e73bd570cf42381bf55e
          while (throwable instanceof CompletionException && throwable.getCause() != null) {
              throwable = throwable.getCause();
          }
-diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index a4db2527ff2defcfd25f08dd24722a37794a4a7e..f5792b999ce42acb13ae9a62ceb2ddec39abe209 100644
---- a/src/main/java/net/minecraft/server/DedicatedServer.java
-+++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -240,7 +240,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-             long j = SystemUtils.getMonotonicNanos() - i;
-             String s = String.format(Locale.ROOT, "%.3fs", (double) j / 1.0E9D);
- 
--            DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s);
-+            //DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s); // Paper moved to after init
-             if (dedicatedserverproperties.announcePlayerAchievements != null) {
-                 ((GameRules.GameRuleBoolean) this.getGameRules().get(GameRules.ANNOUNCE_ADVANCEMENTS)).a(dedicatedserverproperties.announcePlayerAchievements, (MinecraftServer) this);
-             }
-@@ -368,6 +368,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-             //this.remoteStatusListener.b(); // Paper - don't wait for remote connections
-         }
- 
-+        hasFullyShutdown = true; // Paper
-         System.exit(0); // CraftBukkit
+diff --git a/src/main/java/net/minecraft/SystemUtils.java b/src/main/java/net/minecraft/SystemUtils.java
+index 397194b3e90c9df39cfae17b401c7ac891b0dbb7..61b4c42e95994343772a91640b243b8e8224e09b 100644
+--- a/src/main/java/net/minecraft/SystemUtils.java
++++ b/src/main/java/net/minecraft/SystemUtils.java
+@@ -130,6 +130,7 @@ public class SystemUtils {
+         return SystemUtils.f;
      }
  
-@@ -701,7 +702,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-     @Override
-     public void stop() {
-         super.stop();
--        SystemUtils.h();
-+        //SystemUtils.h(); // Paper - moved into super
-     }
- 
-     @Override
-diff --git a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
-index bc15da4640a4a6107c9c186a01ce76df87511b41..27db247aa40e0516302c74b9bf00c631a8607af5 100644
---- a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
-+++ b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
-@@ -135,6 +135,7 @@ public abstract class IAsyncTaskHandler<R extends Runnable> implements Mailbox<R
-         try {
-             r0.run();
-         } catch (Exception exception) {
-+            if (exception.getCause() instanceof ThreadDeath) throw exception; // Paper
-             IAsyncTaskHandler.LOGGER.fatal("Error executing task on {}", this.bj(), exception);
-         }
- 
++    public static void shutdownServerThreadPool() { h(); } // Paper - OBFHELPER
+     public static void h() {
+         a(SystemUtils.e);
+         a(SystemUtils.f);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255265f03fa 100644
+index ed5712cc7c070f44500e5c1a1d41cd26bdd13fec..fe3fe04981a0cc1ddeac2e030ee754baae4e8409 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -161,7 +161,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -270,7 +270,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public int autosavePeriod;
      public boolean serverAutoSave = false; // Paper
      public CommandDispatcher vanillaCommandDispatcher;
@@ -125,7 +95,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
      // CraftBukkit end
      // Spigot start
      public static final int TPS = 20;
-@@ -171,6 +171,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -280,6 +280,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
      // Spigot end
  
@@ -134,7 +104,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
      public static <S extends MinecraftServer> S a(Function<Thread, S> function) {
          AtomicReference<S> atomicreference = new AtomicReference();
          Thread thread = new Thread(() -> {
-@@ -733,6 +735,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -842,6 +844,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      // CraftBukkit start
      private boolean hasStopped = false;
@@ -142,7 +112,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
      private final Object stopLock = new Object();
      public final boolean hasStopped() {
          synchronized (stopLock) {
-@@ -747,6 +750,23 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -856,6 +859,23 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              if (hasStopped) return;
              hasStopped = true;
          }
@@ -166,7 +136,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
          // CraftBukkit end
          MinecraftServer.LOGGER.info("Stopping server");
          MinecraftTimings.stopServer(); // Paper
-@@ -812,7 +832,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -921,7 +941,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              this.getUserCache().b(false); // Paper
          }
          // Spigot end
@@ -185,7 +155,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
      }
  
      public String getServerIp() {
-@@ -905,6 +936,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1014,6 +1045,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      protected void w() {
          try {
@@ -193,7 +163,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
              if (this.init()) {
                  this.nextTick = SystemUtils.getMonotonicMillis();
                  this.serverPing.setMOTD(new ChatComponentText(this.motd));
-@@ -912,6 +944,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1021,6 +1053,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  this.a(this.serverPing);
  
                  // Spigot start
@@ -212,7 +182,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
                  org.spigotmc.WatchdogThread.hasStarted = true; // Paper
                  Arrays.fill( recentTps, 20 );
                  long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
-@@ -967,6 +1011,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1076,6 +1120,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  this.a((CrashReport) null);
              }
          } catch (Throwable throwable) {
@@ -225,7 +195,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
              MinecraftServer.LOGGER.error("Encountered an unexpected exception", throwable);
              // Spigot Start
              if ( throwable.getCause() != null )
-@@ -998,14 +1048,14 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1107,14 +1157,14 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              } catch (Throwable throwable1) {
                  MinecraftServer.LOGGER.error("Exception stopping the server", throwable1);
              } finally {
@@ -243,10 +213,10 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
              }
  
          }
-@@ -1061,6 +1111,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1170,6 +1220,12 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      @Override
-     protected TickTask postToMainThread(Runnable runnable) {
+     public TickTask postToMainThread(Runnable runnable) {
 +        // Paper start - anything that does try to post to main during watchdog crash, run on watchdog
 +        if (this.hasStopped && Thread.currentThread().equals(shutdownThread)) {
 +            runnable.run();
@@ -256,7 +226,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
          return new TickTask(this.ticks, runnable);
      }
  
-@@ -1303,6 +1359,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1412,6 +1468,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  try {
                      crashreport = CrashReport.a(throwable, "Exception ticking world");
                  } catch (Throwable t) {
@@ -264,7 +234,7 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
                      throw new RuntimeException("Error generating crash report", t);
                  }
                  // Spigot End
-@@ -1760,7 +1817,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1869,7 +1926,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              this.resourcePackRepository.a(collection);
              this.saveData.a(a(this.resourcePackRepository));
              datapackresources.i();
@@ -274,11 +244,41 @@ index 2285612851d28c8cae31fc5f99584e6434450d80..6d7928dc45e373ecd95756b061615255
              this.getPlayerList().reload();
              this.customFunctionData.a(this.dataPackResources.a());
              this.ak.a(this.dataPackResources.h());
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 2622e418cde9f70e38e8d28d7dfde5c3879f520f..feb0c8f3dec62cd4cdfeede6047ef40bc69ce240 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -488,6 +488,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 557f80accfa36b495c9a8cffdab2e248c1cbb514..ec1f36736d79d4054ad7ff4da4e3659f35c811d6 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -279,7 +279,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             long j = SystemUtils.getMonotonicNanos() - i;
+             String s = String.format(Locale.ROOT, "%.3fs", (double) j / 1.0E9D);
+ 
+-            DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s);
++            //DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s); // Paper moved to after init
+             if (dedicatedserverproperties.announcePlayerAchievements != null) {
+                 ((GameRules.GameRuleBoolean) this.getGameRules().get(GameRules.ANNOUNCE_ADVANCEMENTS)).a(dedicatedserverproperties.announcePlayerAchievements, (MinecraftServer) this);
+             }
+@@ -407,6 +407,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             //this.remoteStatusListener.b(); // Paper - don't wait for remote connections
+         }
+ 
++        hasFullyShutdown = true; // Paper
+         System.exit(0); // CraftBukkit
+     }
+ 
+@@ -740,7 +741,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+     @Override
+     public void stop() {
+         super.stop();
+-        SystemUtils.h();
++        //SystemUtils.h(); // Paper - moved into super
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 8050be2ed04fb0b8141f92595680407bba65dad5..bb9c6e9aeb1f30af01338476ba1dd618b14124d5 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -536,6 +536,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              MutableBoolean mutableboolean = new MutableBoolean();
  
              do {
@@ -286,56 +286,11 @@ index 2622e418cde9f70e38e8d28d7dfde5c3879f520f..feb0c8f3dec62cd4cdfeede6047ef40b
                  mutableboolean.setFalse();
                  list.stream().map((playerchunk) -> {
                      CompletableFuture completablefuture;
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 118d50997a31c2b5182d7ba1015f73d739def2f3..c7d44b1242943f2d0a78614c7bae4840fb41e8f4 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -428,7 +428,7 @@ public abstract class PlayerList {
-         cserver.getPluginManager().callEvent(playerQuitEvent);
-         entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
- 
--        entityplayer.playerTick(); // SPIGOT-924
-+        if (server.isMainThread()) entityplayer.playerTick(); // SPIGOT-924 // Paper - don't tick during emergency shutdowns (Watchdog)
-         // CraftBukkit end
- 
-         // Paper start - Remove from collideRule team if needed
-diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index 1fe1df445ba56b2f176ee25502a774aa0a7bd00b..916a6a1fc1ccc73e4fb974ad77310d16fd8bd7e6 100644
---- a/src/main/java/net/minecraft/server/SystemUtils.java
-+++ b/src/main/java/net/minecraft/server/SystemUtils.java
-@@ -123,6 +123,7 @@ public class SystemUtils {
-         return SystemUtils.f;
-     }
- 
-+    public static void shutdownServerThreadPool() { h(); } // Paper - OBFHELPER
-     public static void h() {
-         a(SystemUtils.e);
-         a(SystemUtils.f);
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 4da88ce31cfb8baa6fa68c0115edadac0c5b2fba..d26fd68b2abd4907138ce77a6e6bb45c9af4af02 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -798,6 +798,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
- 
-                         gameprofilerfiller.exit();
-                     } catch (Throwable throwable) {
-+                        if (throwable instanceof ThreadDeath) throw throwable; // Paper
-                         // Paper start - Prevent tile entity and entity crashes
-                         String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
-                         System.err.println(msg);
-@@ -872,6 +873,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
-         try {
-             consumer.accept(entity);
-         } catch (Throwable throwable) {
-+            if (throwable instanceof ThreadDeath) throw throwable; // Paper
-             // Paper start - Prevent tile entity and entity crashes
-             String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX() + "," + entity.locY() + "," + entity.locZ();
-             System.err.println(msg);
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 3c72c156ca488e14604cb0db5f1ac4e068776066..e0f66718f3700f5f4bdb77178e05ca3fc95829e8 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -65,7 +65,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index c69eef0d523fc75dce2c2606f3e447591c7cf6dc..da3614a4a59884e7cbc8758cfdad9698eb15424f 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -177,7 +177,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      private final Queue<Entity> entitiesToAdd = Queues.newArrayDeque();
      public final List<EntityPlayer> players = Lists.newArrayList(); // Paper - private -> public
      public final ChunkProviderServer chunkProvider; // Paper - public
@@ -344,8 +299,53 @@ index 3c72c156ca488e14604cb0db5f1ac4e068776066..e0f66718f3700f5f4bdb77178e05ca3f
      // Paper start
      List<java.lang.Runnable> afterEntityTickingTasks = Lists.newArrayList();
      public void doIfNotEntityTicking(java.lang.Runnable run) {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index f35825d4a8574ea75b46be36b9929f8e12405217..48d4f8310d79d0eb78f4ace42c8778ee4addf7d0 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -507,7 +507,7 @@ public abstract class PlayerList {
+         cserver.getPluginManager().callEvent(playerQuitEvent);
+         entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
+ 
+-        entityplayer.playerTick(); // SPIGOT-924
++        if (server.isMainThread()) entityplayer.playerTick(); // SPIGOT-924 // Paper - don't tick during emergency shutdowns (Watchdog)
+         // CraftBukkit end
+ 
+         // Paper start - Remove from collideRule team if needed
+diff --git a/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java b/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
+index ca23ca14d8011fc8daa7e20f2eaa550a8ff92c53..158ea6d77698d62ba795aff6c061a80652e42e03 100644
+--- a/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
++++ b/src/main/java/net/minecraft/util/thread/IAsyncTaskHandler.java
+@@ -135,6 +135,7 @@ public abstract class IAsyncTaskHandler<R extends Runnable> implements Mailbox<R
+         try {
+             r0.run();
+         } catch (Exception exception) {
++            if (exception.getCause() instanceof ThreadDeath) throw exception; // Paper
+             IAsyncTaskHandler.LOGGER.fatal("Error executing task on {}", this.bj(), exception);
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index cc41dcd85760b57bb8076b37e9a907d1cb4e12c7..efcfc8f0f45901d14ac8fdf8ed7b0bd67f8f94da 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -858,6 +858,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+ 
+                         gameprofilerfiller.exit();
+                     } catch (Throwable throwable) {
++                        if (throwable instanceof ThreadDeath) throw throwable; // Paper
+                         // Paper start - Prevent tile entity and entity crashes
+                         String msg = "TileEntity threw exception at " + tileentity.getWorld().getWorld().getName() + ":" + tileentity.getPosition().getX() + "," + tileentity.getPosition().getY() + "," + tileentity.getPosition().getZ();
+                         System.err.println(msg);
+@@ -932,6 +933,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         try {
+             consumer.accept(entity);
+         } catch (Throwable throwable) {
++            if (throwable instanceof ThreadDeath) throw throwable; // Paper
+             // Paper start - Prevent tile entity and entity crashes
+             String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX() + "," + entity.locY() + "," + entity.locZ();
+             System.err.println(msg);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 9c05f950a83abd6bbe641c735f8ab7fb279f2853..f52d443eb19e2e37258c455c1afd02d1b3f2006b 100644
+index 4828d356ca01cba5964c6397584d56643dbc0dae..55890ff463eb122934e8ba1fc550cf0cccaf8451 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1834,7 +1834,7 @@ public final class CraftServer implements Server {
@@ -358,10 +358,19 @@ index 9c05f950a83abd6bbe641c735f8ab7fb279f2853..f52d443eb19e2e37258c455c1afd02d1
  
      // Paper start
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 67331fa5463dd31e4aea3aebf6204ec5cb43d99e..8265879466333f4941c63c64b95d94f6ac0b5558 100644
+index 67331fa5463dd31e4aea3aebf6204ec5cb43d99e..c0c08a9a4c6b44f3c1f79c8e4635472ef9c7dc99 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -150,6 +150,37 @@ public class Main {
+@@ -12,6 +12,8 @@ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import joptsimple.OptionParser;
+ import joptsimple.OptionSet;
++import net.minecraft.util.ExceptionSuppressor;
++import net.minecraft.world.level.lighting.LightEngineLayerEventListener;
+ import net.minecrell.terminalconsole.TerminalConsoleAppender; // Paper
+ 
+ public class Main {
+@@ -150,6 +152,37 @@ public class Main {
  
          OptionSet options = null;
  
@@ -399,7 +408,7 @@ index 67331fa5463dd31e4aea3aebf6204ec5cb43d99e..8265879466333f4941c63c64b95d94f6
          try {
              options = parser.parse(args);
          } catch (joptsimple.OptionException ex) {
-@@ -245,8 +276,64 @@ public class Main {
+@@ -245,8 +278,64 @@ public class Main {
              } catch (Throwable t) {
                  t.printStackTrace();
              }
@@ -442,9 +451,9 @@ index 67331fa5463dd31e4aea3aebf6204ec5cb43d99e..8265879466333f4941c63c64b95d94f6
 +            tryPreloadClass("com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent");
 +            tryPreloadClass("com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent");
 +            // Minecraft, seen during saving
-+            tryPreloadClass("net.minecraft.server.LightEngineLayerEventListener$Void");
-+            tryPreloadClass("net.minecraft.server.LightEngineLayerEventListener");
-+            tryPreloadClass("net.minecraft.server.ExceptionSuppressor");
++            tryPreloadClass(LightEngineLayerEventListener.Void.class.getName());
++            tryPreloadClass(LightEngineLayerEventListener.class.getName());
++            tryPreloadClass(ExceptionSuppressor.class.getName());
 +            // Paper end
 +        }
 +    }
@@ -498,7 +507,7 @@ index 449e99d1b673870ed6892f6ab2c715a2db35c35d..c7ed6e0f8a989cec97700df2b15198c9
              }
          }
 diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
-index aefea3a9a8b9b75c62bd20018be7cd166a213001..123de5ac9026508e21cdc225f0962f5c3c46fed5 100644
+index b45d7e5c108c7a8541fcbc9ad92d1a79a94746a1..6a408dc9286a60c3ca7830f88171919fb0fe6363 100644
 --- a/src/main/java/org/spigotmc/RestartCommand.java
 +++ b/src/main/java/org/spigotmc/RestartCommand.java
 @@ -139,7 +139,7 @@ public class RestartCommand extends Command
@@ -511,7 +520,7 @@ index aefea3a9a8b9b75c62bd20018be7cd166a213001..123de5ac9026508e21cdc225f0962f5c
          String[] split = restartScript.split( " " );
          if ( split.length > 0 && new File( split[0] ).isFile() )
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 9c1fc19851817a842779ab89bc9300e1adf3d2a2..ae8903ee1decd22e2ad6138f29fbc757b807e0a7 100644
+index 58e50bf0fb0f309227e1f4c1f6bb11c01d8e08d3..30a665c090f419985e1d0f49df9e8d110c83943a 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -13,6 +13,7 @@ import org.bukkit.Bukkit;

@@ -19,11 +19,11 @@ index 3562950df4868b1393790b1a1ff1fe0dc589c155..5ab0e7183e48134b7a0f736462516b1a
 +        log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
-index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc4723dd2fddc 100644
---- a/src/main/java/net/minecraft/server/EntityArmorStand.java
-+++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
-@@ -46,9 +46,16 @@ public class EntityArmorStand extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index e97d25339b37a70f91022dcb021bbe82fb8f5eda..8d35240405d7f7245f3c7b0b611973d58fa4384f 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -81,9 +81,16 @@ public class EntityArmorStand extends EntityLiving {
      public Vector3f leftLegPose;
      public Vector3f rightLegPose;
      public boolean canMove = true; // Paper
@@ -40,7 +40,7 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
          this.handItems = NonNullList.a(2, ItemStack.b);
          this.armorItems = NonNullList.a(4, ItemStack.b);
          this.headPose = EntityArmorStand.bj;
-@@ -144,6 +151,7 @@ public class EntityArmorStand extends EntityLiving {
+@@ -179,6 +186,7 @@ public class EntityArmorStand extends EntityLiving {
                  this.armorItems.set(enumitemslot.b(), itemstack);
          }
  
@@ -48,7 +48,7 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
      }
  
      @Override
-@@ -224,6 +232,7 @@ public class EntityArmorStand extends EntityLiving {
+@@ -259,6 +267,7 @@ public class EntityArmorStand extends EntityLiving {
          }
  
          nbttagcompound.set("Pose", this.B());
@@ -56,7 +56,7 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
      }
  
      @Override
-@@ -255,6 +264,12 @@ public class EntityArmorStand extends EntityLiving {
+@@ -290,6 +299,12 @@ public class EntityArmorStand extends EntityLiving {
          this.setBasePlate(nbttagcompound.getBoolean("NoBasePlate"));
          this.setMarker(nbttagcompound.getBoolean("Marker"));
          this.noclip = !this.A();
@@ -69,7 +69,7 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
          NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Pose");
  
          this.g(nbttagcompound1);
-@@ -610,7 +625,29 @@ public class EntityArmorStand extends EntityLiving {
+@@ -645,7 +660,29 @@ public class EntityArmorStand extends EntityLiving {
  
      @Override
      public void tick() {
@@ -99,7 +99,7 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
          Vector3f vector3f = (Vector3f) this.datawatcher.get(EntityArmorStand.c);
  
          if (!this.headPose.equals(vector3f)) {
-@@ -733,29 +770,36 @@ public class EntityArmorStand extends EntityLiving {
+@@ -768,29 +805,36 @@ public class EntityArmorStand extends EntityLiving {
      public void setHeadPose(Vector3f vector3f) {
          this.headPose = vector3f;
          this.datawatcher.set(EntityArmorStand.c, vector3f);
@@ -137,10 +137,10 @@ index abcf3ab8bab2ca98ab0f7e852b8185e27949a210..5076dd7e874be76d81b13f53076bc472
          this.datawatcher.set(EntityArmorStand.bh, vector3f);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-index 557cdb6ca007c617278e8cf723a2a11eae67d57d..40e9005c0f520a26a419beae17705171e61c646a 100644
+index 103f935d9b7a2cbe9639528c587d8ac2e5f14d07..348993f3839f984be65daaf87f3510865e8e4670 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-@@ -312,5 +312,16 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
+@@ -313,5 +313,16 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
      public boolean isSlotDisabled(org.bukkit.inventory.EquipmentSlot slot) {
          return getHandle().isSlotDisabled(org.bukkit.craftbukkit.CraftEquipmentSlot.getNMS(slot));
      }

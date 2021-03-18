@@ -4,11 +4,11 @@ Date: Mon, 9 Nov 2020 20:44:51 +0100
 Subject: [PATCH] Add ignore discounts API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 650e373a925296f14150de5cbecc6b083679ba54..ca9591a1ca07ca0e88212577b7a94990f591f887 100644
---- a/src/main/java/net/minecraft/server/EntityVillager.java
-+++ b/src/main/java/net/minecraft/server/EntityVillager.java
-@@ -389,6 +389,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+diff --git a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+index 80a9eecfd2eb17db6a7d0b3973f4acdb80f873e8..382059b2c2b6a7b8231b3c3a5c9a401091b1ad18 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+@@ -460,6 +460,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
  
              while (iterator.hasNext()) {
                  MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
@@ -16,7 +16,7 @@ index 650e373a925296f14150de5cbecc6b083679ba54..ca9591a1ca07ca0e88212577b7a94990
  
                  // CraftBukkit start
                  int bonus = -MathHelper.d((float) i * merchantrecipe.getPriceMultiplier());
-@@ -408,6 +409,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+@@ -479,6 +480,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
  
              while (iterator1.hasNext()) {
                  MerchantRecipe merchantrecipe1 = (MerchantRecipe) iterator1.next();
@@ -24,11 +24,11 @@ index 650e373a925296f14150de5cbecc6b083679ba54..ca9591a1ca07ca0e88212577b7a94990
                  double d0 = 0.3D + 0.0625D * (double) j;
                  int k = (int) Math.floor(d0 * (double) merchantrecipe1.a().getCount());
  
-diff --git a/src/main/java/net/minecraft/server/MerchantRecipe.java b/src/main/java/net/minecraft/server/MerchantRecipe.java
-index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f285e055e6 100644
---- a/src/main/java/net/minecraft/server/MerchantRecipe.java
-+++ b/src/main/java/net/minecraft/server/MerchantRecipe.java
-@@ -14,6 +14,7 @@ public class MerchantRecipe {
+diff --git a/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java b/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
+index 9e2fe0d5e6d4ea1f4c9cea96b755ddcd1e3c9009..605d1b2514c272c0fcf3cb9d7575ad8066dad31b 100644
+--- a/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
++++ b/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
+@@ -19,6 +19,7 @@ public class MerchantRecipe {
      private int demand;
      public float priceMultiplier;
      public int xp;
@@ -36,7 +36,7 @@ index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f2
      // CraftBukkit start
      private CraftMerchantRecipe bukkitHandle;
  
-@@ -22,7 +23,12 @@ public class MerchantRecipe {
+@@ -27,7 +28,12 @@ public class MerchantRecipe {
      }
  
      public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int uses, int maxUses, int experience, float priceMultiplier, CraftMerchantRecipe bukkit) {
@@ -50,7 +50,7 @@ index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f2
          this.bukkitHandle = bukkit;
      }
      // CraftBukkit end
-@@ -54,6 +60,7 @@ public class MerchantRecipe {
+@@ -59,6 +65,7 @@ public class MerchantRecipe {
  
          this.specialPrice = nbttagcompound.getInt("specialPrice");
          this.demand = nbttagcompound.getInt("demand");
@@ -58,7 +58,7 @@ index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f2
      }
  
      public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, int i, int j, float f) {
-@@ -65,10 +72,19 @@ public class MerchantRecipe {
+@@ -70,10 +77,19 @@ public class MerchantRecipe {
      }
  
      public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j, int k, float f) {
@@ -79,7 +79,7 @@ index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f2
          this.rewardExp = true;
          this.xp = 1;
          this.buyingItem1 = itemstack;
-@@ -184,6 +200,7 @@ public class MerchantRecipe {
+@@ -189,6 +205,7 @@ public class MerchantRecipe {
          nbttagcompound.setFloat("priceMultiplier", this.priceMultiplier);
          nbttagcompound.setInt("specialPrice", this.specialPrice);
          nbttagcompound.setInt("demand", this.demand);
@@ -88,7 +88,7 @@ index e42382a5c385c27b6322b03e87870eb20b21cb22..4f1cfdfafa6a6fc0382425a8ddc986f2
      }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
-index e198251617bfd6b0fe932d8bfa5dfcafdac919c2..3ae27b125839f3d08f118867254f6fb8a000b6ae 100644
+index e3b9a0ebe5cec5b47d9d225887656e00e999960b..0c8728bd8272e36d70cf8f05fcd7656ea5a48702 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
 @@ -17,7 +17,12 @@ public class CraftMerchantRecipe extends MerchantRecipe {
@@ -102,9 +102,9 @@ index e198251617bfd6b0fe932d8bfa5dfcafdac919c2..3ae27b125839f3d08f118867254f6fb8
 +    public CraftMerchantRecipe(ItemStack result, int uses, int maxUses, boolean experienceReward, int experience, float priceMultiplier, boolean ignoreDiscounts) {
 +        super(result, uses, maxUses, experienceReward, experience, priceMultiplier, ignoreDiscounts);
 +        // Paper end
-         this.handle = new net.minecraft.server.MerchantRecipe(
-                 net.minecraft.server.ItemStack.b,
-                 net.minecraft.server.ItemStack.b,
+         this.handle = new net.minecraft.world.item.trading.MerchantRecipe(
+                 net.minecraft.world.item.ItemStack.b,
+                 net.minecraft.world.item.ItemStack.b,
 @@ -26,6 +31,7 @@ public class CraftMerchantRecipe extends MerchantRecipe {
                  maxUses,
                  experience,
@@ -129,7 +129,7 @@ index e198251617bfd6b0fe932d8bfa5dfcafdac919c2..3ae27b125839f3d08f118867254f6fb8
 +    }
 +    // Paper end
 +
-     public net.minecraft.server.MerchantRecipe toMinecraft() {
+     public net.minecraft.world.item.trading.MerchantRecipe toMinecraft() {
          List<ItemStack> ingredients = getIngredients();
          Preconditions.checkState(!ingredients.isEmpty(), "No offered ingredients");
 @@ -95,7 +113,7 @@ public class CraftMerchantRecipe extends MerchantRecipe {

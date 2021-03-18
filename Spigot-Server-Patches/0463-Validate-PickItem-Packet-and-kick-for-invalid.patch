@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 2 May 2020 03:09:46 -0400
+Subject: [PATCH] Validate PickItem Packet and kick for invalid
+
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 839eb6a294a696c5abd0d5e005b70d9bdbf25f9b..41d4c3533119cc80cb4c93771db344531c8dd106 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -881,7 +881,14 @@ public class PlayerConnection implements PacketListenerPlayIn {
+     @Override
+     public void a(PacketPlayInPickItem packetplayinpickitem) {
+         PlayerConnectionUtils.ensureMainThread(packetplayinpickitem, this, this.player.getWorldServer());
+-        this.player.inventory.c(packetplayinpickitem.b());
++        // Paper start - validate pick item position
++        if (!(packetplayinpickitem.b() >= 0 && packetplayinpickitem.b() < this.player.inventory.items.size())) {
++            PlayerConnection.LOGGER.warn("{} tried to set an invalid carried item", this.player.getDisplayName().getString());
++            this.disconnect("Invalid hotbar selection (Hacking?)");
++            return;
++        }
++        this.player.inventory.c(packetplayinpickitem.b()); // Paper - Diff above if changed
++        // Paper end
+         this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-2, this.player.inventory.itemInHandIndex, this.player.inventory.getItem(this.player.inventory.itemInHandIndex)));
+         this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-2, packetplayinpickitem.b(), this.player.inventory.getItem(packetplayinpickitem.b())));
+         this.player.playerConnection.sendPacket(new PacketPlayOutHeldItemSlot(this.player.inventory.itemInHandIndex));

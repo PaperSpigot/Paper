@@ -4,11 +4,11 @@ Date: Sun, 7 Oct 2018 04:29:59 -0500
 Subject: [PATCH] Add more Zombie API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
-index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123628c7c9b 100644
---- a/src/main/java/net/minecraft/server/EntityZombie.java
-+++ b/src/main/java/net/minecraft/server/EntityZombie.java
-@@ -32,6 +32,7 @@ public class EntityZombie extends EntityMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+index 219e3b1626d68ede57b08a706d24bb6bc4b13fac..79d34b0296f88e5b4fe0351fe2483fc0128deabc 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+@@ -94,6 +94,7 @@ public class EntityZombie extends EntityMonster {
      private int bt;
      public int drownedConversionTime;
      private int lastTick = MinecraftServer.currentTick; // CraftBukkit - add field
@@ -16,7 +16,7 @@ index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123
  
      public EntityZombie(EntityTypes<? extends EntityZombie> entitytypes, World world) {
          super(entitytypes, world);
-@@ -200,6 +201,12 @@ public class EntityZombie extends EntityMonster {
+@@ -262,6 +263,12 @@ public class EntityZombie extends EntityMonster {
          super.movementTick();
      }
  
@@ -29,7 +29,7 @@ index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123
      public void startDrownedConversion(int i) {
          this.lastTick = MinecraftServer.currentTick; // CraftBukkit
          this.drownedConversionTime = i;
-@@ -228,9 +235,16 @@ public class EntityZombie extends EntityMonster {
+@@ -290,9 +297,16 @@ public class EntityZombie extends EntityMonster {
  
      }
  
@@ -47,7 +47,7 @@ index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123
  
      @Override
      public boolean damageEntity(DamageSource damagesource, float f) {
-@@ -351,6 +365,7 @@ public class EntityZombie extends EntityMonster {
+@@ -413,6 +427,7 @@ public class EntityZombie extends EntityMonster {
          nbttagcompound.setBoolean("CanBreakDoors", this.eU());
          nbttagcompound.setInt("InWaterTime", this.isInWater() ? this.bt : -1);
          nbttagcompound.setInt("DrownedConversionTime", this.isDrownConverting() ? this.drownedConversionTime : -1);
@@ -55,7 +55,7 @@ index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123
      }
  
      @Override
-@@ -362,7 +377,11 @@ public class EntityZombie extends EntityMonster {
+@@ -424,7 +439,11 @@ public class EntityZombie extends EntityMonster {
          if (nbttagcompound.hasKeyOfType("DrownedConversionTime", 99) && nbttagcompound.getInt("DrownedConversionTime") > -1) {
              this.startDrownedConversion(nbttagcompound.getInt("DrownedConversionTime"));
          }
@@ -69,7 +69,7 @@ index f8b969b203cec7341382abf884a084cb4adbd7f9..f2776a9f78745f1bdd270d40b00a3123
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftZombie.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftZombie.java
-index 2387f17acb0de1d1c297fd85217f514e7b4577f3..d334e656ea0f442a14864a05d4701df162487851 100644
+index 8ba92b7edacc088d610a9ed46eb7f61ebd8101a8..42d98d798bb8fe2d3c7cc2bfcf2ec38d97d99bd2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftZombie.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftZombie.java
 @@ -94,6 +94,42 @@ public class CraftZombie extends CraftMonster implements Zombie {

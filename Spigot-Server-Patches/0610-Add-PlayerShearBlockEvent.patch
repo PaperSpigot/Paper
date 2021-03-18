@@ -4,11 +4,11 @@ Date: Thu, 27 Aug 2020 15:02:48 -0400
 Subject: [PATCH] Add PlayerShearBlockEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/Block.java b/src/main/java/net/minecraft/server/Block.java
-index 4b4f14711d483089a5d5478b57539911a9c7a2fc..1fc98698b81c079ebe4a524200232db1fe143bdf 100644
---- a/src/main/java/net/minecraft/server/Block.java
-+++ b/src/main/java/net/minecraft/server/Block.java
-@@ -223,7 +223,7 @@ public class Block extends BlockBase implements IMaterial {
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index 768934fa4158a9773d06f5b23bfb19db75f6d179..596b4597313b87296d39027b13555b5ad1cba9e6 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -262,7 +262,7 @@ public class Block extends BlockBase implements IMaterial {
  
      }
  
@@ -17,19 +17,27 @@ index 4b4f14711d483089a5d5478b57539911a9c7a2fc..1fc98698b81c079ebe4a524200232db1
          if (!world.isClientSide && !itemstack.isEmpty() && world.getGameRules().getBoolean(GameRules.DO_TILE_DROPS)) {
              float f = 0.5F;
              double d0 = (double) (world.random.nextFloat() * 0.5F) + 0.25D;
-diff --git a/src/main/java/net/minecraft/server/BlockBeehive.java b/src/main/java/net/minecraft/server/BlockBeehive.java
-index 7e2c63e4731ac2d234d5f90eb80d314cdede07ca..eda45e7f2f824c42653d6c545172efc7c96ef332 100644
---- a/src/main/java/net/minecraft/server/BlockBeehive.java
-+++ b/src/main/java/net/minecraft/server/BlockBeehive.java
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockBeehive.java b/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
+index ff521e64384281fc88b78bb908d19049743cf63b..828d231a963f1962d88fe170ac86590d86e1df40 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
 @@ -1,5 +1,7 @@
- package net.minecraft.server;
+ package net.minecraft.world.level.block;
  
 +import io.papermc.paper.event.block.PlayerShearBlockEvent; // Paper - PlayerShearBlockEvent namespace conflicts
 +
  import java.util.Iterator;
  import java.util.List;
  import java.util.Random;
-@@ -74,8 +76,19 @@ public class BlockBeehive extends BlockTileEntity {
+@@ -10,6 +12,7 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.nbt.NBTBase;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+@@ -116,8 +119,19 @@ public class BlockBeehive extends BlockTileEntity {
  
          if (i >= 5) {
              if (itemstack.getItem() == Items.SHEARS) {
@@ -50,19 +58,28 @@ index 7e2c63e4731ac2d234d5f90eb80d314cdede07ca..eda45e7f2f824c42653d6c545172efc7
                  itemstack.damage(1, entityhuman, (entityhuman1) -> {
                      entityhuman1.broadcastItemBreak(enumhand);
                  });
-diff --git a/src/main/java/net/minecraft/server/BlockPumpkin.java b/src/main/java/net/minecraft/server/BlockPumpkin.java
-index 27a750209bc0312dd0f806b04089bcae030ea23e..dd33a093e759a85c9534c63d66831ebe4ef2270e 100644
---- a/src/main/java/net/minecraft/server/BlockPumpkin.java
-+++ b/src/main/java/net/minecraft/server/BlockPumpkin.java
-@@ -1,5 +1,7 @@
- package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockPumpkin.java b/src/main/java/net/minecraft/world/level/block/BlockPumpkin.java
+index 130b768ac7155c2960694dfa12163e46315f7797..11a9c3e76baaa50317a3cd7d81541a3666028c16 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockPumpkin.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockPumpkin.java
+@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
+ 
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.world.EnumHand;
+@@ -15,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockBase;
+ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
  
 +import io.papermc.paper.event.block.PlayerShearBlockEvent; // Paper - PlayerShearBlockEvent namespace conflicts
 +
  public class BlockPumpkin extends BlockStemmed {
  
      protected BlockPumpkin(BlockBase.Info blockbase_info) {
-@@ -12,15 +14,26 @@ public class BlockPumpkin extends BlockStemmed {
+@@ -27,15 +30,26 @@ public class BlockPumpkin extends BlockStemmed {
  
          if (itemstack.getItem() == Items.SHEARS) {
              if (!world.isClientSide) {

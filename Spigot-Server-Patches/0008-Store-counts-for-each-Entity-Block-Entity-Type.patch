@@ -5,11 +5,11 @@ Subject: [PATCH] Store counts for each Entity/Block Entity Type
 
 Opens door for future patches to optimize performance
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 7c5f79124d2f2c69548263e79752484e07e77d48..853e11836b6c4eadd03feead101bf578b17b86a3 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -57,15 +57,19 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index 929f6fcd4b9f1b9a1488e170d6a77a5d64beecf3..acdcece38a4b30d6c89eb4342918ae8997db9f0b 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -91,15 +91,19 @@ public class Chunk implements IChunkAccess {
      }
  
      // Paper start
@@ -29,7 +29,7 @@ index 7c5f79124d2f2c69548263e79752484e07e77d48..853e11836b6c4eadd03feead101bf578
              }
              return replaced;
          }
-@@ -75,6 +79,7 @@ public class Chunk implements IChunkAccess {
+@@ -109,6 +113,7 @@ public class Chunk implements IChunkAccess {
              TileEntity removed = super.remove(key);
              if (removed != null) {
                  removed.setCurrentChunk(null);
@@ -37,7 +37,7 @@ index 7c5f79124d2f2c69548263e79752484e07e77d48..853e11836b6c4eadd03feead101bf578
              }
              return removed;
          }
-@@ -495,6 +500,7 @@ public class Chunk implements IChunkAccess {
+@@ -529,6 +534,7 @@ public class Chunk implements IChunkAccess {
              k = this.entitySlices.length - 1;
          }
  
@@ -45,7 +45,7 @@ index 7c5f79124d2f2c69548263e79752484e07e77d48..853e11836b6c4eadd03feead101bf578
          entity.inChunk = true;
          entity.setCurrentChunk(this); // Paper
          entity.chunkX = this.loc.x;
-@@ -529,6 +535,7 @@ public class Chunk implements IChunkAccess {
+@@ -563,6 +569,7 @@ public class Chunk implements IChunkAccess {
          if (!this.entitySlices[i].remove(entity)) {
              return;
          }

@@ -4,11 +4,11 @@ Date: Sun, 21 Jun 2015 15:07:20 -0400
 Subject: [PATCH] Custom replacement for eaten items
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 276f06982b3c17b8ae29497e1f561bb7d1559e29..a001629eda462ba34555aed6fe162078c18e0c02 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -3112,9 +3112,10 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 318c96ee92fc8c6f5926aeadaa597d32ad590974..9b12e15a6c377ae90193596a35114dd452cf6e0c 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3205,9 +3205,10 @@ public abstract class EntityLiving extends Entity {
                  this.b(this.activeItem, 16);
                  // CraftBukkit start - fire PlayerItemConsumeEvent
                  ItemStack itemstack;
@@ -20,7 +20,7 @@ index 276f06982b3c17b8ae29497e1f561bb7d1559e29..a001629eda462ba34555aed6fe162078
                      world.getServer().getPluginManager().callEvent(event);
  
                      if (event.isCancelled()) {
-@@ -3128,6 +3129,13 @@ public abstract class EntityLiving extends Entity {
+@@ -3221,6 +3222,13 @@ public abstract class EntityLiving extends Entity {
                  } else {
                      itemstack = this.activeItem.a(this.world, this);
                  }
@@ -34,7 +34,7 @@ index 276f06982b3c17b8ae29497e1f561bb7d1559e29..a001629eda462ba34555aed6fe162078
                  // CraftBukkit end
  
                  if (itemstack != this.activeItem) {
-@@ -3135,6 +3143,11 @@ public abstract class EntityLiving extends Entity {
+@@ -3228,6 +3236,11 @@ public abstract class EntityLiving extends Entity {
                  }
  
                  this.clearActiveItem();

@@ -7,19 +7,19 @@ Use larger initial sizes to increase bucket capacity on the BiMap
 
 BiMap.get was seen to be using a good bit of CPU time.
 
-diff --git a/src/main/java/net/minecraft/server/RegistryMaterials.java b/src/main/java/net/minecraft/server/RegistryMaterials.java
-index 6000711dd40628bd80a681e63c053a403c88a883..b9de548c9049fca7a24b5259b6c9a01fca0f16ae 100644
---- a/src/main/java/net/minecraft/server/RegistryMaterials.java
-+++ b/src/main/java/net/minecraft/server/RegistryMaterials.java
-@@ -26,6 +26,7 @@ import java.util.OptionalInt;
- import java.util.Random;
- import java.util.Set;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/core/RegistryMaterials.java b/src/main/java/net/minecraft/core/RegistryMaterials.java
+index f3f6ed83d509d228944d15fc2b2b4cb85b05e366..18f78a5cb03dd9c8349c28b99d013752e32c9167 100644
+--- a/src/main/java/net/minecraft/core/RegistryMaterials.java
++++ b/src/main/java/net/minecraft/core/RegistryMaterials.java
+@@ -30,6 +30,7 @@ import net.minecraft.SystemUtils;
+ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.resources.RegistryDataPackCodec;
+ import net.minecraft.resources.ResourceKey;
 +import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap; // Paper
  import org.apache.commons.lang3.Validate;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
-@@ -34,7 +35,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
+@@ -38,7 +39,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
  
      protected static final Logger LOGGER = LogManager.getLogger();
      private final ObjectList<T> bf = new ObjectArrayList(256);
@@ -28,7 +28,7 @@ index 6000711dd40628bd80a681e63c053a403c88a883..b9de548c9049fca7a24b5259b6c9a01f
      private final BiMap<MinecraftKey, T> bh;
      private final BiMap<ResourceKey<T>, T> bi;
      private final Map<T, Lifecycle> bj;
-@@ -45,9 +46,9 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
+@@ -49,9 +50,9 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
      public RegistryMaterials(ResourceKey<? extends IRegistry<T>> resourcekey, Lifecycle lifecycle) {
          super(resourcekey, lifecycle);
          this.bg.defaultReturnValue(-1);
@@ -41,7 +41,7 @@ index 6000711dd40628bd80a681e63c053a403c88a883..b9de548c9049fca7a24b5259b6c9a01f
          this.bk = lifecycle;
      }
  
-@@ -191,7 +192,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
+@@ -195,7 +196,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
              this.b = collection.toArray(new Object[collection.size()]);
          }
  
@@ -50,7 +50,7 @@ index 6000711dd40628bd80a681e63c053a403c88a883..b9de548c9049fca7a24b5259b6c9a01f
      }
  
      public static <T> Codec<RegistryMaterials<T>> a(ResourceKey<? extends IRegistry<T>> resourcekey, Lifecycle lifecycle, Codec<T> codec) {
-@@ -211,7 +212,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
+@@ -215,7 +216,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
              Iterator iterator = registrymaterials.iterator();
  
              while (iterator.hasNext()) {

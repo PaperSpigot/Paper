@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Fri, 14 Sep 2018 17:42:08 +0200
+Subject: [PATCH] Limit lightning strike effect distance
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 1655bca0502e7b871de4addaa163536d86547a02..978062774c1db286bfb9b0ffdef19d880b1f249b 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -646,4 +646,26 @@ public class PaperWorldConfig {
+             delayChunkUnloadsBy *= 20;
+         }
+     }
++
++    public double sqrMaxThunderDistance;
++    public double sqrMaxLightningImpactSoundDistance;
++    public double maxLightningFlashDistance;
++    private void lightningStrikeDistanceLimit() {
++        sqrMaxThunderDistance = getInt("lightning-strike-distance-limit.sound", -1);
++        if (sqrMaxThunderDistance > 0) {
++            sqrMaxThunderDistance *= sqrMaxThunderDistance;
++        }
++
++        sqrMaxLightningImpactSoundDistance = getInt("lightning-strike-distance-limit.impact-sound", -1);
++        if (sqrMaxLightningImpactSoundDistance < 0) {
++            sqrMaxLightningImpactSoundDistance = 32 * 32; //Vanilla value
++        } else {
++            sqrMaxLightningImpactSoundDistance *= sqrMaxLightningImpactSoundDistance;
++        }
++
++        maxLightningFlashDistance = getInt("lightning-strike-distance-limit.flash", -1);
++        if (maxLightningFlashDistance < 0) {
++            maxLightningFlashDistance = 512; // Vanilla value
++        }
++    }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLightning.java b/src/main/java/net/minecraft/world/entity/EntityLightning.java
+index 8946fcd93bd785a8c21683b932aa954fbf15d566..834ced9d9b385c8f1d66355244313d62a97d9c98 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLightning.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLightning.java
+@@ -76,6 +76,17 @@ public class EntityLightning extends Entity {
+                 double deltaX = this.locX() - player.locX();
+                 double deltaZ = this.locZ() - player.locZ();
+                 double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
++                // Paper start - Limit lightning strike effect distance
++                if (distanceSquared <= this.world.paperConfig.sqrMaxLightningImpactSoundDistance) {
++                    player.playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(SoundEffects.ENTITY_LIGHTNING_BOLT_IMPACT,
++                        SoundCategory.WEATHER, this.locX(), this.locY(), this.locZ(), 2.0f, 0.5F + this.random.nextFloat() * 0.2F));
++                }
++
++                if (world.paperConfig.sqrMaxThunderDistance != -1 && distanceSquared >= world.paperConfig.sqrMaxThunderDistance) {
++                    continue;
++                }
++
++                // Paper end
+                 if (distanceSquared > viewDistance * viewDistance) {
+                     double deltaLength = Math.sqrt(distanceSquared);
+                     double relativeX = player.locX() + (deltaX / deltaLength) * viewDistance;
+@@ -86,7 +97,7 @@ public class EntityLightning extends Entity {
+                 }
+             }
+             // CraftBukkit end
+-            this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), SoundEffects.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F);
++//            this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), SoundEffects.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F); // Paper - Limit lightning strike effect distance (the packet is now sent from inside the loop)
+         }
+ 
+         --this.lifeTicks;

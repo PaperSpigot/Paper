@@ -4,11 +4,11 @@ Date: Fri, 5 May 2017 03:57:17 -0500
 Subject: [PATCH] Item#canEntityPickup
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index a819fc46bebc4b1aaae63f822087574e976e2ab8..6274cf1975270fdac8ae4986e1c170bd075d640e 100644
---- a/src/main/java/net/minecraft/server/EntityInsentient.java
-+++ b/src/main/java/net/minecraft/server/EntityInsentient.java
-@@ -539,6 +539,11 @@ public abstract class EntityInsentient extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityInsentient.java b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+index 6ee5e1b0bb34ba490a130fbcbdb7a2706c5ecf86..c22b5f8fcdd4aa7dac242f634ef73edcd8745fc6 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityInsentient.java
++++ b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+@@ -607,6 +607,11 @@ public abstract class EntityInsentient extends EntityLiving {
                  EntityItem entityitem = (EntityItem) iterator.next();
  
                  if (!entityitem.dead && !entityitem.getItemStack().isEmpty() && !entityitem.p() && this.i(entityitem.getItemStack())) {
@@ -20,11 +20,11 @@ index a819fc46bebc4b1aaae63f822087574e976e2ab8..6274cf1975270fdac8ae4986e1c170bd
                      this.b(entityitem);
                  }
              }
-diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index bbaba67d297c3d6a488bdbf6c500658e872772b0..9b400c1f4ea807149862d30154df9b30895176da 100644
---- a/src/main/java/net/minecraft/server/EntityItem.java
-+++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -21,6 +21,7 @@ public class EntityItem extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityItem.java b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+index 38b91b450c6bdc25efaed495ce26d909a52531bf..c486c07a358c0b444e1a1372b6d0fa2901840eac 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityItem.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+@@ -47,6 +47,7 @@ public class EntityItem extends Entity {
      private UUID owner;
      public final float b;
      private int lastTick = MinecraftServer.currentTick - 1; // CraftBukkit
@@ -33,7 +33,7 @@ index bbaba67d297c3d6a488bdbf6c500658e872772b0..9b400c1f4ea807149862d30154df9b30
      public EntityItem(EntityTypes<? extends EntityItem> entitytypes, World world) {
          super(entitytypes, world);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftItem.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftItem.java
-index d7da0cf2e7b9e669635b469f87e8da4d7fdecb35..d6a64e4ecf9225f9a93523c50b2f1375296b406e 100644
+index f333dd2726f554a3137a3a78d162905f4ed1435e..5988cdd18b7e4bfca0075fd2356cfe9c4e673954 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftItem.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftItem.java
 @@ -49,6 +49,16 @@ public class CraftItem extends CraftEntity implements Item {

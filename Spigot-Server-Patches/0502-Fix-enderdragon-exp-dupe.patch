@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Fri, 12 Jun 2020 22:25:11 -0700
+Subject: [PATCH] Fix enderdragon exp dupe
+
+Properly track death stage when unloading/loading in the
+dragon
+
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+index 5168a40eb53565bb3028efe559601acf72bddae5..c296fcf80c2f3f210fa020416973ec8d5db541ba 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+@@ -879,6 +879,7 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+     public void saveData(NBTTagCompound nbttagcompound) {
+         super.saveData(nbttagcompound);
+         nbttagcompound.setInt("DragonPhase", this.bG.a().getControllerPhase().b());
++        nbttagcompound.setInt("Paper.DeathTick", this.deathAnimationTicks); // Paper
+     }
+ 
+     @Override
+@@ -887,6 +888,7 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+         if (nbttagcompound.hasKey("DragonPhase")) {
+             this.bG.setControllerPhase(DragonControllerPhase.getById(nbttagcompound.getInt("DragonPhase")));
+         }
++        this.deathAnimationTicks = nbttagcompound.getInt("Paper.DeathTick"); // Paper
+ 
+     }
+ 

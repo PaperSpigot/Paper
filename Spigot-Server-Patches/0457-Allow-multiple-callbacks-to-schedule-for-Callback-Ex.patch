@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Tue, 21 Apr 2020 03:51:53 -0400
+Subject: [PATCH] Allow multiple callbacks to schedule for Callback Executor
+
+ChunkMapDistance polls multiple entries for pendingChunkUpdates
+
+Each of these have the potential to move a chunk in and out of
+"Loaded" state, which will result in multiple callbacks being
+needed within a single tick of ChunkMapDistance
+
+Use an ArrayDeque to store this Queue
+
+We make sure to also implement a pattern that is recursion safe too.
+
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index e5d94dedc88e8bbcf8d9517dfb5c6ec6f62de5aa..042a6beb8cada116d54bed18181de291bf5ed1bb 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -162,24 +162,32 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+     public final CallbackExecutor callbackExecutor = new CallbackExecutor();
+     public static final class CallbackExecutor implements java.util.concurrent.Executor, Runnable {
+ 
+-        private Runnable queued;
++        // Paper start - replace impl with recursive safe multi entry queue
++        // it's possible to schedule multiple tasks currently, so it's vital we change this impl
++        // If we recurse into the executor again, we will append to another queue, ensuring task order consistency
++        private java.util.ArrayDeque<Runnable> queued = new java.util.ArrayDeque<>();
+ 
+         @Override
+         public void execute(Runnable runnable) {
+-            if (queued != null) {
+-                throw new IllegalStateException("Already queued");
++            if (queued == null) {
++                queued = new java.util.ArrayDeque<>();
+             }
+-            queued = runnable;
++            queued.add(runnable);
+         }
+ 
+         @Override
+         public void run() {
+-            Runnable task = queued;
++            if (queued == null) {
++                return;
++            }
++            java.util.ArrayDeque<Runnable> queue = queued;
+             queued = null;
+-            if (task != null) {
++            Runnable task;
++            while ((task = queue.pollFirst()) != null) {
+                 task.run();
+             }
+         }
++        // Paper end
+     };
+     // CraftBukkit end
+ 

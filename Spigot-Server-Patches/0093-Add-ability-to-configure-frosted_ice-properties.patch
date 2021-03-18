@@ -23,11 +23,11 @@ index 1942f5224aaebb18adb591d6f70a419cfc1a7bdd..5baccb8d50c135ab20c38ffd0690f585
 +        log("Frosted Ice: " + (this.frostedIceEnabled ? "enabled" : "disabled") + " / delay: min=" + this.frostedIceDelayMin + ", max=" + this.frostedIceDelayMax);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/BlockIceFrost.java b/src/main/java/net/minecraft/server/BlockIceFrost.java
-index 00e19300f7f0c9873ca7abb0560f3a9308d2a73d..061b157f66999a733c3c4e990371b6f8d7860de2 100644
---- a/src/main/java/net/minecraft/server/BlockIceFrost.java
-+++ b/src/main/java/net/minecraft/server/BlockIceFrost.java
-@@ -18,6 +18,7 @@ public class BlockIceFrost extends BlockIce {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java b/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
+index 7239a30bd4a5dc4ed09802eea8f7126485ebb635..e32e94868386ff06ff29254e6cc3bee9b446a293 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
+@@ -30,6 +30,7 @@ public class BlockIceFrost extends BlockIce {
  
      @Override
      public void tickAlways(IBlockData iblockdata, WorldServer worldserver, BlockPosition blockposition, Random random) {
@@ -35,7 +35,7 @@ index 00e19300f7f0c9873ca7abb0560f3a9308d2a73d..061b157f66999a733c3c4e990371b6f8
          if ((random.nextInt(3) == 0 || this.a(worldserver, blockposition, 4)) && worldserver.getLightLevel(blockposition) > 11 - (Integer) iblockdata.get(BlockIceFrost.a) - iblockdata.b((IBlockAccess) worldserver, blockposition) && this.e(iblockdata, (World) worldserver, blockposition)) {
              BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
              EnumDirection[] aenumdirection = EnumDirection.values();
-@@ -30,12 +31,12 @@ public class BlockIceFrost extends BlockIce {
+@@ -42,12 +43,12 @@ public class BlockIceFrost extends BlockIce {
                  IBlockData iblockdata1 = worldserver.getType(blockposition_mutableblockposition);
  
                  if (iblockdata1.a((Block) this) && !this.e(iblockdata1, (World) worldserver, blockposition_mutableblockposition)) {

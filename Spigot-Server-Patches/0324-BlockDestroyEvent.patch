@@ -10,11 +10,19 @@ floating in the air.
 
 This can replace many uses of BlockPhysicsEvent
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ec77151d0dde422024ae5226ad7e3fb18c08f7c0..89bb995909882a4b35e2d07e5a47739c1d4f46f2 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -500,8 +500,20 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 88b1a0235bfc0b41ae1855f8900632e425730d1c..3b5ddc083719608e944bdefa38e1fd3909e8e200 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -26,6 +26,7 @@ import net.minecraft.core.particles.ParticleParam;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.resources.ResourceKey;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.PlayerChunk;
+@@ -559,8 +560,20 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
              return false;
          } else {
              Fluid fluid = this.getFluid(blockposition);

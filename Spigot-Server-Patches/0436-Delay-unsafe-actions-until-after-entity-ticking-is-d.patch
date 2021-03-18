@@ -5,11 +5,11 @@ Subject: [PATCH] Delay unsafe actions until after entity ticking is done
 
 This will help prevent many cases of unregistering entities during entity ticking
 
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 1096ecf62127ad92dfed3872dbf6053c13975c94..1c1dceb98413ccb24e3111435119b3b8c1b760c4 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -66,6 +66,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 3ad428dd85ec0cbf37a24711004f9a54052c5c93..c69eef0d523fc75dce2c2606f3e447591c7cf6dc 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -178,6 +178,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      public final List<EntityPlayer> players = Lists.newArrayList(); // Paper - private -> public
      public final ChunkProviderServer chunkProvider; // Paper - public
      boolean tickingEntities;
@@ -26,7 +26,7 @@ index 1096ecf62127ad92dfed3872dbf6053c13975c94..1c1dceb98413ccb24e3111435119b3b8
      private final MinecraftServer server;
      public final WorldDataServer worldDataServer; // CraftBukkit - type
      public boolean savingDisabled;
-@@ -533,6 +543,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -645,6 +655,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              timings.entityTick.stopTiming(); // Spigot
  
              this.tickingEntities = false;

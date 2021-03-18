@@ -5,11 +5,11 @@ Subject: [PATCH] Use a Queue for Queueing Commands
 
 Lists are bad as Queues mmmkay.
 
-diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 750b1dc10ffb7adb9194e6cc8ace8fa92a5f0dec..bec26885108442c8e22cdddf5e764ecab6994dca 100644
---- a/src/main/java/net/minecraft/server/DedicatedServer.java
-+++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -36,7 +36,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index a0804c4df6f047cf913ae70970219617052e853f..2d42b863b3fd83d1ee0532d1fcb63861641ec47b 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -75,7 +75,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
  
      private static final Logger LOGGER = LogManager.getLogger();
      private static final Pattern k = Pattern.compile("^[a-fA-F0-9]{40}$");
@@ -18,7 +18,7 @@ index 750b1dc10ffb7adb9194e6cc8ace8fa92a5f0dec..bec26885108442c8e22cdddf5e764eca
      private RemoteStatusListener remoteStatusListener;
      public final RemoteControlCommandListener remoteControlCommandListener;
      private RemoteControlListener remoteControlListener;
-@@ -395,8 +395,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -434,8 +434,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
  
      public void handleCommandQueue() {
          MinecraftTimings.serverCommandTimer.startTiming(); // Spigot

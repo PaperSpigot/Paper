@@ -35,23 +35,45 @@ index 525d702d78a609af987ebd2c32169b873e5c05ed..6c8e9d498c9a30a1aa88494ba09c3cae
      public boolean entitiesTargetWithFollowRange = false;
      private void entitiesTargetWithFollowRange() {
          entitiesTargetWithFollowRange = getBoolean("entities-target-with-follow-range", entitiesTargetWithFollowRange);
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index f87cfd0de55808c6d93e2e80772c122cf7a279b8..e60dac038e8a414a45f8dab465d722ee3fb5ef54 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -87,6 +87,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 3b3c0b32f4f7b3d97ffc63cc5a9878f96a32712e..84b0f40edaff726e63f16611b364a692b332ae2b 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -215,6 +215,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean viewingCredits;
      private int containerUpdateDelay; // Paper
      public long loginTime; // Paper
 +    public int patrolSpawnDelay; // Paper - per player patrol spawns
      // Paper start - cancellable death event
      public boolean queueHealthUpdatePacket = false;
-     public net.minecraft.server.PacketPlayOutUpdateHealth queuedHealthUpdatePacket;
-diff --git a/src/main/java/net/minecraft/server/MobSpawnerPatrol.java b/src/main/java/net/minecraft/server/MobSpawnerPatrol.java
-index 7ed89bbe465402582c9d28f0a3935758a6b0f7af..13fccedb948ce5ced1678ff338f7eea5d53ee022 100644
---- a/src/main/java/net/minecraft/server/MobSpawnerPatrol.java
-+++ b/src/main/java/net/minecraft/server/MobSpawnerPatrol.java
-@@ -4,13 +4,13 @@ import java.util.Random;
+     public net.minecraft.network.protocol.game.PacketPlayOutUpdateHealth queuedHealthUpdatePacket;
+diff --git a/src/main/java/net/minecraft/stats/StatisticWrapper.java b/src/main/java/net/minecraft/stats/StatisticWrapper.java
+index c1a694c4a773a41cdefca6b154711f7fc0a7fcaa..00d79ccf9c65acadc030ab1796cff4598392cb6a 100644
+--- a/src/main/java/net/minecraft/stats/StatisticWrapper.java
++++ b/src/main/java/net/minecraft/stats/StatisticWrapper.java
+@@ -28,6 +28,7 @@ public class StatisticWrapper<T> implements Iterable<Statistic<T>> {
+         return this.b.values().iterator();
+     }
+ 
++    public final Statistic<T> get(T t) { return this.b(t); }; // Paper - OBFHELPER
+     public Statistic<T> b(T t0) {
+         return this.a(t0, Counter.DEFAULT);
+     }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
+index cba98adb7f2711fb97c7e4120d962f46a59682e7..111c4c1fad2f1839a8c6b7c277cf801236ae1685 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
+@@ -3,7 +3,9 @@ package net.minecraft.world.level.levelgen;
+ import java.util.Random;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
++import net.minecraft.stats.StatisticList;
+ import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.entity.EnumMobSpawn;
+ import net.minecraft.world.entity.GroupDataEntity;
+@@ -20,13 +22,13 @@ import net.minecraft.world.level.block.state.IBlockData;
  
  public class MobSpawnerPatrol implements MobSpawner {
  
@@ -67,7 +89,7 @@ index 7ed89bbe465402582c9d28f0a3935758a6b0f7af..13fccedb948ce5ced1678ff338f7eea5
          if (!flag) {
              return 0;
          } else if (!worldserver.getGameRules().getBoolean(GameRules.DO_PATROL_SPAWNING)) {
-@@ -18,23 +18,51 @@ public class MobSpawnerPatrol implements MobSpawner {
+@@ -34,23 +36,51 @@ public class MobSpawnerPatrol implements MobSpawner {
          } else {
              Random random = worldserver.random;
  
@@ -127,15 +149,3 @@ index 7ed89bbe465402582c9d28f0a3935758a6b0f7af..13fccedb948ce5ced1678ff338f7eea5
  
                              if (entityhuman.isSpectator()) {
                                  return 0;
-diff --git a/src/main/java/net/minecraft/server/StatisticWrapper.java b/src/main/java/net/minecraft/server/StatisticWrapper.java
-index 3b6034038a4841ebc980b2392c71025d9b0dde35..795ea6fece2e28645e99f4578e26a6d12b4c1bf8 100644
---- a/src/main/java/net/minecraft/server/StatisticWrapper.java
-+++ b/src/main/java/net/minecraft/server/StatisticWrapper.java
-@@ -27,6 +27,7 @@ public class StatisticWrapper<T> implements Iterable<Statistic<T>> {
-         return this.b.values().iterator();
-     }
- 
-+    public final Statistic<T> get(T t) { return this.b(t); }; // Paper - OBFHELPER
-     public Statistic<T> b(T t0) {
-         return this.a(t0, Counter.DEFAULT);
-     }

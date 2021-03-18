@@ -4,11 +4,11 @@ Date: Sun, 27 Dec 2020 17:19:51 +0100
 Subject: [PATCH] Optimized tick ready check
 
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 179915312cd35845216a196018726345324614de..f5ab99156ce5429e63976183cbf115d5340a83a1 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -794,13 +794,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index f40be366ebc5f98b417b677565fa89d3f817f3fb..78dcba08d6d796d5d97c8304bf1f1e7d1e650d5d 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -854,13 +854,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
              if (!tileentity.isRemoved() && tileentity.hasWorld()) {
                  BlockPosition blockposition = tileentity.getPosition();
  
@@ -24,7 +24,7 @@ index 179915312cd35845216a196018726345324614de..f5ab99156ce5429e63976183cbf115d5
                              ((ITickable) tileentity).tick();
                          } else {
                              tileentity.w();
-@@ -833,9 +833,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -893,9 +893,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                  this.tileEntityListTick.remove(tileTickPosition--);
                  // Spigot end
                  //this.tileEntityList.remove(tileentity); // Paper - remove unused list
@@ -38,7 +38,7 @@ index 179915312cd35845216a196018726345324614de..f5ab99156ce5429e63976183cbf115d5
              }
          }
  
-@@ -854,8 +856,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -914,8 +916,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                      }
                      // CraftBukkit end */
  

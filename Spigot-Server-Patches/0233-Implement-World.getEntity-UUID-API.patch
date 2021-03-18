@@ -5,7 +5,7 @@ Subject: [PATCH] Implement World.getEntity(UUID) API
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index ad80ebd9d69b4d86078a7c3daa274f115f172794..d8d8a8e10911424ba6ce8a80c58f172fbe0b44af 100644
+index 6167c284b08636452519cbff43d2807ea0575bd5..1bb6ed364cdde01fe54553cfad8ec4256789620b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -1310,6 +1310,15 @@ public class CraftWorld implements World {
@@ -16,7 +16,7 @@ index ad80ebd9d69b4d86078a7c3daa274f115f172794..d8d8a8e10911424ba6ce8a80c58f172f
 +    @Override
 +    public Entity getEntity(UUID uuid) {
 +        Validate.notNull(uuid, "UUID cannot be null");
-+        net.minecraft.server.Entity entity = world.getEntity(uuid);
++        net.minecraft.world.entity.Entity entity = world.getEntity(uuid);
 +        return entity == null ? null : entity.getBukkitEntity();
 +    }
 +    // Paper end

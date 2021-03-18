@@ -6,11 +6,19 @@ Subject: [PATCH] Optimize Pathfinding
 Prevents pathfinding from spamming failures for things such as
 arrow attacks.
 
-diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index 64b991859f0f3ca7d932b8acc8aeed401e22a388..1558c5f8256f50be6850f1d7f70eee3e8ec76496 100644
---- a/src/main/java/net/minecraft/server/NavigationAbstract.java
-+++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -11,7 +11,7 @@ public abstract class NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+index 06d05b511d623d0247d44989bee85b383a8fb52f..e6ba9b7fbf08ae0dd083a1ebee8eb7ed8a937751 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.IPosition;
+ import net.minecraft.network.protocol.game.PacketDebug;
+ import net.minecraft.server.MCUtil;
++import net.minecraft.server.MinecraftServer;
+ import net.minecraft.util.MathHelper;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityInsentient;
+@@ -32,7 +33,7 @@ public abstract class NavigationAbstract {
      protected final EntityInsentient a; public Entity getEntity() { return a; } // Paper - OBFHELPER
      protected final World b;
      @Nullable
@@ -19,7 +27,7 @@ index 64b991859f0f3ca7d932b8acc8aeed401e22a388..1558c5f8256f50be6850f1d7f70eee3e
      protected double d;
      protected int e;
      protected int f;
-@@ -163,10 +163,30 @@ public abstract class NavigationAbstract {
+@@ -184,10 +185,30 @@ public abstract class NavigationAbstract {
          return this.a(this.a(d0, d1, d2, 1), d3);
      }
  

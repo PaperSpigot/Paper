@@ -4,11 +4,11 @@ Date: Mon, 10 Sep 2018 23:56:36 -0400
 Subject: [PATCH] Prevent Mob AI Rules from Loading Chunks
 
 
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoalRemoveBlock.java b/src/main/java/net/minecraft/server/PathfinderGoalRemoveBlock.java
-index 127428c400f6de1cb65458346aac6a176b6c1896..6ea402c603b9b54705e79a2fdc61fe5a254479a3 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoalRemoveBlock.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoalRemoveBlock.java
-@@ -13,11 +13,13 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
+index b5c7b39a49afae1089a293b9b06bdd94deed1f64..61a62c093b24c43064f116630d85096159e082d3 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
+@@ -30,11 +30,13 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
      private final Block g;
      private final EntityInsentient entity;
      private int i;
@@ -22,7 +22,7 @@ index 127428c400f6de1cb65458346aac6a176b6c1896..6ea402c603b9b54705e79a2fdc61fe5a
      }
  
      @Override
-@@ -115,7 +117,9 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+@@ -132,7 +134,9 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
  
      @Nullable
      private BlockPosition a(BlockPosition blockposition, IBlockAccess iblockaccess) {
@@ -33,7 +33,7 @@ index 127428c400f6de1cb65458346aac6a176b6c1896..6ea402c603b9b54705e79a2fdc61fe5a
              return blockposition;
          } else {
              BlockPosition[] ablockposition = new BlockPosition[]{blockposition.down(), blockposition.west(), blockposition.east(), blockposition.north(), blockposition.south(), blockposition.down().down()};
-@@ -125,7 +129,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+@@ -142,7 +146,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
              for (int j = 0; j < i; ++j) {
                  BlockPosition blockposition1 = ablockposition1[j];
  
@@ -42,7 +42,7 @@ index 127428c400f6de1cb65458346aac6a176b6c1896..6ea402c603b9b54705e79a2fdc61fe5a
                      return blockposition1;
                  }
              }
-@@ -136,7 +140,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+@@ -153,7 +157,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
  
      @Override
      protected boolean a(IWorldReader iworldreader, BlockPosition blockposition) {
@@ -51,11 +51,19 @@ index 127428c400f6de1cb65458346aac6a176b6c1896..6ea402c603b9b54705e79a2fdc61fe5a
  
          return ichunkaccess == null ? false : ichunkaccess.getType(blockposition).a(this.g) && ichunkaccess.getType(blockposition.up()).isAir() && ichunkaccess.getType(blockposition.up(2)).isAir();
      }
-diff --git a/src/main/java/net/minecraft/server/RandomPositionGenerator.java b/src/main/java/net/minecraft/server/RandomPositionGenerator.java
-index 8dc028a4b1f5cf7bac0e3f1319bca5b5eb0e2482..aaa89a39bf697bd0f3354005b428d858f065f66b 100644
---- a/src/main/java/net/minecraft/server/RandomPositionGenerator.java
-+++ b/src/main/java/net/minecraft/server/RandomPositionGenerator.java
-@@ -116,6 +116,7 @@ public class RandomPositionGenerator {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/util/RandomPositionGenerator.java b/src/main/java/net/minecraft/world/entity/ai/util/RandomPositionGenerator.java
+index 129ea3857969ddb99e15ae817ee3eec67b4c3ccf..f9c40c8223109a9a40e7e7523c8f1f2e5aeddba1 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/util/RandomPositionGenerator.java
++++ b/src/main/java/net/minecraft/world/entity/ai/util/RandomPositionGenerator.java
+@@ -13,6 +13,7 @@ import net.minecraft.util.MathHelper;
+ import net.minecraft.world.entity.EntityCreature;
+ import net.minecraft.world.entity.ai.navigation.NavigationAbstract;
+ import net.minecraft.world.level.IBlockAccess;
++import net.minecraft.world.level.material.Fluid;
+ import net.minecraft.world.level.pathfinder.PathType;
+ import net.minecraft.world.level.pathfinder.PathfinderNormal;
+ import net.minecraft.world.phys.Vec3D;
+@@ -128,6 +129,7 @@ public class RandomPositionGenerator {
                  }
  
                  blockposition2 = new BlockPosition((double) k1 + entitycreature.locX(), (double) l1 + entitycreature.locY(), (double) i2 + entitycreature.locZ());
@@ -63,7 +71,7 @@ index 8dc028a4b1f5cf7bac0e3f1319bca5b5eb0e2482..aaa89a39bf697bd0f3354005b428d858
                  if (blockposition2.getY() >= 0 && blockposition2.getY() <= entitycreature.world.getBuildHeight() && (!flag3 || entitycreature.a(blockposition2)) && (!flag2 || navigationabstract.a(blockposition2))) {
                      if (flag1) {
                          blockposition2 = a(blockposition2, random.nextInt(l + 1) + i1, entitycreature.world.getBuildHeight(), (blockposition3) -> {
-@@ -123,7 +124,8 @@ public class RandomPositionGenerator {
+@@ -135,7 +137,8 @@ public class RandomPositionGenerator {
                          });
                      }
  

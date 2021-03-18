@@ -6,10 +6,10 @@ Subject: [PATCH] Remove streams from PairedQueue
 We shouldn't be doing stream calls just to see if the queue is
 empty. This creates loads of garbage thanks to how often it's called.
 
-diff --git a/src/main/java/net/minecraft/server/PairedQueue.java b/src/main/java/net/minecraft/server/PairedQueue.java
-index 85bb22e4b7376b676139048f2d55684e27a54055..2369afb4f37863c5c59456e46c48ad0d32f9eeb7 100644
---- a/src/main/java/net/minecraft/server/PairedQueue.java
-+++ b/src/main/java/net/minecraft/server/PairedQueue.java
+diff --git a/src/main/java/net/minecraft/util/thread/PairedQueue.java b/src/main/java/net/minecraft/util/thread/PairedQueue.java
+index 024b414aae32c8ad32bdf031361257fc74b80eb3..56c9efa78ceeac499182eb401e605a60dad12182 100644
+--- a/src/main/java/net/minecraft/util/thread/PairedQueue.java
++++ b/src/main/java/net/minecraft/util/thread/PairedQueue.java
 @@ -20,32 +20,30 @@ public interface PairedQueue<T, F> {
  
      public static final class a implements PairedQueue<PairedQueue.b, Runnable> {

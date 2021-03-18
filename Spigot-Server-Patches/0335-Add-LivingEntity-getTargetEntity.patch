@@ -4,52 +4,11 @@ Date: Sat, 22 Sep 2018 00:33:08 -0500
 Subject: [PATCH] Add LivingEntity#getTargetEntity
 
 
-diff --git a/src/main/java/net/minecraft/server/AxisAlignedBB.java b/src/main/java/net/minecraft/server/AxisAlignedBB.java
-index 02c09f39848399a86d46bd17569b4f01a7b5ab1f..ed9b2f9adfecdc6d1b9925579ec510657adde11f 100644
---- a/src/main/java/net/minecraft/server/AxisAlignedBB.java
-+++ b/src/main/java/net/minecraft/server/AxisAlignedBB.java
-@@ -112,6 +112,7 @@ public class AxisAlignedBB {
-         return this.b(vec3d.x, vec3d.y, vec3d.z);
-     }
- 
-+    public final AxisAlignedBB expand(double x, double y, double z) { return b(x, y, z); } // Paper - OBFHELPER
-     public AxisAlignedBB b(double d0, double d1, double d2) {
-         double d3 = this.minX;
-         double d4 = this.minY;
-@@ -141,6 +142,12 @@ public class AxisAlignedBB {
-         return new AxisAlignedBB(d3, d4, d5, d6, d7, d8);
-     }
- 
-+    // Paper start
-+    public AxisAlignedBB grow(double d0) {
-+        return grow(d0, d0, d0);
-+    }
-+    // Paper end
-+
-     public AxisAlignedBB grow(double d0, double d1, double d2) {
-         double d3 = this.minX - d0;
-         double d4 = this.minY - d1;
-@@ -200,6 +207,7 @@ public class AxisAlignedBB {
-         return this.minX < d3 && this.maxX > d0 && this.minY < d4 && this.maxY > d1 && this.minZ < d5 && this.maxZ > d2;
-     }
- 
-+    public final boolean contains(Vec3D vec3d) { return d(vec3d); } // Paper - OBFHELPER
-     public boolean d(Vec3D vec3d) {
-         return this.e(vec3d.x, vec3d.y, vec3d.z);
-     }
-@@ -233,6 +241,7 @@ public class AxisAlignedBB {
-         return this.g(-d0);
-     }
- 
-+    public final Optional<Vec3D> calculateIntercept(Vec3D vec3d, Vec3D vec3d1) { return b(vec3d, vec3d1); } // Paper - OBFHELPER
-     public Optional<Vec3D> b(Vec3D vec3d, Vec3D vec3d1) {
-         double[] adouble = new double[]{1.0D};
-         double d0 = vec3d1.x - vec3d.x;
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 031dcd2092800118d4cb12c8bb92b51ccf1bbd27..8827ccfc77284020496046e755b3639de75c5903 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -1418,6 +1418,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index f0c18a55900774ba67eaf094f175a9e37c16e56c..36e9a33d22fc2572e23e457adf62bd2bcebd10d3 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1504,6 +1504,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          return this.c(f - 90.0F, f1);
      }
  
@@ -57,7 +16,7 @@ index 031dcd2092800118d4cb12c8bb92b51ccf1bbd27..8827ccfc77284020496046e755b3639d
      public final Vec3D j(float f) {
          if (f == 1.0F) {
              return new Vec3D(this.locX(), this.getHeadY(), this.locZ());
-@@ -2063,6 +2064,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2149,6 +2150,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          return this.getPassengers().size() < 1;
      }
  
@@ -65,11 +24,19 @@ index 031dcd2092800118d4cb12c8bb92b51ccf1bbd27..8827ccfc77284020496046e755b3639d
      public float bg() {
          return 0.0F;
      }
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index cade819fe5f7b23b2f4ada721b33ae74516ef8fc..870aa56735bae3344d7d01d252b943225cc056c4 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -3544,6 +3544,37 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 58270f45de665b5c1cfd9fc548eadb263ad230e9..ecceb272028e1ae1dd40c0c39d6f687fccfabb58 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -108,6 +108,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParameterSet
+ import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
+ import net.minecraft.world.phys.AxisAlignedBB;
+ import net.minecraft.world.phys.MovingObjectPosition;
++import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
+ import net.minecraft.world.scores.ScoreboardTeam;
+ import org.apache.logging.log4j.Logger;
+@@ -3637,6 +3638,37 @@ public abstract class EntityLiving extends Entity {
          return world.rayTrace(raytrace);
      }
  
@@ -107,11 +74,11 @@ index cade819fe5f7b23b2f4ada721b33ae74516ef8fc..870aa56735bae3344d7d01d252b94322
      public int shieldBlockingDelay = world.paperConfig.shieldBlockingDelay;
  
      public int getShieldBlockingDelay() {
-diff --git a/src/main/java/net/minecraft/server/IEntitySelector.java b/src/main/java/net/minecraft/server/IEntitySelector.java
-index 863f4464c688912b3e0ce61cbbbf263e38a3af4b..3d54b7a4bf102dfc568e782706f67e4b5269eaf1 100644
---- a/src/main/java/net/minecraft/server/IEntitySelector.java
-+++ b/src/main/java/net/minecraft/server/IEntitySelector.java
-@@ -17,6 +17,7 @@ public final class IEntitySelector {
+diff --git a/src/main/java/net/minecraft/world/entity/IEntitySelector.java b/src/main/java/net/minecraft/world/entity/IEntitySelector.java
+index 4776a47566aac487dc77fd6b4b9b42b95974e31a..cb5cda5e6497edeb801ef712f9bd8823cb055750 100644
+--- a/src/main/java/net/minecraft/world/entity/IEntitySelector.java
++++ b/src/main/java/net/minecraft/world/entity/IEntitySelector.java
+@@ -22,6 +22,7 @@ public final class IEntitySelector {
      public static final Predicate<Entity> e = (entity) -> {
          return !(entity instanceof EntityHuman) || !entity.isSpectator() && !((EntityHuman) entity).isCreative();
      };
@@ -119,34 +86,95 @@ index 863f4464c688912b3e0ce61cbbbf263e38a3af4b..3d54b7a4bf102dfc568e782706f67e4b
      public static final Predicate<Entity> f = (entity) -> {
          return !(entity instanceof EntityHuman) || !entity.isSpectator() && !((EntityHuman) entity).isCreative() && entity.world.getDifficulty() != EnumDifficulty.PEACEFUL;
      };
+diff --git a/src/main/java/net/minecraft/world/phys/AxisAlignedBB.java b/src/main/java/net/minecraft/world/phys/AxisAlignedBB.java
+index 3941dd33da4b5c09d0087143f1d8a2d76fc18792..62513c812b497bb9d8dafe1d9c2f574059aebf15 100644
+--- a/src/main/java/net/minecraft/world/phys/AxisAlignedBB.java
++++ b/src/main/java/net/minecraft/world/phys/AxisAlignedBB.java
+@@ -116,6 +116,7 @@ public class AxisAlignedBB {
+         return this.b(vec3d.x, vec3d.y, vec3d.z);
+     }
+ 
++    public final AxisAlignedBB expand(double x, double y, double z) { return b(x, y, z); } // Paper - OBFHELPER
+     public AxisAlignedBB b(double d0, double d1, double d2) {
+         double d3 = this.minX;
+         double d4 = this.minY;
+@@ -145,6 +146,12 @@ public class AxisAlignedBB {
+         return new AxisAlignedBB(d3, d4, d5, d6, d7, d8);
+     }
+ 
++    // Paper start
++    public AxisAlignedBB grow(double d0) {
++        return grow(d0, d0, d0);
++    }
++    // Paper end
++
+     public AxisAlignedBB grow(double d0, double d1, double d2) {
+         double d3 = this.minX - d0;
+         double d4 = this.minY - d1;
+@@ -204,6 +211,7 @@ public class AxisAlignedBB {
+         return this.minX < d3 && this.maxX > d0 && this.minY < d4 && this.maxY > d1 && this.minZ < d5 && this.maxZ > d2;
+     }
+ 
++    public final boolean contains(Vec3D vec3d) { return d(vec3d); } // Paper - OBFHELPER
+     public boolean d(Vec3D vec3d) {
+         return this.e(vec3d.x, vec3d.y, vec3d.z);
+     }
+@@ -237,6 +245,7 @@ public class AxisAlignedBB {
+         return this.g(-d0);
+     }
+ 
++    public final Optional<Vec3D> calculateIntercept(Vec3D vec3d, Vec3D vec3d1) { return b(vec3d, vec3d1); } // Paper - OBFHELPER
+     public Optional<Vec3D> b(Vec3D vec3d, Vec3D vec3d1) {
+         double[] adouble = new double[]{1.0D};
+         double d0 = vec3d1.x - vec3d.x;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 3ec331f51bb305a82d2a12423c28d1f2e8ab8365..2fccc6a8a3dcf96e8ec714c2f7fa2f62af60cb76 100644
+index c692626b747008a5418ecabf550fc67e3b676f5b..ff586b8366a6298f1906551b068e8abb26fcabc7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -221,6 +221,33 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
-             new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, ((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getBlockPosition()),
-                 net.minecraft.server.MCUtil.toBukkitBlockFace(((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getDirection()));
+@@ -1,6 +1,7 @@
+ package org.bukkit.craftbukkit.entity;
+ 
+ import com.destroystokyo.paper.block.TargetBlockInfo;
++import com.destroystokyo.paper.entity.TargetEntityInfo;
+ import com.google.common.base.Preconditions;
+ import com.google.common.collect.Sets;
+ import java.util.ArrayList;
+@@ -42,8 +43,11 @@ import net.minecraft.world.entity.projectile.EntityThrownExpBottle;
+ import net.minecraft.world.entity.projectile.EntityThrownTrident;
+ import net.minecraft.world.entity.projectile.EntityTippedArrow;
+ import net.minecraft.world.entity.projectile.EntityWitherSkull;
++import net.minecraft.world.level.RayTrace;
+ import net.minecraft.world.phys.MovingObjectPosition;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
++import net.minecraft.world.phys.MovingObjectPositionEntity;
++import net.minecraft.world.phys.Vec3D;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.FluidCollisionMode;
+ import org.bukkit.Location;
+@@ -227,6 +231,33 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+             new TargetBlockInfo(CraftBlock.at(getHandle().world, ((MovingObjectPositionBlock)rayTrace).getBlockPosition()),
+                 MCUtil.toBukkitBlockFace(((MovingObjectPositionBlock)rayTrace).getDirection()));
      }
 +
 +    public Entity getTargetEntity(int maxDistance, boolean ignoreBlocks) {
-+        net.minecraft.server.MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
++        MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
 +        return rayTrace == null ? null : rayTrace.getEntity().getBukkitEntity();
 +    }
 +
-+    public com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks) {
-+        net.minecraft.server.MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
-+        return rayTrace == null ? null : new com.destroystokyo.paper.entity.TargetEntityInfo(rayTrace.getEntity().getBukkitEntity(), new org.bukkit.util.Vector(rayTrace.getPos().x, rayTrace.getPos().y, rayTrace.getPos().z));
++    public TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks) {
++        MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
++        return rayTrace == null ? null : new TargetEntityInfo(rayTrace.getEntity().getBukkitEntity(), new org.bukkit.util.Vector(rayTrace.getPos().x, rayTrace.getPos().y, rayTrace.getPos().z));
 +    }
 +
-+    public net.minecraft.server.MovingObjectPositionEntity rayTraceEntity(int maxDistance, boolean ignoreBlocks) {
-+        net.minecraft.server.MovingObjectPositionEntity rayTrace = getHandle().getTargetEntity(maxDistance);
++    public MovingObjectPositionEntity rayTraceEntity(int maxDistance, boolean ignoreBlocks) {
++        MovingObjectPositionEntity rayTrace = getHandle().getTargetEntity(maxDistance);
 +        if (rayTrace == null) {
 +            return null;
 +        }
 +        if (!ignoreBlocks) {
-+            net.minecraft.server.MovingObjectPosition rayTraceBlocks = getHandle().getRayTrace(maxDistance, net.minecraft.server.RayTrace.FluidCollisionOption.NONE);
++            MovingObjectPosition rayTraceBlocks = getHandle().getRayTrace(maxDistance, RayTrace.FluidCollisionOption.NONE);
 +            if (rayTraceBlocks != null) {
-+                net.minecraft.server.Vec3D eye = getHandle().getEyePosition(1.0F);
++                Vec3D eye = getHandle().getEyePosition(1.0F);
 +                if (eye.distanceSquared(rayTraceBlocks.getPos()) <= eye.distanceSquared(rayTrace.getPos())) {
 +                    return null;
 +                }

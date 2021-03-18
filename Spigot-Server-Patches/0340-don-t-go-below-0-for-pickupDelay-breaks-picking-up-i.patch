@@ -5,11 +5,11 @@ Subject: [PATCH] don't go below 0 for pickupDelay, breaks picking up items
 
 vanilla checks for == 0
 
-diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 3ba7bd0461d1c58c235cf0cda8d4eecf36b57407..001ddbe669c8c1a534a4e023386c00085ee1af95 100644
---- a/src/main/java/net/minecraft/server/EntityItem.java
-+++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -61,6 +61,7 @@ public class EntityItem extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityItem.java b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+index 4cfe3475fa913cd46116f13ea8ed9caf5372a41a..02e4d6891adc902f73ed349f15dae3a429bd283a 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityItem.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+@@ -87,6 +87,7 @@ public class EntityItem extends Entity {
              // CraftBukkit start - Use wall time for pickup and despawn timers
              int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
              if (this.pickupDelay != 32767) this.pickupDelay -= elapsedTicks;
@@ -17,7 +17,7 @@ index 3ba7bd0461d1c58c235cf0cda8d4eecf36b57407..001ddbe669c8c1a534a4e023386c0008
              if (this.age != -32768) this.age += elapsedTicks;
              this.lastTick = MinecraftServer.currentTick;
              // CraftBukkit end
-@@ -153,6 +154,7 @@ public class EntityItem extends Entity {
+@@ -179,6 +180,7 @@ public class EntityItem extends Entity {
          // CraftBukkit start - Use wall time for pickup and despawn timers
          int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
          if (this.pickupDelay != 32767) this.pickupDelay -= elapsedTicks;

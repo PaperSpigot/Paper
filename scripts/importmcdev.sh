@@ -2,7 +2,7 @@
 
 (
 set -e
-nms="net/minecraft/server"
+nms="net/minecraft"
 export MODLOG=""
 PS1="$"
 basedir="$(cd "$1" && pwd -P)"
@@ -24,6 +24,7 @@ function import {
     if [[ ! -f "$target" ]]; then
         export MODLOG="$MODLOG  Imported $file from mc-dev\n";
         #echo "Copying $base to $target"
+        mkdir -p "$(dirname "$target")"
         cp "$base" "$target" || exit 1
     else
         echo "UN-NEEDED IMPORT: $file"
@@ -59,10 +60,9 @@ function importLibrary {
 )
 
 
+files=$(cat "$basedir/Spigot-Server-Patches/"* | grep "+++ b/src/main/java/net/minecraft/" | sort | uniq | sed 's/\+\+\+ b\/src\/main\/java\/net\/minecraft\///g')
 
-files=$(cat "$basedir/Spigot-Server-Patches/"* | grep "+++ b/src/main/java/net/minecraft/server/" | sort | uniq | sed 's/\+\+\+ b\/src\/main\/java\/net\/minecraft\/server\///g' | sed 's/.java//g')
-
-nonnms=$(grep -R "new file mode" -B 1 "$basedir/Spigot-Server-Patches/" | grep -v "new file mode" | grep -oE "net\/minecraft\/server\/.*.java" | grep -oE "[A-Za-z]+?.java$" --color=none | sed 's/.java//g')
+nonnms=$(grep -R "new file mode" -B 1 "$basedir/Spigot-Server-Patches/" | grep -v "new file mode" | grep -oE --color=none "net\/minecraft\/.*.java" | sed 's/.*\/net\/minecraft\///g')
 function containsElement {
 	local e
 	for e in "${@:2}"; do
@@ -74,15 +74,20 @@ set +e
 for f in $files; do
 	containsElement "$f" ${nonnms[@]}
 	if [ "$?" == "1" ]; then
-		if [ ! -f "$workdir/Spigot/Spigot-Server/src/main/java/net/minecraft/server/$f.java" ]; then
+		if [ ! -f "$workdir/Spigot/Spigot-Server/src/main/java/net/minecraft/$f" ]; then
+      f="$(echo "$f" | sed 's/.java//g')"
 			if [ ! -f "$decompiledir/$nms/$f.java" ]; then
 				echo "$(color 1 31) ERROR!!! Missing NMS$(color 1 34) $f $(colorend)";
+				error=true
 			else
 				import $f
 			fi
 		fi
 	fi
 done
+if [ -n "$error" ]; then
+  exit 1
+fi
 
 ########################################################
 ########################################################

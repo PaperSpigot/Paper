@@ -6,13 +6,13 @@ Subject: [PATCH] Expose client protocol version and virtual host
 
 diff --git a/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5caca6439d2135e34880d501397fe2ea197d7249
+index 0000000000000000000000000000000000000000..8a716c1647aa29906be26ac262e93ebd2c1adfaa
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
 @@ -0,0 +1,50 @@
 +package com.destroystokyo.paper.network;
 +
-+import net.minecraft.server.NetworkManager;
++import net.minecraft.network.NetworkManager;
 +
 +import java.net.InetSocketAddress;
 +
@@ -60,26 +60,11 @@ index 0000000000000000000000000000000000000000..5caca6439d2135e34880d501397fe2ea
 +    }
 +
 +}
-diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index bad5d4f165d1e469ed583b036f78e467b94691fd..89a83253c99c387e1c91c434952c549d598b11aa 100644
---- a/src/main/java/net/minecraft/server/HandshakeListener.java
-+++ b/src/main/java/net/minecraft/server/HandshakeListener.java
-@@ -134,6 +134,10 @@ public class HandshakeListener implements PacketHandshakingInListener {
-                 throw new UnsupportedOperationException("Invalid intention " + packethandshakinginsetprotocol.b());
-         }
- 
-+        // Paper start - NetworkClient implementation
-+        this.getNetworkManager().protocolVersion = packethandshakinginsetprotocol.getProtocolVersion();
-+        this.getNetworkManager().virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
-+        // Paper end
-     }
- 
-     @Override
-diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 6034f0cf5a22adb8441226cd54c519e41c198f6f..1b11b4a8d26bd174b0c6f97225555eb585f67836 100644
---- a/src/main/java/net/minecraft/server/NetworkManager.java
-+++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -60,6 +60,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+diff --git a/src/main/java/net/minecraft/network/NetworkManager.java b/src/main/java/net/minecraft/network/NetworkManager.java
+index f093b465b868e6003bb2b5ee634a624b5b054493..60e4a4aa3854aaeb250d1318f2f25cf3591ea1d3 100644
+--- a/src/main/java/net/minecraft/network/NetworkManager.java
++++ b/src/main/java/net/minecraft/network/NetworkManager.java
+@@ -70,6 +70,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      private float s;
      private int t;
      private boolean u;
@@ -90,11 +75,11 @@ index 6034f0cf5a22adb8441226cd54c519e41c198f6f..1b11b4a8d26bd174b0c6f97225555eb5
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
-diff --git a/src/main/java/net/minecraft/server/PacketHandshakingInSetProtocol.java b/src/main/java/net/minecraft/server/PacketHandshakingInSetProtocol.java
-index 4f008e4723d2cb0bcabb2d5621203d63c40c4923..8545146fb1f093f821e3b966d9337049575c6773 100644
---- a/src/main/java/net/minecraft/server/PacketHandshakingInSetProtocol.java
-+++ b/src/main/java/net/minecraft/server/PacketHandshakingInSetProtocol.java
-@@ -35,6 +35,7 @@ public class PacketHandshakingInSetProtocol implements Packet<PacketHandshakingI
+diff --git a/src/main/java/net/minecraft/network/protocol/handshake/PacketHandshakingInSetProtocol.java b/src/main/java/net/minecraft/network/protocol/handshake/PacketHandshakingInSetProtocol.java
+index 5b815717084193d37d1d458458f1fd86bb3e9627..65ff946363fbee43adf76710b7379e184c5cbb22 100644
+--- a/src/main/java/net/minecraft/network/protocol/handshake/PacketHandshakingInSetProtocol.java
++++ b/src/main/java/net/minecraft/network/protocol/handshake/PacketHandshakingInSetProtocol.java
+@@ -38,6 +38,7 @@ public class PacketHandshakingInSetProtocol implements Packet<PacketHandshakingI
          return this.d;
      }
  
@@ -102,8 +87,23 @@ index 4f008e4723d2cb0bcabb2d5621203d63c40c4923..8545146fb1f093f821e3b966d9337049
      public int c() {
          return this.a;
      }
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index 31011ec34e5eeae29705f6ec167fb2e832284873..965dd2a4a446ca31597b9e91bd405e4f01ad8348 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -145,6 +145,10 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                 throw new UnsupportedOperationException("Invalid intention " + packethandshakinginsetprotocol.b());
+         }
+ 
++        // Paper start - NetworkClient implementation
++        this.getNetworkManager().protocolVersion = packethandshakinginsetprotocol.getProtocolVersion();
++        this.getNetworkManager().virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
++        // Paper end
+     }
+ 
+     @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index ee2334e5cd2bb141131b5fe7e585da7c1107324e..69606cf1ac2c8419801af692c19d55d3d56bc0a8 100644
+index c3058d6fca2fd58aea5001e4310592aa8bd20640..cf9ae60db30ef09bb4c89935a42632e562b6d61e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -188,6 +188,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

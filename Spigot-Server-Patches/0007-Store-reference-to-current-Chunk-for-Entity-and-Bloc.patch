@@ -7,11 +7,76 @@ Subject: [PATCH] Store reference to current Chunk for Entity and Block
 This enables us a fast reference to the entities current chunk instead
 of having to look it up by hashmap lookups.
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index c8ff99ef5c7574292ee66a4aec45d1550eab1624..7c5f79124d2f2c69548263e79752484e07e77d48 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -56,11 +56,36 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index ec553e7d7595ef3652bfa3325a07483bb3c32245..2bea2f4748cadf479dd4f89792ef5ffdd88e9cab 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -261,7 +261,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     }
+ 
+     public boolean isChunkLoaded() {
+-        return world.isChunkLoaded((int) Math.floor(this.locX()) >> 4, (int) Math.floor(this.locZ()) >> 4);
++        return getCurrentChunk() != null;
+     }
+     // CraftBukkit end
+ 
+@@ -1763,6 +1763,23 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     }
+ 
+     // Paper start
++    public java.lang.ref.WeakReference<net.minecraft.world.level.chunk.Chunk> currentChunk = null;
++
++    public void setCurrentChunk(net.minecraft.world.level.chunk.Chunk chunk) {
++        this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;
++    }
++    /**
++     * Returns the entities current registered chunk. If the entity is not added to a chunk yet, it will return null
++     */
++    public net.minecraft.world.level.chunk.Chunk getCurrentChunk() {
++        final net.minecraft.world.level.chunk.Chunk chunk = currentChunk != null ? currentChunk.get() : null;
++        if (chunk != null && chunk.loaded) {
++            return chunk;
++        }
++
++        return !inChunk ? null : ((WorldServer)world).getChunkProvider().getChunkAtIfLoadedMainThreadNoCache(chunkX, chunkZ);
++    }
++
+     private MinecraftKey entityKey;
+     private String entityKeyString;
+ 
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index 2b58ae6d91fe0d0f36eedbb78a3c8a8a66d92405..75110c41af3e0097aef65091a2497dd87d08b4b2 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -11,6 +11,7 @@ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.EnumBlockMirror;
+ import net.minecraft.world.level.block.EnumBlockRotation;
+ import net.minecraft.world.level.block.state.IBlockData;
++import net.minecraft.world.level.chunk.Chunk;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.apache.logging.log4j.util.Supplier;
+@@ -63,6 +64,15 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
+         getMinecraftKey(); // Try to load if it doesn't exists.
+         return tileEntityKeyString;
+     }
++
++    private java.lang.ref.WeakReference<Chunk> currentChunk = null;
++    public Chunk getCurrentChunk() {
++        final Chunk chunk = currentChunk != null ? currentChunk.get() : null;
++        return chunk != null && chunk.loaded ? chunk : null;
++    }
++    public void setCurrentChunk(Chunk chunk) {
++        this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;
++    }
+     // Paper end
+ 
+     @Nullable
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index b15200c2a3923bd8be2ee5e73fdadfeea3e3a8dc..929f6fcd4b9f1b9a1488e170d6a77a5d64beecf3 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -90,11 +90,36 @@ public class Chunk implements IChunkAccess {
          this(world, chunkcoordintpair, biomestorage, ChunkConverter.a, TickListEmpty.b(), TickListEmpty.b(), 0L, (ChunkSection[]) null, (Consumer) null);
      }
  
@@ -49,7 +114,7 @@ index c8ff99ef5c7574292ee66a4aec45d1550eab1624..7c5f79124d2f2c69548263e79752484e
          this.l = Maps.newHashMap();
          this.m = Maps.newHashMap();
          this.n = new ShortList[16];
-@@ -471,6 +496,7 @@ public class Chunk implements IChunkAccess {
+@@ -505,6 +530,7 @@ public class Chunk implements IChunkAccess {
          }
  
          entity.inChunk = true;
@@ -57,7 +122,7 @@ index c8ff99ef5c7574292ee66a4aec45d1550eab1624..7c5f79124d2f2c69548263e79752484e
          entity.chunkX = this.loc.x;
          entity.chunkY = k;
          entity.chunkZ = this.loc.z;
-@@ -483,6 +509,7 @@ public class Chunk implements IChunkAccess {
+@@ -517,6 +543,7 @@ public class Chunk implements IChunkAccess {
          ((HeightMap) this.heightMap.get(heightmap_type)).a(along);
      }
  
@@ -65,7 +130,7 @@ index c8ff99ef5c7574292ee66a4aec45d1550eab1624..7c5f79124d2f2c69548263e79752484e
      public void b(Entity entity) {
          this.a(entity, entity.chunkY);
      }
-@@ -497,7 +524,12 @@ public class Chunk implements IChunkAccess {
+@@ -531,7 +558,12 @@ public class Chunk implements IChunkAccess {
              i = this.entitySlices.length - 1;
          }
  
@@ -79,71 +144,14 @@ index c8ff99ef5c7574292ee66a4aec45d1550eab1624..7c5f79124d2f2c69548263e79752484e
          this.entities.remove(entity); // Paper
      }
  
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index b8267cf23f795fd7e586b0e567037eae5048d08e..b35ffae9f88cc14aec01482c2a3ed2e2428c2012 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -176,7 +176,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
-     }
- 
-     public boolean isChunkLoaded() {
--        return world.isChunkLoaded((int) Math.floor(this.locX()) >> 4, (int) Math.floor(this.locZ()) >> 4);
-+        return getCurrentChunk() != null;
-     }
-     // CraftBukkit end
- 
-@@ -1678,6 +1678,23 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
-     }
- 
-     // Paper start
-+    java.lang.ref.WeakReference<Chunk> currentChunk = null;
-+
-+    public void setCurrentChunk(Chunk chunk) {
-+        this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;
-+    }
-+    /**
-+     * Returns the entities current registered chunk. If the entity is not added to a chunk yet, it will return null
-+     */
-+    public Chunk getCurrentChunk() {
-+        final Chunk chunk = currentChunk != null ? currentChunk.get() : null;
-+        if (chunk != null && chunk.loaded) {
-+            return chunk;
-+        }
-+
-+        return !inChunk ? null : ((WorldServer)world).getChunkProvider().getChunkAtIfLoadedMainThreadNoCache(chunkX, chunkZ);
-+    }
-+
-     private MinecraftKey entityKey;
-     private String entityKeyString;
- 
-diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
-index c80f964aef02ac6edd0dcf9f4af9f849e8ac3da9..43757f60d091414befe7daa192b17e2fe1ddbef9 100644
---- a/src/main/java/net/minecraft/server/TileEntity.java
-+++ b/src/main/java/net/minecraft/server/TileEntity.java
-@@ -53,6 +53,15 @@ public abstract class TileEntity implements KeyedObject { // Paper
-         getMinecraftKey(); // Try to load if it doesn't exists.
-         return tileEntityKeyString;
-     }
-+
-+    private java.lang.ref.WeakReference<Chunk> currentChunk = null;
-+    public Chunk getCurrentChunk() {
-+        final Chunk chunk = currentChunk != null ? currentChunk.get() : null;
-+        return chunk != null && chunk.loaded ? chunk : null;
-+    }
-+    public void setCurrentChunk(Chunk chunk) {
-+        this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;
-+    }
-     // Paper end
- 
-     @Nullable
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 48747fada4f982ada8c8598fb8ba756d901b40f1..a2048d2dd71381ee5e878c87e0d727ab62756b20 100644
+index df7e5f1d17ddfeffc15df02906c3bf9f9461d82b..eea242af23825ad29ada6e997205e87edffb6bb9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -145,6 +145,7 @@ import net.minecraft.server.EntityZombieVillager;
- import net.minecraft.server.IChatBaseComponent;
- import net.minecraft.server.NBTBase;
- import net.minecraft.server.NBTTagCompound;
+@@ -145,6 +145,7 @@ import net.minecraft.world.entity.vehicle.EntityMinecartMobSpawner;
+ import net.minecraft.world.entity.vehicle.EntityMinecartRideable;
+ import net.minecraft.world.entity.vehicle.EntityMinecartTNT;
+ import net.minecraft.world.phys.AxisAlignedBB;
 +import org.bukkit.Chunk; // Paper
  import org.bukkit.EntityEffect;
  import org.bukkit.Location;
@@ -154,7 +162,7 @@ index 48747fada4f982ada8c8598fb8ba756d901b40f1..a2048d2dd71381ee5e878c87e0d727ab
  
 +    @Override
 +    public Chunk getChunk() {
-+        net.minecraft.server.Chunk currentChunk = entity.getCurrentChunk();
++        net.minecraft.world.level.chunk.Chunk currentChunk = entity.getCurrentChunk();
 +        return currentChunk != null ? currentChunk.bukkitChunk : getLocation().getChunk();
 +    }
 +

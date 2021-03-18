@@ -18,11 +18,11 @@ index 4881b03d470646843bad1bc343eb6a6ab9072d8e..2222c1bb5f8625eee4d88946e4bfdfa2
 +        disableExplosionKnockback = getBoolean("disable-explosion-knockback", false);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index d41638b97188ba58d2456d2f6c3c71fc79fe572a..9295f72aa5a2a95efa89fdc90ae7106540403042 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1190,6 +1190,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 98f5f1dcd0abf9272533bf3801bab316c9f0a12c..3598db4144141a8701a2879be13a81a8ee48018c 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -1283,6 +1283,7 @@ public abstract class EntityLiving extends Entity {
                  }
              }
  
@@ -30,7 +30,7 @@ index d41638b97188ba58d2456d2f6c3c71fc79fe572a..9295f72aa5a2a95efa89fdc90ae71065
              if (flag1) {
                  if (flag) {
                      this.world.broadcastEntityEffect(this, (byte) 29);
-@@ -1208,6 +1209,7 @@ public abstract class EntityLiving extends Entity {
+@@ -1301,6 +1302,7 @@ public abstract class EntityLiving extends Entity {
                          b0 = 2;
                      }
  
@@ -38,7 +38,7 @@ index d41638b97188ba58d2456d2f6c3c71fc79fe572a..9295f72aa5a2a95efa89fdc90ae71065
                      this.world.broadcastEntityEffect(this, b0);
                  }
  
-@@ -1231,6 +1233,7 @@ public abstract class EntityLiving extends Entity {
+@@ -1324,6 +1326,7 @@ public abstract class EntityLiving extends Entity {
                  }
              }
  
@@ -46,11 +46,11 @@ index d41638b97188ba58d2456d2f6c3c71fc79fe572a..9295f72aa5a2a95efa89fdc90ae71065
              if (this.dl()) {
                  if (!this.f(damagesource)) {
                      SoundEffect soundeffect = this.getSoundDeath();
-diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index ac39b02ec5f02f6f2db9f293513686d2d29d4036..471b48a52d564cb4989d211188f5c5b561ac7827 100644
---- a/src/main/java/net/minecraft/server/Explosion.java
-+++ b/src/main/java/net/minecraft/server/Explosion.java
-@@ -189,14 +189,14 @@ public class Explosion {
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index 6a7af2c0c3c294b10c6ddbf98babb0f30d7d5f56..618cf4e0d71b4b04085807314e79a02785f8a498 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -217,14 +217,14 @@ public class Explosion {
                          double d14 = d13;
  
                          if (entity instanceof EntityLiving) {

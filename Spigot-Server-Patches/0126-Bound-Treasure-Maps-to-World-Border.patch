@@ -10,23 +10,11 @@ This also would help the case where a players close to the border, and one
 that is outside happens to be closer, but unreachable, yet another reachable
 one is in border that would of been missed.
 
-diff --git a/src/main/java/net/minecraft/server/StructureGenerator.java b/src/main/java/net/minecraft/server/StructureGenerator.java
-index a8e3bbd18e08678e55aa88b09a9f7feb37ab4761..c3bd58069d8dbdf36f70f1dafd7c24000f31708b 100644
---- a/src/main/java/net/minecraft/server/StructureGenerator.java
-+++ b/src/main/java/net/minecraft/server/StructureGenerator.java
-@@ -142,6 +142,7 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
-                             int i2 = l + k * k1;
-                             int j2 = i1 + k * l1;
-                             ChunkCoordIntPair chunkcoordintpair = this.a(structuresettingsfeature, j, seededrandom, i2, j2);
-+                            if (!iworldreader.getWorldBorder().isChunkInBounds(chunkcoordintpair.x, chunkcoordintpair.z)) { continue; } // Paper
-                             IChunkAccess ichunkaccess = iworldreader.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, ChunkStatus.STRUCTURE_STARTS);
-                             StructureStart<?> structurestart = structuremanager.a(SectionPosition.a(ichunkaccess.getPos(), 0), this, ichunkaccess);
- 
-diff --git a/src/main/java/net/minecraft/server/WorldBorder.java b/src/main/java/net/minecraft/server/WorldBorder.java
-index 717f495abd63218bb7ce9241e7cfeac809ef02de..adab2bd76e7e99140218ddbdb00aa9c27c0d0183 100644
---- a/src/main/java/net/minecraft/server/WorldBorder.java
-+++ b/src/main/java/net/minecraft/server/WorldBorder.java
-@@ -26,6 +26,18 @@ public class WorldBorder {
+diff --git a/src/main/java/net/minecraft/world/level/border/WorldBorder.java b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+index f16c76df5d7b184d57f4cc397f069eac9cc430cb..50e2085766caabec1125ca24a2117549efd1a354 100644
+--- a/src/main/java/net/minecraft/world/level/border/WorldBorder.java
++++ b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+@@ -36,6 +36,18 @@ public class WorldBorder {
          return (double) (blockposition.getX() + 1) > this.e() && (double) blockposition.getX() < this.g() && (double) (blockposition.getZ() + 1) > this.f() && (double) blockposition.getZ() < this.h();
      }
  
@@ -45,3 +33,15 @@ index 717f495abd63218bb7ce9241e7cfeac809ef02de..adab2bd76e7e99140218ddbdb00aa9c2
      public boolean isInBounds(ChunkCoordIntPair chunkcoordintpair) {
          return (double) chunkcoordintpair.f() > this.e() && (double) chunkcoordintpair.d() < this.g() && (double) chunkcoordintpair.g() > this.f() && (double) chunkcoordintpair.e() < this.h();
      }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+index 6724927be178cb9a358a9276d01894a63154b7b3..ea7e3e15fa778c573d24f956f72f60579ea0b1a1 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+@@ -175,6 +175,7 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
+                             int i2 = l + k * k1;
+                             int j2 = i1 + k * l1;
+                             ChunkCoordIntPair chunkcoordintpair = this.a(structuresettingsfeature, j, seededrandom, i2, j2);
++                            if (!iworldreader.getWorldBorder().isChunkInBounds(chunkcoordintpair.x, chunkcoordintpair.z)) { continue; } // Paper
+                             IChunkAccess ichunkaccess = iworldreader.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, ChunkStatus.STRUCTURE_STARTS);
+                             StructureStart<?> structurestart = structuremanager.a(SectionPosition.a(ichunkaccess.getPos(), 0), this, ichunkaccess);
+ 

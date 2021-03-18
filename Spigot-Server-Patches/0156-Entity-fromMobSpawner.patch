@@ -4,11 +4,11 @@ Date: Sun, 18 Jun 2017 18:17:05 -0500
 Subject: [PATCH] Entity#fromMobSpawner()
 
 
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index bb049690ce61310a90852637397abd449c1dc43a..3b134ea0a6b30dce70ed9d00414c305354e07476 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -183,6 +183,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index b798190628c1d83b5bf9e5497b515ef1e9f26707..6b6de18e368d48b61482a7210794b756d805a460 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -268,6 +268,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      public final org.spigotmc.ActivationRange.ActivationType activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
      public final boolean defaultActivationState;
      public long activatedTick = Integer.MIN_VALUE;
@@ -16,7 +16,7 @@ index bb049690ce61310a90852637397abd449c1dc43a..3b134ea0a6b30dce70ed9d00414c3053
      protected int numCollisions = 0; // Paper
      public void inactiveTick() { }
      // Spigot end
-@@ -1580,6 +1581,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1665,6 +1666,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
              if (this.origin != null) {
                  nbttagcompound.set("Paper.Origin", this.createList(origin.getX(), origin.getY(), origin.getZ()));
              }
@@ -27,7 +27,7 @@ index bb049690ce61310a90852637397abd449c1dc43a..3b134ea0a6b30dce70ed9d00414c3053
              // Paper end
              return nbttagcompound;
          } catch (Throwable throwable) {
-@@ -1708,6 +1713,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1793,6 +1798,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
              if (!originTag.isEmpty()) {
                  origin = new org.bukkit.Location(world.getWorld(), originTag.getDoubleAt(0), originTag.getDoubleAt(1), originTag.getDoubleAt(2));
              }
@@ -36,11 +36,11 @@ index bb049690ce61310a90852637397abd449c1dc43a..3b134ea0a6b30dce70ed9d00414c3053
              // Paper end
  
          } catch (Throwable throwable) {
-diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index 259713339217660e8b81a9500f57c6995ea59dde..8eb20c6b9a88d5d4056f91df1f496d3d35b473da 100644
---- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-+++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -143,6 +143,7 @@ public abstract class MobSpawnerAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+index 76c98d576d3e567ec4482b30219f5a9107cb9703..43fcc001bb9815b352cb74af10290b2a4ccaa540 100644
+--- a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
++++ b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+@@ -160,6 +160,7 @@ public abstract class MobSpawnerAbstract {
                                  }
                                  // Spigot End
                              }
@@ -49,10 +49,10 @@ index 259713339217660e8b81a9500f57c6995ea59dde..8eb20c6b9a88d5d4056f91df1f496d3d
                              if (org.bukkit.craftbukkit.event.CraftEventFactory.callSpawnerSpawnEvent(entity, blockposition).isCancelled()) {
                                  Entity vehicle = entity.getVehicle();
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 14c06298157c4a6c6061df01b213e69b6c3481d5..976dbe680ef56095071b0416d5e1f0d68cf546e6 100644
+index a58626b1a0160983a738a45c8a1d411eb347e6a2..4c2a35fb33da19a15a220dc5e0c9fa3233d657fb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1101,5 +1101,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1100,5 +1100,10 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
          Location origin = getHandle().origin;
          return origin == null ? null : origin.clone();
      }

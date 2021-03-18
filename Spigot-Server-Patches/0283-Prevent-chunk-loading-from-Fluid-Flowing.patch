@@ -4,11 +4,11 @@ Date: Mon, 10 Sep 2018 23:36:16 -0400
 Subject: [PATCH] Prevent chunk loading from Fluid Flowing
 
 
-diff --git a/src/main/java/net/minecraft/server/FluidTypeFlowing.java b/src/main/java/net/minecraft/server/FluidTypeFlowing.java
-index 9f99503a7631497fd20edb935cd3bb8b5b3cbdf7..cf9d3faabe8732d27c436f4806c727592e475f81 100644
---- a/src/main/java/net/minecraft/server/FluidTypeFlowing.java
-+++ b/src/main/java/net/minecraft/server/FluidTypeFlowing.java
-@@ -155,7 +155,8 @@ public abstract class FluidTypeFlowing extends FluidType {
+diff --git a/src/main/java/net/minecraft/world/level/material/FluidTypeFlowing.java b/src/main/java/net/minecraft/world/level/material/FluidTypeFlowing.java
+index 2f0f8a44d808875d70123a63487ce1ebe02f53a9..6bb4ec00e40795ced73648fefcd1f5027e0113cd 100644
+--- a/src/main/java/net/minecraft/world/level/material/FluidTypeFlowing.java
++++ b/src/main/java/net/minecraft/world/level/material/FluidTypeFlowing.java
+@@ -176,7 +176,8 @@ public abstract class FluidTypeFlowing extends FluidType {
                  EnumDirection enumdirection = (EnumDirection) entry.getKey();
                  Fluid fluid1 = (Fluid) entry.getValue();
                  BlockPosition blockposition1 = blockposition.shift(enumdirection);
@@ -18,7 +18,7 @@ index 9f99503a7631497fd20edb935cd3bb8b5b3cbdf7..cf9d3faabe8732d27c436f4806c72759
  
                  if (this.a(generatoraccess, blockposition, iblockdata, enumdirection, blockposition1, iblockdata1, generatoraccess.getFluid(blockposition1), fluid1.getType())) {
                      // CraftBukkit start
-@@ -182,7 +183,8 @@ public abstract class FluidTypeFlowing extends FluidType {
+@@ -203,7 +204,8 @@ public abstract class FluidTypeFlowing extends FluidType {
          while (iterator.hasNext()) {
              EnumDirection enumdirection = (EnumDirection) iterator.next();
              BlockPosition blockposition1 = blockposition.shift(enumdirection);
@@ -28,7 +28,7 @@ index 9f99503a7631497fd20edb935cd3bb8b5b3cbdf7..cf9d3faabe8732d27c436f4806c72759
              Fluid fluid = iblockdata1.getFluid();
  
              if (fluid.getType().a((FluidType) this) && this.a(enumdirection, (IBlockAccess) iworldreader, blockposition, iblockdata, blockposition1, iblockdata1)) {
-@@ -299,11 +301,18 @@ public abstract class FluidTypeFlowing extends FluidType {
+@@ -320,11 +322,18 @@ public abstract class FluidTypeFlowing extends FluidType {
              if (enumdirection1 != enumdirection) {
                  BlockPosition blockposition2 = blockposition.shift(enumdirection1);
                  short short0 = a(blockposition1, blockposition2);
@@ -51,7 +51,7 @@ index 9f99503a7631497fd20edb935cd3bb8b5b3cbdf7..cf9d3faabe8732d27c436f4806c72759
                  IBlockData iblockdata1 = (IBlockData) pair.getFirst();
                  Fluid fluid = (Fluid) pair.getSecond();
  
-@@ -375,11 +384,16 @@ public abstract class FluidTypeFlowing extends FluidType {
+@@ -396,11 +405,16 @@ public abstract class FluidTypeFlowing extends FluidType {
              EnumDirection enumdirection = (EnumDirection) iterator.next();
              BlockPosition blockposition1 = blockposition.shift(enumdirection);
              short short0 = a(blockposition, blockposition1);

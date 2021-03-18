@@ -83,19 +83,19 @@ index 0000000000000000000000000000000000000000..74c012fd40491f1d870fbc1aa8c318a2
 +    }
 +
 +}
-diff --git a/src/main/java/net/minecraft/server/LegacyPingHandler.java b/src/main/java/net/minecraft/server/LegacyPingHandler.java
-index 063efe9bbe3a95da91ef1e504033e29ccf3300af..4a49fe4cc600e2b70963302ddae0c4479849f3f5 100644
---- a/src/main/java/net/minecraft/server/LegacyPingHandler.java
-+++ b/src/main/java/net/minecraft/server/LegacyPingHandler.java
+diff --git a/src/main/java/net/minecraft/server/network/LegacyPingHandler.java b/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
+index 0286d30b63e42224028b343315e1d1a9db2fe3d1..765dea6653b450802d45b76c7d2ac3d5778da9df 100644
+--- a/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
++++ b/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
 @@ -1,5 +1,7 @@
- package net.minecraft.server;
+ package net.minecraft.server.network;
  
 +import com.destroystokyo.paper.network.PaperLegacyStatusClient;
 +
  import io.netty.buffer.ByteBuf;
  import io.netty.buffer.Unpooled;
  import io.netty.channel.ChannelFutureListener;
-@@ -45,12 +47,19 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -46,12 +48,19 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
              MinecraftServer minecraftserver = this.b.d();
              int i = bytebuf.readableBytes();
              String s;
@@ -117,7 +117,7 @@ index 063efe9bbe3a95da91ef1e504033e29ccf3300af..4a49fe4cc600e2b70963302ddae0c447
                      this.a(channelhandlercontext, this.a(s));
                      break;
                  case 1:
-@@ -59,7 +68,14 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -60,7 +69,14 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
                      }
  
                      LegacyPingHandler.LOGGER.debug("Ping: (1.4-1.5.x) from {}:{}", inetsocketaddress.getAddress(), inetsocketaddress.getPort());
@@ -133,7 +133,7 @@ index 063efe9bbe3a95da91ef1e504033e29ccf3300af..4a49fe4cc600e2b70963302ddae0c447
                      this.a(channelhandlercontext, this.a(s));
                      break;
                  default:
-@@ -169,8 +185,16 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -170,8 +186,16 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
  
          LOGGER.debug("Ping: (1.6) from {}", ctx.channel().remoteAddress());
  

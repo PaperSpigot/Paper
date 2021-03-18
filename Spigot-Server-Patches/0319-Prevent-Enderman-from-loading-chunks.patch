@@ -4,11 +4,11 @@ Date: Tue, 18 Dec 2018 02:15:08 +0000
 Subject: [PATCH] Prevent Enderman from loading chunks
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
-index f4b823882e1e842c897c7946f7d1a46ce5366de0..f53525eb32a6096ae24fd23756b2169d5d39e9d4 100644
---- a/src/main/java/net/minecraft/server/EntityEnderman.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderman.java
-@@ -380,7 +380,8 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+index aa6cb15637144c9d8db1b1861e58f3f02d68357a..e993b1849beb60515c51ee4f37617faab63ca223 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+@@ -434,7 +434,8 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
              int j = MathHelper.floor(this.enderman.locY() + random.nextDouble() * 3.0D);
              int k = MathHelper.floor(this.enderman.locZ() - 2.0D + random.nextDouble() * 4.0D);
              BlockPosition blockposition = new BlockPosition(i, j, k);
@@ -18,7 +18,7 @@ index f4b823882e1e842c897c7946f7d1a46ce5366de0..f53525eb32a6096ae24fd23756b2169d
              Block block = iblockdata.getBlock();
              Vec3D vec3d = new Vec3D((double) MathHelper.floor(this.enderman.locX()) + 0.5D, (double) j + 0.5D, (double) MathHelper.floor(this.enderman.locZ()) + 0.5D);
              Vec3D vec3d1 = new Vec3D((double) i + 0.5D, (double) j + 0.5D, (double) k + 0.5D);
-@@ -420,7 +421,8 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -474,7 +475,8 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
              int j = MathHelper.floor(this.a.locY() + random.nextDouble() * 2.0D);
              int k = MathHelper.floor(this.a.locZ() - 1.0D + random.nextDouble() * 2.0D);
              BlockPosition blockposition = new BlockPosition(i, j, k);

@@ -5,7 +5,7 @@ set -e
 PS1="$"
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/work"
-minecraftversion=$(cat "${workdir}/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
+minecraftversion="$(cat "${workdir}/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)"
 minecraftserverurl=$(cat "${workdir}/BuildData/info.json" | grep serverUrl | cut -d '"' -f 4)
 minecrafthash=$(cat "${workdir}/BuildData/info.json" | grep minecraftHash | cut -d '"' -f 4)
 accesstransforms="$workdir/BuildData/mappings/"$(cat "${workdir}/BuildData/info.json" | grep accessTransforms | cut -d '"' -f 4)
@@ -43,9 +43,10 @@ if [ "$checksum" != "$minecrafthash" ]; then
     exit 1
 fi
 
+# These specialsource commands are from https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/browse/info.json
 echo "Applying class mappings..."
 if [ ! -f "$jarpath-cl.jar" ]; then
-    java -jar "$workdir/BuildData/bin/SpecialSource-2.jar" map --only . --only net/minecraft --auto-lvt BASIC --auto-member SYNTHETIC -i "$jarpath.jar" -m "$classmappings" -o "$jarpath-cl.jar" 1>/dev/null
+    java -jar "$workdir/BuildData/bin/SpecialSource-2.jar" map --only . --only net/minecraft --only com/mojang/math --auto-lvt BASIC --auto-member SYNTHETIC -i "$jarpath.jar" -m "$classmappings" -o "$jarpath-cl.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply class mappings."
         exit 1
@@ -54,7 +55,7 @@ fi
 
 echo "Applying member mappings..."
 if [ ! -f "$jarpath-m.jar" ]; then
-    java -jar "$workdir/BuildData/bin/SpecialSource-2.jar" map --only . --only net/minecraft --auto-member LOGGER --auto-member TOKENS -i "$jarpath-cl.jar" -m "$membermappings" -o "$jarpath-m.jar" 1>/dev/null
+    java -jar "$workdir/BuildData/bin/SpecialSource-2.jar" map --only . --only net/minecraft --only com/mojang/math --auto-member LOGGER --auto-member TOKENS -i "$jarpath-cl.jar" -m "$membermappings" -o "$jarpath-m.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply member mappings."
         exit 1
@@ -63,7 +64,7 @@ fi
 
 echo "Creating remapped jar..."
 if [ ! -f "$jarpath-mapped.jar" ]; then
-    java -jar "$workdir/BuildData/bin/SpecialSource.jar" --only . --only net/minecraft -i "$jarpath-m.jar" --access-transformer "$accesstransforms" -m "$packagemappings" -o "$jarpath-mapped.jar" 1>/dev/null
+    java -jar "$workdir/BuildData/bin/SpecialSource.jar" --only . --only net/minecraft --only com/mojang/math -i "$jarpath-m.jar" --access-transformer "$accesstransforms" -m "$packagemappings" -o "$jarpath-mapped.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to create remapped jar."
         exit 1

@@ -8,11 +8,32 @@ If we detect unexpected state, log and try to recover
 This should hopefully avoid duplicate entities ever being created
 if the entity was to end up in 2 different chunk slices
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 84ad87f4a1ab9c136e00f4c9f029853d82f57247..e829f62397d092fa919d387b157a65b0c627e2e2 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -515,6 +515,25 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 3a46a5001cda7402a97ac8552650cf64e7881fad..102c2bb98a99cdbfcdf1297341dbba91434ee0e3 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -157,6 +157,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+             }
+         }
+     };
++    public List<Entity> entitySlice = null;
+     // Paper end
+ 
+     public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index f56ff8e727c74870229d4d146b13534863f620d6..e4accac8f2e8daa58f9b0c279ffcad9347448bb0 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -26,6 +26,8 @@ import net.minecraft.ReportedException;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.ChunkProviderServer;
+ import net.minecraft.server.level.PlayerChunk;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.util.EntitySlice;
+@@ -551,6 +553,25 @@ public class Chunk implements IChunkAccess {
          if (k >= this.entitySlices.length) {
              k = this.entitySlices.length - 1;
          }
@@ -38,7 +59,7 @@ index 84ad87f4a1ab9c136e00f4c9f029853d82f57247..e829f62397d092fa919d387b157a65b0
  
          if (!entity.inChunk || entity.getCurrentChunk() != this) entityCounts.increment(entity.getMinecraftKeyString()); // Paper
          entity.inChunk = true;
-@@ -524,6 +543,7 @@ public class Chunk implements IChunkAccess {
+@@ -560,6 +581,7 @@ public class Chunk implements IChunkAccess {
          entity.chunkZ = this.loc.z;
          this.entities.add(entity); // Paper - per chunk entity list
          this.entitySlices[k].add(entity);
@@ -46,7 +67,7 @@ index 84ad87f4a1ab9c136e00f4c9f029853d82f57247..e829f62397d092fa919d387b157a65b0
          this.markDirty(); // Paper
      }
  
-@@ -549,6 +569,10 @@ public class Chunk implements IChunkAccess {
+@@ -585,6 +607,10 @@ public class Chunk implements IChunkAccess {
  
          // Paper start
          if (entity.currentChunk != null && entity.currentChunk.get() == this) entity.setCurrentChunk(null);
@@ -57,15 +78,3 @@ index 84ad87f4a1ab9c136e00f4c9f029853d82f57247..e829f62397d092fa919d387b157a65b0
          if (!this.entitySlices[i].remove(entity)) {
              return;
          }
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index c7c8dd944c084c281568cb6444c8bda35b35a4df..da195d9bb6995fcbe569ca2e2b08c473431376a6 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -71,6 +71,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
-             }
-         }
-     };
-+    List<Entity> entitySlice = null;
-     // Paper end
- 
-     public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper

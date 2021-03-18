@@ -4,11 +4,11 @@ Date: Sun, 16 Oct 2016 23:19:30 -0700
 Subject: [PATCH] Add EntityZapEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPig.java b/src/main/java/net/minecraft/server/EntityPig.java
-index 5bdde99d7143ee1bac5830b042bba5485a95f120..ee94c2827cfc53f7a37e61d8c1c0c30a52374cf8 100644
---- a/src/main/java/net/minecraft/server/EntityPig.java
-+++ b/src/main/java/net/minecraft/server/EntityPig.java
-@@ -208,6 +208,11 @@ public class EntityPig extends EntityAnimal implements ISteerable, ISaddleable {
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityPig.java b/src/main/java/net/minecraft/world/entity/animal/EntityPig.java
+index cc31c8f31a385f3a8bfe334e75c3553689397750..d6e1697f64e60f2a567288c604a1690159955f37 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityPig.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityPig.java
+@@ -255,6 +255,11 @@ public class EntityPig extends EntityAnimal implements ISteerable, ISaddleable {
              }
  
              entitypigzombie.setPersistent();
@@ -20,11 +20,11 @@ index 5bdde99d7143ee1bac5830b042bba5485a95f120..ee94c2827cfc53f7a37e61d8c1c0c30a
              // CraftBukkit start
              if (CraftEventFactory.callPigZapEvent(this, entitylightning, entitypigzombie).isCancelled()) {
                  return;
-diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index d9f9694cb2677102269294043822fb3773de9b35..8b5901396a7f1dc554a5e237200a8193e9096a18 100644
---- a/src/main/java/net/minecraft/server/EntityVillager.java
-+++ b/src/main/java/net/minecraft/server/EntityVillager.java
-@@ -717,6 +717,12 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+diff --git a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+index 39071f82ae539c98499e9db37483ccecafc5f186..3604fffb9ba13a019e98e0a1a0ef7ba81c8dc329 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+@@ -787,6 +787,12 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
              EntityVillager.LOGGER.info("Villager {} was struck by lightning {}.", this, entitylightning);
              EntityWitch entitywitch = (EntityWitch) EntityTypes.WITCH.a((World) worldserver);
  
@@ -38,7 +38,7 @@ index d9f9694cb2677102269294043822fb3773de9b35..8b5901396a7f1dc554a5e237200a8193
              entitywitch.prepare(worldserver, worldserver.getDamageScaler(entitywitch.getChunkCoordinates()), EnumMobSpawn.CONVERSION, (GroupDataEntity) null, (NBTTagCompound) null);
              entitywitch.setNoAI(this.isNoAI());
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index b4302fe96d4b2ad6db47fc9d350495cc20a26478..37d9087f90a203753fcd256f70d0768c1249b9e6 100644
+index 788617eaeab9985c426f80e9f4cdbb912383c049..ef161ccf0f1c51ce9f477869e6dc2d027d47874e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1077,6 +1077,14 @@ public class CraftEventFactory {

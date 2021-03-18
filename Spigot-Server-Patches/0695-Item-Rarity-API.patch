@@ -4,11 +4,11 @@ Date: Fri, 12 Mar 2021 17:09:42 -0800
 Subject: [PATCH] Item Rarity API
 
 
-diff --git a/src/main/java/net/minecraft/server/Item.java b/src/main/java/net/minecraft/server/Item.java
-index c3b57e8d572d13ec74d6df5544072cdc55756690..2304730bbd66f9a37975f2684794bb8402654fad 100644
---- a/src/main/java/net/minecraft/server/Item.java
-+++ b/src/main/java/net/minecraft/server/Item.java
-@@ -15,7 +15,7 @@ public class Item implements IMaterial {
+diff --git a/src/main/java/net/minecraft/world/item/Item.java b/src/main/java/net/minecraft/world/item/Item.java
+index 5d7c44a53fb98532057b09176677ce0d719b055b..e6a838430084d64326d1042c7b2089f49a24a789 100644
+--- a/src/main/java/net/minecraft/world/item/Item.java
++++ b/src/main/java/net/minecraft/world/item/Item.java
+@@ -45,7 +45,7 @@ public class Item implements IMaterial {
      protected static final UUID g = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
      protected static final Random RANDOM = new Random();
      protected final CreativeModeTab i;
@@ -17,7 +17,7 @@ index c3b57e8d572d13ec74d6df5544072cdc55756690..2304730bbd66f9a37975f2684794bb84
      private final int maxStackSize;
      private final int durability;
      private final boolean d;
-@@ -178,6 +178,7 @@ public class Item implements IMaterial {
+@@ -208,6 +208,7 @@ public class Item implements IMaterial {
          return itemstack.hasEnchantments();
      }
  
@@ -26,11 +26,11 @@ index c3b57e8d572d13ec74d6df5544072cdc55756690..2304730bbd66f9a37975f2684794bb84
          if (!itemstack.hasEnchantments()) {
              return this.a;
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 00e53d577b1dcaccb409e62d35165ee015de9330..57d56ff1b41582f0d249b24165d5b08b02b0f9fe 100644
+index ca911ed346daf8c43b7b6e0acabf9ac0c64223aa..712a32c0b64dace1f3e3d6f8acb8cbef1736b1f9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -447,6 +447,20 @@ public final class CraftMagicNumbers implements UnsafeValues {
-         return net.minecraft.server.Entity.nextEntityId();
+         return net.minecraft.world.entity.Entity.nextEntityId();
      }
  
 +    @Override

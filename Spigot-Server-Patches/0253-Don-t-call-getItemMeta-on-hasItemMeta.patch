@@ -11,7 +11,7 @@ Returns true if getDamage() == 0 or has damage tag or other tag is set.
 Check the `ItemMetaTest#testTaggedButNotMeta` method to see how this method behaves.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-index d315a102a5ae2a79189b39c3b534b8fd733cc9e4..addb8ef990de3dfbf74969ef4c22276d2fa2614a 100644
+index 315addab147dfecf4aa88d32d154cefe850d0a78..09d7a86b5f6cffdf6664ad657dd4f8dd8eabdd70 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 @@ -570,7 +570,7 @@ public final class CraftItemStack extends ItemStack {
@@ -22,26 +22,12 @@ index d315a102a5ae2a79189b39c3b534b8fd733cc9e4..addb8ef990de3dfbf74969ef4c22276d
 +        return hasItemMeta(handle) && (handle.getDamage() != 0 || (handle.getTag() != null && handle.getTag().map.size() >= (handle.getTag().hasKey(CraftMetaItem.DAMAGE.NBT) ? 2 : 1))); // Paper - keep 1.12 CraftBukkit behavior without calling getItemMeta
      }
  
-     static boolean hasItemMeta(net.minecraft.server.ItemStack item) {
+     static boolean hasItemMeta(net.minecraft.world.item.ItemStack item) {
 diff --git a/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java b/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
-index ddbcbd565d5dcb5b1c8d46558e06887e85d589c5..b0edd62eb9066d145cfc52272c71d5f00b7e928d 100644
+index 42f577ed3508ba5a380648461e149f16ce97c9bd..b85a0a4c4f134dd6012d9141244ecf97b4300b65 100644
 --- a/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
 +++ b/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
-@@ -2,10 +2,9 @@ package org.bukkit.craftbukkit.inventory;
- 
- import static org.hamcrest.Matchers.*;
- import static org.junit.Assert.*;
--import java.util.ArrayList;
--import java.util.Arrays;
--import java.util.List;
--import java.util.UUID;
-+
-+import java.util.*;
-+
- import com.destroystokyo.paper.inventory.meta.ArmorStandMeta; // Paper
- import net.minecraft.server.Block;
- import net.minecraft.server.IRegistry;
-@@ -97,6 +96,34 @@ public class ItemMetaTest extends AbstractTestingBase {
+@@ -96,6 +96,34 @@ public class ItemMetaTest extends AbstractTestingBase {
          assertThat(itemMeta.hasConflictingEnchant(null), is(false));
      }
  
@@ -55,7 +41,7 @@ index ddbcbd565d5dcb5b1c8d46558e06887e85d589c5..b0edd62eb9066d145cfc52272c71d5f0
 +        stack.setDurability((short) 2);
 +        assertThat("ItemStack with non-zero durability should have ItemMeta", stack.hasItemMeta(), is(true));
 +
-+        stack.setLore(Collections.singletonList("Lore"));
++        stack.setLore(java.util.Collections.singletonList("Lore"));
 +        assertThat("ItemStack with lore and durability should have ItemMeta", stack.hasItemMeta(), is(true));
 +
 +        stack.setDurability((short) 0);

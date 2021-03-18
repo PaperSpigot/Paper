@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sun, 28 Jun 2020 19:27:20 -0400
+Subject: [PATCH] Paper dumpitem command
+
+Let's you quickly view the item in your hands NBT data
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
+index d165e8c232c38ba2e2faf93c60c8a127bb74c9b6..4b3efe01750d79bcc27a42b5a145d9aa6b124d18 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
++++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
+@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import net.minecraft.core.BlockPosition;
++import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.protocol.game.PacketPlayOutLightUpdate;
+ import net.minecraft.resources.MinecraftKey;
+ import com.google.gson.JsonObject;
+@@ -36,7 +37,9 @@ import org.bukkit.command.CommandSender;
+ import org.bukkit.craftbukkit.CraftServer;
+ import org.bukkit.craftbukkit.CraftWorld;
+ import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.entity.Player;
++import org.bukkit.inventory.ItemStack;
+ 
+ import java.io.File;
+ import java.io.FileOutputStream;
+@@ -59,7 +62,7 @@ import java.util.stream.Collectors;
+ 
+ public class PaperCommand extends Command {
+     private static final String BASE_PERM = "bukkit.command.paper.";
+-    private static final ImmutableSet<String> SUBCOMMANDS = ImmutableSet.<String>builder().add("heap", "entity", "reload", "version", "debug", "chunkinfo", "dumpwaiting", "syncloadinfo", "fixlight").build();
++    private static final ImmutableSet<String> SUBCOMMANDS = ImmutableSet.<String>builder().add("heap", "entity", "reload", "version", "debug", "chunkinfo", "dumpwaiting", "syncloadinfo", "fixlight", "dumpitem").build();
+ 
+     public PaperCommand(String name) {
+         super(name);
+@@ -168,6 +171,9 @@ public class PaperCommand extends Command {
+             case "reload":
+                 doReload(sender);
+                 break;
++            case "dumpitem":
++                doDumpItem(sender);
++                break;
+             case "debug":
+                 doDebug(sender, args);
+                 break;
+@@ -200,6 +206,19 @@ public class PaperCommand extends Command {
+         return true;
+     }
+ 
++    private void doDumpItem(CommandSender sender) {
++        ItemStack itemInHand = ((CraftPlayer) sender).getItemInHand();
++        net.minecraft.world.item.ItemStack itemStack = CraftItemStack.asNMSCopy(itemInHand);
++        NBTTagCompound tag = itemStack.getTag();
++        if (tag != null) {
++            String nbt = org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(tag.getNbtPrettyComponent());
++            Bukkit.getConsoleSender().sendMessage(nbt);
++            sender.sendMessage(nbt);
++        } else {
++            sender.sendMessage("Item does not have NBT");
++        }
++    }
++
+     private void doFixLight(CommandSender sender, String[] args) {
+         if (!(sender instanceof Player)) {
+             sender.sendMessage("Only players can use this command");
+diff --git a/src/main/java/net/minecraft/nbt/NBTBase.java b/src/main/java/net/minecraft/nbt/NBTBase.java
+index d6e51f82f6df2d7058806f3e483766e18398af77..3921b99b9a4c1a867b5159668d2cd62d7463e1ff 100644
+--- a/src/main/java/net/minecraft/nbt/NBTBase.java
++++ b/src/main/java/net/minecraft/nbt/NBTBase.java
+@@ -26,6 +26,7 @@ public interface NBTBase {
+         return this.toString();
+     }
+ 
++    default IChatBaseComponent getNbtPrettyComponent() { return this.l(); } // Paper - OBFHELPER
+     default IChatBaseComponent l() {
+         return this.a("", 0);
+     }

@@ -4,11 +4,11 @@ Date: Sat, 2 Apr 2016 05:09:16 -0400
 Subject: [PATCH] Add PlayerUseUnknownEntityEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayInUseEntity.java b/src/main/java/net/minecraft/server/PacketPlayInUseEntity.java
-index 49c911e54eb3b20d820f3e1895c057eead6d312b..09c757a3bb1d9a49343cf58e18f736e1fa9e10c7 100644
---- a/src/main/java/net/minecraft/server/PacketPlayInUseEntity.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayInUseEntity.java
-@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInUseEntity.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInUseEntity.java
+index 9f3f8568ef9484ba226deaa6429f819c325b7a26..ce63f3e5ac4d1a4311c0ebeb7574d999d45987d9 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInUseEntity.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInUseEntity.java
+@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3D;
  
  public class PacketPlayInUseEntity implements Packet<PacketListenerPlayIn> {
  
@@ -17,11 +17,11 @@ index 49c911e54eb3b20d820f3e1895c057eead6d312b..09c757a3bb1d9a49343cf58e18f736e1
      private PacketPlayInUseEntity.EnumEntityUseAction action;
      private Vec3D c;
      private EnumHand d;
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 2436ee100bdf7cb2166595f41af61af806ecdd46..f021568601198ddcf4c1c312eb5d3eef4b9eb5e5 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -2052,6 +2052,16 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 98189c2f4c973427563c48a231bf8e6c21e0391d..7aec9a349ea941153863d95eb8df4f8c884b5617 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2197,6 +2197,16 @@ public class PlayerConnection implements PacketListenerPlayIn {
                  }
              }
          }

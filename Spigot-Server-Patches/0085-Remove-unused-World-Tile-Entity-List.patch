@@ -5,11 +5,33 @@ Subject: [PATCH] Remove unused World Tile Entity List
 
 Massive hit to performance and it is completely unnecessary.
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b6917a1ae393 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -39,7 +39,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index acff0752aba49bb360d944e5f648b80a82bc984d..e96a92119dce25c34509e502e8dce8596af6fd67 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1720,7 +1720,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             }
+ 
+             bufferedwriter.write(String.format("entities: %d\n", this.entitiesById.size()));
+-            bufferedwriter.write(String.format("block_entities: %d\n", this.tileEntityList.size()));
++            bufferedwriter.write(String.format("block_entities: %d\n", this.tileEntityListTick.size())); // Paper - remove unused list
+             bufferedwriter.write(String.format("block_ticks: %d\n", this.getBlockTickList().a()));
+             bufferedwriter.write(String.format("fluid_ticks: %d\n", this.getFluidTickList().a()));
+             bufferedwriter.write("distance_manager: " + playerchunkmap.e().c() + "\n");
+@@ -1859,7 +1859,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+ 
+     private void a(Writer writer) throws IOException {
+         CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("type").a(writer);
+-        Iterator iterator = this.tileEntityList.iterator();
++        Iterator iterator = this.tileEntityListTick.iterator(); // Paper - remove unused list
+ 
+         while (iterator.hasNext()) {
+             TileEntity tileentity = (TileEntity) iterator.next();
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 7611481db980a230d42b3cec1d81fae2622ca634..2bb85896df999675d33f70a90f1c68865099ee83 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -91,7 +91,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      public static final ResourceKey<World> THE_NETHER = ResourceKey.a(IRegistry.L, new MinecraftKey("the_nether"));
      public static final ResourceKey<World> THE_END = ResourceKey.a(IRegistry.L, new MinecraftKey("the_end"));
      private static final EnumDirection[] a = EnumDirection.values();
@@ -18,7 +40,7 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
      public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
      protected final List<TileEntity> tileEntityListPending = Lists.newArrayList();
      protected final java.util.Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet();
-@@ -631,9 +631,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -683,9 +683,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                      }, tileentity::getPosition});
          }
  
@@ -30,7 +52,7 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
              this.tileEntityListTick.add(tileentity);
          }
  
-@@ -669,7 +669,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -721,7 +721,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          timings.tileEntityTick.startTiming(); // Spigot
          if (!this.tileEntityListUnload.isEmpty()) {
              this.tileEntityListTick.removeAll(this.tileEntityListUnload);
@@ -39,7 +61,7 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
              this.tileEntityListUnload.clear();
          }
  
-@@ -729,7 +729,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -781,7 +781,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                  tilesThisCycle--;
                  this.tileEntityListTick.remove(tileTickPosition--);
                  // Spigot end
@@ -48,7 +70,7 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
                  if (this.isLoaded(tileentity.getPosition())) {
                      this.getChunkAtWorldCoords(tileentity.getPosition()).removeTileEntity(tileentity.getPosition());
                  }
-@@ -759,7 +759,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -811,7 +811,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                          this.notify(tileentity1.getPosition(), iblockdata, iblockdata, 3);
                          // CraftBukkit start
                          // From above, don't screw this up - SPIGOT-1746
@@ -57,7 +79,7 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
                              this.a(tileentity1);
                          }
                          // CraftBukkit end
-@@ -905,7 +905,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -957,7 +957,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          } else {
              if (tileentity != null) {
                  this.tileEntityListPending.remove(tileentity);
@@ -66,25 +88,3 @@ index d6ee6aae693519a379b4a6ba26642d5ef78e4deb..369a6b42a89fd75aeb3da4930f47b691
                  this.tileEntityListTick.remove(tileentity);
              }
  
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index dbb022fb186b181b9b1912adfaebbb00fa1c7d4b..486ba1efc934c6851d2b570493af6e1079a7abd5 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1611,7 +1611,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-             }
- 
-             bufferedwriter.write(String.format("entities: %d\n", this.entitiesById.size()));
--            bufferedwriter.write(String.format("block_entities: %d\n", this.tileEntityList.size()));
-+            bufferedwriter.write(String.format("block_entities: %d\n", this.tileEntityListTick.size())); // Paper - remove unused list
-             bufferedwriter.write(String.format("block_ticks: %d\n", this.getBlockTickList().a()));
-             bufferedwriter.write(String.format("fluid_ticks: %d\n", this.getFluidTickList().a()));
-             bufferedwriter.write("distance_manager: " + playerchunkmap.e().c() + "\n");
-@@ -1750,7 +1750,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
- 
-     private void a(Writer writer) throws IOException {
-         CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("type").a(writer);
--        Iterator iterator = this.tileEntityList.iterator();
-+        Iterator iterator = this.tileEntityListTick.iterator(); // Paper - remove unused list
- 
-         while (iterator.hasNext()) {
-             TileEntity tileentity = (TileEntity) iterator.next();

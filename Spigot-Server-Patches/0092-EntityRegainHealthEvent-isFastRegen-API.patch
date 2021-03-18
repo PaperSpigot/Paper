@@ -5,11 +5,11 @@ Subject: [PATCH] EntityRegainHealthEvent isFastRegen API
 
 Don't even get me started
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 1fb7e29b29adef72bd5a49c87d954973f46f9c81..f54d05f59342231434a70c3b12b7cf9b73f98508 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1037,10 +1037,16 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index acbd10432b09172f7541b2f4081d1aa9812194ac..ecb07130be80b484e0f2241a368db967775148e8 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -1130,10 +1130,16 @@ public abstract class EntityLiving extends Entity {
      }
  
      public void heal(float f, EntityRegainHealthEvent.RegainReason regainReason) {
@@ -27,11 +27,11 @@ index 1fb7e29b29adef72bd5a49c87d954973f46f9c81..f54d05f59342231434a70c3b12b7cf9b
              // Suppress during worldgen
              if (this.valid) {
                  this.world.getServer().getPluginManager().callEvent(event);
-diff --git a/src/main/java/net/minecraft/server/FoodMetaData.java b/src/main/java/net/minecraft/server/FoodMetaData.java
-index f40b67c8bf3048b24b7c7b16effd3c18646d589c..077ff94ec57278f71ea6afb5d7a0e55ecb0fa5ef 100644
---- a/src/main/java/net/minecraft/server/FoodMetaData.java
-+++ b/src/main/java/net/minecraft/server/FoodMetaData.java
-@@ -74,7 +74,7 @@ public class FoodMetaData {
+diff --git a/src/main/java/net/minecraft/world/food/FoodMetaData.java b/src/main/java/net/minecraft/world/food/FoodMetaData.java
+index 7ed321acba6d46159f7d67b8d10a0a3e06ac88a9..e455b25b0809af15f6fde957121d0110da7eb08f 100644
+--- a/src/main/java/net/minecraft/world/food/FoodMetaData.java
++++ b/src/main/java/net/minecraft/world/food/FoodMetaData.java
+@@ -87,7 +87,7 @@ public class FoodMetaData {
              if (this.foodTickTimer >= this.saturatedRegenRate) { // CraftBukkit
                  float f = Math.min(this.saturationLevel, 6.0F);
  

@@ -4,11 +4,19 @@ Date: Mon, 10 Jun 2019 09:36:40 +0100
 Subject: [PATCH] Catch exceptions from dispenser entity spawns
 
 
-diff --git a/src/main/java/net/minecraft/server/IDispenseBehavior.java b/src/main/java/net/minecraft/server/IDispenseBehavior.java
-index e41d64a9cdf6e8c58a6909b672df43e6738e3c31..ce7ab95c95eba7f1c49096a88d9a1b2110ae473b 100644
---- a/src/main/java/net/minecraft/server/IDispenseBehavior.java
-+++ b/src/main/java/net/minecraft/server/IDispenseBehavior.java
-@@ -163,7 +163,14 @@ public interface IDispenseBehavior {
+diff --git a/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java b/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
+index ffce5baaca6fd5b5e73ed898d12a4fee02c24515..158075319bd49ac78ea994639cdad21aeacdf86f 100644
+--- a/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
++++ b/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
+@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.core.IPosition;
+ import net.minecraft.core.ISourceBlock;
++import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.sounds.SoundCategory;
+@@ -236,7 +237,14 @@ public interface IDispenseBehavior {
                      }
                  }
  

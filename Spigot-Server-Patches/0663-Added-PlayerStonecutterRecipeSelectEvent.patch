@@ -5,11 +5,11 @@ Subject: [PATCH] Added PlayerStonecutterRecipeSelectEvent
 
 Co-Authored-By: MiniDigger <admin@minidigger.me>
 
-diff --git a/src/main/java/net/minecraft/server/Container.java b/src/main/java/net/minecraft/server/Container.java
-index 3de58cd344c37451873aa8a12b5d9e65f390ec8f..a5c92b2b7fe42b81e7feebf8969a08bd7d08e0e6 100644
---- a/src/main/java/net/minecraft/server/Container.java
-+++ b/src/main/java/net/minecraft/server/Container.java
-@@ -101,7 +101,7 @@ public abstract class Container {
+diff --git a/src/main/java/net/minecraft/world/inventory/Container.java b/src/main/java/net/minecraft/world/inventory/Container.java
+index bdd00608a72dd81003731ff5fbe774dfdc5220e5..b58ec4abff2840556eb06e08b241a2eaa85c2c7f 100644
+--- a/src/main/java/net/minecraft/world/inventory/Container.java
++++ b/src/main/java/net/minecraft/world/inventory/Container.java
+@@ -118,7 +118,7 @@ public abstract class Container {
          return slot;
      }
  
@@ -18,10 +18,10 @@ index 3de58cd344c37451873aa8a12b5d9e65f390ec8f..a5c92b2b7fe42b81e7feebf8969a08bd
          this.d.add(containerproperty);
          return containerproperty;
      }
-diff --git a/src/main/java/net/minecraft/server/ContainerProperty.java b/src/main/java/net/minecraft/server/ContainerProperty.java
-index e26b8569340fb0240439ff85d481bd3de19c0ae3..7523c77a914d7e78b4ef08c1ef329d2ef38d3091 100644
---- a/src/main/java/net/minecraft/server/ContainerProperty.java
-+++ b/src/main/java/net/minecraft/server/ContainerProperty.java
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerProperty.java b/src/main/java/net/minecraft/world/inventory/ContainerProperty.java
+index 67c3b7ddb0b0f10c82577cbea7506c9d80d41368..b9c82e68a811c2ef6bf2d5ce3ae9f858bcb263d5 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerProperty.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerProperty.java
 @@ -20,7 +20,7 @@ public abstract class ContainerProperty {
          };
      }
@@ -40,11 +40,11 @@ index e26b8569340fb0240439ff85d481bd3de19c0ae3..7523c77a914d7e78b4ef08c1ef329d2e
          int i = this.get();
          boolean flag = i != this.a;
  
-diff --git a/src/main/java/net/minecraft/server/ContainerStonecutter.java b/src/main/java/net/minecraft/server/ContainerStonecutter.java
-index 232a46021edcaa90d29dfa5e8b6857f4ab4a8eac..d64c154615f1ff424f5a627f02e3a8fb6136ea8c 100644
---- a/src/main/java/net/minecraft/server/ContainerStonecutter.java
-+++ b/src/main/java/net/minecraft/server/ContainerStonecutter.java
-@@ -9,13 +9,14 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerStonecutter.java b/src/main/java/net/minecraft/world/inventory/ContainerStonecutter.java
+index 1589d9ca201d386d11d9fd57fa8ba6848bae215c..dc667dd5d8514ae4c8a2087cb913f44320ebfc48 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerStonecutter.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerStonecutter.java
+@@ -22,13 +22,14 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
  import org.bukkit.craftbukkit.inventory.CraftInventoryView;
  import org.bukkit.entity.Player;
  // CraftBukkit end
@@ -60,7 +60,7 @@ index 232a46021edcaa90d29dfa5e8b6857f4ab4a8eac..d64c154615f1ff424f5a627f02e3a8fb
      private ItemStack j;
      private long k;
      final Slot c;
-@@ -45,7 +46,7 @@ public class ContainerStonecutter extends Container {
+@@ -58,7 +59,7 @@ public class ContainerStonecutter extends Container {
  
      public ContainerStonecutter(int i, PlayerInventory playerinventory, final ContainerAccess containeraccess) {
          super(Containers.STONECUTTER, i);
@@ -69,7 +69,7 @@ index 232a46021edcaa90d29dfa5e8b6857f4ab4a8eac..d64c154615f1ff424f5a627f02e3a8fb
          this.i = Lists.newArrayList();
          this.j = ItemStack.b;
          this.l = () -> {
-@@ -123,13 +124,36 @@ public class ContainerStonecutter extends Container {
+@@ -136,13 +137,36 @@ public class ContainerStonecutter extends Container {
      @Override
      public boolean a(EntityHuman entityhuman, int i) {
          if (this.d(i)) {

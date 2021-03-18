@@ -6,11 +6,11 @@ Subject: [PATCH] Optimise getChunkAt calls for loaded chunks
 bypass the need to get a player chunk, then get the either,
 then unwrap it...
 
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 1eb201695cd118616fb404a0c7ed8cedee77db89..e0296920a794157d89bb314b162de706d69a5459 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -447,6 +447,12 @@ public class ChunkProviderServer extends IChunkProvider {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 4998fad49755c08e20ebfb1dc97b558e1cf10b50..2f172f38f817f48fe2e62235c3859b91e60bc0df 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -470,6 +470,12 @@ public class ChunkProviderServer extends IChunkProvider {
                  return this.getChunkAt(i, j, chunkstatus, flag);
              }, this.serverThreadQueue).join();
          } else {
@@ -23,7 +23,7 @@ index 1eb201695cd118616fb404a0c7ed8cedee77db89..e0296920a794157d89bb314b162de706
              GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
  
              gameprofilerfiller.c("getChunk");
-@@ -497,39 +503,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -520,39 +526,7 @@ public class ChunkProviderServer extends IChunkProvider {
          if (Thread.currentThread() != this.serverThread) {
              return null;
          } else {

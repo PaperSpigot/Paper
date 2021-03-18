@@ -5,11 +5,11 @@ Subject: [PATCH] Unset Ignited flag on cancel of Explosion Event
 
 Otherwise the creeper infinite explodes
 
-diff --git a/src/main/java/net/minecraft/server/EntityCreeper.java b/src/main/java/net/minecraft/server/EntityCreeper.java
-index 78d136eed54b815f5c866d3ab0d96c1d819bc6b2..b0de5c0705983debd7995c586612a7802f6d8f59 100644
---- a/src/main/java/net/minecraft/server/EntityCreeper.java
-+++ b/src/main/java/net/minecraft/server/EntityCreeper.java
-@@ -13,7 +13,7 @@ public class EntityCreeper extends EntityMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
+index e3124c46f740df3a24b22128d50ce7efb7d76f17..ea15f54b70361bca529936e6d2e9bc555c60a657 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
+@@ -48,7 +48,7 @@ public class EntityCreeper extends EntityMonster {
  
      private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.b);
      private static final DataWatcherObject<Boolean> POWERED = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
@@ -18,7 +18,7 @@ index 78d136eed54b815f5c866d3ab0d96c1d819bc6b2..b0de5c0705983debd7995c586612a780
      private int bo;
      private int fuseTicks;
      public int maxFuseTicks = 30;
-@@ -218,6 +218,7 @@ public class EntityCreeper extends EntityMonster {
+@@ -253,6 +253,7 @@ public class EntityCreeper extends EntityMonster {
                  this.createEffectCloud();
              } else {
                  fuseTicks = 0;

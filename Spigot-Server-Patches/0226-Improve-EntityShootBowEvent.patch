@@ -5,11 +5,11 @@ Subject: [PATCH] Improve EntityShootBowEvent
 
 Adds missing call to Illagers and also adds Arrow ItemStack to skeltons
 
-diff --git a/src/main/java/net/minecraft/server/EntityIllagerIllusioner.java b/src/main/java/net/minecraft/server/EntityIllagerIllusioner.java
-index b00a18643ea8425c5008a25563dbaa17d1a82ca4..50442b3a498d1bab4270e69952a79f5182153ece 100644
---- a/src/main/java/net/minecraft/server/EntityIllagerIllusioner.java
-+++ b/src/main/java/net/minecraft/server/EntityIllagerIllusioner.java
-@@ -134,8 +134,18 @@ public class EntityIllagerIllusioner extends EntityIllagerWizard implements IRan
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityIllagerIllusioner.java b/src/main/java/net/minecraft/world/entity/monster/EntityIllagerIllusioner.java
+index 54a4a295660375a0fcc54e02d80d569d9a32e73e..fee9a5140f097225b5da58b18bfbd528dffdc77b 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityIllagerIllusioner.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityIllagerIllusioner.java
+@@ -171,8 +171,18 @@ public class EntityIllagerIllusioner extends EntityIllagerWizard implements IRan
          double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
@@ -29,16 +29,16 @@ index b00a18643ea8425c5008a25563dbaa17d1a82ca4..50442b3a498d1bab4270e69952a79f51
      }
  
      class a extends EntityIllagerWizard.PathfinderGoalCastSpell {
-diff --git a/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java b/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
-index 48c7ba6ecc4ab42805363e31d0864fb685c8d3ca..ced89af70ca791bfe42c4e2d21604997a0cf3e0f 100644
---- a/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
-+++ b/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
-@@ -155,7 +155,7 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java b/src/main/java/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
+index a2a67bccf38464731670e98cb155348df94474c5..4dca5ea9127c15b2739483b2ad74a5296a6b96ad 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntitySkeletonAbstract.java
+@@ -197,7 +197,7 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
  
          entityarrow.shoot(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float) (14 - this.world.getDifficulty().a() * 4));
          // CraftBukkit start
--        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), null, entityarrow, EnumHand.MAIN_HAND, 0.8F, true);
-+        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), entityarrow.getOriginalItemStack(), entityarrow, EnumHand.MAIN_HAND, 0.8F, true); // Paper
+-        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), null, entityarrow, net.minecraft.world.EnumHand.MAIN_HAND, 0.8F, true);
++        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(this, this.getItemInMainHand(), entityarrow.getOriginalItemStack(), entityarrow, net.minecraft.world.EnumHand.MAIN_HAND, 0.8F, true); // Paper
          if (event.isCancelled()) {
              event.getProjectile().remove();
              return;

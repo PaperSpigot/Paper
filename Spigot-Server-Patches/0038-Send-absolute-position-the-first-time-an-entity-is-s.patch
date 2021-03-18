@@ -4,10 +4,10 @@ Date: Wed, 2 Mar 2016 23:13:07 -0600
 Subject: [PATCH] Send absolute position the first time an entity is seen
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-index 62a7db8c7d2604d248ec5c1efb3c43356c3d513c..dec48226d713ef0198ef3c679daf553a9d05a099 100644
---- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-+++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+diff --git a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+index a95867c0ba7dec750e07a4ac623ee30b4522fe55..f5227aa761d326376d057eaadcdbef024ed30241 100644
+--- a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
 @@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
  import com.mojang.datafixers.util.Pair;
  import java.util.Collection;
@@ -16,7 +16,7 @@ index 62a7db8c7d2604d248ec5c1efb3c43356c3d513c..dec48226d713ef0198ef3c679daf553a
  import java.util.Iterator;
  import java.util.List;
  import java.util.Set;
-@@ -23,7 +24,7 @@ public class EntityTrackerEntry {
+@@ -52,7 +53,7 @@ public class EntityTrackerEntry {
      private final Entity tracker;
      private final int d;
      private final boolean e;
@@ -25,7 +25,7 @@ index 62a7db8c7d2604d248ec5c1efb3c43356c3d513c..dec48226d713ef0198ef3c679daf553a
      private long xLoc;
      private long yLoc;
      private long zLoc;
-@@ -38,8 +39,23 @@ public class EntityTrackerEntry {
+@@ -67,8 +68,23 @@ public class EntityTrackerEntry {
      private boolean r;
      // CraftBukkit start
      private final Set<EntityPlayer> trackedPlayers;
@@ -49,7 +49,7 @@ index 62a7db8c7d2604d248ec5c1efb3c43356c3d513c..dec48226d713ef0198ef3c679daf553a
          this.trackedPlayers = trackedPlayers;
          // CraftBukkit end
          this.m = Vec3D.ORIGIN;
-@@ -161,7 +177,25 @@ public class EntityTrackerEntry {
+@@ -190,7 +206,25 @@ public class EntityTrackerEntry {
                  }
  
                  if (packet1 != null) {
@@ -76,11 +76,11 @@ index 62a7db8c7d2604d248ec5c1efb3c43356c3d513c..dec48226d713ef0198ef3c679daf553a
                  }
  
                  this.c();
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 5ca081e8be411aee98efce3e41876efe3bb2e327..2ba10ed683788219c734a565a163ba553ec72c75 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -1250,10 +1250,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 9eae9d7e9d18d73b1050e1d9b8859802cbd286ed..e9657faf0a24aee8444372e6f1ca0d971339ce5a 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -1295,10 +1295,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          private final Entity tracker;
          private final int trackingDistance;
          private SectionPosition e;
@@ -97,7 +97,7 @@ index 5ca081e8be411aee98efce3e41876efe3bb2e327..2ba10ed683788219c734a565a163ba55
              this.tracker = entity;
              this.trackingDistance = i;
              this.e = SectionPosition.a(entity);
-@@ -1335,7 +1339,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1380,7 +1384,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                      entityplayer.removeQueue.remove(Integer.valueOf(this.tracker.getId()));
                      // CraftBukkit end
  

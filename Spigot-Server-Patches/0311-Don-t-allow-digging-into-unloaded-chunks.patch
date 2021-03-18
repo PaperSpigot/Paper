@@ -4,27 +4,11 @@ Date: Sun, 11 Nov 2018 21:01:09 +0000
 Subject: [PATCH] Don't allow digging into unloaded chunks
 
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index fa74b0266172bf83339f85a4e739bbf2256e4ccf..a448773cc46889df37d563beb227beaa433d726e 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1372,6 +1372,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
-             case START_DESTROY_BLOCK:
-             case ABORT_DESTROY_BLOCK:
-             case STOP_DESTROY_BLOCK:
-+                // Paper start - Don't allow digging in unloaded chunks
-+                if (this.player.world.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4) == null) {
-+                    return;
-+                }
-+                // Paper end - Don't allow digging in unloaded chunks
-                 this.player.playerInteractManager.a(blockposition, packetplayinblockdig_enumplayerdigtype, packetplayinblockdig.c(), this.minecraftServer.getMaxBuildHeight());
-                 return;
-             default:
-diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-index daeaae8072a12b1d5f0718ba9e5bdd4f9c0e2169..21acea46a288348cbc2d4fa312035d6679987399 100644
---- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
-+++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-@@ -81,8 +81,8 @@ public class PlayerInteractManager {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+index cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2..e7f762dc131ae40e36ff5e70b0394e0d5abdcee8 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+@@ -113,8 +113,8 @@ public class PlayerInteractManager {
          IBlockData iblockdata;
  
          if (this.j) {
@@ -35,7 +19,7 @@ index daeaae8072a12b1d5f0718ba9e5bdd4f9c0e2169..21acea46a288348cbc2d4fa312035d66
                  this.j = false;
              } else {
                  float f = this.a(iblockdata, this.k, this.l);
-@@ -93,7 +93,13 @@ public class PlayerInteractManager {
+@@ -125,7 +125,13 @@ public class PlayerInteractManager {
                  }
              }
          } else if (this.f) {
@@ -50,7 +34,7 @@ index daeaae8072a12b1d5f0718ba9e5bdd4f9c0e2169..21acea46a288348cbc2d4fa312035d66
              if (iblockdata.isAir()) {
                  this.world.a(this.player.getId(), this.h, -1);
                  this.m = -1;
-@@ -257,10 +263,12 @@ public class PlayerInteractManager {
+@@ -289,10 +295,12 @@ public class PlayerInteractManager {
                  this.player.playerConnection.sendPacket(new PacketPlayOutBlockBreak(blockposition, this.world.getType(blockposition), packetplayinblockdig_enumplayerdigtype, true, "stopped destroying"));
              } else if (packetplayinblockdig_enumplayerdigtype == PacketPlayInBlockDig.EnumPlayerDigType.ABORT_DESTROY_BLOCK) {
                  this.f = false;
@@ -66,3 +50,19 @@ index daeaae8072a12b1d5f0718ba9e5bdd4f9c0e2169..21acea46a288348cbc2d4fa312035d66
                  }
  
                  this.world.a(this.player.getId(), blockposition, -1);
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 0cdfc38c3f07b28e1db0ee28952494c1950a698d..76bba793ea2afb52919bcf1cb430b9412fceb319 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1517,6 +1517,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+             case START_DESTROY_BLOCK:
+             case ABORT_DESTROY_BLOCK:
+             case STOP_DESTROY_BLOCK:
++                // Paper start - Don't allow digging in unloaded chunks
++                if (this.player.world.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4) == null) {
++                    return;
++                }
++                // Paper end - Don't allow digging in unloaded chunks
+                 this.player.playerInteractManager.a(blockposition, packetplayinblockdig_enumplayerdigtype, packetplayinblockdig.c(), this.minecraftServer.getMaxBuildHeight());
+                 return;
+             default:

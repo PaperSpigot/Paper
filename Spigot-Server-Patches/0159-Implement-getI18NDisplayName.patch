@@ -7,11 +7,11 @@ Gets the Display name as seen in the Client.
 Currently the server only supports the English language. To override this,
 You must replace the language file embedded in the server jar.
 
-diff --git a/src/main/java/net/minecraft/server/LocaleLanguage.java b/src/main/java/net/minecraft/server/LocaleLanguage.java
-index cc5b6512fa115f73800b6894a2d58107b6495e07..29d55483510d3644a1edd3a01d7314232c358ac6 100644
---- a/src/main/java/net/minecraft/server/LocaleLanguage.java
-+++ b/src/main/java/net/minecraft/server/LocaleLanguage.java
-@@ -29,7 +29,7 @@ public abstract class LocaleLanguage {
+diff --git a/src/main/java/net/minecraft/locale/LocaleLanguage.java b/src/main/java/net/minecraft/locale/LocaleLanguage.java
+index 9b8d5e7e4c86a699e26b1b4d0b82e88887a44054..5218214225b50ac4059ab704086a457318e93e00 100644
+--- a/src/main/java/net/minecraft/locale/LocaleLanguage.java
++++ b/src/main/java/net/minecraft/locale/LocaleLanguage.java
+@@ -30,7 +30,7 @@ public abstract class LocaleLanguage {
  
      private static LocaleLanguage c() {
          Builder<String, String> builder = ImmutableMap.builder();
@@ -20,7 +20,7 @@ index cc5b6512fa115f73800b6894a2d58107b6495e07..29d55483510d3644a1edd3a01d731423
  
          try {
              InputStream inputstream = LocaleLanguage.class.getResourceAsStream("/assets/minecraft/lang/en_us.json");
-@@ -86,10 +86,12 @@ public abstract class LocaleLanguage {
+@@ -87,10 +87,12 @@ public abstract class LocaleLanguage {
  
      }
  
@@ -34,7 +34,7 @@ index cc5b6512fa115f73800b6894a2d58107b6495e07..29d55483510d3644a1edd3a01d731423
  
      public abstract boolean b(String s);
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
-index 83fb73ccde7809c6f712af35400d607fcd791882..bf8a8cad248583c900eacfaf54e30f0a60e1dc54 100644
+index 6e748e57c4818e11ac6d4c693bc4f6e1e889f4f8..e6c818d32713d9fb0f02a46696bd8a5dabe2a3ae 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
 @@ -347,5 +347,18 @@ public final class CraftItemFactory implements ItemFactory {
@@ -44,7 +44,7 @@ index 83fb73ccde7809c6f712af35400d607fcd791882..bf8a8cad248583c900eacfaf54e30f0a
 +
 +    @Override
 +    public String getI18NDisplayName(ItemStack item) {
-+        net.minecraft.server.ItemStack nms = null;
++        net.minecraft.world.item.ItemStack nms = null;
 +        if (item instanceof CraftItemStack) {
 +            nms = ((CraftItemStack) item).handle;
 +        }
@@ -52,7 +52,7 @@ index 83fb73ccde7809c6f712af35400d607fcd791882..bf8a8cad248583c900eacfaf54e30f0a
 +            nms = CraftItemStack.asNMSCopy(item);
 +        }
 +
-+        return nms != null ? net.minecraft.server.LocaleLanguage.getInstance().translateKey(nms.getItem().getName()) : null;
++        return nms != null ? net.minecraft.locale.LocaleLanguage.getInstance().translateKey(nms.getItem().getName()) : null;
 +    }
      // Paper end
  }

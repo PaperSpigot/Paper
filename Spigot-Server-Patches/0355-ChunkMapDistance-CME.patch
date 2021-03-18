@@ -4,11 +4,11 @@ Date: Wed, 29 May 2019 04:01:22 +0100
 Subject: [PATCH] ChunkMapDistance CME
 
 
-diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 3d359b6dcea28135105cf0b9c06c65797cf537bf..706ef10959df897a4b1889c2e2e7ff41ed924876 100644
---- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
-+++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-@@ -33,7 +33,16 @@ public abstract class ChunkMapDistance {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+index 6ef404ee29ddc79aeca534a58ec182e0e8b1b6c8..961257ebc28a8b4753faf3c2d5b6abaea4ffc0dd 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
++++ b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+@@ -39,7 +39,16 @@ public abstract class ChunkMapDistance {
      private final ChunkMapDistance.a ticketLevelTracker = new ChunkMapDistance.a();
      private final ChunkMapDistance.b f = new ChunkMapDistance.b(8);
      private final ChunkMapDistance.c g = new ChunkMapDistance.c(33);
@@ -26,7 +26,7 @@ index 3d359b6dcea28135105cf0b9c06c65797cf537bf..706ef10959df897a4b1889c2e2e7ff41
      private final ChunkTaskQueueSorter i;
      private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> j;
      private final Mailbox<ChunkTaskQueueSorter.b> k;
-@@ -94,26 +103,14 @@ public abstract class ChunkMapDistance {
+@@ -100,26 +109,14 @@ public abstract class ChunkMapDistance {
              ;
          }
  
@@ -60,7 +60,7 @@ index 3d359b6dcea28135105cf0b9c06c65797cf537bf..706ef10959df897a4b1889c2e2e7ff41
              return true;
          } else {
              if (!this.l.isEmpty()) {
-@@ -367,7 +364,7 @@ public abstract class ChunkMapDistance {
+@@ -373,7 +370,7 @@ public abstract class ChunkMapDistance {
              ObjectIterator objectiterator = this.a.long2ByteEntrySet().iterator();
  
              while (objectiterator.hasNext()) {
@@ -69,11 +69,11 @@ index 3d359b6dcea28135105cf0b9c06c65797cf537bf..706ef10959df897a4b1889c2e2e7ff41
                  byte b0 = it_unimi_dsi_fastutil_longs_long2bytemap_entry.getByteValue();
                  long j = it_unimi_dsi_fastutil_longs_long2bytemap_entry.getLongKey();
  
-diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 985fc002fa5afc71ecd242aa8101684b2c751b30..eefd94ef237657625f2e7b19099d802e7680b50a 100644
---- a/src/main/java/net/minecraft/server/PlayerChunk.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunk.java
-@@ -20,6 +20,7 @@ public class PlayerChunk {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunk.java b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+index 7dea5e783ce2a1f8ddd2b3ab7a19e03a56c36ba1..2c3d9a5d118cc4f3b5e78daf943911bb7386488a 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunk.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+@@ -45,6 +45,7 @@ public class PlayerChunk {
      private static final CompletableFuture<Either<Chunk, PlayerChunk.Failure>> UNLOADED_CHUNK_FUTURE = CompletableFuture.completedFuture(PlayerChunk.UNLOADED_CHUNK);
      private static final List<ChunkStatus> CHUNK_STATUSES = ChunkStatus.a();
      private static final PlayerChunk.State[] CHUNK_STATES = PlayerChunk.State.values();

@@ -9,11 +9,11 @@ Adds an option to control the force mode of the particle.
 
 This adds a new Builder API which is much friendlier to use.
 
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 885bf43a591492f19bd5a421ea4271854ae8f192..d192e341f0f6a3d03329dab16de3b19962091d2a 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -61,7 +61,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 1e9884e819ac2afe58b5f50b89355c2d58ed73d5..3876958f20e675c4c8fd505c5fb333ccb9cdc8c9 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -170,7 +170,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      public final Int2ObjectMap<Entity> entitiesById = new Int2ObjectLinkedOpenHashMap();
      private final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap();
      private final Queue<Entity> entitiesToAdd = Queues.newArrayDeque();
@@ -22,7 +22,7 @@ index 885bf43a591492f19bd5a421ea4271854ae8f192..d192e341f0f6a3d03329dab16de3b199
      public final ChunkProviderServer chunkProvider; // Paper - public
      boolean tickingEntities;
      private final MinecraftServer server;
-@@ -1368,12 +1368,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1477,12 +1477,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
@@ -43,7 +43,7 @@ index 885bf43a591492f19bd5a421ea4271854ae8f192..d192e341f0f6a3d03329dab16de3b199
  
              if (this.a(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 4058484c256343a71d1392ae0aa54bf07fd0d26e..6e2f73cac222044256e97bc2c07f5581d63de1a2 100644
+index 4e255f2ca75ac0c1e1572f312a669cb6d3b60121..dfc3a2f6221c9e172d0d40510cb5edfc23649e53 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -2353,11 +2353,17 @@ public class CraftWorld implements World {

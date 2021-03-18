@@ -11,42 +11,19 @@ server threads
 
 Allow usage of a single thread executor by not using ForkJoin so single core CPU's.
 
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c24397d2ded7d3ea6f7440035ed64d29602900a6..518e15e6a4b7750e90a958686bcd930c351f5e1c 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -177,6 +177,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-         S s0 = function.apply(thread); // CraftBukkit - decompile error
- 
-         atomicreference.set(s0);
-+        thread.setPriority(Thread.NORM_PRIORITY+2); // Paper - boost priority
-         thread.start();
-         return s0;
-     }
-diff --git a/src/main/java/net/minecraft/server/ServerWorkerThread.java b/src/main/java/net/minecraft/server/ServerWorkerThread.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..6c4c4171baf18a58667e3882e47fc23293d4fc1c
---- /dev/null
-+++ b/src/main/java/net/minecraft/server/ServerWorkerThread.java
-@@ -0,0 +1,13 @@
-+package net.minecraft.server;
-+
-+import java.util.concurrent.atomic.AtomicInteger;
-+
-+public class ServerWorkerThread extends Thread {
-+    private static final AtomicInteger threadId = new AtomicInteger(1);
-+    public ServerWorkerThread(Runnable target, String poolName, int prioritityModifier) {
-+        super(target, "Worker-" + poolName + "-" + threadId.getAndIncrement());
-+        setPriority(Thread.NORM_PRIORITY+prioritityModifier); // Deprioritize over main
-+        this.setDaemon(true);
-+        this.setUncaughtExceptionHandler(SystemUtils::onThreadError);
-+    }
-+}
-diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index cc14e4b4609fa7013df666181c0e02a53970c123..1fe1df445ba56b2f176ee25502a774aa0a7bd00b 100644
---- a/src/main/java/net/minecraft/server/SystemUtils.java
-+++ b/src/main/java/net/minecraft/server/SystemUtils.java
-@@ -48,8 +48,8 @@ import org.apache.logging.log4j.Logger;
+diff --git a/src/main/java/net/minecraft/SystemUtils.java b/src/main/java/net/minecraft/SystemUtils.java
+index 68ce7605bd63ea280b96db8230463d2afb0a6cb1..46d82c1548088b8305f758699388edf0d5d4d050 100644
+--- a/src/main/java/net/minecraft/SystemUtils.java
++++ b/src/main/java/net/minecraft/SystemUtils.java
+@@ -45,6 +45,7 @@ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
+ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.server.DispenserRegistry;
++import net.minecraft.server.ServerWorkerThread;
+ import net.minecraft.util.MathHelper;
+ import net.minecraft.util.datafix.DataConverterRegistry;
+ import net.minecraft.world.level.block.state.properties.IBlockState;
+@@ -54,8 +55,8 @@ import org.apache.logging.log4j.Logger;
  public class SystemUtils {
  
      private static final AtomicInteger c = new AtomicInteger(1);
@@ -57,7 +34,7 @@ index cc14e4b4609fa7013df666181c0e02a53970c123..1fe1df445ba56b2f176ee25502a774aa
      private static final ExecutorService f = n();
      public static LongSupplier a = System::nanoTime;
      public static final UUID b = new UUID(0L, 0L); public static final UUID getNullUUID() {return b;} // Paper OBFHELPER
-@@ -79,15 +79,18 @@ public class SystemUtils {
+@@ -85,15 +86,18 @@ public class SystemUtils {
          return Instant.now().toEpochMilli();
      }
  
@@ -81,7 +58,7 @@ index cc14e4b4609fa7013df666181c0e02a53970c123..1fe1df445ba56b2f176ee25502a774aa
                      protected void onTermination(Throwable throwable) {
                          if (throwable != null) {
                              SystemUtils.LOGGER.warn("{} died", this.getName(), throwable);
-@@ -103,6 +106,7 @@ public class SystemUtils {
+@@ -109,6 +113,7 @@ public class SystemUtils {
                  return forkjoinworkerthread;
              }, SystemUtils::a, true);
          }
@@ -89,7 +66,7 @@ index cc14e4b4609fa7013df666181c0e02a53970c123..1fe1df445ba56b2f176ee25502a774aa
  
          return (ExecutorService) object;
      }
-@@ -151,6 +155,7 @@ public class SystemUtils {
+@@ -157,6 +162,7 @@ public class SystemUtils {
          });
      }
  
@@ -97,3 +74,35 @@ index cc14e4b4609fa7013df666181c0e02a53970c123..1fe1df445ba56b2f176ee25502a774aa
      private static void a(Thread thread, Throwable throwable) {
          c(throwable);
          if (throwable instanceof CompletionException) {
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 8166ad11642bb1b4b11722a5a09e773a2e749c47..021adb8a6b8c9e05c03391d0f8edfa71b3c0c246 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -285,6 +285,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         S s0 = function.apply(thread); // CraftBukkit - decompile error
+ 
+         atomicreference.set(s0);
++        thread.setPriority(Thread.NORM_PRIORITY+2); // Paper - boost priority
+         thread.start();
+         return s0;
+     }
+diff --git a/src/main/java/net/minecraft/server/ServerWorkerThread.java b/src/main/java/net/minecraft/server/ServerWorkerThread.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4ff28bd2ab2e85a45d79b46c82ebba6a489579ca
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/ServerWorkerThread.java
+@@ -0,0 +1,14 @@
++package net.minecraft.server;
++
++import net.minecraft.SystemUtils;
++import java.util.concurrent.atomic.AtomicInteger;
++
++public class ServerWorkerThread extends Thread {
++    private static final AtomicInteger threadId = new AtomicInteger(1);
++    public ServerWorkerThread(Runnable target, String poolName, int prioritityModifier) {
++        super(target, "Worker-" + poolName + "-" + threadId.getAndIncrement());
++        setPriority(Thread.NORM_PRIORITY+prioritityModifier); // Deprioritize over main
++        this.setDaemon(true);
++        this.setUncaughtExceptionHandler(SystemUtils::onThreadError);
++    }
++}

@@ -10,23 +10,11 @@ Vs behavior of non ticking of just overwriting state.
 
 We will now simply log a warning when this happens instead of crashing the server.
 
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index cabbc9019d6b6fe174b0be61b7f18a2db4702987..0adeb46e1a82820df8744379829f6f7a68fa6d2d 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -59,6 +59,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
-     }
- 
-     // Paper start
-+    boolean isQueuedForRegister = false;
-     public static Random SHARED_RANDOM = new Random() {
-         private boolean locked = false;
-         @Override
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index fb9c55a864ce3fd646e9576b2feede70ab759bbc..95b25bb17d9d4b025047b01909a880da26e59146 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -535,6 +535,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 74aef9741cc3ebf36749dc510bc4ef9d8f5580b0..ae4db654658675f05b678a3d2d6c4a6be503761e 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -647,6 +647,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              Entity entity2;
  
              while ((entity2 = (Entity) this.entitiesToAdd.poll()) != null) {
@@ -34,7 +22,7 @@ index fb9c55a864ce3fd646e9576b2feede70ab759bbc..95b25bb17d9d4b025047b01909a880da
                  this.registerEntity(entity2);
              }
  
-@@ -1292,6 +1293,19 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1404,6 +1405,19 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
      public void unregisterEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot
@@ -54,7 +42,7 @@ index fb9c55a864ce3fd646e9576b2feede70ab759bbc..95b25bb17d9d4b025047b01909a880da
          // Spigot start
          if ( entity instanceof EntityHuman )
          {
-@@ -1358,9 +1372,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1470,9 +1484,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
      private void registerEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity register"); // Spigot
@@ -77,3 +65,15 @@ index fb9c55a864ce3fd646e9576b2feede70ab759bbc..95b25bb17d9d4b025047b01909a880da
              this.entitiesById.put(entity.getId(), entity);
              if (entity instanceof EntityEnderDragon) {
                  EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).eJ();
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 19322c00422ac53de9903b3492994ce6e3c3bef4..44886357da22f0e7f74b1739028ae0c7a81dd525 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -148,6 +148,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     }
+ 
+     // Paper start
++    public boolean isQueuedForRegister = false;
+     public static Random SHARED_RANDOM = new Random() {
+         private boolean locked = false;
+         @Override

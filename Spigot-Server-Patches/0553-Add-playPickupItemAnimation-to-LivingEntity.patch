@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <blake.galbreath@gmail.com>
+Date: Sun, 23 Aug 2020 19:36:22 +0200
+Subject: [PATCH] Add playPickupItemAnimation to LivingEntity
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 5563e7c1ecc9e607ba0be21ae16a544b24d6f030..090e0931df410526cb7b0aab196a01f57ffbb285 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -814,5 +814,9 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+         }
+     }
+ 
++    @Override
++    public void playPickupItemAnimation(org.bukkit.entity.Item item, int quantity) {
++        getHandle().receive(((CraftItem) item).getHandle(), quantity);
++    }
+     // Paper end
+ }

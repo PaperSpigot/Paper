@@ -5,11 +5,11 @@ Subject: [PATCH] Vex#getSummoner API
 
 Get's the NPC that summoned this Vex
 
-diff --git a/src/main/java/net/minecraft/server/EntityVex.java b/src/main/java/net/minecraft/server/EntityVex.java
-index b4bda8baff6ee124b0ec7aed155824a278f8ac50..00568a19d7a25189d599fc84afb6ca6d642e2855 100644
---- a/src/main/java/net/minecraft/server/EntityVex.java
-+++ b/src/main/java/net/minecraft/server/EntityVex.java
-@@ -88,6 +88,7 @@ public class EntityVex extends EntityMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityVex.java b/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
+index 3acf36a500424808cd91dc607df1ffbe23720c16..3b74ade60b3b0ae0e908866cb4ac11acd75620ff 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
+@@ -124,6 +124,7 @@ public class EntityVex extends EntityMonster {
  
      }
  
@@ -18,28 +18,17 @@ index b4bda8baff6ee124b0ec7aed155824a278f8ac50..00568a19d7a25189d599fc84afb6ca6d
          return this.c;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
-index 737a37b6fe9cc4f6a93f7bae7e4f8326024929cc..169c951ec30fc5b78eb4ba29352ba009b7fa5efd 100644
+index ccaccffbf5eb18108760d1da09c4c1b2f33ebc42..962d6017f6acc47ebe4b754ccd9b97a1fc97cc58 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
-@@ -1,8 +1,10 @@
- package org.bukkit.craftbukkit.entity;
- 
-+import net.minecraft.server.EntityInsentient;
- import net.minecraft.server.EntityVex;
- import org.bukkit.craftbukkit.CraftServer;
- import org.bukkit.entity.EntityType;
-+import org.bukkit.entity.Mob;
- import org.bukkit.entity.Vex;
- 
- public class CraftVex extends CraftMonster implements Vex {
-@@ -16,6 +18,13 @@ public class CraftVex extends CraftMonster implements Vex {
+@@ -16,6 +16,13 @@ public class CraftVex extends CraftMonster implements Vex {
          return (EntityVex) super.getHandle();
      }
  
 +    // Paper start
-+    public Mob getSummoner() {
-+        EntityInsentient owner = getHandle().getOwner();
-+        return owner != null ? (Mob) owner.getBukkitEntity() : null;
++    public org.bukkit.entity.Mob getSummoner() {
++        net.minecraft.world.entity.EntityInsentient owner = getHandle().getOwner();
++        return owner != null ? (org.bukkit.entity.Mob) owner.getBukkitEntity() : null;
 +    }
 +    // Paper end
 +

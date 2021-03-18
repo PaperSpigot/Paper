@@ -4,20 +4,20 @@ Date: Mon, 5 Oct 2020 21:25:16 +0200
 Subject: [PATCH] Player Chunk Load/Unload Events
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index d58abb47c1a543eaf238569f27bf189322c22a93..3f480b6a419403536d87194525a82c5d3745963a 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -16,6 +16,8 @@ import java.util.OptionalInt;
- import java.util.Random;
- import java.util.UUID;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index b420e93590d0f109ad13b8ddaa5cd093da9e067d..9522a4a2060fc8b1bda53f72414810ac09915275 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -139,6 +139,8 @@ import net.minecraft.world.scores.ScoreboardScore;
+ import net.minecraft.world.scores.ScoreboardTeam;
+ import net.minecraft.world.scores.ScoreboardTeamBase;
+ import net.minecraft.world.scores.criteria.IScoreboardCriteria;
 +import io.papermc.paper.event.packet.PlayerChunkLoadEvent; // Paper
 +import io.papermc.paper.event.packet.PlayerChunkUnloadEvent; // Paper
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-@@ -1958,11 +1960,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2088,11 +2090,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public void a(ChunkCoordIntPair chunkcoordintpair, Packet<?> packet, Packet<?> packet1) {
          this.playerConnection.sendPacket(packet1);
          this.playerConnection.sendPacket(packet);

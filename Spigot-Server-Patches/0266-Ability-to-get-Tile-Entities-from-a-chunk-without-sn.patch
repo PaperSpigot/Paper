@@ -5,7 +5,7 @@ Subject: [PATCH] Ability to get Tile Entities from a chunk without snapshots
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
-index 1a312a868f6a65e7d4a53406825e9efd96d98607..569c0dd3d22c6ae154d3184905f5c09f9cbee238 100644
+index 32e4e59767587455272e685dfd23f945ba05f976..a8e94f69faec93661dc6ae2efeec44b8bfd2e965 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftChunk.java
 @@ -3,8 +3,10 @@ package org.bukkit.craftbukkit;
@@ -17,8 +17,8 @@ index 1a312a868f6a65e7d4a53406825e9efd96d98607..569c0dd3d22c6ae154d3184905f5c09f
  import java.util.Collection;
 +import java.util.List;
  import java.util.function.Predicate;
- import net.minecraft.server.BiomeStorage;
- import net.minecraft.server.BlockPosition;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.IRegistry;
 @@ -130,9 +132,16 @@ public class CraftChunk implements Chunk {
  
      @Override
@@ -34,7 +34,7 @@ index 1a312a868f6a65e7d4a53406825e9efd96d98607..569c0dd3d22c6ae154d3184905f5c09f
          }
 +        // Paper end
          int index = 0;
-         net.minecraft.server.Chunk chunk = getHandle();
+         net.minecraft.world.level.chunk.Chunk chunk = getHandle();
  
 @@ -144,11 +153,33 @@ public class CraftChunk implements Chunk {
              }
@@ -54,7 +54,7 @@ index 1a312a868f6a65e7d4a53406825e9efd96d98607..569c0dd3d22c6ae154d3184905f5c09f
 +        if (!isLoaded()) {
 +            getWorld().getChunkAt(x, z); // Transient load for this tick
 +        }
-+        net.minecraft.server.Chunk chunk = getHandle();
++        net.minecraft.world.level.chunk.Chunk chunk = getHandle();
 +
 +        List<BlockState> entities = new ArrayList<>();
 +

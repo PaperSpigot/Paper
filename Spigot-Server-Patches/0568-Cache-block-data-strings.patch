@@ -5,10 +5,10 @@ Subject: [PATCH] Cache block data strings
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 641c31597cad47c4950d5453e85ce692ab13d2fd..b2940f0a9b6fba05defe3369b6d2561d054714fe 100644
+index ca284cd0419f5d99efa7e73c19fa1591261d8d5b..97085ae04f77b79a367cd328905d4b68ebaca133 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1834,6 +1834,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1943,6 +1943,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              this.getPlayerList().reload();
              this.customFunctionData.a(this.dataPackResources.a());
              this.ak.a(this.dataPackResources.h());
@@ -17,10 +17,18 @@ index 641c31597cad47c4950d5453e85ce692ab13d2fd..b2940f0a9b6fba05defe3369b6d2561d
  
          if (this.isMainThread()) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-index 41a32f2c77f2e7b79a067a0ce15c894e53ed8709..590236ccc6c15f8c4ad15913fb3ac36d28414318 100644
+index ed88da727feddc319a650fb35710d16727f6dbd7..58f892478de74b853cd35ef2fec8c462e3a9ecee 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-@@ -476,9 +476,39 @@ public class CraftBlockData implements BlockData {
+@@ -13,6 +13,7 @@ import net.minecraft.commands.arguments.blocks.ArgumentBlock;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.util.INamable;
+ import net.minecraft.world.level.block.Block;
+ import net.minecraft.world.level.block.state.IBlockData;
+@@ -476,9 +477,39 @@ public class CraftBlockData implements BlockData {
          Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
      }
  
@@ -46,7 +54,7 @@ index 41a32f2c77f2e7b79a067a0ce15c894e53ed8709..590236ccc6c15f8c4ad15913fb3ac36d
 +        if (material != null) {
 +            Block block = CraftMagicNumbers.getBlock(material);
 +            if (block != null) {
-+                net.minecraft.server.MinecraftKey key = IRegistry.BLOCK.getKey(block);
++                MinecraftKey key = IRegistry.BLOCK.getKey(block);
 +                data = data == null ? key.toString() : key + data;
 +            }
 +        }

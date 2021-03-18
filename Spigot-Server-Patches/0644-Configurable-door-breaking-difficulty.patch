@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable door breaking difficulty
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index c42e5d9f9c9f67988383c4c25123d8a629ede9e3..c5495e02c3fe271b26f62ea2ec64e07957edf37e 100644
+index c42e5d9f9c9f67988383c4c25123d8a629ede9e3..946c12abc0e25ccfe09ee64a7ac8b045ba5c46a9 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -5,8 +5,12 @@ import java.util.EnumMap;
@@ -15,9 +15,9 @@ index c42e5d9f9c9f67988383c4c25123d8a629ede9e3..c5495e02c3fe271b26f62ea2ec64e079
 +import java.util.stream.Collectors;
  
  import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
-+import net.minecraft.server.EntityVindicator;
-+import net.minecraft.server.EntityZombie;
-+import net.minecraft.server.EnumDifficulty;
++import net.minecraft.world.EnumDifficulty;
++import net.minecraft.world.entity.monster.EntityVindicator;
++import net.minecraft.world.entity.monster.EntityZombie;
  import org.bukkit.Bukkit;
  import org.bukkit.Material;
  import org.bukkit.configuration.ConfigurationSection;
@@ -57,11 +57,11 @@ index c42e5d9f9c9f67988383c4c25123d8a629ede9e3..c5495e02c3fe271b26f62ea2ec64e079
 +        );
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityVindicator.java b/src/main/java/net/minecraft/server/EntityVindicator.java
-index c0d26aa9dcd02c44d744b10e18609857ada95889..4761ddfedeed54e79788a6f60f06a805efd60ab1 100644
---- a/src/main/java/net/minecraft/server/EntityVindicator.java
-+++ b/src/main/java/net/minecraft/server/EntityVindicator.java
-@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java b/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
+index c45dcb56af95f3e87e292b92b697a336461f01bc..f0eda0b83bab8e3a8adbb569b5997402b0e08e9a 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityVindicator.java
+@@ -48,6 +48,7 @@ import net.minecraft.world.level.WorldAccess;
  
  public class EntityVindicator extends EntityIllagerAbstract {
  
@@ -69,7 +69,7 @@ index c0d26aa9dcd02c44d744b10e18609857ada95889..4761ddfedeed54e79788a6f60f06a805
      private static final Predicate<EnumDifficulty> b = (enumdifficulty) -> {
          return enumdifficulty == EnumDifficulty.NORMAL || enumdifficulty == EnumDifficulty.HARD;
      };
-@@ -164,7 +165,7 @@ public class EntityVindicator extends EntityIllagerAbstract {
+@@ -204,7 +205,7 @@ public class EntityVindicator extends EntityIllagerAbstract {
      static class a extends PathfinderGoalBreakDoor {
  
          public a(EntityInsentient entityinsentient) {
@@ -78,11 +78,11 @@ index c0d26aa9dcd02c44d744b10e18609857ada95889..4761ddfedeed54e79788a6f60f06a805
              this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
          }
  
-diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
-index 6a1f6a6257546226f3c37d60d98a11ead42615b8..c081dfa775dc93afd96eff88953c9a5f21f2adb9 100644
---- a/src/main/java/net/minecraft/server/EntityZombie.java
-+++ b/src/main/java/net/minecraft/server/EntityZombie.java
-@@ -24,6 +24,7 @@ public class EntityZombie extends EntityMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+index fb98609a38d665659076b8949b59eaf084408a17..634416c354184bc6a2348c27c55e9868009ccd28 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+@@ -86,6 +86,7 @@ public class EntityZombie extends EntityMonster {
      private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityZombie.class, DataWatcherRegistry.i);
      private static final DataWatcherObject<Integer> bo = DataWatcher.a(EntityZombie.class, DataWatcherRegistry.b);
      public static final DataWatcherObject<Boolean> DROWN_CONVERTING = DataWatcher.a(EntityZombie.class, DataWatcherRegistry.i);
@@ -90,7 +90,7 @@ index 6a1f6a6257546226f3c37d60d98a11ead42615b8..c081dfa775dc93afd96eff88953c9a5f
      private static final Predicate<EnumDifficulty> bq = (enumdifficulty) -> {
          return enumdifficulty == EnumDifficulty.HARD;
      };
-@@ -36,7 +37,7 @@ public class EntityZombie extends EntityMonster {
+@@ -98,7 +99,7 @@ public class EntityZombie extends EntityMonster {
  
      public EntityZombie(EntityTypes<? extends EntityZombie> entitytypes, World world) {
          super(entitytypes, world);

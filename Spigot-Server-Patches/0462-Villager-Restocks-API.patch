@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: zbk <zbk@projectsolaris.net>
+Date: Sun, 26 Apr 2020 23:49:01 -0400
+Subject: [PATCH] Villager Restocks API
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+index 07f87ee8f5df9d7a40001dd28f50457344308a03..c37dd836c284ed8beac6699ec4f5f91886cf3f63 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+@@ -113,7 +113,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+     private long bA;
+     private int bB;
+     private long bC;
+-    private int bD;
++    private int bD; public int getRestocksToday(){ return this.bD; } public void setRestocksToday(int restocksToday){ this.bD = restocksToday; } // Paper OBFHELPER
+     private long bE;
+     private boolean bF;
+     private static final ImmutableList<MemoryModuleType<?>> bG = ImmutableList.of(MemoryModuleType.HOME, MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE, MemoryModuleType.MEETING_POINT, MemoryModuleType.MOBS, MemoryModuleType.VISIBLE_MOBS, MemoryModuleType.VISIBLE_VILLAGER_BABIES, MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_TARGETABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryModuleType.WALK_TARGET, new MemoryModuleType[]{MemoryModuleType.LOOK_TARGET, MemoryModuleType.INTERACTION_TARGET, MemoryModuleType.BREED_TARGET, MemoryModuleType.PATH, MemoryModuleType.DOORS_TO_CLOSE, MemoryModuleType.NEAREST_BED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_HOSTILE, MemoryModuleType.SECONDARY_JOB_SITE, MemoryModuleType.HIDING_PLACE, MemoryModuleType.HEARD_BELL_TIME, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.LAST_SLEPT, MemoryModuleType.LAST_WOKEN, MemoryModuleType.LAST_WORKED_AT_POI, MemoryModuleType.GOLEM_DETECTED_RECENTLY});
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
+index b020bc9e78a524b4745844ceb99249949c5ab6a4..4b2451179cdda918808ea7001f5033c7e5a8b9ac 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
+@@ -84,6 +84,18 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
+         getHandle().setExperience(experience);
+     }
+ 
++    // Paper start
++    @Override
++    public int getRestocksToday() {
++        return getHandle().getRestocksToday();
++    }
++
++    @Override
++    public void setRestocksToday(int restocksToday) {
++        getHandle().setRestocksToday(restocksToday);
++    }
++    // Paper end
++
+     @Override
+     public boolean sleep(Location location) {
+         Preconditions.checkArgument(location != null, "Location cannot be null");

@@ -10,11 +10,11 @@ After: http://i.imgur.com/nJ46crB.png
 
 Optimize redundant converting of static fields into an unsigned long each call by precomputing it in ctor
 
-diff --git a/src/main/java/net/minecraft/server/DataBits.java b/src/main/java/net/minecraft/server/DataBits.java
-index 53e7bac2f7a99238f509bb0f871ebed103fda568..2a01a48ad347fb123492218a60404b034cfcfbc5 100644
---- a/src/main/java/net/minecraft/server/DataBits.java
-+++ b/src/main/java/net/minecraft/server/DataBits.java
-@@ -12,8 +12,8 @@ public class DataBits {
+diff --git a/src/main/java/net/minecraft/util/DataBits.java b/src/main/java/net/minecraft/util/DataBits.java
+index 0c0576c8730069fb5364d8383dec8ab7e698658d..c4f3b680512fb15cea01ad12d0a00c6e60bf34b7 100644
+--- a/src/main/java/net/minecraft/util/DataBits.java
++++ b/src/main/java/net/minecraft/util/DataBits.java
+@@ -13,8 +13,8 @@ public class DataBits {
      private final long d;
      private final int e;
      private final int f;
@@ -25,7 +25,7 @@ index 53e7bac2f7a99238f509bb0f871ebed103fda568..2a01a48ad347fb123492218a60404b03
      private final int i;
  
      public DataBits(int i, int j) {
-@@ -28,8 +28,8 @@ public class DataBits {
+@@ -29,8 +29,8 @@ public class DataBits {
          this.f = (char) (64 / i);
          int k = 3 * (this.f - 1);
  
@@ -36,7 +36,7 @@ index 53e7bac2f7a99238f509bb0f871ebed103fda568..2a01a48ad347fb123492218a60404b03
          this.i = DataBits.a[k + 2];
          int l = (j + this.f - 1) / this.f;
  
-@@ -46,15 +46,15 @@ public class DataBits {
+@@ -47,15 +47,15 @@ public class DataBits {
      }
  
      private int b(int i) {
@@ -58,7 +58,7 @@ index 53e7bac2f7a99238f509bb0f871ebed103fda568..2a01a48ad347fb123492218a60404b03
          int k = this.b(i);
          long l = this.b[k];
          int i1 = (i - k * this.f) * this.c;
-@@ -64,9 +64,9 @@ public class DataBits {
+@@ -65,9 +65,9 @@ public class DataBits {
          return j1;
      }
  
@@ -71,7 +71,7 @@ index 53e7bac2f7a99238f509bb0f871ebed103fda568..2a01a48ad347fb123492218a60404b03
          int k = this.b(i);
          long l = this.b[k];
          int i1 = (i - k * this.f) * this.c;
-@@ -74,8 +74,8 @@ public class DataBits {
+@@ -75,8 +75,8 @@ public class DataBits {
          this.b[k] = l & ~(this.d << i1) | ((long) j & this.d) << i1;
      }
  

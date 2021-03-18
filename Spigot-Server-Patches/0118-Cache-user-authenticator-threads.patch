@@ -4,10 +4,10 @@ Date: Wed, 23 Nov 2016 08:31:45 -0500
 Subject: [PATCH] Cache user authenticator threads
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index a0bc829ed49661bc381f535d1e462bf8e0dc6ae1..f8c9515f3ee922b6b96d97676ca740bba617721a 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 82085f30e4eefa1867536a8c591210380ebad725..fa315f10219dc340da4f51a8d4a78e1f33023bb3 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfile;
  import com.mojang.datafixers.util.Either;
@@ -18,7 +18,7 @@ index a0bc829ed49661bc381f535d1e462bf8e0dc6ae1..f8c9515f3ee922b6b96d97676ca740bb
  import java.util.Iterator;
  import java.util.List;
  import java.util.Optional;
-@@ -44,7 +46,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -171,7 +173,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public PlayerConnection playerConnection;
      public final MinecraftServer server;
      public final PlayerInteractManager playerInteractManager;
@@ -27,7 +27,7 @@ index a0bc829ed49661bc381f535d1e462bf8e0dc6ae1..f8c9515f3ee922b6b96d97676ca740bb
      private final AdvancementDataPlayer advancementDataPlayer;
      private final ServerStatisticManager serverStatisticManager;
      private float lastHealthScored = Float.MIN_VALUE;
-@@ -422,13 +424,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -549,13 +551,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          while (!this.removeQueue.isEmpty()) {
              int i = Math.min(this.removeQueue.size(), Integer.MAX_VALUE);
              int[] aint = new int[i];
@@ -50,7 +50,7 @@ index a0bc829ed49661bc381f535d1e462bf8e0dc6ae1..f8c9515f3ee922b6b96d97676ca740bb
  
              this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
          }
-@@ -1425,7 +1434,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1552,7 +1561,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.lastHealthSent = -1.0F;
          this.lastFoodSent = -1;
          // this.recipeBook.a((RecipeBook) entityplayer.recipeBook); // CraftBukkit

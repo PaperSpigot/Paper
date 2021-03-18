@@ -5,11 +5,11 @@ Subject: [PATCH] Fix interact event not being called in adventure
 
 Call PlayerInteractEvent when left-clicking on a block in adventure mode
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 741e338f55a63a5a097f2adc737b7e4cf9172555..f3679a3ad2d51612381bc47bb23eeffec924d478 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1556,7 +1556,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index c6b33b355b8e06d4ef6a8f542ab460c55af8c00e..60b72fc3cf859fab80aba310882b0309fd68ff37 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1700,7 +1700,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                      IChatMutableComponent ichatmutablecomponent = (new ChatMessage("build.tooHigh", new Object[]{this.minecraftServer.getMaxBuildHeight()})).a(EnumChatFormat.RED);
  
                      this.player.playerConnection.sendPacket(new PacketPlayOutChat(ichatmutablecomponent, ChatMessageType.GAME_INFO, SystemUtils.b));
@@ -18,7 +18,7 @@ index 741e338f55a63a5a097f2adc737b7e4cf9172555..f3679a3ad2d51612381bc47bb23eeffe
                      this.player.swingHand(enumhand, true);
                  }
              }
-@@ -2057,7 +2057,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -2201,7 +2201,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
          Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
          MovingObjectPosition movingobjectposition = this.player.world.rayTrace(new RayTrace(vec3d, vec3d1, RayTrace.BlockCollisionOption.OUTLINE, RayTrace.FluidCollisionOption.NONE, player));
  

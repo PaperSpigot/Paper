@@ -4,11 +4,11 @@ Date: Sun, 5 Jul 2020 15:39:19 -0700
 Subject: [PATCH] added Wither API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
-index 53482a420c356fd50e5ab6dd729a271d6594dac7..2e623ef9be036ea467e9e41817c2eced018f8f93 100644
---- a/src/main/java/net/minecraft/server/EntityWither.java
-+++ b/src/main/java/net/minecraft/server/EntityWither.java
-@@ -32,6 +32,11 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+index 30290c0208a4725b2eb0e7764465c354e592e4ee..891905712903bf3ba241187791cfa995375430d5 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
++++ b/src/main/java/net/minecraft/world/entity/boss/wither/EntityWither.java
+@@ -82,6 +82,11 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
          return entityliving.getMonsterType() != EnumMonsterType.UNDEAD && entityliving.ei();
      };
      private static final PathfinderTargetCondition bz = (new PathfinderTargetCondition()).a(20.0D).a(EntityWither.by);
@@ -20,7 +20,7 @@ index 53482a420c356fd50e5ab6dd729a271d6594dac7..2e623ef9be036ea467e9e41817c2eced
  
      public EntityWither(EntityTypes<? extends EntityWither> entitytypes, World world) {
          super(entitytypes, world);
-@@ -530,6 +535,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+@@ -580,6 +585,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
          this.datawatcher.set((DataWatcherObject) EntityWither.bo.get(i), j);
      }
  
@@ -28,7 +28,7 @@ index 53482a420c356fd50e5ab6dd729a271d6594dac7..2e623ef9be036ea467e9e41817c2eced
      public boolean S_() {
          return this.getHealth() <= this.getMaxHealth() / 2.0F;
      }
-@@ -546,7 +552,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+@@ -596,7 +602,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
  
      @Override
      public boolean canPortal() {
@@ -38,10 +38,10 @@ index 53482a420c356fd50e5ab6dd729a271d6594dac7..2e623ef9be036ea467e9e41817c2eced
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
-index 03cf6136e64bab7180933e106234b92c1255268d..8c75f6df9749246fbbad55dcdc4292bd3bab4e2b 100644
+index 1d94aeec37dcb9758d88ef25a5cad1333bbfbf6c..adf4ce8afa3a42ea8a184905969e03b6b756830f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
-@@ -39,4 +39,31 @@ public class CraftWither extends CraftMonster implements Wither, CraftRangedEnti
+@@ -38,4 +38,31 @@ public class CraftWither extends CraftMonster implements Wither, com.destroystok
      public BossBar getBossBar() {
          return bossBar;
      }

@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Fri, 12 Jun 2020 13:33:19 -0700
+Subject: [PATCH] Fix sand duping
+
+If the falling block dies during teleportation (entity#move), then we need
+to detect that by placing a check after the move.
+
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+index 411e3915c0aa00249aacb6658ed04309665d2fb4..62d8b53c024888aa43b8fddf8a475dfb8284a4cc 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+@@ -103,6 +103,11 @@ public class EntityFallingBlock extends Entity {
+ 
+     @Override
+     public void tick() {
++        // Paper start - fix sand duping
++        if (this.dead) {
++            return;
++        }
++        // Paper end - fix sand duping
+         if (this.block.isAir()) {
+             this.die();
+         } else {
+@@ -125,6 +130,12 @@ public class EntityFallingBlock extends Entity {
+ 
+             this.move(EnumMoveType.SELF, this.getMot());
+ 
++            // Paper start - fix sand duping
++            if (this.dead) {
++                return;
++            }
++            // Paper end - fix sand duping
++
+             // Paper start - Configurable EntityFallingBlock height nerf
+             if (this.world.paperConfig.fallingBlockHeightNerf != 0 && this.locY() > this.world.paperConfig.fallingBlockHeightNerf) {
+                 if (this.dropItem && this.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {

@@ -5,11 +5,11 @@ Subject: [PATCH] Chunk Save Reattempt
 
 We commonly have "Stream Closed" errors on chunk saving, so this code should re-try to save the chunk in the event of failure and hopefully prevent rollbacks.
 
-diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
-index f722b148464b7b8e515dba25aeffe8dfd3c0d6c3..be7165098fcb814d7b301a1670c33c78461d8d95 100644
---- a/src/main/java/net/minecraft/server/RegionFile.java
-+++ b/src/main/java/net/minecraft/server/RegionFile.java
-@@ -261,7 +261,7 @@ public class RegionFile implements AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+index 7f695f2b49df3400cd263fd6ffff77e753a65ea1..6efbb8a3502f86e105d4dfb9cef114a790966e95 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+@@ -264,7 +264,7 @@ public class RegionFile implements AutoCloseable {
                      return true;
                  }
              } catch (IOException ioexception) {
@@ -18,11 +18,19 @@ index f722b148464b7b8e515dba25aeffe8dfd3c0d6c3..be7165098fcb814d7b301a1670c33c78
                  return false;
              }
          }
-diff --git a/src/main/java/net/minecraft/server/RegionFileCache.java b/src/main/java/net/minecraft/server/RegionFileCache.java
-index caa1eb3ea5d2e97944adc735895708a76215ee7b..26fabb4e5d3945ace851cf6e4474e91611c45b1d 100644
---- a/src/main/java/net/minecraft/server/RegionFileCache.java
-+++ b/src/main/java/net/minecraft/server/RegionFileCache.java
-@@ -88,6 +88,7 @@ public final class RegionFileCache implements AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
+index de125077656f249d5cf9b76f07981b55e690e015..8310dd6bfc04b8ac0a51545baa3a264e6cb42eac 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
+@@ -11,6 +11,7 @@ import java.io.IOException;
+ import javax.annotation.Nullable;
+ import net.minecraft.nbt.NBTCompressedStreamTools;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.MinecraftServer;
+ import net.minecraft.util.ExceptionSuppressor;
+ import net.minecraft.world.level.ChunkCoordIntPair;
+ 
+@@ -92,6 +93,7 @@ public final class RegionFileCache implements AutoCloseable {
  
      protected void write(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) throws IOException {
          RegionFile regionfile = this.getFile(chunkcoordintpair, false); // CraftBukkit
@@ -30,7 +38,7 @@ index caa1eb3ea5d2e97944adc735895708a76215ee7b..26fabb4e5d3945ace851cf6e4474e916
          DataOutputStream dataoutputstream = regionfile.c(chunkcoordintpair);
          Throwable throwable = null;
  
-@@ -111,6 +112,18 @@ public final class RegionFileCache implements AutoCloseable {
+@@ -115,6 +117,18 @@ public final class RegionFileCache implements AutoCloseable {
  
          }
  

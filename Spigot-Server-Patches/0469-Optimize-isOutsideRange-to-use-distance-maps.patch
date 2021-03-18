@@ -1,0 +1,384 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Tue, 5 May 2020 20:40:53 -0700
+Subject: [PATCH] Optimize isOutsideRange to use distance maps
+
+Use a distance map to find the players in range quickly
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+index 60fcea78bf617559114b1ca1c0bf2d4cd9075a8c..335666db1854e8aa4b2ba71d5bdc2658305cb70a 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
++++ b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+@@ -37,7 +37,7 @@ public abstract class ChunkMapDistance {
+     private final Long2ObjectMap<ObjectSet<EntityPlayer>> c = new Long2ObjectOpenHashMap();
+     public final Long2ObjectOpenHashMap<ArraySetSorted<Ticket<?>>> tickets = new Long2ObjectOpenHashMap();
+     private final ChunkMapDistance.a ticketLevelTracker = new ChunkMapDistance.a();
+-    private final ChunkMapDistance.b f = new ChunkMapDistance.b(8);
++    public static final int MOB_SPAWN_RANGE = 8; // private final ChunkMapDistance.b f = new ChunkMapDistance.b(8); // Paper - no longer used
+     private final ChunkMapDistance.c g = new ChunkMapDistance.c(33);
+     // Paper start use a queue, but still keep unique requirement
+     public final java.util.Queue<PlayerChunk> pendingChunkUpdates = new java.util.ArrayDeque<PlayerChunk>() {
+@@ -56,6 +56,8 @@ public abstract class ChunkMapDistance {
+     private final Executor m;
+     private long currentTick;
+ 
++    PlayerChunkMap chunkMap; // Paper
++
+     protected ChunkMapDistance(Executor executor, Executor executor1) {
+         executor1.getClass();
+         Mailbox<Runnable> mailbox = Mailbox.a("player ticket throttler", executor1::execute);
+@@ -100,7 +102,7 @@ public abstract class ChunkMapDistance {
+     protected abstract PlayerChunk a(long i, int j, @Nullable PlayerChunk playerchunk, int k);
+ 
+     public boolean a(PlayerChunkMap playerchunkmap) {
+-        this.f.a();
++        //this.f.a(); // Paper - no longer used
+         this.g.a();
+         int i = Integer.MAX_VALUE - this.ticketLevelTracker.a(Integer.MAX_VALUE);
+         boolean flag = i != 0;
+@@ -236,7 +238,7 @@ public abstract class ChunkMapDistance {
+         ((ObjectSet) this.c.computeIfAbsent(i, (j) -> {
+             return new ObjectOpenHashSet();
+         })).add(entityplayer);
+-        this.f.update(i, 0, true);
++        //this.f.update(i, 0, true); // Paper - no longer used
+         this.g.update(i, 0, true);
+     }
+ 
+@@ -248,7 +250,7 @@ public abstract class ChunkMapDistance {
+         if (objectset != null) objectset.remove(entityplayer); // Paper - some state corruption happens here, don't crash, clean up gracefully.
+         if (objectset == null || objectset.isEmpty()) { // Paper
+             this.c.remove(i);
+-            this.f.update(i, Integer.MAX_VALUE, false);
++            //this.f.update(i, Integer.MAX_VALUE, false); // Paper - no longer used
+             this.g.update(i, Integer.MAX_VALUE, false);
+         }
+ 
+@@ -272,13 +274,17 @@ public abstract class ChunkMapDistance {
+     }
+ 
+     public int b() {
+-        this.f.a();
+-        return this.f.a.size();
++        // Paper start - use distance map to implement
++        // note: this is the spawn chunk count
++        return this.chunkMap.playerChunkTickRangeMap.size();
++        // Paper end - use distance map to implement
+     }
+ 
+     public boolean d(long i) {
+-        this.f.a();
+-        return this.f.a.containsKey(i);
++        // Paper start - use distance map to implement
++        // note: this is the is spawn chunk method
++        return this.chunkMap.playerChunkTickRangeMap.getObjectsInRange(i) != null;
++        // Paper end - use distance map to implement
+     }
+ 
+     public String c() {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index ecf4cd6dfea777ab9daea0b40724d247df7ddb53..42bb00364375e5cf324b43557385345868b37ffe 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -753,6 +753,37 @@ public class ChunkProviderServer extends IChunkProvider {
+         boolean flag1 = this.world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && !world.getPlayers().isEmpty(); // CraftBukkit
+ 
+         if (!flag) {
++            // Paper start - optimize isOutisdeRange
++            PlayerChunkMap playerChunkMap = this.playerChunkMap;
++            for (EntityPlayer player : this.world.players) {
++                if (!player.affectsSpawning || player.isSpectator()) {
++                    playerChunkMap.playerMobSpawnMap.remove(player);
++                    continue;
++                }
++
++                int viewDistance = this.playerChunkMap.getEffectiveViewDistance();
++
++                // copied and modified from isOutisdeRange
++                int chunkRange = world.spigotConfig.mobSpawnRange;
++                chunkRange = (chunkRange > viewDistance) ? (byte)viewDistance : chunkRange;
++                chunkRange = (chunkRange > ChunkMapDistance.MOB_SPAWN_RANGE) ? ChunkMapDistance.MOB_SPAWN_RANGE : chunkRange;
++
++                com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(player.getBukkitEntity(), (byte)chunkRange);
++                event.callEvent();
++                if (event.isCancelled() || event.getSpawnRadius() < 0 || playerChunkMap.playerChunkTickRangeMap.getLastViewDistance(player) == -1) {
++                    playerChunkMap.playerMobSpawnMap.remove(player);
++                    continue;
++                }
++
++                int range = Math.min(event.getSpawnRadius(), 32); // limit to max view distance
++                int chunkX = net.minecraft.server.MCUtil.getChunkCoordinate(player.locX());
++                int chunkZ = net.minecraft.server.MCUtil.getChunkCoordinate(player.locZ());
++
++                playerChunkMap.playerMobSpawnMap.addOrUpdate(player, chunkX, chunkZ, range);
++                player.lastEntitySpawnRadiusSquared = (double)((range << 4) * (range << 4)); // used in isOutsideRange
++                player.playerNaturallySpawnedEvent = event;
++            }
++            // Paper end - optimize isOutisdeRange
+             this.world.getMethodProfiler().enter("pollingChunks");
+             int k = this.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
+             boolean flag2 = world.ticksPerAnimalSpawns != 0L && worlddata.getTime() % world.ticksPerAnimalSpawns == 0L; // CraftBukkit
+@@ -782,15 +813,7 @@ public class ChunkProviderServer extends IChunkProvider {
+             this.world.getMethodProfiler().exit();
+             //List<PlayerChunk> list = Lists.newArrayList(this.playerChunkMap.f()); // Paper
+             //Collections.shuffle(list); // Paper
+-            //Paper start - call player naturally spawn event
+-            int chunkRange = world.spigotConfig.mobSpawnRange;
+-            chunkRange = (chunkRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : chunkRange;
+-            chunkRange = Math.min(chunkRange, 8);
+-            for (EntityPlayer entityPlayer : this.world.getPlayers()) {
+-                entityPlayer.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(entityPlayer.getBukkitEntity(), (byte) chunkRange);
+-                entityPlayer.playerNaturallySpawnedEvent.callEvent();
+-            };
+-            // Paper end
++            // Paper - moved up
+             final int[] chunksTicked = {0}; this.playerChunkMap.forEachVisibleChunk((playerchunk) -> { // Paper - safe iterator incase chunk loads, also no wrapping
+                 Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
+ 
+@@ -806,9 +829,9 @@ public class ChunkProviderServer extends IChunkProvider {
+                         Chunk chunk = (Chunk) optional1.get();
+                         ChunkCoordIntPair chunkcoordintpair = playerchunk.i();
+ 
+-                        if (!this.playerChunkMap.isOutsideOfRange(chunkcoordintpair)) {
++                        if (!this.playerChunkMap.isOutsideOfRange(playerchunk, chunkcoordintpair, false)) { // Paper - optimise isOutsideOfRange
+                             chunk.setInhabitedTime(chunk.getInhabitedTime() + j);
+-                            if (flag1 && (this.allowMonsters || this.allowAnimals) && this.world.getWorldBorder().isInBounds(chunk.getPos()) && !this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, true)) { // Spigot
++                            if (flag1 && (this.allowMonsters || this.allowAnimals) && this.world.getWorldBorder().isInBounds(chunk.getPos()) && !this.playerChunkMap.isOutsideOfRange(playerchunk, chunkcoordintpair, true)) { // Spigot // Paper - optimise isOutsideOfRange
+                                 SpawnerCreature.a(this.world, chunk, spawnercreature_d, this.allowAnimals, this.allowMonsters, flag2);
+                             }
+ 
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 36b4792687a5c6316bf95995e761bf4aa49779f6..d50b53ae3b8f463eb1caa93b1c21f5c6a5a6484c 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -249,6 +249,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
+     public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleHashSet; // Paper
+ 
++    double lastEntitySpawnRadiusSquared; // Paper - optimise isOutsideRange, this field is in blocks
++
+     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
+         super(worldserver, worldserver.getSpawn(), worldserver.v(), gameprofile);
+         this.spawnDimension = World.OVERWORLD;
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunk.java b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+index 445dba8ed210407664904b707c36c78a76f25510..25484cac9c62e49de39fbbf506fcb3edc4ba6e65 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunk.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+@@ -70,6 +70,18 @@ public class PlayerChunk {
+     long lastAutoSaveTime; // Paper - incremental autosave
+     long inactiveTimeStart; // Paper - incremental autosave
+ 
++    // Paper start - optimise isOutsideOfRange
++    // cached here to avoid a map lookup
++    com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> playersInMobSpawnRange;
++    com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> playersInChunkTickRange;
++
++    void updateRanges() {
++        long key = net.minecraft.server.MCUtil.getCoordinateKey(this.location);
++        this.playersInMobSpawnRange = this.chunkMap.playerMobSpawnMap.getObjectsInRange(key);
++        this.playersInChunkTickRange = this.chunkMap.playerChunkTickRangeMap.getObjectsInRange(key);
++    }
++    // Paper end - optimise isOutsideOfRange
++
+     public PlayerChunk(ChunkCoordIntPair chunkcoordintpair, int i, LightEngine lightengine, PlayerChunk.c playerchunk_c, PlayerChunk.d playerchunk_d) {
+         this.statusFutures = new AtomicReferenceArray(PlayerChunk.CHUNK_STATUSES.size());
+         this.fullChunkFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+@@ -86,6 +98,7 @@ public class PlayerChunk {
+         this.n = this.oldTicketLevel;
+         this.a(i);
+         this.chunkMap = (PlayerChunkMap)playerchunk_d; // Paper
++        this.updateRanges(); // Paper - optimise isOutsideOfRange
+     }
+ 
+     // Paper start
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index c30ec3ad68fc10d01d0b3dd1feea32f08c19ab1c..3c49ca30959204840a656c1a44de50a60ea1c7df 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -210,6 +210,17 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         return MinecraftServer.getServer().applyTrackingRangeScale(vanilla);
+     }
+     // Paper end - use distance map to optimise tracker
++    // Paper start - optimise PlayerChunkMap#isOutsideRange
++    // A note about the naming used here:
++    // Previously, mojang used a "spawn range" of 8 for controlling both ticking and
++    // mob spawn range. However, spigot makes the spawn range configurable by
++    // checking if the chunk is in the tick range (8) and the spawn range
++    // obviously this means a spawn range > 8 cannot be implemented
++
++    // these maps are named after spigot's uses
++    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerMobSpawnMap; // this map is absent from updateMaps since it's controlled at the start of the chunkproviderserver tick
++    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerChunkTickRangeMap;
++    // Paper end - optimise PlayerChunkMap#isOutsideRange
+ 
+     void addPlayerToDistanceMaps(EntityPlayer player) {
+         int chunkX = MCUtil.getChunkCoordinate(player.locX());
+@@ -223,6 +234,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             trackMap.add(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveViewDistance()));
+         }
+         // Paper end - use distance map to optimise entity tracker
++        // Paper start - optimise PlayerChunkMap#isOutsideRange
++        this.playerChunkTickRangeMap.add(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
++        // Paper end - optimise PlayerChunkMap#isOutsideRange
+     }
+ 
+     void removePlayerFromDistanceMaps(EntityPlayer player) {
+@@ -231,6 +245,10 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             this.playerEntityTrackerTrackMaps[i].remove(player);
+         }
+         // Paper end - use distance map to optimise tracker
++        // Paper start - optimise PlayerChunkMap#isOutsideRange
++        this.playerMobSpawnMap.remove(player);
++        this.playerChunkTickRangeMap.remove(player);
++        // Paper end - optimise PlayerChunkMap#isOutsideRange
+     }
+ 
+     void updateMaps(EntityPlayer player) {
+@@ -245,6 +263,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             trackMap.update(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveViewDistance()));
+         }
+         // Paper end - use distance map to optimise entity tracker
++        // Paper start - optimise PlayerChunkMap#isOutsideRange
++        this.playerChunkTickRangeMap.update(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
++        // Paper end - optimise PlayerChunkMap#isOutsideRange
+     }
+     // Paper end
+ 
+@@ -276,7 +297,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         this.mailboxWorldGen = this.p.a(threadedmailbox, false);
+         this.mailboxMain = this.p.a(mailbox, false);
+         this.lightEngine = new LightEngineThreaded(ilightaccess, this, this.world.getDimensionManager().hasSkyLight(), threadedmailbox1, this.p.a(threadedmailbox1, false));
+-        this.chunkDistanceManager = new PlayerChunkMap.a(executor, iasynctaskhandler);
++        this.chunkDistanceManager = new PlayerChunkMap.a(executor, iasynctaskhandler); this.chunkDistanceManager.chunkMap = this; // Paper
+         this.l = supplier;
+         this.m = new VillagePlace(new File(this.w, "poi"), datafixer, flag, this.world); // Paper
+         this.setViewDistance(i);
+@@ -320,6 +341,38 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             this.playerEntityTrackerTrackMaps[ordinal] = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets);
+         }
+         // Paper end - use distance map to optimise entity tracker
++        // Paper start - optimise PlayerChunkMap#isOutsideRange
++        this.playerChunkTickRangeMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
++            (EntityPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
++             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newState) -> {
++                PlayerChunk playerChunk = PlayerChunkMap.this.getUpdatingChunk(MCUtil.getCoordinateKey(rangeX, rangeZ));
++                if (playerChunk != null) {
++                    playerChunk.playersInChunkTickRange = newState;
++                }
++            },
++            (EntityPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
++             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newState) -> {
++                PlayerChunk playerChunk = PlayerChunkMap.this.getUpdatingChunk(MCUtil.getCoordinateKey(rangeX, rangeZ));
++                if (playerChunk != null) {
++                    playerChunk.playersInChunkTickRange = newState;
++                }
++            });
++        this.playerMobSpawnMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
++            (EntityPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
++             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newState) -> {
++                PlayerChunk playerChunk = PlayerChunkMap.this.getUpdatingChunk(MCUtil.getCoordinateKey(rangeX, rangeZ));
++                if (playerChunk != null) {
++                    playerChunk.playersInMobSpawnRange = newState;
++                }
++            },
++            (EntityPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
++             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newState) -> {
++                PlayerChunk playerChunk = PlayerChunkMap.this.getUpdatingChunk(MCUtil.getCoordinateKey(rangeX, rangeZ));
++                if (playerChunk != null) {
++                    playerChunk.playersInMobSpawnRange = newState;
++                }
++            });
++        // Paper end - optimise PlayerChunkMap#isOutsideRange
+     }
+ 
+     public void updatePlayerMobTypeMap(Entity entity) {
+@@ -339,6 +392,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         return entityPlayer.mobCounts[enumCreatureType.ordinal()];
+     }
+ 
++    private static double getDistanceSquaredFromChunk(ChunkCoordIntPair chunkPos, Entity entity) { return a(chunkPos, entity); } // Paper - OBFHELPER
+     private static double a(ChunkCoordIntPair chunkcoordintpair, Entity entity) {
+         double d0 = (double) (chunkcoordintpair.x * 16 + 8);
+         double d1 = (double) (chunkcoordintpair.z * 16 + 8);
+@@ -517,6 +571,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         } else {
+             if (playerchunk != null) {
+                 playerchunk.a(j);
++                playerchunk.updateRanges(); // Paper - optimise isOutsideOfRange
+             }
+ 
+             if (playerchunk != null) {
+@@ -1487,30 +1542,53 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         return isOutsideOfRange(chunkcoordintpair, false);
+     }
+ 
+-    boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair, boolean reducedRange) {
+-        int chunkRange = world.spigotConfig.mobSpawnRange;
+-        chunkRange = (chunkRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : chunkRange;
+-        chunkRange = (chunkRange > 8) ? 8 : chunkRange;
++    // Paper start - optimise isOutsideOfRange
++    final boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair, boolean reducedRange) {
++        return this.isOutsideOfRange(this.getUpdatingChunk(chunkcoordintpair.pair()), chunkcoordintpair, reducedRange);
++    }
+ 
+-        final int finalChunkRange = chunkRange; // Paper for lambda below
+-        //double blockRange = (reducedRange) ? Math.pow(chunkRange << 4, 2) : 16384.0D; // Paper - use from event
+-        // Spigot end
+-        long i = chunkcoordintpair.pair();
++    final boolean isOutsideOfRange(PlayerChunk playerchunk, ChunkCoordIntPair chunkcoordintpair, boolean reducedRange) {
++        // this function is so hot that removing the map lookup call can have an order of magnitude impact on its performance
++        // tested and confirmed via System.nanoTime()
++        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> playersInRange = reducedRange ? playerchunk.playersInMobSpawnRange : playerchunk.playersInChunkTickRange;
+ 
+-        return !this.chunkDistanceManager.d(i) ? true : this.playerMap.a(i).noneMatch((entityplayer) -> {
+-            // Paper start -
+-            com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
+-            double blockRange = 16384.0D;
+-            if (reducedRange) {
+-                event = entityplayer.playerNaturallySpawnedEvent;
+-                if (event == null || event.isCancelled()) return false;
+-                blockRange = (double) ((event.getSpawnRadius() << 4) * (event.getSpawnRadius() << 4));
+-            }
++        if (playersInRange == null) {
++            return true;
++        }
+ 
+-            return (!entityplayer.isSpectator() && a(chunkcoordintpair, (Entity) entityplayer) < blockRange); // Spigot
+-            // Paper end
+-        });
++        Object[] backingSet = playersInRange.getBackingSet();
++
++        if (reducedRange) {
++            for (int i = 0, len = backingSet.length; i < len; ++i) {
++                Object raw = backingSet[i];
++                if (!(raw instanceof EntityPlayer)) {
++                    continue;
++                }
++                EntityPlayer player = (EntityPlayer) raw;
++                // don't check spectator and whatnot, already handled by mob spawn map update
++                if (player.lastEntitySpawnRadiusSquared > getDistanceSquaredFromChunk(chunkcoordintpair, player)) {
++                    return false; // in range
++                }
++            }
++        } else {
++            final double range = (ChunkMapDistance.MOB_SPAWN_RANGE * 16) * (ChunkMapDistance.MOB_SPAWN_RANGE * 16);
++            // before spigot, mob spawn range was actually mob spawn range + tick range, but it was split
++            for (int i = 0, len = backingSet.length; i < len; ++i) {
++                Object raw = backingSet[i];
++                if (!(raw instanceof EntityPlayer)) {
++                    continue;
++                }
++                EntityPlayer player = (EntityPlayer) raw;
++                // don't check spectator and whatnot, already handled by mob spawn map update
++                if (range > getDistanceSquaredFromChunk(chunkcoordintpair, player)) {
++                    return false; // in range
++                }
++            }
++        }
++        // no players in range
++        return true;
+     }
++    // Paper end - optimise isOutsideOfRange
+ 
+     private boolean b(EntityPlayer entityplayer) {
+         return entityplayer.isSpectator() && !this.world.getGameRules().getBoolean(GameRules.SPECTATORS_GENERATE_CHUNKS);

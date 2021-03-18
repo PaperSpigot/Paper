@@ -5,11 +5,11 @@ Subject: [PATCH] Fix sign edit memory leak
 
 when a player edits a sign, a reference to their Entity is never cleand up.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 188af7af384ca35f2e659dfb1f7518dd06803be3..081077c3e00d424baa8f6a293c3a911da447cb69 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -2694,7 +2694,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index a2413a4e1d16b856df9f74e42eb141f72b0893c6..593609ff38b01ae35e17dd65bf101e38d080dc3a 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2838,7 +2838,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
              TileEntitySign tileentitysign = (TileEntitySign) tileentity;
  
@@ -18,11 +18,11 @@ index 188af7af384ca35f2e659dfb1f7518dd06803be3..081077c3e00d424baa8f6a293c3a911d
                  PlayerConnection.LOGGER.warn("Player {} just tried to change non-editable sign", this.player.getDisplayName().getString());
                  this.sendPacket(tileentity.getUpdatePacket()); // CraftBukkit
                  return;
-diff --git a/src/main/java/net/minecraft/server/TileEntitySign.java b/src/main/java/net/minecraft/server/TileEntitySign.java
-index 5d0c5d856a66ce6c0594b618e8f6e892585ce665..144975889a5a8dd9121b821695f6f35604bcbdb2 100644
---- a/src/main/java/net/minecraft/server/TileEntitySign.java
-+++ b/src/main/java/net/minecraft/server/TileEntitySign.java
-@@ -10,6 +10,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index ec550aaa4e7943af4ecdd2275f1f32c21edf770a..6d0fe58d7e574ce5189e1f7a8485060d60b466d9 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -30,6 +30,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
      private EntityHuman c;
      private final FormattedString[] g;
      private EnumColor color;
@@ -30,7 +30,7 @@ index 5d0c5d856a66ce6c0594b618e8f6e892585ce665..144975889a5a8dd9121b821695f6f356
  
      public TileEntitySign() {
          super(TileEntityTypes.SIGN);
-@@ -111,7 +112,10 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+@@ -131,7 +132,10 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
      }
  
      public void a(EntityHuman entityhuman) {

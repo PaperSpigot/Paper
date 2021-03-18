@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Sun, 10 May 2020 22:49:05 -0400
+Subject: [PATCH] Optimize WorldBorder collision checks and air
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index c50b89ee8f16821923933025bf19243771dd1604..27e5ba64ed6406c1ece318bf79fca0f261a77818 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -909,7 +909,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         AxisAlignedBB axisalignedbb = this.getBoundingBox();
+         VoxelShapeCollision voxelshapecollision = VoxelShapeCollision.a(this);
+         VoxelShape voxelshape = this.world.getWorldBorder().c();
+-        Stream<VoxelShape> stream = VoxelShapes.c(voxelshape, VoxelShapes.a(axisalignedbb.shrink(1.0E-7D)), OperatorBoolean.AND) ? Stream.empty() : Stream.of(voxelshape);
++        Stream<VoxelShape> stream = !this.world.getWorldBorder().isInBounds(axisalignedbb) ? Stream.empty() : Stream.of(voxelshape); // Paper
+         Stream<VoxelShape> stream1 = this.world.c(this, axisalignedbb.b(vec3d), (entity) -> {
+             return true;
+         });
+diff --git a/src/main/java/net/minecraft/world/level/VoxelShapeSpliterator.java b/src/main/java/net/minecraft/world/level/VoxelShapeSpliterator.java
+index d0cc8677f2be422722160fee9b71894b5ddd3186..03584572fa5bf0d96fc4cecece573547f9c94cea 100644
+--- a/src/main/java/net/minecraft/world/level/VoxelShapeSpliterator.java
++++ b/src/main/java/net/minecraft/world/level/VoxelShapeSpliterator.java
+@@ -143,10 +143,10 @@ public class VoxelShapeSpliterator extends AbstractSpliterator<VoxelShape> {
+         AxisAlignedBB axisalignedbb = this.a.getBoundingBox();
+ 
+         if (!a(worldborder, axisalignedbb)) {
+-            VoxelShape voxelshape = worldborder.c();
+-
+-            if (!b(voxelshape, axisalignedbb) && a(voxelshape, axisalignedbb)) {
+-                consumer.accept(voxelshape);
++            // Paper start
++            if (worldborder.isInBounds(axisalignedbb.shrink(1.0E-7D)) && !worldborder.isInBounds(axisalignedbb.grow(1.0E-7D))) {
++                consumer.accept(worldborder.asVoxelShape());
++            // Paper end
+                 return true;
+             }
+         }
+diff --git a/src/main/java/net/minecraft/world/level/border/WorldBorder.java b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+index 50e2085766caabec1125ca24a2117549efd1a354..bedaa9dd6390e81df5872c2dd6e202a038367bf6 100644
+--- a/src/main/java/net/minecraft/world/level/border/WorldBorder.java
++++ b/src/main/java/net/minecraft/world/level/border/WorldBorder.java
+@@ -52,6 +52,7 @@ public class WorldBorder {
+         return (double) chunkcoordintpair.f() > this.e() && (double) chunkcoordintpair.d() < this.g() && (double) chunkcoordintpair.g() > this.f() && (double) chunkcoordintpair.e() < this.h();
+     }
+ 
++    public final boolean isInBounds(AxisAlignedBB aabb) { return this.a(aabb); } // Paper - OBFHELPER
+     public boolean a(AxisAlignedBB axisalignedbb) {
+         return axisalignedbb.maxX > this.e() && axisalignedbb.minX < this.g() && axisalignedbb.maxZ > this.f() && axisalignedbb.minZ < this.h();
+     }
+diff --git a/src/main/java/net/minecraft/world/phys/shapes/VoxelShapes.java b/src/main/java/net/minecraft/world/phys/shapes/VoxelShapes.java
+index 2d7405d1fa7c8f378bebe86f5d0de57a129ed92d..858d4689e618c72250447adb61e0bcc3c156f8f3 100644
+--- a/src/main/java/net/minecraft/world/phys/shapes/VoxelShapes.java
++++ b/src/main/java/net/minecraft/world/phys/shapes/VoxelShapes.java
+@@ -252,7 +252,7 @@ public final class VoxelShapes {
+                                 IBlockData iblockdata = iworldreader.getTypeIfLoaded(blockposition_mutableblockposition); // Paper
+                                 if (iblockdata == null) return 0.0D; // Paper
+ 
+-                                if ((k2 != 1 || iblockdata.d()) && (k2 != 2 || iblockdata.a(Blocks.MOVING_PISTON))) {
++                                if (!iblockdata.isAir() && (k2 != 1 || iblockdata.d()) && (k2 != 2 || iblockdata.a(Blocks.MOVING_PISTON))) { // Paper
+                                     d0 = iblockdata.b((IBlockAccess) iworldreader, blockposition_mutableblockposition, voxelshapecollision).a(enumdirection_enumaxis2, axisalignedbb.d((double) (-blockposition_mutableblockposition.getX()), (double) (-blockposition_mutableblockposition.getY()), (double) (-blockposition_mutableblockposition.getZ())), d0);
+                                     if (Math.abs(d0) < 1.0E-7D) {
+                                         return 0.0D;

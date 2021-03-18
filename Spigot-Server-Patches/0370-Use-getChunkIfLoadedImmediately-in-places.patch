@@ -7,11 +7,24 @@ This prevents us from hitting chunk loads for chunks at or less-than
 ticket level 33 (yes getChunkIfLoaded will actually perform a chunk
 load in that case).
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 24a7666a74421ca07b6aeaa23ef3fc06d94b1f2e..0c21e000e9bcb921d8dde4fe4957d1e47f6df16d 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1098,7 +1098,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 1ceff988080b47352edf9cdf3c4f8e69421765d2..a67462e10c6f8cb0eecb9a81fdc55f353c258368 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -207,7 +207,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     }
+ 
+     @Override public Chunk getChunkIfLoaded(int x, int z) { // Paper - this was added in world too but keeping here for NMS ABI
+-        return this.chunkProvider.getChunkAt(x, z, false);
++        return this.chunkProvider.getChunkAtIfLoadedImmediately(x, z); // Paper
+     }
+ 
+     // Paper start - Asynchronous IO
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 12d98c82b93658d1246bfe267bbfc87d3a56bbaa..bae1fb41b1559373f73d4ed3ba145d81a71cabeb 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1242,7 +1242,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                                  speed = player.abilities.walkSpeed * 10f;
                              }
                              // Paper start - Prevent moving into unloaded chunks
@@ -20,11 +33,11 @@ index 24a7666a74421ca07b6aeaa23ef3fc06d94b1f2e..0c21e000e9bcb921d8dde4fe4957d1e4
                                  this.internalTeleport(this.player.locX(), this.player.locY(), this.player.locZ(), this.player.yaw, this.player.pitch, Collections.emptySet());
                                  return;
                              }
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 16bc226dfef36b5f96d95f2de4c6bc2e6e606332..c922f4d5c3a5e7af7237361cb95a5ba8bb3ce715 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -104,6 +104,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 15da3511a9e57c320f4cf409852bee07109095bc..b620d7e0d824c8d0758a66a8fbe872c3e45103d2 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -164,6 +164,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          return (CraftServer) Bukkit.getServer();
      }
  
@@ -38,7 +51,7 @@ index 16bc226dfef36b5f96d95f2de4c6bc2e6e606332..c922f4d5c3a5e7af7237361cb95a5ba8
      public ResourceKey<DimensionManager> getTypeKey() {
          return typeKey;
      }
-@@ -1002,14 +1009,14 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1062,14 +1069,14 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      }
  
      public boolean p(BlockPosition blockposition) {
@@ -55,7 +68,7 @@ index 16bc226dfef36b5f96d95f2de4c6bc2e6e606332..c922f4d5c3a5e7af7237361cb95a5ba8
  
              return ichunkaccess == null ? false : ichunkaccess.getType(blockposition).a((IBlockAccess) this, blockposition, entity, enumdirection);
          }
-@@ -1130,7 +1137,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1190,7 +1197,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
  
          for (int i1 = i; i1 < j; ++i1) {
              for (int j1 = k; j1 < l; ++j1) {
@@ -64,24 +77,11 @@ index 16bc226dfef36b5f96d95f2de4c6bc2e6e606332..c922f4d5c3a5e7af7237361cb95a5ba8
  
                  if (chunk != null) {
                      chunk.a(oclass, axisalignedbb, list, predicate);
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 85c9943a32f21e338daa295d5034af379edb8ddd..f599d607afd73e30008e54757502077d783636a1 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -95,7 +95,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-     }
- 
-     @Override public Chunk getChunkIfLoaded(int x, int z) { // Paper - this was added in world too but keeping here for NMS ABI
--        return this.chunkProvider.getChunkAt(x, z, false);
-+        return this.chunkProvider.getChunkAtIfLoadedImmediately(x, z); // Paper
-     }
- 
-     // Paper start - Asynchronous IO
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index d44ef056bdab3bcff39aea45b40a4c7e9c62398f..797e579afdbc77a8dc5fc4cdf5874e546922fbfa 100644
+index 58d22363124a9343188d8c19476e5a92f2f0b80b..53d0541aba207b5eaea2e49edbb56df918d30333 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
-@@ -141,9 +141,10 @@ public class ActivationRange
+@@ -140,9 +140,10 @@ public class ActivationRange
              {
                  for ( int j1 = k; j1 <= l; ++j1 )
                  {

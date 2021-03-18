@@ -156,15 +156,14 @@ index 0000000000000000000000000000000000000000..0f29ad583e798c09b2fe3f568ed50cbc
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e463a86a6ad6c4f2885f4df159411bad294e1208
+index 0000000000000000000000000000000000000000..67d064e3959ed8d886df30ce9d97f86c2443fa39
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,73 @@
 +package com.destroystokyo.paper.gui;
 +
++import net.minecraft.SystemUtils;
 +import net.minecraft.server.MinecraftServer;
-+import net.minecraft.server.SystemUtils;
-+import org.bukkit.Bukkit;
 +
 +import javax.swing.DefaultListCellRenderer;
 +import javax.swing.DefaultListSelectionModel;
@@ -177,7 +176,7 @@ index 0000000000000000000000000000000000000000..e463a86a6ad6c4f2885f4df159411bad
 +import java.util.Vector;
 +
 +public class RAMDetails extends JList<String> {
-+    public static final DecimalFormat DECIMAL_FORMAT = SystemUtils.a(new DecimalFormat("########0.000"), (format)
++    public static final DecimalFormat DECIMAL_FORMAT = SystemUtils.peek(new DecimalFormat("########0.000"), (format)
 +        -> format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
 +
 +    private final MinecraftServer server;
@@ -384,24 +383,23 @@ index 0000000000000000000000000000000000000000..c3e54da4ab6440811aab2f9dd1e21880
 +        timer.stop();
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/GuiStatsComponent.java b/src/main/java/net/minecraft/server/GuiStatsComponent.java
-index d4d5bc19e167a5271f8eb8d010f8a52b23b942df..859e31c63f94bdc7729c6d475990750b76e24b9c 100644
---- a/src/main/java/net/minecraft/server/GuiStatsComponent.java
-+++ b/src/main/java/net/minecraft/server/GuiStatsComponent.java
-@@ -11,7 +11,7 @@ import javax.swing.Timer;
+diff --git a/src/main/java/net/minecraft/SystemUtils.java b/src/main/java/net/minecraft/SystemUtils.java
+index 46d82c1548088b8305f758699388edf0d5d4d050..397194b3e90c9df39cfae17b401c7ac891b0dbb7 100644
+--- a/src/main/java/net/minecraft/SystemUtils.java
++++ b/src/main/java/net/minecraft/SystemUtils.java
+@@ -260,6 +260,7 @@ public class SystemUtils {
+         return supplier.get();
+     }
  
- public class GuiStatsComponent extends JComponent {
- 
--    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a((Object) (new DecimalFormat("########0.000")), (decimalformat) -> {
-+    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a(new DecimalFormat("########0.000"), (decimalformat) -> { // Paper - decompile error
-         decimalformat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
-     });
-     private final int[] b = new int[256];
++    public static <T> T peek(T t0, Consumer<T> consumer) { return a(t0, consumer); } // Paper - OBFHELPER
+     public static <T> T a(T t0, Consumer<T> consumer) {
+         consumer.accept(t0);
+         return t0;
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0176fdd76ad1f3c281319d07c3ff463bde0e8b47..f625ed0ac4a1740c2b0fdf2a7e6b92fdcfdb1dce 100644
+index bf6fbb8e80eb64bdfdf29347b794f01ace31cec0..039c76a07bae4eec407e06adf077d1887919e9d8 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -108,7 +108,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -217,7 +217,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      private String motd;
      private int F;
      private int G;
@@ -410,11 +408,24 @@ index 0176fdd76ad1f3c281319d07c3ff463bde0e8b47..f625ed0ac4a1740c2b0fdf2a7e6b92fd
      @Nullable
      private KeyPair H;
      @Nullable
-diff --git a/src/main/java/net/minecraft/server/ServerGUI.java b/src/main/java/net/minecraft/server/ServerGUI.java
-index ab818eb198d4b29461731b81811a14ecc2f59511..e51434f2323bcb9385d11e99d0438d66434e3e63 100644
---- a/src/main/java/net/minecraft/server/ServerGUI.java
-+++ b/src/main/java/net/minecraft/server/ServerGUI.java
-@@ -89,7 +89,7 @@ public class ServerGUI extends JComponent {
+diff --git a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+index 7ac8a9af459656483dc693a3028ebf8c34628cc7..f85a4079bb2931fd29a526379ba350eb7e8ae636 100644
+--- a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
++++ b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+@@ -13,7 +13,7 @@ import net.minecraft.server.MinecraftServer;
+ 
+ public class GuiStatsComponent extends JComponent {
+ 
+-    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a((Object) (new DecimalFormat("########0.000")), (decimalformat) -> {
++    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a(new DecimalFormat("########0.000"), (decimalformat) -> { // Paper - decompile error
+         decimalformat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+     });
+     private final int[] b = new int[256];
+diff --git a/src/main/java/net/minecraft/server/gui/ServerGUI.java b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+index dc2a36f6dbc83ba25bcd59d981f75499adbd22e5..c2c075b9e3b70f863b6c450e4f31d6fde2935be6 100644
+--- a/src/main/java/net/minecraft/server/gui/ServerGUI.java
++++ b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+@@ -91,7 +91,7 @@ public class ServerGUI extends JComponent {
  
      private JComponent c() {
          JPanel jpanel = new JPanel(new BorderLayout());

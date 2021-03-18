@@ -8,7 +8,7 @@ This API has more capabilities than .dropItem with the Consumer function
 Item can be set inside of the Consumer pre spawn function.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 6e2f73cac222044256e97bc2c07f5581d63de1a2..e2dd76d0bc5db5dd07d8574135b8d64b40e2c34a 100644
+index 9b64aad8834d9e9047331415bd4fc18800eac734..d41bf389bf64d8548ea6eda67429404dc9f19ede 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -1521,6 +1521,10 @@ public class CraftWorld implements World {
@@ -17,7 +17,7 @@ index 6e2f73cac222044256e97bc2c07f5581d63de1a2..e2dd76d0bc5db5dd07d8574135b8d64b
              entity.setPositionRotation(x, y, z, yaw, pitch);
 +            // Paper start
 +        } else if (org.bukkit.entity.Item.class.isAssignableFrom(clazz)) {
-+            entity = new EntityItem(world, x, y, z, new net.minecraft.server.ItemStack(net.minecraft.server.Item.getItemOf(net.minecraft.server.Blocks.DIRT)));
++            entity = new EntityItem(world, x, y, z, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Item.getItemOf(net.minecraft.world.level.block.Blocks.DIRT)));
 +            // Paper end
          } else if (FallingBlock.class.isAssignableFrom(clazz)) {
              entity = new EntityFallingBlock(world, x, y, z, world.getType(new BlockPosition(x, y, z)));

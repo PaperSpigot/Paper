@@ -6,11 +6,11 @@ Subject: [PATCH] Fix Dragon Server Crashes
 If the dragon tries to find "ground" and hits a hole, or off edge,
 it will infinitely keep looking for non air and eventually crash.
 
-diff --git a/src/main/java/net/minecraft/server/DragonControllerLandedFlame.java b/src/main/java/net/minecraft/server/DragonControllerLandedFlame.java
-index 99978948216ef39767cba16a85d52b4ddb77299c..771c0b10d171da56c5156a42a6ea70b51983c684 100644
---- a/src/main/java/net/minecraft/server/DragonControllerLandedFlame.java
-+++ b/src/main/java/net/minecraft/server/DragonControllerLandedFlame.java
-@@ -54,7 +54,7 @@ public class DragonControllerLandedFlame extends AbstractDragonControllerLanded
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java
+index fbecb61b8c511fc7daa21690b2a653254be74246..5adbd9fe858aad9c775a10254eb53b34719a9bd6 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java
+@@ -63,7 +63,7 @@ public class DragonControllerLandedFlame extends AbstractDragonControllerLanded
              double d3 = d2;
              BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition(d0, d2, d1);
  

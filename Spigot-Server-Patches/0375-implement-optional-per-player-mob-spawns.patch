@@ -5,7 +5,7 @@ Subject: [PATCH] implement optional per player mob spawns
 
 
 diff --git a/src/main/java/co/aikar/timings/WorldTimingsHandler.java b/src/main/java/co/aikar/timings/WorldTimingsHandler.java
-index a27dc38d1a29ed1d63d2f44b7984c2b65be487d9..96aaaab5b7685c874463505f9d25e8a0a01a6e7c 100644
+index 2da28784ee427001b1137c859f0b4c350abd3110..c5f594d45012016d99b83a778a2b9d20a7c086ac 100644
 --- a/src/main/java/co/aikar/timings/WorldTimingsHandler.java
 +++ b/src/main/java/co/aikar/timings/WorldTimingsHandler.java
 @@ -57,6 +57,7 @@ public class WorldTimingsHandler {
@@ -40,23 +40,22 @@ index b913cd2dd0cd1b369b3f7b5a9d8b1be73f6d7920..6aec502eb529d4090306e12e837117cd
  }
 diff --git a/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9ebd7ecb7a0ac73ccacf34c097056598bb5d26e8
+index 0000000000000000000000000000000000000000..6124b54d99adbb2a5bb9bb09dfd02522a67ab3ba
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
-@@ -0,0 +1,253 @@
+@@ -0,0 +1,252 @@
 +package com.destroystokyo.paper.util;
 +
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-+import net.minecraft.server.ChunkCoordIntPair;
-+import net.minecraft.server.EntityPlayer;
-+import net.minecraft.server.SectionPosition;
-+import org.spigotmc.AsyncCatcher;
-+import java.util.HashMap;
 +import java.util.List;
 +import java.util.Map;
-+import java.util.Set;
++import net.minecraft.core.SectionPosition;
++import net.minecraft.server.level.EntityPlayer;
++import net.minecraft.world.level.ChunkCoordIntPair;
++import org.spigotmc.AsyncCatcher;
++import java.util.HashMap;
 +
 +/** @author Spottedleaf */
 +public final class PlayerMobDistanceMap {
@@ -544,11 +543,11 @@ index 0000000000000000000000000000000000000000..4f13d3ff8391793a99f067189f854078
 +        }
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 070c3a842ebd9fa03e5daaee8355775718df6fb2..1eb201695cd118616fb404a0c7ed8cedee77db89 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -744,7 +744,22 @@ public class ChunkProviderServer extends IChunkProvider {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 662d7f418e8acc9503ebf43e09410e7bd50f6bb3..372e5268783a84effa8f9f06c3f85b182e209cb8 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -767,7 +767,22 @@ public class ChunkProviderServer extends IChunkProvider {
              this.world.getMethodProfiler().enter("naturalSpawnCount");
              this.world.timings.countNaturalMobs.startTiming(); // Paper - timings
              int l = this.chunkMapDistance.b();
@@ -572,13 +571,21 @@ index 070c3a842ebd9fa03e5daaee8355775718df6fb2..1eb201695cd118616fb404a0c7ed8ced
              this.world.timings.countNaturalMobs.stopTiming(); // Paper - timings
  
              this.p = spawnercreature_d;
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 12f6d9a1cf64a182e94bfe6cfade8a861acfd6a2..92d0ccb9eddae6041e39a6dc06ad0c277bca3d1d 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -91,6 +91,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 3105ec935e6fb2cf36b95e63dc9dc09dbfb45029..d66956b879ad7b05ea2a0252ca14b2d06dba135c 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -94,6 +94,7 @@ import net.minecraft.world.effect.MobEffects;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityInsentient;
+ import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.EnumCreatureType;
+ import net.minecraft.world.entity.EnumMainHand;
+ import net.minecraft.world.entity.IEntityAngerable;
+ import net.minecraft.world.entity.animal.horse.EntityHorseAbstract;
+@@ -218,6 +219,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean queueHealthUpdatePacket = false;
-     public net.minecraft.server.PacketPlayOutUpdateHealth queuedHealthUpdatePacket;
+     public net.minecraft.network.protocol.game.PacketPlayOutUpdateHealth queuedHealthUpdatePacket;
      // Paper end
 +    // Paper start - mob spawning rework
 +    public static final int ENUMCREATURETYPE_TOTAL_ENUMS = EnumCreatureType.values().length;
@@ -588,7 +595,7 @@ index 12f6d9a1cf64a182e94bfe6cfade8a861acfd6a2..92d0ccb9eddae6041e39a6dc06ad0c27
  
      // CraftBukkit start
      public String displayName;
-@@ -129,6 +134,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -256,6 +262,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.adventure$displayName = net.kyori.adventure.text.Component.text(this.getName()); // Paper
          this.canPickUpLoot = true;
          this.maxHealthCache = this.getMaxHealth();
@@ -596,7 +603,7 @@ index 12f6d9a1cf64a182e94bfe6cfade8a861acfd6a2..92d0ccb9eddae6041e39a6dc06ad0c27
      }
  
      // Yes, this doesn't match Vanilla, but it's the best we can do for now.
-@@ -1924,6 +1930,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2051,6 +2058,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      }
  
@@ -604,23 +611,19 @@ index 12f6d9a1cf64a182e94bfe6cfade8a861acfd6a2..92d0ccb9eddae6041e39a6dc06ad0c27
      public SectionPosition O() {
          return this.cj;
      }
-diff --git a/src/main/java/net/minecraft/server/EntityTypes.java b/src/main/java/net/minecraft/server/EntityTypes.java
-index 14f47d100c3f44a8263c9b907e9ca74944676687..c49e7ec418eedac45182de67cb673839dc7e27c2 100644
---- a/src/main/java/net/minecraft/server/EntityTypes.java
-+++ b/src/main/java/net/minecraft/server/EntityTypes.java
-@@ -295,6 +295,7 @@ public class EntityTypes<T extends Entity> {
-         return this.bl;
-     }
- 
-+    public final EnumCreatureType getEnumCreatureType() { return this.e(); } // Paper - OBFHELPER
-     public EnumCreatureType e() {
-         return this.bg;
-     }
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index fff3604936365cab07ca9f94a2aaf1dd41911eef..938439d22f47fb18b36c145c4f4ea355f8405673 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -82,7 +82,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index a6c3bed5824d112042536a5666098d4d80173c3b..9c5b1dd305567f09a23a3f189d4dadba323b643e 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -72,6 +72,7 @@ import net.minecraft.util.thread.ThreadedMailbox;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityInsentient;
+ import net.minecraft.world.entity.EntityTypes;
++import net.minecraft.world.entity.EnumCreatureType;
+ import net.minecraft.world.entity.ai.village.poi.VillagePlace;
+ import net.minecraft.world.entity.boss.EntityComplexPart;
+ import net.minecraft.world.entity.player.EntityHuman;
+@@ -129,7 +130,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      public final Int2ObjectMap<PlayerChunkMap.EntityTracker> trackedEntities;
      private final Long2ByteMap z;
      private final Queue<Runnable> A; private final Queue<Runnable> getUnloadQueueTasks() { return this.A; } // Paper - OBFHELPER
@@ -630,7 +633,7 @@ index fff3604936365cab07ca9f94a2aaf1dd41911eef..938439d22f47fb18b36c145c4f4ea355
  
      // CraftBukkit start - recursion-safe executor for Chunk loadCallback() and unloadCallback()
      public final CallbackExecutor callbackExecutor = new CallbackExecutor();
-@@ -161,6 +162,24 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -208,6 +210,24 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          this.l = supplier;
          this.m = new VillagePlace(new File(this.w, "poi"), datafixer, flag, this.world); // Paper
          this.setViewDistance(i);
@@ -655,11 +658,31 @@ index fff3604936365cab07ca9f94a2aaf1dd41911eef..938439d22f47fb18b36c145c4f4ea355
      }
  
      private static double a(ChunkCoordIntPair chunkcoordintpair, Entity entity) {
-diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d7c88f8e5 100644
---- a/src/main/java/net/minecraft/server/SpawnerCreature.java
-+++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
-@@ -29,6 +29,11 @@ public final class SpawnerCreature {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityTypes.java b/src/main/java/net/minecraft/world/entity/EntityTypes.java
+index 1355c074353611669c947cb0f06c67be0ab418aa..9d2955f05aadd4bbc6dcfec068a55d7fe6950ba0 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityTypes.java
++++ b/src/main/java/net/minecraft/world/entity/EntityTypes.java
+@@ -426,6 +426,7 @@ public class EntityTypes<T extends Entity> {
+         return this.bl;
+     }
+ 
++    public final EnumCreatureType getEnumCreatureType() { return this.e(); } // Paper - OBFHELPER
+     public EnumCreatureType e() {
+         return this.bg;
+     }
+diff --git a/src/main/java/net/minecraft/world/level/SpawnerCreature.java b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+index d30a3de84dc75a57680052904337af02b6b80636..24771c3522ea74ac12058591137eafc21adf3762 100644
+--- a/src/main/java/net/minecraft/world/level/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+@@ -16,6 +16,7 @@ import net.minecraft.core.IPosition;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.server.MCUtil;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.tags.Tag;
+ import net.minecraft.tags.TagsBlock;
+@@ -62,6 +63,11 @@ public final class SpawnerCreature {
      });
  
      public static SpawnerCreature.d a(int i, Iterable<Entity> iterable, SpawnerCreature.b spawnercreature_b) {
@@ -671,7 +694,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
          SpawnerCreatureProbabilities spawnercreatureprobabilities = new SpawnerCreatureProbabilities();
          Object2IntOpenHashMap<EnumCreatureType> object2intopenhashmap = new Object2IntOpenHashMap();
          Iterator iterator = iterable.iterator();
-@@ -66,6 +71,11 @@ public final class SpawnerCreature {
+@@ -99,6 +105,11 @@ public final class SpawnerCreature {
                      }
  
                      object2intopenhashmap.addTo(enumcreaturetype, 1);
@@ -683,7 +706,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
                  });
              }
          }
-@@ -124,13 +134,31 @@ public final class SpawnerCreature {
+@@ -157,13 +168,31 @@ public final class SpawnerCreature {
                  continue;
              }
  
@@ -718,7 +741,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
              }
          }
  
-@@ -139,22 +167,34 @@ public final class SpawnerCreature {
+@@ -172,22 +201,34 @@ public final class SpawnerCreature {
      }
  
      public static void a(EnumCreatureType enumcreaturetype, WorldServer worldserver, Chunk chunk, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a) {
@@ -755,7 +778,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
              int k = 0;
  
              while (k < 3) {
-@@ -194,7 +234,7 @@ public final class SpawnerCreature {
+@@ -227,7 +268,7 @@ public final class SpawnerCreature {
                                      // Paper start
                                      Boolean doSpawning = a(worldserver, enumcreaturetype, structuremanager, chunkgenerator, biomesettingsmobs_c, blockposition_mutableblockposition, d2);
                                      if (doSpawning == null) {
@@ -764,7 +787,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
                                      }
                                      if (doSpawning && spawnercreature_c.test(biomesettingsmobs_c.c, blockposition_mutableblockposition, ichunkaccess)) {
                                          // Paper end
-@@ -202,7 +242,7 @@ public final class SpawnerCreature {
+@@ -235,7 +276,7 @@ public final class SpawnerCreature {
  
  
                                          if (entityinsentient == null) {
@@ -773,7 +796,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
                                          }
  
                                          entityinsentient.setPositionRotation(d0, (double) i, d1, worldserver.random.nextFloat() * 360.0F, 0.0F);
-@@ -211,13 +251,18 @@ public final class SpawnerCreature {
+@@ -244,13 +285,18 @@ public final class SpawnerCreature {
                                              // CraftBukkit start
                                              worldserver.addAllEntities(entityinsentient, SpawnReason.NATURAL);
                                              if (!entityinsentient.dead) {
@@ -795,7 +818,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
                                              }
  
                                              if (entityinsentient.c(k1)) {
-@@ -239,6 +284,7 @@ public final class SpawnerCreature {
+@@ -272,6 +318,7 @@ public final class SpawnerCreature {
              }
  
          }
@@ -803,7 +826,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
      }
  
      private static boolean a(WorldServer worldserver, IChunkAccess ichunkaccess, BlockPosition.MutableBlockPosition blockposition_mutableblockposition, double d0) {
-@@ -479,8 +525,8 @@ public final class SpawnerCreature {
+@@ -512,8 +559,8 @@ public final class SpawnerCreature {
  
      public static class d {
  
@@ -814,7 +837,7 @@ index 979988c3c39afd80ce0b99a65dff5618a69ab600..661ad8f8e67046211e001ea40d97660d
          private final SpawnerCreatureProbabilities c;
          private final Object2IntMap<EnumCreatureType> d;
          @Nullable
-@@ -541,7 +587,7 @@ public final class SpawnerCreature {
+@@ -574,7 +621,7 @@ public final class SpawnerCreature {
  
          // CraftBukkit start
          private boolean a(EnumCreatureType enumcreaturetype, int limit) {

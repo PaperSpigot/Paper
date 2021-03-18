@@ -4,11 +4,11 @@ Date: Thu, 31 Dec 2020 12:48:19 +1000
 Subject: [PATCH] Implement API to get Material from Boats and Minecarts
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
-index fdfdf83c28c3065fa89fba9e44b3da99f9791e0e..da84cf98022b771bdf0c9d0b284aa7d4d59318e0 100644
---- a/src/main/java/net/minecraft/server/EntityBoat.java
-+++ b/src/main/java/net/minecraft/server/EntityBoat.java
-@@ -216,6 +216,7 @@ public class EntityBoat extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
+index add2aef0192a3b3767c1e477145978b9702c0fb4..2609b83573e0e8532e6c4c36d4f475bf0da6a354 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
+@@ -260,6 +260,7 @@ public class EntityBoat extends Entity {
  
      }
  
@@ -17,17 +17,17 @@ index fdfdf83c28c3065fa89fba9e44b3da99f9791e0e..da84cf98022b771bdf0c9d0b284aa7d4
          switch (this.getType()) {
              case OAK:
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftBoat.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftBoat.java
-index 271950903e8541194e4f6447f0d2aaae63920678..4a994dacd57bb4630b9c5645c084726045d64bcd 100644
+index c7a459c0c860724ef1890b8fb9a59a5508b3f6d6..16799dc565c5ca42d1fdb3122594d9dae21c74e0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftBoat.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftBoat.java
 @@ -1,8 +1,10 @@
  package org.bukkit.craftbukkit.entity;
  
- import net.minecraft.server.EntityBoat;
-+import org.bukkit.Material;
+ import net.minecraft.world.entity.vehicle.EntityBoat;
++import org.bukkit.Material; // Paper
  import org.bukkit.TreeSpecies;
  import org.bukkit.craftbukkit.CraftServer;
-+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
++import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
  import org.bukkit.entity.Boat;
  import org.bukkit.entity.EntityType;
  
@@ -46,27 +46,28 @@ index 271950903e8541194e4f6447f0d2aaae63920678..4a994dacd57bb4630b9c5645c0847260
      public EntityBoat getHandle() {
          return (EntityBoat) entity;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecart.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecart.java
-index d23f994f579bdd34e15703cc11bdd36572841146..52b4b15b2003f19f605e98a99396d1baedfe5f42 100644
+index 69415f5a838345826fa5cf1d855e057794520f2c..e5ebb80a44da775df6f3d5a9db5cf58295e2e960 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecart.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecart.java
-@@ -3,6 +3,9 @@ package org.bukkit.craftbukkit.entity;
- import net.minecraft.server.Blocks;
- import net.minecraft.server.EntityMinecartAbstract;
- import net.minecraft.server.IBlockData;
-+import net.minecraft.server.Item;
-+import net.minecraft.server.Items;
-+import org.bukkit.Material;
+@@ -1,8 +1,10 @@
+ package org.bukkit.craftbukkit.entity;
+ 
+ import net.minecraft.world.entity.vehicle.EntityMinecartAbstract;
++import net.minecraft.world.item.Items; // Paper
+ import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.level.block.state.IBlockData;
++import org.bukkit.Material; // Paper
  import org.bukkit.block.data.BlockData;
  import org.bukkit.craftbukkit.CraftServer;
  import org.bukkit.craftbukkit.block.data.CraftBlockData;
-@@ -68,6 +71,38 @@ public abstract class CraftMinecart extends CraftVehicle implements Minecart {
+@@ -68,6 +70,38 @@ public abstract class CraftMinecart extends CraftVehicle implements Minecart {
          getHandle().setDerailedVelocityMod(derailed);
      }
  
 +    // Paper start
 +    @Override
 +    public Material getMinecartMaterial() {
-+        Item minecartItem;
++        net.minecraft.world.item.Item minecartItem;
 +        switch (getHandle().getMinecartType()) {
 +            case CHEST:
 +                minecartItem = Items.CHEST_MINECART;

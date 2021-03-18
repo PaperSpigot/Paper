@@ -11,19 +11,24 @@ Co-authored-by: Gegy <gegy1000@gmail.com>
 Co-authored-by: Dylan Xaldin <Puremin0rez515@gmail.com>
 Co-authored-by: pop4959 <pop4959@gmail.com>
 
-diff --git a/src/main/java/net/minecraft/server/WorldChunkManagerTheEnd.java b/src/main/java/net/minecraft/server/WorldChunkManagerTheEnd.java
-index 9c15cd303ccc2928be4e3e7080e74e8314d7e0f2..70924c2942f6cc668eb4d11afdb42a966bd5edc8 100644
---- a/src/main/java/net/minecraft/server/WorldChunkManagerTheEnd.java
-+++ b/src/main/java/net/minecraft/server/WorldChunkManagerTheEnd.java
-@@ -3,6 +3,7 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/level/biome/WorldChunkManagerTheEnd.java b/src/main/java/net/minecraft/world/level/biome/WorldChunkManagerTheEnd.java
+index 1077972d694d604c3ec97d333d34a9ab81819c33..62fe4cc00a24e330443d2f006a88dbab3798fb28 100644
+--- a/src/main/java/net/minecraft/world/level/biome/WorldChunkManagerTheEnd.java
++++ b/src/main/java/net/minecraft/world/level/biome/WorldChunkManagerTheEnd.java
+@@ -3,10 +3,12 @@ package net.minecraft.world.level.biome;
  import com.google.common.collect.ImmutableList;
  import com.mojang.serialization.Codec;
  import com.mojang.serialization.codecs.RecordCodecBuilder;
 +import it.unimi.dsi.fastutil.HashCommon; // Paper
  import java.util.List;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.resources.RegistryLookupCodec;
+ import net.minecraft.util.MathHelper;
++import net.minecraft.world.level.ChunkCoordIntPair;
+ import net.minecraft.world.level.levelgen.SeededRandom;
+ import net.minecraft.world.level.levelgen.synth.NoiseGenerator3Handler;
  
- public class WorldChunkManagerTheEnd extends WorldChunkManager {
-@@ -22,6 +23,16 @@ public class WorldChunkManagerTheEnd extends WorldChunkManager {
+@@ -27,6 +29,16 @@ public class WorldChunkManagerTheEnd extends WorldChunkManager {
      private final BiomeBase k;
      private final BiomeBase l;
      private final BiomeBase m;
@@ -40,7 +45,7 @@ index 9c15cd303ccc2928be4e3e7080e74e8314d7e0f2..70924c2942f6cc668eb4d11afdb42a96
  
      public WorldChunkManagerTheEnd(IRegistry<BiomeBase> iregistry, long i) {
          this(iregistry, i, (BiomeBase) iregistry.d(Biomes.THE_END), (BiomeBase) iregistry.d(Biomes.END_HIGHLANDS), (BiomeBase) iregistry.d(Biomes.END_MIDLANDS), (BiomeBase) iregistry.d(Biomes.SMALL_END_ISLANDS), (BiomeBase) iregistry.d(Biomes.END_BARRENS));
-@@ -76,13 +87,27 @@ public class WorldChunkManagerTheEnd extends WorldChunkManager {
+@@ -81,13 +93,27 @@ public class WorldChunkManagerTheEnd extends WorldChunkManager {
  
          f = MathHelper.a(f, -100.0F, 80.0F);
  

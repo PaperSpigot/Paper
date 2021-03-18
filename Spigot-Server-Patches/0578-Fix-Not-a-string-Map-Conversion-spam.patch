@@ -9,11 +9,22 @@ implementing this logic incorrectly.
 This stops the spam by converting the old format to new before
 requesting the world.
 
-diff --git a/src/main/java/net/minecraft/server/WorldMap.java b/src/main/java/net/minecraft/server/WorldMap.java
-index 7251793423e5413dacc1e031ed75d41fc35cd32e..f24741ab831b620c3b3d306596a58fda7abea0d3 100644
---- a/src/main/java/net/minecraft/server/WorldMap.java
-+++ b/src/main/java/net/minecraft/server/WorldMap.java
-@@ -74,7 +74,26 @@ public class WorldMap extends PersistentBase {
+diff --git a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
+index d470af1814af332595c1c0beb1cdc552e186a6bb..1f9b710f2af3c5067b3c2b73bebb11f8e22c403e 100644
+--- a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
++++ b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
+@@ -11,8 +11,10 @@ import javax.annotation.Nullable;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.nbt.DynamicOpsNBT;
+ import net.minecraft.nbt.NBTBase;
++import net.minecraft.nbt.NBTNumber;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.nbt.NBTTagList;
++import net.minecraft.nbt.NBTTagString;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.game.PacketPlayOutMap;
+@@ -94,7 +96,26 @@ public class WorldMap extends PersistentBase {
  
      @Override
      public void a(NBTTagCompound nbttagcompound) {
@@ -28,7 +39,7 @@ index 7251793423e5413dacc1e031ed75d41fc35cd32e..f24741ab831b620c3b3d306596a58fda
 +                this.uniqueId = new UUID(most, least);
 +                CraftWorld world = (CraftWorld) server.getWorld(this.uniqueId);
 +                if (world != null) {
-+                    dimension = NBTTagString.create("minecaft:" + world.getName().toLowerCase(java.util.Locale.ENGLISH));
++                    dimension = NBTTagString.create("minecraft:" + world.getName().toLowerCase(java.util.Locale.ENGLISH));
 +                } else {
 +                    dimension = NBTTagString.create("bukkit:_invalidworld_");
 +                }

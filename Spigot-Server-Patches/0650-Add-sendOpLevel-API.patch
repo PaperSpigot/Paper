@@ -4,11 +4,11 @@ Date: Tue, 29 Dec 2020 15:03:03 +0100
 Subject: [PATCH] Add sendOpLevel API
 
 
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 32b9ef6d418e1d897855ab95840cec542bffd8aa..cf92f63d82bd43a1511ab77bf7adbbc03b4e3b84 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -1054,6 +1054,11 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 0757cfcb96778258ba2593756e4ca9cbb16e2f87..24b3a893a2b76a4ecfbc6b2cc1eac242e5c6e9d6 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1138,6 +1138,11 @@ public abstract class PlayerList {
      }
  
      private void a(EntityPlayer entityplayer, int i) {
@@ -20,7 +20,7 @@ index 32b9ef6d418e1d897855ab95840cec542bffd8aa..cf92f63d82bd43a1511ab77bf7adbbc0
          if (entityplayer.playerConnection != null) {
              byte b0;
  
-@@ -1068,8 +1073,10 @@ public abstract class PlayerList {
+@@ -1152,8 +1157,10 @@ public abstract class PlayerList {
              entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, b0));
          }
  
@@ -32,10 +32,10 @@ index 32b9ef6d418e1d897855ab95840cec542bffd8aa..cf92f63d82bd43a1511ab77bf7adbbc0
  
      // Paper start
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 00ea7d9d946a70399d8ddb3b7ebfab42d0fab88c..756009d20b23b2e5c51e72e61348bd60d93a7c11 100644
+index 5a245184d6290a58bb9aed139cc4c7b5511ce491..e97ad53eb8bdc4c71d8014d060710cb3a29ab7f8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2288,6 +2288,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2297,6 +2297,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              ? (org.bukkit.entity.Firework) entity.getBukkitEntity()
              : null;
      }

@@ -4,11 +4,11 @@ Date: Thu, 2 Jul 2020 16:12:10 -0700
 Subject: [PATCH] added PlayerTradeEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index 73ceb0f14610fe1d4d55542dad957b1fdf9f8e04..eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f 100644
---- a/src/main/java/net/minecraft/server/EntityInsentient.java
-+++ b/src/main/java/net/minecraft/server/EntityInsentient.java
-@@ -25,7 +25,7 @@ import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
+diff --git a/src/main/java/net/minecraft/world/entity/EntityInsentient.java b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+index 89d24d7532a256434513a45c901946e28db396bd..ff482e3774f580d8ba7028f6c5141888d3bd907a 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityInsentient.java
++++ b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+@@ -93,7 +93,7 @@ import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
  public abstract class EntityInsentient extends EntityLiving {
  
      private static final DataWatcherObject<Byte> b = DataWatcher.a(EntityInsentient.class, DataWatcherRegistry.a);
@@ -17,7 +17,7 @@ index 73ceb0f14610fe1d4d55542dad957b1fdf9f8e04..eb5c3a1f0d9ff665631caf5bf579e83d
      protected int f;
      protected ControllerLook lookController;
      protected ControllerMove moveController;
-@@ -227,6 +227,7 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -295,6 +295,7 @@ public abstract class EntityInsentient extends EntityLiving {
          this.datawatcher.register(EntityInsentient.b, (byte) 0);
      }
  
@@ -25,11 +25,11 @@ index 73ceb0f14610fe1d4d55542dad957b1fdf9f8e04..eb5c3a1f0d9ff665631caf5bf579e83d
      public int D() {
          return 80;
      }
-diff --git a/src/main/java/net/minecraft/server/EntityVillagerAbstract.java b/src/main/java/net/minecraft/server/EntityVillagerAbstract.java
-index 4620c36d568da12092a2f7cb067cbf7fd20bee94..e0cc45a7494cd6f06169b64ee8ffc16aa1932f8f 100644
---- a/src/main/java/net/minecraft/server/EntityVillagerAbstract.java
-+++ b/src/main/java/net/minecraft/server/EntityVillagerAbstract.java
-@@ -12,6 +12,9 @@ import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
+diff --git a/src/main/java/net/minecraft/world/entity/npc/EntityVillagerAbstract.java b/src/main/java/net/minecraft/world/entity/npc/EntityVillagerAbstract.java
+index 10067731e6289211cb11b2b368527a1c45603314..49821f0f26864c35be84a4a4288857a04668fbba 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/EntityVillagerAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/npc/EntityVillagerAbstract.java
+@@ -39,6 +39,9 @@ import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
  import org.bukkit.entity.AbstractVillager;
  import org.bukkit.event.entity.VillagerAcquireTradeEvent;
  // CraftBukkit end
@@ -39,7 +39,7 @@ index 4620c36d568da12092a2f7cb067cbf7fd20bee94..e0cc45a7494cd6f06169b64ee8ffc16a
  
  public abstract class EntityVillagerAbstract extends EntityAgeable implements NPC, IMerchant {
  
-@@ -108,16 +111,27 @@ public abstract class EntityVillagerAbstract extends EntityAgeable implements NP
+@@ -135,16 +138,27 @@ public abstract class EntityVillagerAbstract extends EntityAgeable implements NP
  
      @Override
      public void a(MerchantRecipe merchantrecipe) {

@@ -4,11 +4,19 @@ Date: Sat, 3 Oct 2020 21:39:16 -0500
 Subject: [PATCH] Entity#isTicking
 
 
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 9415588d7df27fb6907381cff802fd8ad983663f..1840d64d1bbb1165981f79dd3deeb19816e6a230 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -3387,5 +3387,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index e2301dbeb3d76684b2a0ab4262bb76cab3557789..f1fa11217ab09133f4f19f5c73dfdab2f2b434e2 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -48,6 +48,7 @@ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.resources.ResourceKey;
+ import net.minecraft.server.MCUtil;
+ import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.ChunkProviderServer;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.PlayerChunkMap;
+ import net.minecraft.server.level.TicketType;
+@@ -3478,5 +3479,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      public static int nextEntityId() {
          return entityCount.incrementAndGet();
      }
@@ -19,10 +27,10 @@ index 9415588d7df27fb6907381cff802fd8ad983663f..1840d64d1bbb1165981f79dd3deeb198
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index c519b46c94792082c62acc05cdbec0734776edf5..bb474fbdf44dbc61b4fa0bced4d15bc2d1fb548f 100644
+index fb52a60437d48282f3e99e7eccb0e76b446155f9..295ffab08672d77d88aca368cb5b56f80bc4f1b5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -1158,5 +1158,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -1161,5 +1161,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
      public boolean isInLava() {
          return getHandle().isInLava();
      }

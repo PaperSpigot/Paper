@@ -4,11 +4,11 @@ Date: Fri, 29 Jan 2021 15:13:11 +0100
 Subject: [PATCH] Add dropLeash variable to EntityUnleashEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityCreature.java b/src/main/java/net/minecraft/server/EntityCreature.java
-index eaa10d6e3a3c37b83fed58637941273fee9b0be8..2a5160a937a6a9968f9357c5ea3e4ced739dc0f4 100644
---- a/src/main/java/net/minecraft/server/EntityCreature.java
-+++ b/src/main/java/net/minecraft/server/EntityCreature.java
-@@ -41,8 +41,11 @@ public abstract class EntityCreature extends EntityInsentient {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityCreature.java b/src/main/java/net/minecraft/world/entity/EntityCreature.java
+index 20570580367697e37e6c45147168c3beb6c8d31b..831414980d40f4382cf7370db28dd8fae534384b 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityCreature.java
++++ b/src/main/java/net/minecraft/world/entity/EntityCreature.java
+@@ -48,8 +48,11 @@ public abstract class EntityCreature extends EntityInsentient {
  
              if (this instanceof EntityTameableAnimal && ((EntityTameableAnimal) this).isSitting()) {
                  if (f > entity.world.paperConfig.maxLeashDistance) { // Paper
@@ -22,7 +22,7 @@ index eaa10d6e3a3c37b83fed58637941273fee9b0be8..2a5160a937a6a9968f9357c5ea3e4ced
                  }
  
                  return;
-@@ -50,8 +53,11 @@ public abstract class EntityCreature extends EntityInsentient {
+@@ -57,8 +60,11 @@ public abstract class EntityCreature extends EntityInsentient {
  
              this.x(f);
              if (f > entity.world.paperConfig.maxLeashDistance) { // Paper
@@ -36,11 +36,11 @@ index eaa10d6e3a3c37b83fed58637941273fee9b0be8..2a5160a937a6a9968f9357c5ea3e4ced
                  this.goalSelector.a(PathfinderGoal.Type.MOVE);
              } else if (f > 6.0F) {
                  double d0 = (entity.locX() - this.locX()) / (double) f;
-diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea483af227 100644
---- a/src/main/java/net/minecraft/server/EntityInsentient.java
-+++ b/src/main/java/net/minecraft/server/EntityInsentient.java
-@@ -20,6 +20,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
+diff --git a/src/main/java/net/minecraft/world/entity/EntityInsentient.java b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+index ff482e3774f580d8ba7028f6c5141888d3bd907a..a246edd09854dabf095da75c9d200f5cf26e7138 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityInsentient.java
++++ b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+@@ -88,6 +88,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
  import org.bukkit.event.entity.EntityTransformEvent;
  import org.bukkit.event.entity.EntityUnleashEvent;
  import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
@@ -48,7 +48,7 @@ index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea
  // CraftBukkit end
  
  public abstract class EntityInsentient extends EntityLiving {
-@@ -1139,12 +1140,15 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -1207,12 +1208,15 @@ public abstract class EntityInsentient extends EntityLiving {
              return EnumInteractionResult.PASS;
          } else if (this.getLeashHolder() == entityhuman) {
              // CraftBukkit start - fire PlayerUnleashEntityEvent
@@ -66,7 +66,7 @@ index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea
              return EnumInteractionResult.a(this.world.isClientSide);
          } else {
              EnumInteractionResult enuminteractionresult = this.c(entityhuman, enumhand);
-@@ -1298,8 +1302,11 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -1366,8 +1370,11 @@ public abstract class EntityInsentient extends EntityLiving {
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -80,7 +80,7 @@ index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea
              }
  
          }
-@@ -1367,8 +1374,11 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -1435,8 +1442,11 @@ public abstract class EntityInsentient extends EntityLiving {
          boolean flag1 = super.a(entity, flag);
  
          if (flag1 && this.isLeashed()) {
@@ -94,7 +94,7 @@ index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea
          }
  
          return flag1;
-@@ -1570,7 +1580,10 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -1638,7 +1648,10 @@ public abstract class EntityInsentient extends EntityLiving {
      @Override
      protected void bN() {
          super.bN();
@@ -107,19 +107,20 @@ index eb5c3a1f0d9ff665631caf5bf579e83d1ed25e4f..a88521745f9f9b6935a61db52db915ea
 +        // Paper end
      }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityLeash.java b/src/main/java/net/minecraft/server/EntityLeash.java
-index 6bd25833bc3ff3ca46367a48da001ed9bda8c19d..5e4652e997362e7c3fac05ac8a4fcdd6051c4f4a 100644
---- a/src/main/java/net/minecraft/server/EntityLeash.java
-+++ b/src/main/java/net/minecraft/server/EntityLeash.java
-@@ -5,6 +5,7 @@ import java.util.List;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityLeash.java b/src/main/java/net/minecraft/world/entity/decoration/EntityLeash.java
+index 8f6d2a6a388021f437ac5554e9ece8eca89e1f46..519f0cabadcf97a44a112fd963a8d3ab194650c4 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityLeash.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityLeash.java
+@@ -30,6 +30,8 @@ import net.minecraft.server.level.WorldServer;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ // CraftBukkit end
  
- import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +import org.bukkit.event.player.PlayerUnleashEntityEvent; // Paper
- 
++
  public class EntityLeash extends EntityHanging {
  
-@@ -101,11 +102,14 @@ public class EntityLeash extends EntityHanging {
+     public EntityLeash(EntityTypes<? extends EntityLeash> entitytypes, World world) {
+@@ -125,11 +127,14 @@ public class EntityLeash extends EntityHanging {
                          entityinsentient = (EntityInsentient) iterator.next();
                          if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == this) {
                              // CraftBukkit start
@@ -137,10 +138,10 @@ index 6bd25833bc3ff3ca46367a48da001ed9bda8c19d..5e4652e997362e7c3fac05ac8a4fcdd6
                          }
                      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index a7ac877014853bb2b2e826ad6950da959f56b268..479270bae88f10de80c6fe97536ac7d2c198a6f2 100644
+index 8330c04124c0c1f4f9c78ad43c34d4b00e6b42ed..97f9ec2706a3cbda76731f84ef80d5a4ea36e713 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1448,8 +1448,10 @@ public class CraftEventFactory {
+@@ -1450,8 +1450,10 @@ public class CraftEventFactory {
          return itemInHand;
      }
  

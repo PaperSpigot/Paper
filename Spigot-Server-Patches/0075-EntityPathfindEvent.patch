@@ -5,11 +5,11 @@ Subject: [PATCH] EntityPathfindEvent
 
 Fires when an Entity decides to start moving to a location.
 
-diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
-index 95f916d5a08a7781278080c4f4abd4e152a945b5..da15615a19474d5db9bd46c3d772f467ec58b133 100644
---- a/src/main/java/net/minecraft/server/Navigation.java
-+++ b/src/main/java/net/minecraft/server/Navigation.java
-@@ -60,7 +60,7 @@ public class Navigation extends NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/Navigation.java b/src/main/java/net/minecraft/world/entity/ai/navigation/Navigation.java
+index 942e03578836524ba746bc37699677eb06cc7803..703d06b2b29f1500301d82df78dc377141085145 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/Navigation.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/Navigation.java
+@@ -75,7 +75,7 @@ public class Navigation extends NavigationAbstract {
  
      @Override
      public PathEntity a(Entity entity, int i) {
@@ -18,11 +18,19 @@ index 95f916d5a08a7781278080c4f4abd4e152a945b5..da15615a19474d5db9bd46c3d772f467
      }
  
      private int u() {
-diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index edcc8af6ee36b937f61d3e52cb001b24fa16f690..48cf95db7226b23fc688aba47aea3b378faec14c 100644
---- a/src/main/java/net/minecraft/server/NavigationAbstract.java
-+++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+index 8848a7552a0ef3944560a71f71620c6bd0f08c10..58225877ce4f2533c19d34e143ae374dc289bce5 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+@@ -10,6 +10,7 @@ import net.minecraft.core.BaseBlockPosition;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.IPosition;
+ import net.minecraft.network.protocol.game.PacketDebug;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.util.MathHelper;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityInsentient;
+@@ -28,7 +29,7 @@ import net.minecraft.world.phys.Vec3D;
  
  public abstract class NavigationAbstract {
  
@@ -31,7 +39,7 @@ index edcc8af6ee36b937f61d3e52cb001b24fa16f690..48cf95db7226b23fc688aba47aea3b37
      protected final World b;
      @Nullable
      protected PathEntity c;
-@@ -95,16 +95,26 @@ public abstract class NavigationAbstract {
+@@ -115,16 +116,26 @@ public abstract class NavigationAbstract {
  
      @Nullable
      public PathEntity a(BlockPosition blockposition, int i) {
@@ -60,7 +68,7 @@ index edcc8af6ee36b937f61d3e52cb001b24fa16f690..48cf95db7226b23fc688aba47aea3b37
          if (set.isEmpty()) {
              return null;
          } else if (this.a.locY() < 0.0D) {
-@@ -114,6 +124,23 @@ public abstract class NavigationAbstract {
+@@ -134,6 +145,23 @@ public abstract class NavigationAbstract {
          } else if (this.c != null && !this.c.c() && set.contains(this.p)) {
              return this.c;
          } else {
@@ -84,11 +92,11 @@ index edcc8af6ee36b937f61d3e52cb001b24fa16f690..48cf95db7226b23fc688aba47aea3b37
              this.b.getMethodProfiler().enter("pathfind");
              float f = (float) this.a.b(GenericAttributes.FOLLOW_RANGE);
              BlockPosition blockposition = flag ? this.a.getChunkCoordinates().up() : this.a.getChunkCoordinates();
-diff --git a/src/main/java/net/minecraft/server/NavigationFlying.java b/src/main/java/net/minecraft/server/NavigationFlying.java
-index feed11b62a4df63c1782e7124a3f006d7a8019a3..013bdfe5540ae594a7f9cbe3ef8dc54dfb25afd4 100644
---- a/src/main/java/net/minecraft/server/NavigationFlying.java
-+++ b/src/main/java/net/minecraft/server/NavigationFlying.java
-@@ -25,7 +25,7 @@ public class NavigationFlying extends NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationFlying.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationFlying.java
+index 2e1efe7a048f64d494260d10a4ae5dba86af5e6c..f5664b8c0762f775f3cd106d156eb74b48bcedc2 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationFlying.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationFlying.java
+@@ -37,7 +37,7 @@ public class NavigationFlying extends NavigationAbstract {
  
      @Override
      public PathEntity a(Entity entity, int i) {

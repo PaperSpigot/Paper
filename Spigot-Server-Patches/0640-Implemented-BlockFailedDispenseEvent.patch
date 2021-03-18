@@ -4,11 +4,11 @@ Date: Wed, 22 Apr 2020 09:40:38 +0200
 Subject: [PATCH] Implemented BlockFailedDispenseEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockDispenser.java b/src/main/java/net/minecraft/server/BlockDispenser.java
-index c239265581972d67c7567d7545d62499ebadd195..063453552b7b6c2395c8f9be27cdb71a15a56ca4 100644
---- a/src/main/java/net/minecraft/server/BlockDispenser.java
-+++ b/src/main/java/net/minecraft/server/BlockDispenser.java
-@@ -48,6 +48,7 @@ public class BlockDispenser extends BlockTileEntity {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+index 0ab6186ba3cfd7f7115c71b3982f46c5d2c921c0..966051ab3e720e5b3f0fb9ab852c8908c5f23f3b 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+@@ -81,6 +81,7 @@ public class BlockDispenser extends BlockTileEntity {
          int i = tileentitydispenser.h();
  
          if (i < 0) {
@@ -16,11 +16,11 @@ index c239265581972d67c7567d7545d62499ebadd195..063453552b7b6c2395c8f9be27cdb71a
              worldserver.triggerEffect(1001, blockposition, 0);
          } else {
              ItemStack itemstack = tileentitydispenser.getItem(i);
-diff --git a/src/main/java/net/minecraft/server/BlockDropper.java b/src/main/java/net/minecraft/server/BlockDropper.java
-index 65c212690d8ba7c8ea55d4d3b6af1ba3d9f4a7f6..22ab5a861920e1902c64301c3b06cf95b7afe378 100644
---- a/src/main/java/net/minecraft/server/BlockDropper.java
-+++ b/src/main/java/net/minecraft/server/BlockDropper.java
-@@ -30,6 +30,7 @@ public class BlockDropper extends BlockDispenser {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockDropper.java b/src/main/java/net/minecraft/world/level/block/BlockDropper.java
+index ccab4714bf5a6be8afd92430874fd6f881d4f92f..223cc0ba06cf4b007049880daad881e55ac4e448 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockDropper.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockDropper.java
+@@ -47,6 +47,7 @@ public class BlockDropper extends BlockDispenser {
          int i = tileentitydispenser.h();
  
          if (i < 0) {
@@ -29,7 +29,7 @@ index 65c212690d8ba7c8ea55d4d3b6af1ba3d9f4a7f6..22ab5a861920e1902c64301c3b06cf95
          } else {
              ItemStack itemstack = tileentitydispenser.getItem(i);
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 71aead62d776b4241295835510dff17726054ef6..1e00be94d745afd499bd03857d85fd1ae0839538 100644
+index 89c6d1f05878d6c220090af82939cbba4fa2555f..228638d503cb6491e47920386994f2dfd6eb122e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -4,6 +4,7 @@ import com.google.common.base.Function;
@@ -40,7 +40,7 @@ index 71aead62d776b4241295835510dff17726054ef6..1e00be94d745afd499bd03857d85fd1a
  import java.net.InetAddress;
  import java.util.ArrayList;
  import java.util.Collections;
-@@ -117,7 +118,6 @@ import org.bukkit.entity.ThrownPotion;
+@@ -119,7 +120,6 @@ import org.bukkit.entity.ThrownPotion;
  import org.bukkit.entity.Vehicle;
  import org.bukkit.entity.Villager;
  import org.bukkit.entity.Villager.Profession;
@@ -48,7 +48,7 @@ index 71aead62d776b4241295835510dff17726054ef6..1e00be94d745afd499bd03857d85fd1a
  import org.bukkit.event.Cancellable;
  import org.bukkit.event.Event;
  import org.bukkit.event.Event.Result;
-@@ -1760,4 +1760,12 @@ public class CraftEventFactory {
+@@ -1762,4 +1762,12 @@ public class CraftEventFactory {
  
          return event;
      }

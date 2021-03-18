@@ -12,11 +12,27 @@ also resolves this.
 Update adjacent blocks of doors, double plants, pistons and beds
 when cancelling interaction.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-index aae5feb77402d721c23f7e781b53864f6778c1dd..daeaae8072a12b1d5f0718ba9e5bdd4f9c0e2169 100644
---- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
-+++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-@@ -149,6 +149,11 @@ public class PlayerInteractManager {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+index 51157a9223f3da22d1110cfa211a502de59fb8a1..cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.network.protocol.game.PacketPlayInBlockDig;
+ import net.minecraft.network.protocol.game.PacketPlayOutBlockBreak;
++import net.minecraft.network.protocol.game.PacketPlayOutCloseWindow;
+ import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
+ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+@@ -18,6 +19,7 @@ import net.minecraft.world.level.EnumGamemode;
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.block.Block;
+ import net.minecraft.world.level.block.BlockCommand;
++import net.minecraft.world.level.block.BlockFlowerPot;
+ import net.minecraft.world.level.block.BlockJigsaw;
+ import net.minecraft.world.level.block.BlockStructure;
+ import net.minecraft.world.level.block.entity.TileEntity;
+@@ -179,6 +181,11 @@ public class PlayerInteractManager {
                  PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, blockposition, enumdirection, this.player.inventory.getItemInHand(), EnumHand.MAIN_HAND);
                  if (event.isCancelled()) {
                      // Let the client know the block still exists
@@ -28,7 +44,7 @@ index aae5feb77402d721c23f7e781b53864f6778c1dd..daeaae8072a12b1d5f0718ba9e5bdd4f
                      this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
                      // Update any tile entity data for this block
                      TileEntity tileentity = this.world.getTileEntity(blockposition);
-@@ -453,13 +458,32 @@ public class PlayerInteractManager {
+@@ -483,13 +490,32 @@ public class PlayerInteractManager {
          interactItemStack = itemstack.cloneItemStack();
  
          if (event.useInteractedBlock() == Event.Result.DENY) {

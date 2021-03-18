@@ -1,0 +1,117 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 25 Apr 2020 06:46:35 -0400
+Subject: [PATCH] Fix numerous item duplication issues and teleport issues
+
+This notably fixes the newest "Donkey Dupe", but also fixes a lot
+of dupe bugs in general around nether portals and entity world transfer
+
+We also fix item duplication generically by anytime we clone an item
+to drop it on the ground, destroy the source item.
+
+This avoid an itemstack ever existing twice in the world state pre
+clean up stage.
+
+So even if something NEW comes up, it would be impossible to drop the
+same item twice because the source was destroyed.
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 675d0cb32efc99f66c4d2b000bf49cf1c065a5e2..cb5c93dca3b947462b89f79c60c7562085684b87 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1969,11 +1969,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         } else {
+             // CraftBukkit start - Capture drops for death event
+             if (this instanceof EntityLiving && !((EntityLiving) this).forceDrops) {
+-                ((EntityLiving) this).drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack));
++                ((EntityLiving) this).drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)); // Paper - mirror so we can destroy it later
+                 return null;
+             }
+             // CraftBukkit end
+-            EntityItem entityitem = new EntityItem(this.world, this.locX(), this.locY() + (double) f, this.locZ(), itemstack);
++            EntityItem entityitem = new EntityItem(this.world, this.locX(), this.locY() + (double) f, this.locZ(), itemstack.cloneItemStack()); // Paper - clone so we can destroy original
++            itemstack.setCount(0); // Paper - destroy this item - if this ever leaks due to game bugs, ensure it doesn't dupe
+ 
+             entityitem.defaultPickupDelay();
+             // CraftBukkit start
+@@ -2621,6 +2622,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     @Nullable
+     public Entity teleportTo(WorldServer worldserver, BlockPosition location) {
+         // CraftBukkit end
++        // Paper start - fix bad state entities causing dupes
++        if (!isAlive() || !valid) {
++            LOGGER.warn("Illegal Entity Teleport " + this + " to " + worldserver + ":" + location, new Throwable());
++            return null;
++        }
++        // Paper end
+         if (this.world instanceof WorldServer && !this.dead) {
+             this.world.getMethodProfiler().enter("changeDimension");
+             // CraftBukkit start
+@@ -2641,6 +2648,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+                 // CraftBukkit end
+ 
+                 this.world.getMethodProfiler().exitEnter("reloading");
++                // Paper start - Change lead drop timing to prevent dupe
++                if (this instanceof EntityInsentient) {
++                    ((EntityInsentient) this).unleash(true, true); // Paper drop lead
++                }
++                // Paper end
+                 Entity entity = this.getEntityType().a((World) worldserver);
+ 
+                 if (entity != null) {
+@@ -2654,10 +2666,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+                     // CraftBukkit start - Forward the CraftEntity to the new entity
+                     this.getBukkitEntity().setHandle(entity);
+                     entity.bukkitEntity = this.getBukkitEntity();
+-
+-                    if (this instanceof EntityInsentient) {
+-                        ((EntityInsentient) this).unleash(true, false); // Unleash to prevent duping of leads.
+-                    }
+                     // CraftBukkit end
+                 }
+ 
+@@ -2782,7 +2790,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     }
+ 
+     public boolean canPortal() {
+-        return true;
++        return isAlive() && valid; // Paper
+     }
+ 
+     public float a(Explosion explosion, IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, Fluid fluid, float f) {
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index 69361caebf0d3caa5195b519a16691705ac5e16a..5eb900619951083b9a777b1645cb5495b99968ec 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -602,7 +602,7 @@ public class EntityArmorStand extends EntityLiving {
+         for (i = 0; i < this.handItems.size(); ++i) {
+             itemstack = (ItemStack) this.handItems.get(i);
+             if (!itemstack.isEmpty()) {
+-                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
++                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)); // CraftBukkit - add to drops // Paper - mirror so we can destroy it later - though this call site was safe
+                 this.handItems.set(i, ItemStack.b);
+             }
+         }
+@@ -610,7 +610,7 @@ public class EntityArmorStand extends EntityLiving {
+         for (i = 0; i < this.armorItems.size(); ++i) {
+             itemstack = (ItemStack) this.armorItems.get(i);
+             if (!itemstack.isEmpty()) {
+-                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
++                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)); // CraftBukkit - add to drops // Paper - mirror so we can destroy it later - though this call site was safe
+                 this.armorItems.set(i, ItemStack.b);
+             }
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index b1db56faffebbf46ac871f5f77af0d47d7cf4a8f..4fc9d8af25808a53bf479b085c82047ede6c5360 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -806,7 +806,8 @@ public class CraftEventFactory {
+         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
+             if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
+ 
+-            world.dropItem(entity.getLocation(), stack);
++            world.dropItem(entity.getLocation(), stack); // Paper - note: dropItem already clones due to this being bukkit -> NMS
++            if (stack instanceof CraftItemStack) stack.setAmount(0); // Paper - destroy this item - if this ever leaks due to game bugs, ensure it doesn't dupe, but don't nuke bukkit stacks of manually added items
+         }
+ 
+         return event;

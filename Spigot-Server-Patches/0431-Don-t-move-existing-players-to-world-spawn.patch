@@ -9,11 +9,11 @@ larger than the keep loaded range.
 
 By skipping this, we avoid potential for a large spike on server start.
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index cb9009aecb76abcf6442fa3b5fc6c3d6e776dfa0..a2f364fb61c4a0a691e1617446c1dfcf997753fb 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -125,7 +125,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index da16b5773e182a10dca8c91b53b9aba7e924d22b..8371d5ac694f469804ad55669fdedb8b3fc627bd 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -253,7 +253,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.serverStatisticManager = minecraftserver.getPlayerList().getStatisticManager(this);
          this.advancementDataPlayer = minecraftserver.getPlayerList().f(this);
          this.G = 1.0F;
@@ -22,7 +22,7 @@ index cb9009aecb76abcf6442fa3b5fc6c3d6e776dfa0..a2f364fb61c4a0a691e1617446c1dfcf
          this.co = minecraftserver.a(this);
  
          this.cachedSingleHashSet = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
-@@ -177,6 +177,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -305,6 +305,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      }
      // CraftBukkit end
  
@@ -30,7 +30,7 @@ index cb9009aecb76abcf6442fa3b5fc6c3d6e776dfa0..a2f364fb61c4a0a691e1617446c1dfcf
      private void c(WorldServer worldserver) {
          BlockPosition blockposition = worldserver.getSpawn();
  
-@@ -354,7 +355,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -482,7 +483,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  position = Vec3D.a(((WorldServer) world).getSpawn());
              }
              this.world = world;
@@ -39,11 +39,11 @@ index cb9009aecb76abcf6442fa3b5fc6c3d6e776dfa0..a2f364fb61c4a0a691e1617446c1dfcf
          }
          this.playerInteractManager.a((WorldServer) world);
      }
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 73a29023767e6452cd263564c9bce3fb52e93312..118d50997a31c2b5182d7ba1015f73d739def2f3 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -131,6 +131,8 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index f7a44104c09e4b2ebd5e1a3d7a08267c865c405d..d6a6321e936ce803a3e52e7420ba2bcd096f4649 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -208,6 +208,8 @@ public abstract class PlayerList {
              worldserver1 = worldserver;
          }
  

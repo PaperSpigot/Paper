@@ -4,11 +4,11 @@ Date: Fri, 3 Aug 2018 00:04:54 -0400
 Subject: [PATCH] MC-135506: Experience should save as Integers
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityExperienceOrb.java b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-index 837a2c8f6af6e51316511e3948869ac059c8fc0d..4a94ce72d559263ef5fa4fb16dc286f531f51d55 100644
---- a/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-+++ b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-@@ -203,7 +203,7 @@ public class EntityExperienceOrb extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java b/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
+index 3387a19044b3ee2a1ef549c328c8bc354a5b6d23..a7551e95185895a290be70d501496279eaf884ae 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
++++ b/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
+@@ -218,7 +218,7 @@ public class EntityExperienceOrb extends Entity {
      public void saveData(NBTTagCompound nbttagcompound) {
          nbttagcompound.setShort("Health", (short) this.e);
          nbttagcompound.setShort("Age", (short) this.c);
@@ -17,7 +17,7 @@ index 837a2c8f6af6e51316511e3948869ac059c8fc0d..4a94ce72d559263ef5fa4fb16dc286f5
          this.savePaperNBT(nbttagcompound); // Paper
      }
  
-@@ -211,7 +211,7 @@ public class EntityExperienceOrb extends Entity {
+@@ -226,7 +226,7 @@ public class EntityExperienceOrb extends Entity {
      public void loadData(NBTTagCompound nbttagcompound) {
          this.e = nbttagcompound.getShort("Health");
          this.c = nbttagcompound.getShort("Age");

@@ -7,7 +7,7 @@ Provides counts without the ineffeciency of using .getEntities().size()
 which creates copy of the collections.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 8b68c1b680e0b7ecb21b9de782dbc2864e7b5dfe..af8593d117359c75ff8c635a93499d84e25eb854 100644
+index 5c488c8a40c648c5c432d38d95d3e00fde2cdb75..642efd930dc6cfad1d9436df97f151ea69b24b0c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -282,6 +282,48 @@ public class CraftWorld implements World {
@@ -17,7 +17,7 @@ index 8b68c1b680e0b7ecb21b9de782dbc2864e7b5dfe..af8593d117359c75ff8c635a93499d84
 +    // Paper start - Provide fast information methods
 +    public int getEntityCount() {
 +        int ret = 0;
-+        for (net.minecraft.server.Entity entity : world.entitiesById.values()) {
++        for (net.minecraft.world.entity.Entity entity : world.entitiesById.values()) {
 +            if (entity.isChunkLoaded()) {
 +                ++ret;
 +            }
@@ -28,8 +28,8 @@ index 8b68c1b680e0b7ecb21b9de782dbc2864e7b5dfe..af8593d117359c75ff8c635a93499d84
 +        // We don't use the full world tile entity list, so we must iterate chunks
 +        Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkProvider().playerChunkMap.visibleChunks;
 +        int size = 0;
-+        for (net.minecraft.server.PlayerChunk playerchunk : chunks.values()) {
-+            net.minecraft.server.Chunk chunk = playerchunk.getChunk();
++        for (PlayerChunk playerchunk : chunks.values()) {
++            net.minecraft.world.level.chunk.Chunk chunk = playerchunk.getChunk();
 +            if (chunk == null) {
 +                continue;
 +            }

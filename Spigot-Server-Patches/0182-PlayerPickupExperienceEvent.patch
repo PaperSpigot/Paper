@@ -5,11 +5,19 @@ Subject: [PATCH] PlayerPickupExperienceEvent
 
 Allows plugins to cancel a player picking up an experience orb
 
-diff --git a/src/main/java/net/minecraft/server/EntityExperienceOrb.java b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-index 701d015baf03eba07b319baf447b5ae06ab8accd..e7b20e2c07426d156fa819ed2e23e29d6a71d499 100644
---- a/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-+++ b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-@@ -218,7 +218,7 @@ public class EntityExperienceOrb extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java b/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
+index f4da22b33c704e675510b4b1a3aa7c180088be29..e3dfb018b06c0139594ddbb88fab2ca8d43ab12f 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
++++ b/src/main/java/net/minecraft/world/entity/EntityExperienceOrb.java
+@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPosition;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.protocol.Packet;
+ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntityExperienceOrb;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.tags.Tag;
+ import net.minecraft.tags.TagsFluid;
+@@ -232,7 +233,7 @@ public class EntityExperienceOrb extends Entity {
      @Override
      public void pickup(EntityHuman entityhuman) {
          if (!this.world.isClientSide) {

@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mark Vainomaa <mikroskeem@mikroskeem.eu>
+Date: Fri, 1 May 2020 17:39:26 +0300
+Subject: [PATCH] Expose game version
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 55890ff463eb122934e8ba1fc550cf0cccaf8451..96652862531301c08aefa0baa79b1258b5b307ec 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -518,6 +518,13 @@ public final class CraftServer implements Server {
+         return bukkitVersion;
+     }
+ 
++    // Paper start - expose game version
++    @Override
++    public String getMinecraftVersion() {
++        return console.getVersion();
++    }
++    // Paper end
++
+     @Override
+     public List<CraftPlayer> getOnlinePlayers() {
+         return this.playerView;

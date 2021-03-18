@@ -11,11 +11,11 @@ flushing on the netty event loop, so it won't do the flush on the main thread.
 
 Renable flushing by passing -Dpaper.explicit-flush=true
 
-diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 1b11b4a8d26bd174b0c6f97225555eb585f67836..3351389dc122b66c198fb21ff02976491e9b46d9 100644
---- a/src/main/java/net/minecraft/server/NetworkManager.java
-+++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -63,6 +63,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+diff --git a/src/main/java/net/minecraft/network/NetworkManager.java b/src/main/java/net/minecraft/network/NetworkManager.java
+index 60e4a4aa3854aaeb250d1318f2f25cf3591ea1d3..297820baef99e97e1216a64c527219e9ccc3e320 100644
+--- a/src/main/java/net/minecraft/network/NetworkManager.java
++++ b/src/main/java/net/minecraft/network/NetworkManager.java
+@@ -73,6 +73,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      // Paper start - NetworkClient implementation
      public int protocolVersion;
      public java.net.InetSocketAddress virtualHost;
@@ -23,7 +23,7 @@ index 1b11b4a8d26bd174b0c6f97225555eb585f67836..3351389dc122b66c198fb21ff0297649
      // Paper end
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
-@@ -230,7 +231,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -240,7 +241,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
          }
  
          if (this.channel != null) {

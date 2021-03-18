@@ -1,0 +1,153 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Wed, 22 Apr 2020 23:29:20 +0200
+Subject: [PATCH] Add villager reputation API
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0f10c333d88f2e1c56a6c7f22d421084adfd3789
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java
+@@ -0,0 +1,9 @@
++package com.destroystokyo.paper.entity.villager;
++// Must have own package due to package-level constructor.
++
++public final class ReputationConstructor {
++    // Abuse the package-level constructor.
++    public static Reputation construct(int[] values) {
++        return new Reputation(values);
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java b/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
+index a7f5e4a499c1f6fb1450e536dbf117a8af3b3b84..9cc3a18636a356977577076e96cb7be706c61abf 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
++++ b/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
+@@ -27,7 +27,7 @@ import net.minecraft.core.MinecraftSerializableUUID;
+ 
+ public class Reputation {
+ 
+-    private final Map<UUID, Reputation.a> a = Maps.newHashMap();
++    private final Map<UUID, Reputation.a> a = Maps.newHashMap(); public Map<UUID, Reputation.a> getReputations() { return this.a; } // Paper - add getter for reputations
+ 
+     public Reputation() {}
+ 
+@@ -142,11 +142,11 @@ public class Reputation {
+         return k > reputationtype.h ? Math.max(reputationtype.h, i) : k;
+     }
+ 
+-    static class a {
++    public static class a { // Paper - make public
+ 
+         private final Object2IntMap<ReputationType> a;
+ 
+-        private a() {
++        public a() { // Paper - make public - update CraftVillager setReputation on change
+             this.a = new Object2IntOpenHashMap();
+         }
+ 
+@@ -200,6 +200,28 @@ public class Reputation {
+         public void b(ReputationType reputationtype) {
+             this.a.removeInt(reputationtype);
+         }
++
++        // Paper start - Add villager reputation API
++        private static final com.destroystokyo.paper.entity.villager.ReputationType[] REPUTATION_TYPES = com.destroystokyo.paper.entity.villager.ReputationType.values();
++        public com.destroystokyo.paper.entity.villager.Reputation getPaperReputation() {
++            int[] reputation = new int[REPUTATION_TYPES.length];
++            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_NEGATIVE.ordinal()] = a.getOrDefault(ReputationType.MAJOR_NEGATIVE, 0);
++            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_POSITIVE.ordinal()] = a.getOrDefault(ReputationType.MAJOR_POSITIVE, 0);
++            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MINOR_NEGATIVE.ordinal()] = a.getOrDefault(ReputationType.MINOR_NEGATIVE, 0);
++            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MINOR_POSITIVE.ordinal()] = a.getOrDefault(ReputationType.MINOR_POSITIVE, 0);
++            reputation[com.destroystokyo.paper.entity.villager.ReputationType.TRADING.ordinal()] = a.getOrDefault(ReputationType.TRADING, 0);
++            return com.destroystokyo.paper.entity.villager.ReputationConstructor.construct(reputation);
++        }
++
++        public void assignFromPaperReputation(com.destroystokyo.paper.entity.villager.Reputation rep) {
++            int val;
++            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_NEGATIVE)) != 0) this.a.put(ReputationType.MAJOR_NEGATIVE, val);
++            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_POSITIVE)) != 0) this.a.put(ReputationType.MAJOR_POSITIVE, val);
++            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MINOR_NEGATIVE)) != 0) this.a.put(ReputationType.MINOR_NEGATIVE, val);
++            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MINOR_POSITIVE)) != 0) this.a.put(ReputationType.MINOR_POSITIVE, val);
++            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.TRADING)) != 0) this.a.put(ReputationType.TRADING, val);
++        }
++        // Paper end
+     }
+ 
+     static class b {
+diff --git a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+index c37dd836c284ed8beac6699ec4f5f91886cf3f63..80a9eecfd2eb17db6a7d0b3973f4acdb80f873e8 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/EntityVillager.java
+@@ -1031,6 +1031,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+         this.bD = 0;
+     }
+ 
++    public Reputation getReputation() { return this.fj(); } // Paper - OBFHELPER
+     public Reputation fj() {
+         return this.by;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
+index 4b2451179cdda918808ea7001f5033c7e5a8b9ac..073c4c518be5a32fccd82e5739ede461214007b2 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
+@@ -17,6 +17,13 @@ import org.bukkit.entity.Villager;
+ import org.bukkit.entity.Villager.Profession;
+ import org.bukkit.entity.Villager.Type;
+ 
++// Paper start
++import com.destroystokyo.paper.entity.villager.Reputation;
++import com.google.common.collect.Maps;
++import java.util.Map;
++import java.util.UUID;
++// Paper end
++
+ public class CraftVillager extends CraftAbstractVillager implements Villager {
+ 
+     public CraftVillager(CraftServer server, EntityVillager entity) {
+@@ -126,4 +133,45 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
+     public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {
+         return IRegistry.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+     }
++
++    // Paper start - Add villager reputation API
++    @Override
++    public Reputation getReputation(UUID uniqueId) {
++        net.minecraft.world.entity.ai.gossip.Reputation.a rep = getHandle().getReputation().getReputations().get(uniqueId);
++        if (rep == null) {
++            return new Reputation(Maps.newHashMap());
++        }
++
++        return rep.getPaperReputation();
++    }
++
++    @Override
++    public Map<UUID, Reputation> getReputations() {
++        return getHandle().getReputation().getReputations().entrySet()
++            .stream()
++            .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getPaperReputation()));
++    }
++
++    @Override
++    public void setReputation(UUID uniqueId, Reputation reputation) {
++        net.minecraft.world.entity.ai.gossip.Reputation.a nmsReputation =
++            getHandle().getReputation().getReputations().computeIfAbsent(
++                uniqueId,
++                key -> new net.minecraft.world.entity.ai.gossip.Reputation.a()
++            );
++        nmsReputation.assignFromPaperReputation(reputation);
++    }
++
++    @Override
++    public void setReputations(Map<UUID, Reputation> reputations) {
++        for (Map.Entry<UUID, Reputation> entry : reputations.entrySet()) {
++            setReputation(entry.getKey(), entry.getValue());
++        }
++    }
++
++    @Override
++    public void clearReputations() {
++        getHandle().getReputation().getReputations().clear();
++    }
++    // Paper end
+ }

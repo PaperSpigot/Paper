@@ -7,7 +7,7 @@ Establishes base extension of profile systems for future edits too
 
 diff --git a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6ae316109c8e35fbb6b0aebdee3075beb1445f1b
+index 0000000000000000000000000000000000000000..040fd0c3fc4bc3a04fe5dff919a41fe9b474708e
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
 @@ -0,0 +1,301 @@
@@ -19,7 +19,7 @@ index 0000000000000000000000000000000000000000..6ae316109c8e35fbb6b0aebdee3075be
 +import com.mojang.authlib.properties.Property;
 +import com.mojang.authlib.properties.PropertyMap;
 +import net.minecraft.server.MinecraftServer;
-+import net.minecraft.server.UserCache;
++import net.minecraft.server.players.UserCache;
 +import org.apache.commons.lang3.Validate;
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
 +import org.spigotmc.SpigotConfig;
@@ -428,10 +428,10 @@ index 0000000000000000000000000000000000000000..3cdd06d3af7ff94f1fe1a11b9a9275e1
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 17d73ebbe51a83f79f338bdb1b366cecd99f880d..39174bca00b4535e92f6b325b3fd058ceae41f8b 100644
+index 18b56b59fd6efd618e6ff6f9cf3a02f57588d244..cd7dc7d90efddb8a1bb50cd964b43d18cf9c83d1 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -1,9 +1,12 @@
+@@ -1,6 +1,8 @@
  package net.minecraft.server;
  
  import com.destroystokyo.paper.block.TargetBlockInfo;
@@ -439,12 +439,16 @@ index 17d73ebbe51a83f79f338bdb1b366cecd99f880d..39174bca00b4535e92f6b325b3fd058c
 +import com.destroystokyo.paper.profile.PlayerProfile;
  import com.google.common.util.concurrent.ThreadFactoryBuilder;
  import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+ import net.minecraft.core.BlockPosition;
+@@ -11,6 +13,7 @@ import net.minecraft.world.level.ChunkCoordIntPair;
+ import net.minecraft.world.level.RayTrace;
+ import net.minecraft.world.level.World;
  import org.apache.commons.lang.exception.ExceptionUtils;
 +import com.mojang.authlib.GameProfile;
  import org.bukkit.Location;
  import org.bukkit.block.BlockFace;
  import org.bukkit.craftbukkit.CraftWorld;
-@@ -338,6 +341,10 @@ public final class MCUtil {
+@@ -345,6 +348,10 @@ public final class MCUtil {
          return run.get();
      }
  
@@ -456,10 +460,10 @@ index 17d73ebbe51a83f79f338bdb1b366cecd99f880d..39174bca00b4535e92f6b325b3fd058c
       * Calculates distance between 2 entities
       * @param e1
 diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
-index d8c8bf2466be362b424fde611fe42b73fea42ef9..85f7cfa1fade8d574e7f85d857ab071c66ec4a95 100644
+index 89db31061fcc3420bc8e668533a4051cdbd12253..191a74bd9b894f9d64d0a55747cb17e07ceef597 100644
 --- a/src/main/java/net/minecraft/server/Main.java
 +++ b/src/main/java/net/minecraft/server/Main.java
-@@ -93,7 +93,7 @@ public class Main {
+@@ -132,7 +132,7 @@ public class Main {
              }
  
              File file = (File) optionset.valueOf("universe"); // CraftBukkit
@@ -468,11 +472,11 @@ index d8c8bf2466be362b424fde611fe42b73fea42ef9..85f7cfa1fade8d574e7f85d857ab071c
              MinecraftSessionService minecraftsessionservice = yggdrasilauthenticationservice.createMinecraftSessionService();
              GameProfileRepository gameprofilerepository = yggdrasilauthenticationservice.createProfileRepository();
              UserCache usercache = new UserCache(gameprofilerepository, new File(file, MinecraftServer.b.getName()));
-diff --git a/src/main/java/net/minecraft/server/UserCache.java b/src/main/java/net/minecraft/server/UserCache.java
-index e89c92aded564fe689cc1aa8d0c83abb72f7b10c..aa1b18ffa1e2b7f865f63b7df81d8f3b3d5aa966 100644
---- a/src/main/java/net/minecraft/server/UserCache.java
-+++ b/src/main/java/net/minecraft/server/UserCache.java
-@@ -42,7 +42,7 @@ public class UserCache {
+diff --git a/src/main/java/net/minecraft/server/players/UserCache.java b/src/main/java/net/minecraft/server/players/UserCache.java
+index 6c349128bdedc53003f043c9cb1210b4666aee33..e3801a4a13d0bac7816a1350d3799a9815481c4b 100644
+--- a/src/main/java/net/minecraft/server/players/UserCache.java
++++ b/src/main/java/net/minecraft/server/players/UserCache.java
+@@ -44,7 +44,7 @@ public class UserCache {
  
      private static final Logger LOGGER = LogManager.getLogger();
      private static boolean b;
@@ -481,7 +485,7 @@ index e89c92aded564fe689cc1aa8d0c83abb72f7b10c..aa1b18ffa1e2b7f865f63b7df81d8f3b
      private final Map<UUID, UserCache.UserCacheEntry> d = Maps.newConcurrentMap();
      private final GameProfileRepository e;
      private final Gson f = (new GsonBuilder()).create();
-@@ -106,6 +106,7 @@ public class UserCache {
+@@ -108,6 +108,7 @@ public class UserCache {
          return UserCache.b;
      }
  
@@ -489,7 +493,7 @@ index e89c92aded564fe689cc1aa8d0c83abb72f7b10c..aa1b18ffa1e2b7f865f63b7df81d8f3b
      public synchronized void a(GameProfile gameprofile) { // Paper - synchronize
          Calendar calendar = Calendar.getInstance();
  
-@@ -155,6 +156,13 @@ public class UserCache {
+@@ -157,6 +158,13 @@ public class UserCache {
          return gameprofile;
      }
  
@@ -503,7 +507,7 @@ index e89c92aded564fe689cc1aa8d0c83abb72f7b10c..aa1b18ffa1e2b7f865f63b7df81d8f3b
      @Nullable
      public GameProfile getProfile(UUID uuid) {
          UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.d.get(uuid);
-@@ -337,7 +345,7 @@ public class UserCache {
+@@ -339,7 +347,7 @@ public class UserCache {
  
      static class UserCacheEntry {
  
@@ -513,7 +517,7 @@ index e89c92aded564fe689cc1aa8d0c83abb72f7b10c..aa1b18ffa1e2b7f865f63b7df81d8f3b
          private volatile long c;
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 0d52428faa3730cf4f2bf4e16884fdea6ad57c9a..5c9a2efe69bda1453ae9b679a2ee992ae98e965f 100644
+index 4f9c42a4b0256f181263bf5e0492714a01fbec38..7d2fc05ddb18369aed29595e3c0dcbf6db136309 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -227,6 +227,9 @@ import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -552,7 +556,7 @@ index 0d52428faa3730cf4f2bf4e16884fdea6ad57c9a..5c9a2efe69bda1453ae9b679a2ee992a
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
-index 42de897596ada4044df683dc5e8d5d750ee9c207..58aeeff96a92b5ba0c3435c680885ad3bc4f4ce6 100644
+index dff67a48961399f3746f99b4f2363724bfe51c36..8298ae9bf1c5635f08552c15f004b3d0f6e9f19b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
 @@ -80,6 +80,13 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {

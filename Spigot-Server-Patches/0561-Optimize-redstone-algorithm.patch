@@ -39,28 +39,27 @@ index 36ecdfce84141ac731b827e469ac842f5c666259..02bb85364560784adea47c877c13291c
  }
 diff --git a/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java b/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b69803cbf2db2781aa050b145bf88468254880ae
+index 0000000000000000000000000000000000000000..167e0aaec8c2f83856465b7efc9ac9e5f9389d91
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java
-@@ -0,0 +1,915 @@
+@@ -0,0 +1,914 @@
 +package com.destroystokyo.paper.util;
 +
 +import java.util.List;
 +import java.util.Map;
 +import java.util.concurrent.ThreadLocalRandom;
 +
++import net.minecraft.core.BlockPosition;
++import net.minecraft.world.item.ItemStack;
++import net.minecraft.world.item.Items;
++import net.minecraft.world.level.World;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.BlockRedstoneWire;
++import net.minecraft.world.level.block.state.IBlockData;
 +import org.bukkit.event.block.BlockRedstoneEvent;
 +
 +import com.google.common.collect.Lists;
 +import com.google.common.collect.Maps;
-+
-+import net.minecraft.server.Block;
-+import net.minecraft.server.BlockPosition;
-+import net.minecraft.server.BlockRedstoneWire;
-+import net.minecraft.server.IBlockData;
-+import net.minecraft.server.Items;
-+import net.minecraft.server.ItemStack;
-+import net.minecraft.server.World;
 +
 +/**
 + * Used for the faster redstone algorithm.
@@ -958,19 +957,39 @@ index 0000000000000000000000000000000000000000..b69803cbf2db2781aa050b145bf88468
 +        return i > strength ? i : strength;
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/BlockRedstoneWire.java b/src/main/java/net/minecraft/server/BlockRedstoneWire.java
-index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd484fd6cf79 100644
---- a/src/main/java/net/minecraft/server/BlockRedstoneWire.java
-+++ b/src/main/java/net/minecraft/server/BlockRedstoneWire.java
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 9369a0c6c0ae2d8518ebfb17f2c93ead2647ab8d..307a89c431739ed15d8869faace7b08927626f60 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -659,6 +659,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+ 
+     }
+ 
++    public void neighborChanged(BlockPosition pos, Block blockIn, BlockPosition fromPos) { a(pos, blockIn, fromPos); } // Paper - OBFHELPER
+     public void a(BlockPosition blockposition, Block block, BlockPosition blockposition1) {
+         if (!this.isClientSide) {
+             IBlockData iblockdata = this.getType(blockposition);
+@@ -1287,6 +1288,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         return this.getBlockFacePower(blockposition.down(), EnumDirection.DOWN) > 0 ? true : (this.getBlockFacePower(blockposition.up(), EnumDirection.UP) > 0 ? true : (this.getBlockFacePower(blockposition.north(), EnumDirection.NORTH) > 0 ? true : (this.getBlockFacePower(blockposition.south(), EnumDirection.SOUTH) > 0 ? true : (this.getBlockFacePower(blockposition.west(), EnumDirection.WEST) > 0 ? true : this.getBlockFacePower(blockposition.east(), EnumDirection.EAST) > 0))));
+     }
+ 
++    public int isBlockIndirectlyGettingPowered(BlockPosition pos) { return this.s(pos); } // Paper - OBFHELPER
+     public int s(BlockPosition blockposition) {
+         int i = 0;
+         EnumDirection[] aenumdirection = World.a;
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockRedstoneWire.java b/src/main/java/net/minecraft/world/level/block/BlockRedstoneWire.java
+index 60f0e582199472f9c5ef26e12ee1da0c3867254e..71ba55d36f5bc8a417930015c31553b30cf3e8dd 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockRedstoneWire.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockRedstoneWire.java
 @@ -1,5 +1,7 @@
- package net.minecraft.server;
+ package net.minecraft.world.level.block;
  
 +import com.destroystokyo.paper.PaperConfig;
 +import com.destroystokyo.paper.util.RedstoneWireTurbo;
  import com.google.common.collect.ImmutableMap;
  import com.google.common.collect.Maps;
  import com.google.common.collect.Sets;
-@@ -25,7 +27,7 @@ public class BlockRedstoneWire extends Block {
+@@ -50,7 +52,7 @@ public class BlockRedstoneWire extends Block {
      private final Map<IBlockData, VoxelShape> j = Maps.newHashMap();
      private static final Vector3fa[] k = new Vector3fa[16];
      private final IBlockData o;
@@ -979,7 +998,7 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
  
      public BlockRedstoneWire(BlockBase.Info blockbase_info) {
          super(blockbase_info);
-@@ -212,6 +214,121 @@ public class BlockRedstoneWire extends Block {
+@@ -237,6 +239,121 @@ public class BlockRedstoneWire extends Block {
          return iblockdata.d(iblockaccess, blockposition, EnumDirection.UP) || iblockdata.a(Blocks.HOPPER);
      }
  
@@ -1101,7 +1120,7 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
      private void a(World world, BlockPosition blockposition, IBlockData iblockdata) {
          int i = this.a(world, blockposition);
  
-@@ -281,6 +398,8 @@ public class BlockRedstoneWire extends Block {
+@@ -306,6 +423,8 @@ public class BlockRedstoneWire extends Block {
          return Math.max(i, j - 1);
      }
  
@@ -1110,7 +1129,7 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
      private int o(IBlockData iblockdata) {
          return iblockdata.a((Block) this) ? (Integer) iblockdata.get(BlockRedstoneWire.POWER) : 0;
      }
-@@ -303,7 +422,7 @@ public class BlockRedstoneWire extends Block {
+@@ -328,7 +447,7 @@ public class BlockRedstoneWire extends Block {
      @Override
      public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
          if (!iblockdata1.a(iblockdata.getBlock()) && !world.isClientSide) {
@@ -1119,7 +1138,7 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
              Iterator iterator = EnumDirection.EnumDirectionLimit.VERTICAL.iterator();
  
              while (iterator.hasNext()) {
-@@ -330,7 +449,7 @@ public class BlockRedstoneWire extends Block {
+@@ -355,7 +474,7 @@ public class BlockRedstoneWire extends Block {
                      world.applyPhysics(blockposition.shift(enumdirection), this);
                  }
  
@@ -1128,7 +1147,7 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
                  this.d(world, blockposition);
              }
          }
-@@ -365,7 +484,7 @@ public class BlockRedstoneWire extends Block {
+@@ -390,7 +509,7 @@ public class BlockRedstoneWire extends Block {
      public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
          if (!world.isClientSide) {
              if (iblockdata.canPlace(world, blockposition)) {
@@ -1137,23 +1156,3 @@ index 7b3ccded0451f7b6634aeca0bdc1b5cc94f52b96..7f9ca45d403000d26d84198d8f88cd48
              } else {
                  c(iblockdata, world, blockposition);
                  world.a(blockposition, false);
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index f2944dcf6b83b530124d53743a3d58b68ecec6f8..b91f1a4623a7d2d49bdd4265df3b1cfcdcb0ef88 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -599,6 +599,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
- 
-     }
- 
-+    public void neighborChanged(BlockPosition pos, Block blockIn, BlockPosition fromPos) { a(pos, blockIn, fromPos); } // Paper - OBFHELPER
-     public void a(BlockPosition blockposition, Block block, BlockPosition blockposition1) {
-         if (!this.isClientSide) {
-             IBlockData iblockdata = this.getType(blockposition);
-@@ -1227,6 +1228,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
-         return this.getBlockFacePower(blockposition.down(), EnumDirection.DOWN) > 0 ? true : (this.getBlockFacePower(blockposition.up(), EnumDirection.UP) > 0 ? true : (this.getBlockFacePower(blockposition.north(), EnumDirection.NORTH) > 0 ? true : (this.getBlockFacePower(blockposition.south(), EnumDirection.SOUTH) > 0 ? true : (this.getBlockFacePower(blockposition.west(), EnumDirection.WEST) > 0 ? true : this.getBlockFacePower(blockposition.east(), EnumDirection.EAST) > 0))));
-     }
- 
-+    public int isBlockIndirectlyGettingPowered(BlockPosition pos) { return this.s(pos); } // Paper - OBFHELPER
-     public int s(BlockPosition blockposition) {
-         int i = 0;
-         EnumDirection[] aenumdirection = World.a;

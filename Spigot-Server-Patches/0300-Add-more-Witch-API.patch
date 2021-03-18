@@ -4,12 +4,12 @@ Date: Fri, 12 Oct 2018 14:10:46 -0500
 Subject: [PATCH] Add more Witch API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityWitch.java b/src/main/java/net/minecraft/server/EntityWitch.java
-index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37a7054fbb 100644
---- a/src/main/java/net/minecraft/server/EntityWitch.java
-+++ b/src/main/java/net/minecraft/server/EntityWitch.java
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityWitch.java b/src/main/java/net/minecraft/world/entity/monster/EntityWitch.java
+index c6d79125e7dd982fc528ce61144005194cbaa323..63fb08e7b4290353e5148d1acb58f091dc5b08be 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityWitch.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityWitch.java
 @@ -1,5 +1,11 @@
- package net.minecraft.server;
+ package net.minecraft.world.entity.monster;
  
 +// Paper start
 +import com.destroystokyo.paper.event.entity.WitchReadyPotionEvent;
@@ -20,7 +20,7 @@ index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37
  import java.util.Iterator;
  import java.util.List;
  import java.util.UUID;
-@@ -10,7 +16,7 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
+@@ -49,7 +55,7 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
      private static final UUID b = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
      private static final AttributeModifier bo = new AttributeModifier(EntityWitch.b, "Drinking speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
      private static final DataWatcherObject<Boolean> bp = DataWatcher.a(EntityWitch.class, DataWatcherRegistry.i);
@@ -29,7 +29,7 @@ index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37
      private PathfinderGoalNearestHealableRaider<EntityRaider> br;
      private PathfinderGoalNearestAttackableTargetWitch<EntityHuman> bs;
  
-@@ -56,10 +62,12 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
+@@ -95,10 +101,12 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
          return SoundEffects.ENTITY_WITCH_DEATH;
      }
  
@@ -42,7 +42,7 @@ index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37
      public boolean m() {
          return (Boolean) this.getDataWatcher().get(EntityWitch.bp);
      }
-@@ -118,21 +126,24 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
+@@ -157,21 +165,24 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
                  }
  
                  if (potionregistry != null) {
@@ -79,7 +79,7 @@ index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37
                  }
              }
  
-@@ -144,6 +155,24 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
+@@ -183,6 +194,24 @@ public class EntityWitch extends EntityRaider implements IRangedEntity {
          super.movementTick();
      }
  
@@ -105,14 +105,10 @@ index 0703124e5137ff0a5ae4d025488eb343d2813067..ca3c5150bcfe2a92b49ad5a27c23dd37
      public SoundEffect eL() {
          return SoundEffects.ENTITY_WITCH_CELEBRATE;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-index bae107e76e4c8df446d4a7be8dda291d820074d7..c3138a6d24df1e71910791e67284983d8cd500f2 100644
+index 9cc34cdb43596eff34625045f884b93da3f27ab6..72428396a8c91d5d848b3019aaaa03bc3283574b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-@@ -1,10 +1,16 @@
- package org.bukkit.craftbukkit.entity;
- 
--import com.destroystokyo.paper.entity.CraftRangedEntity; // Paper
- import net.minecraft.server.EntityWitch;
+@@ -4,6 +4,13 @@ import net.minecraft.world.entity.monster.EntityWitch;
  import org.bukkit.craftbukkit.CraftServer;
  import org.bukkit.entity.EntityType;
  import org.bukkit.entity.Witch;
@@ -124,9 +120,9 @@ index bae107e76e4c8df446d4a7be8dda291d820074d7..c3138a6d24df1e71910791e67284983d
 +import org.bukkit.inventory.ItemStack;
 +// Paper end
  
- public class CraftWitch extends CraftRaider implements Witch, CraftRangedEntity<EntityWitch> { // Paper
+ public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.paper.entity.CraftRangedEntity<EntityWitch> { // Paper
      public CraftWitch(CraftServer server, EntityWitch entity) {
-@@ -25,4 +31,23 @@ public class CraftWitch extends CraftRaider implements Witch, CraftRangedEntity<
+@@ -24,4 +31,23 @@ public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.
      public EntityType getType() {
          return EntityType.WITCH;
      }

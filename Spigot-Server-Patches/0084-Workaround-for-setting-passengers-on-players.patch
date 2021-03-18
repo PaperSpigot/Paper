@@ -6,7 +6,7 @@ Subject: [PATCH] Workaround for setting passengers on players
 SPIGOT-1915 & GH-114
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 0a00d043c1fcddcfab8638eab8feb2993060b9b8..ecec8a27009f2296e078fdb9bf1ed2f1df209de8 100644
+index b4a2758ee246252d6076e861b45d11dae6e33096..facf2a79144a2d0fbea907c084becaea7bbdc48c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -874,6 +874,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -18,7 +18,7 @@ index 0a00d043c1fcddcfab8638eab8feb2993060b9b8..ecec8a27009f2296e078fdb9bf1ed2f1
 +    public boolean setPassenger(org.bukkit.entity.Entity passenger) {
 +        boolean wasSet = super.setPassenger(passenger);
 +        if (wasSet) {
-+            this.getHandle().playerConnection.sendPacket(new net.minecraft.server.PacketPlayOutMount(this.getHandle()));
++            this.getHandle().playerConnection.sendPacket(new net.minecraft.network.protocol.game.PacketPlayOutMount(this.getHandle()));
 +        }
 +        return wasSet;
 +    }

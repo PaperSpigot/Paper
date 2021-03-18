@@ -19,11 +19,11 @@ index 4bba6977a0287837b8927718c040ac61463f0469..e6e18f309dc09ea9416ea37dcc697ddc
 +        log("End credits disabled: " + disableEndCredits);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 0445bffdd1a6c9548c5c98c1ea4fd2c0c517acf4..317d9688fb4bc8a885314a6879f561d5cb44fa26 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -63,7 +63,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 0ff92d701d6ee5ce56eec624eece11de15195b41..a9eb414843381e7697c46af4b68f61b68755afde 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -190,7 +190,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      private long ca = SystemUtils.getMonotonicMillis();
      private Entity spectatedEntity;
      public boolean worldChangeInvuln;
@@ -32,7 +32,7 @@ index 0445bffdd1a6c9548c5c98c1ea4fd2c0c517acf4..317d9688fb4bc8a885314a6879f561d5
      private final RecipeBookServer recipeBook = new RecipeBookServer();
      private Vec3D cf;
      private int cg;
-@@ -768,6 +768,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -895,6 +895,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              this.decouple();
              this.getWorldServer().removePlayer(this);
              if (!this.viewingCredits) {

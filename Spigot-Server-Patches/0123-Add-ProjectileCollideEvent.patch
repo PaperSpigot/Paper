@@ -4,11 +4,11 @@ Date: Fri, 16 Dec 2016 21:25:39 -0600
 Subject: [PATCH] Add ProjectileCollideEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
-index 2a86d4b8af5e436e82e003f50c1929702af700c4..93084633d487684fb598038d148670fe6a00b3ed 100644
---- a/src/main/java/net/minecraft/server/EntityArrow.java
-+++ b/src/main/java/net/minecraft/server/EntityArrow.java
-@@ -160,6 +160,17 @@ public abstract class EntityArrow extends IProjectile {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+index 9bd4a283a99f86c9a26f73e0bad0c3414d66ad55..5ecbe9135a71dd84e0722fa9c039c272a11d206f 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+@@ -198,6 +198,17 @@ public abstract class EntityArrow extends IProjectile {
                      }
                  }
  
@@ -26,11 +26,19 @@ index 2a86d4b8af5e436e82e003f50c1929702af700c4..93084633d487684fb598038d148670fe
                  if (object != null && !flag) {
                      this.a((MovingObjectPosition) object);
                      this.impulse = true;
-diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
-index 1ee09cb383d762219bda89463f4b6af807799385..74ca38f8e4e1addc243c3f3b57021d26f0ce3c97 100644
---- a/src/main/java/net/minecraft/server/EntityFireball.java
-+++ b/src/main/java/net/minecraft/server/EntityFireball.java
-@@ -57,7 +57,16 @@ public abstract class EntityFireball extends IProjectile {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+index ed76aec99f46a7923d139e347779c24f512ac131..ede7b4dbf2dce7bac83c5e17eecfdaf0e8a84fe7 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityLiving;
+ import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.level.World;
+ import net.minecraft.world.phys.MovingObjectPosition;
++import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
+ 
+ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+@@ -72,7 +73,16 @@ public abstract class EntityFireball extends IProjectile {
  
              MovingObjectPosition movingobjectposition = ProjectileHelper.a((Entity) this, this::a);
  
@@ -48,11 +56,19 @@ index 1ee09cb383d762219bda89463f4b6af807799385..74ca38f8e4e1addc243c3f3b57021d26
                  this.a(movingobjectposition);
  
                  // CraftBukkit start - Fire ProjectileHitEvent
-diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
-index 7391fd31148dbde60e34955841a296f454ac768e..53a8ea7d1eff84abe6c49464d556aa2788a6abcb 100644
---- a/src/main/java/net/minecraft/server/EntityProjectile.java
-+++ b/src/main/java/net/minecraft/server/EntityProjectile.java
-@@ -41,7 +41,17 @@ public abstract class EntityProjectile extends IProjectile {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java b/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
+index 829b4f28896bcb0eb6e48242bd00585eeaae62c2..3b379e83b79bd9b46dbdd4a48ac3842abc4dfbb8 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
+@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.TileEntityEndGateway;
+ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.phys.MovingObjectPosition;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
++import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
+ 
+ public abstract class EntityProjectile extends IProjectile {
+@@ -57,7 +58,17 @@ public abstract class EntityProjectile extends IProjectile {
          }
  
          if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS && !flag) {
@@ -71,7 +87,7 @@ index 7391fd31148dbde60e34955841a296f454ac768e..53a8ea7d1eff84abe6c49464d556aa27
  
          this.checkBlockCollisions();
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index a3b46a3bfe1169c23a9192763da43c4001804782..c246407f2912f6d5b5947814471155469688baad 100644
+index 52028387ae90b9e125b4522e5a3963a1119499e4..2dcdc428028a40c06b0ec1e50af76c16f051f084 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1181,6 +1181,16 @@ public class CraftEventFactory {

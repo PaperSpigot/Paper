@@ -18,11 +18,32 @@ index 439dcc6effdc91830d2b7ede9063982998b37120..504efea7b6f50a0d17f4f353781953df
 +        enablePlayerCollisions = getBoolean("settings.enable-player-collisions", true);
 +    }
  }
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutScoreboardTeam.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutScoreboardTeam.java
+index bc40f2cbe1645fd60c4cee106b90f17cd043d32d..c1bb5c325286119891e8d68ce8f7328c99edb486 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutScoreboardTeam.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutScoreboardTeam.java
+@@ -112,7 +112,7 @@ public class PacketPlayOutScoreboardTeam implements Packet<PacketListenerPlayOut
+             packetdataserializer.a(this.b);
+             packetdataserializer.writeByte(this.j);
+             packetdataserializer.a(this.e);
+-            packetdataserializer.a(this.f);
++            packetdataserializer.a(!com.destroystokyo.paper.PaperConfig.enablePlayerCollisions ? "never" : this.f); // Paper
+             packetdataserializer.a((Enum) this.g);
+             packetdataserializer.a(this.c);
+             packetdataserializer.a(this.d);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 575b4e670810b0be51067ba3e4c838e547a1f1dc..5fd43537ced63947cab0e179f88109d63d1c87e7 100644
+index 8c389b06dbd47c44f01d6bdd8a6b283c75353043..19ca2ea39ca3a3c820141467388eca65a0b744d0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -434,6 +434,20 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -151,6 +151,7 @@ import net.minecraft.world.phys.Vec2F;
+ import net.minecraft.world.phys.Vec3D;
+ import net.minecraft.world.scores.PersistentScoreboard;
+ import net.minecraft.world.scores.Scoreboard;
++import net.minecraft.world.scores.ScoreboardTeam;
+ import org.apache.commons.lang3.Validate;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+@@ -541,6 +542,20 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              this.server.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(worldserver.getWorld()));
          }
  
@@ -43,32 +64,27 @@ index 575b4e670810b0be51067ba3e4c838e547a1f1dc..5fd43537ced63947cab0e179f88109d6
          this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
          this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
          this.serverConnection.acceptConnections();
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutScoreboardTeam.java b/src/main/java/net/minecraft/server/PacketPlayOutScoreboardTeam.java
-index d1581c9d9838797eb425020d21bd0fba432e5652..99dc43159f240135957aee35f6129f19419c6c25 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutScoreboardTeam.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutScoreboardTeam.java
-@@ -105,7 +105,7 @@ public class PacketPlayOutScoreboardTeam implements Packet<PacketListenerPlayOut
-             packetdataserializer.a(this.b);
-             packetdataserializer.writeByte(this.j);
-             packetdataserializer.a(this.e);
--            packetdataserializer.a(this.f);
-+            packetdataserializer.a(!com.destroystokyo.paper.PaperConfig.enablePlayerCollisions ? "never" : this.f); // Paper
-             packetdataserializer.a((Enum) this.g);
-             packetdataserializer.a(this.c);
-             packetdataserializer.a(this.d);
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index acbdc4736c2f6f181e25b776a2c025bd2af85af2..5652462008dd857f2dc36b80e3fe5d3d83867ce5 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -72,6 +72,7 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 152aa38788a21638aab7cfe2dc187671f1143bde..f9e9e51b0b0dcbf2a8424c7c14bd2cbb0d899e82 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -86,6 +86,7 @@ import net.minecraft.world.level.storage.SavedFile;
+ import net.minecraft.world.level.storage.WorldData;
+ import net.minecraft.world.level.storage.WorldNBTStorage;
+ import net.minecraft.world.phys.Vec3D;
++import net.minecraft.world.scores.Scoreboard;
+ import net.minecraft.world.scores.ScoreboardObjective;
+ import net.minecraft.world.scores.ScoreboardTeam;
+ import net.minecraft.world.scores.ScoreboardTeamBase;
+@@ -145,6 +146,7 @@ public abstract class PlayerList {
      // CraftBukkit start
      private CraftServer cserver;
      private final Map<String,EntityPlayer> playersByName = new java.util.HashMap<>();
-+    @Nullable String collideRuleTeamName; // Paper - Team name used for collideRule
++    public @Nullable String collideRuleTeamName; // Paper - Team name used for collideRule
  
      public PlayerList(MinecraftServer minecraftserver, IRegistryCustom.Dimension iregistrycustom_dimension, WorldNBTStorage worldnbtstorage, int i) {
          this.cserver = minecraftserver.server = new CraftServer((DedicatedServer) minecraftserver, this);
-@@ -301,6 +302,13 @@ public abstract class PlayerList {
+@@ -376,6 +378,13 @@ public abstract class PlayerList {
          }
  
          entityplayer.syncInventory();
@@ -82,7 +98,7 @@ index acbdc4736c2f6f181e25b776a2c025bd2af85af2..5652462008dd857f2dc36b80e3fe5d3d
          // CraftBukkit - Moved from above, added world
          PlayerList.LOGGER.info("{}[{}] logged in with entity id {} at ([{}]{}, {}, {})", entityplayer.getDisplayName().getString(), s1, entityplayer.getId(), worldserver1.worldDataServer.getName(), entityplayer.locX(), entityplayer.locY(), entityplayer.locZ());
      }
-@@ -421,6 +429,16 @@ public abstract class PlayerList {
+@@ -496,6 +505,16 @@ public abstract class PlayerList {
          entityplayer.playerTick(); // SPIGOT-924
          // CraftBukkit end
  
@@ -99,7 +115,7 @@ index acbdc4736c2f6f181e25b776a2c025bd2af85af2..5652462008dd857f2dc36b80e3fe5d3d
          this.savePlayerFile(entityplayer);
          if (entityplayer.isPassenger()) {
              Entity entity = entityplayer.getRootVehicle();
-@@ -1069,6 +1087,13 @@ public abstract class PlayerList {
+@@ -1144,6 +1163,13 @@ public abstract class PlayerList {
          }
          // CraftBukkit end
  

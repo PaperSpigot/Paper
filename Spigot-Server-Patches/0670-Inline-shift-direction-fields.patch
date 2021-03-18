@@ -6,11 +6,11 @@ Subject: [PATCH] Inline shift direction fields
 Removes a layer of indirection for EnumDirection.getAdjacent(X|Y|Z)(), which is in the
 critical section for much of the server, including the lighting engine.
 
-diff --git a/src/main/java/net/minecraft/server/EnumDirection.java b/src/main/java/net/minecraft/server/EnumDirection.java
-index 1aa070db60f5473576fb5d056cadde5106766489..05b0090ae36cf61f67e26aad478df30c89f31941 100644
---- a/src/main/java/net/minecraft/server/EnumDirection.java
-+++ b/src/main/java/net/minecraft/server/EnumDirection.java
-@@ -49,6 +49,11 @@ public enum EnumDirection implements INamable {
+diff --git a/src/main/java/net/minecraft/core/EnumDirection.java b/src/main/java/net/minecraft/core/EnumDirection.java
+index a699005582293326076eaa80655c5343e6c22ff0..703bdefeb615ef8d15b428a893b5e4939d726f13 100644
+--- a/src/main/java/net/minecraft/core/EnumDirection.java
++++ b/src/main/java/net/minecraft/core/EnumDirection.java
+@@ -53,6 +53,11 @@ public enum EnumDirection implements INamable {
      }, (enumdirection, enumdirection1) -> {
          throw new IllegalArgumentException("Duplicate keys");
      }, Long2ObjectOpenHashMap::new));
@@ -22,7 +22,7 @@ index 1aa070db60f5473576fb5d056cadde5106766489..05b0090ae36cf61f67e26aad478df30c
  
      private EnumDirection(int i, int j, int k, String s, EnumDirection.EnumAxisDirection enumdirection_enumaxisdirection, EnumDirection.EnumAxis enumdirection_enumaxis, BaseBlockPosition baseblockposition) {
          this.g = i;
-@@ -58,6 +63,11 @@ public enum EnumDirection implements INamable {
+@@ -62,6 +67,11 @@ public enum EnumDirection implements INamable {
          this.k = enumdirection_enumaxis;
          this.l = enumdirection_enumaxisdirection;
          this.m = baseblockposition;
@@ -34,7 +34,7 @@ index 1aa070db60f5473576fb5d056cadde5106766489..05b0090ae36cf61f67e26aad478df30c
      }
  
      public static EnumDirection[] a(Entity entity) {
-@@ -133,15 +143,15 @@ public enum EnumDirection implements INamable {
+@@ -137,15 +147,15 @@ public enum EnumDirection implements INamable {
      }
  
      public int getAdjacentX() {

@@ -4,11 +4,11 @@ Date: Tue, 1 Jan 2019 02:22:01 -0800
 Subject: [PATCH] Add Heightmap API
 
 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 4c36abfa48b7f4fee2d118ff1d218f8ee5fbe007..342374450382fea241659f5b63a9cc9a17dcb7b8 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -610,8 +610,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index b6b9a471426ddf911a1f6bf38543c0304bfc31f6..12ac3608736b45447afe6b0d35ead1441390be5e 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -670,8 +670,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          }
      }
  
@@ -20,7 +20,7 @@ index 4c36abfa48b7f4fee2d118ff1d218f8ee5fbe007..342374450382fea241659f5b63a9cc9a
  
          if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 523f094b5d4572a04da36d68502fa0a22f239e61..3757ab5a2a0c6282d822c22415cc2861eba2f236 100644
+index 8bfb7a5bf6aa2ee568ceee3d2e4efe9dd57d9c1b..294a06c998a84523f8a2a0702aa6a9048d204722 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -343,6 +343,29 @@ public class CraftWorld implements World {
@@ -37,13 +37,13 @@ index 523f094b5d4572a04da36d68502fa0a22f239e61..3757ab5a2a0c6282d822c22415cc2861
 +                throw new UnsupportedOperationException(); // TODO
 +                //return this.world.getHighestBlockY(HeightMap.Type.LIGHT_BLOCKING, x, z);
 +            case ANY:
-+                return this.world.getHighestBlockY(net.minecraft.server.HeightMap.Type.WORLD_SURFACE, x, z);
++                return this.world.getHighestBlockY(net.minecraft.world.level.levelgen.HeightMap.Type.WORLD_SURFACE, x, z);
 +            case SOLID:
-+                return this.world.getHighestBlockY(net.minecraft.server.HeightMap.Type.OCEAN_FLOOR, x, z);
++                return this.world.getHighestBlockY(net.minecraft.world.level.levelgen.HeightMap.Type.OCEAN_FLOOR, x, z);
 +            case SOLID_OR_LIQUID:
-+                return this.world.getHighestBlockY(net.minecraft.server.HeightMap.Type.MOTION_BLOCKING, x, z);
++                return this.world.getHighestBlockY(net.minecraft.world.level.levelgen.HeightMap.Type.MOTION_BLOCKING, x, z);
 +            case SOLID_OR_LIQUID_NO_LEAVES:
-+                return this.world.getHighestBlockY(net.minecraft.server.HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
++                return this.world.getHighestBlockY(net.minecraft.world.level.levelgen.HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
 +            default:
 +                throw new UnsupportedOperationException();
 +        }

@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: kickash32 <kickash32@gmail.com>
+Date: Sat, 9 May 2020 02:01:48 -0400
+Subject: [PATCH] Ensure EntityRaider respects game and entity rules for
+ picking up items
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/raid/EntityRaider.java b/src/main/java/net/minecraft/world/entity/raid/EntityRaider.java
+index b9f5ed4e9348648a248dcd23eb100ceac49f26df..ff41ee884e3e46af1b1e9fb550f0abc6998fd031 100644
+--- a/src/main/java/net/minecraft/world/entity/raid/EntityRaider.java
++++ b/src/main/java/net/minecraft/world/entity/raid/EntityRaider.java
+@@ -523,7 +523,7 @@ public abstract class EntityRaider extends EntityMonsterPatrolling {
+ 
+     public class b<T extends EntityRaider> extends PathfinderGoal {
+ 
+-        private final T b;
++        private final T b; private T getRaider() { return b; } // Paper - obfhelper
+ 
+         public b(T entityraider) { // CraftBukkit - decompile error
+             this.b = entityraider;
+@@ -532,6 +532,7 @@ public abstract class EntityRaider extends EntityMonsterPatrolling {
+ 
+         @Override
+         public boolean a() {
++            if (!getRaider().world.getGameRules().getBoolean(GameRules.MOB_GRIEFING) || !getRaider().canPickupLoot()) return false; // Paper - respect game and entity rules for picking up items
+             Raid raid = this.b.fa();
+ 
+             if (this.b.fb() && !this.b.fa().a() && this.b.eN() && !ItemStack.matches(this.b.getEquipment(EnumItemSlot.HEAD), Raid.s())) {

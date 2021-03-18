@@ -4,21 +4,22 @@ Date: Wed, 24 Jun 2020 15:14:51 -0600
 Subject: [PATCH] Added firing of PlayerChangeBeaconEffectEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/ContainerBeacon.java b/src/main/java/net/minecraft/server/ContainerBeacon.java
-index 288390bf9210f0fcc7c85e3093a4924614dc1573..2b09368ad998aef7d1e76a45515c6ac7ebf5c6fb 100644
---- a/src/main/java/net/minecraft/server/ContainerBeacon.java
-+++ b/src/main/java/net/minecraft/server/ContainerBeacon.java
-@@ -1,6 +1,9 @@
- package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerBeacon.java b/src/main/java/net/minecraft/world/inventory/ContainerBeacon.java
+index 7e5a0bad616d9477e01426ab1604184ef3fab1c1..085298a9c3837dfa48dfbbf02d6261db12c79036 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerBeacon.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerBeacon.java
+@@ -13,6 +13,10 @@ import net.minecraft.world.entity.player.PlayerInventory;
+ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+ // CraftBukkit end
  
- import org.bukkit.craftbukkit.inventory.CraftInventoryView; // CraftBukkit
 +// Paper start
 +import io.papermc.paper.event.player.PlayerChangeBeaconEffectEvent;
 +// Paper end
- 
++
  public class ContainerBeacon extends Container {
  
-@@ -128,9 +131,15 @@ public class ContainerBeacon extends Container {
+     private final IInventory beacon;
+@@ -139,9 +143,15 @@ public class ContainerBeacon extends Container {
  
      public void c(int i, int j) {
          if (this.d.hasItem()) {

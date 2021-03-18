@@ -4,11 +4,11 @@ Date: Mon, 31 Jul 2017 01:45:19 -0500
 Subject: [PATCH] Reset spawner timer when spawner event is cancelled
 
 
-diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index 8eb20c6b9a88d5d4056f91df1f496d3d35b473da..34ab03fce7ab5c7702234590ffc9ca7fec72a86a 100644
---- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-+++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -144,6 +144,7 @@ public abstract class MobSpawnerAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+index 43fcc001bb9815b352cb74af10290b2a4ccaa540..883c724fbb86a84ee903b5e7127f14726fe4cf24 100644
+--- a/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
++++ b/src/main/java/net/minecraft/world/level/MobSpawnerAbstract.java
+@@ -161,6 +161,7 @@ public abstract class MobSpawnerAbstract {
                                  // Spigot End
                              }
                          entity.spawnedViaMobSpawner = true; // Paper
@@ -16,7 +16,7 @@ index 8eb20c6b9a88d5d4056f91df1f496d3d35b473da..34ab03fce7ab5c7702234590ffc9ca7f
                              // Spigot Start
                              if (org.bukkit.craftbukkit.event.CraftEventFactory.callSpawnerSpawnEvent(entity, blockposition).isCancelled()) {
                                  Entity vehicle = entity.getVehicle();
-@@ -167,7 +168,7 @@ public abstract class MobSpawnerAbstract {
+@@ -184,7 +185,7 @@ public abstract class MobSpawnerAbstract {
                                  ((EntityInsentient) entity).doSpawnEffect();
                              }
  

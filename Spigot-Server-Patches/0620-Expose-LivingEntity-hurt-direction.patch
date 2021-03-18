@@ -4,11 +4,11 @@ Date: Sun, 13 Dec 2020 05:32:05 +0200
 Subject: [PATCH] Expose LivingEntity hurt direction
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 2a1b17717b37e5f839e357c2196287a4024852e9..3c23a8ab3fe5e4b58816cf051dbe237530bff4a0 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -69,7 +69,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 9a826ae0319dd52ca7d98ea5d7312fb773736ddb..800a8b8e1a49eb6ec920abaad4514a9a91a3542e 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -163,7 +163,7 @@ public abstract class EntityLiving extends Entity {
      public int am;
      public int hurtTicks;
      public int hurtDuration;
@@ -18,10 +18,10 @@ index 2a1b17717b37e5f839e357c2196287a4024852e9..3c23a8ab3fe5e4b58816cf051dbe2375
      public float ar;
      public float as;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 1fc356d0b74c1cbb19bf7527088f1f61b6da5422..16e69cfd4994fd6850ee3635ea819379412351c9 100644
+index 5d2ed8a0cf8351df1c8b2946f8a614fe13c34673..e574e2453c7bc848168ff24372d6772bd423b672 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -815,5 +815,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -825,5 +825,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
      public void playPickupItemAnimation(org.bukkit.entity.Item item, int quantity) {
          getHandle().receive(((CraftItem) item).getHandle(), quantity);
      }

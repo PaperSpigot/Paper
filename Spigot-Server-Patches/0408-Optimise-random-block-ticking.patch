@@ -70,11 +70,11 @@ index 0000000000000000000000000000000000000000..3edc8e52e06a62ce9f8cc734fd7458b3
 +        return fastRandomBounded(this.next(32) & 0xFFFFFFFFL, bound);
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index f068436960c96b0df427bcdf337a4dcc6a9f66f5..253423acc3c3697a5e47136f34da92617e719753 100644
---- a/src/main/java/net/minecraft/server/BlockPosition.java
-+++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -462,6 +462,7 @@ public class BlockPosition extends BaseBlockPosition {
+diff --git a/src/main/java/net/minecraft/core/BlockPosition.java b/src/main/java/net/minecraft/core/BlockPosition.java
+index 4c9ec211470f95d538d1d95c74796190edf99b87..8c0aeb51f5e230fd6109e750732eb54559bc9637 100644
+--- a/src/main/java/net/minecraft/core/BlockPosition.java
++++ b/src/main/java/net/minecraft/core/BlockPosition.java
+@@ -468,6 +468,7 @@ public class BlockPosition extends BaseBlockPosition {
              return this.d(MathHelper.floor(d0), MathHelper.floor(d1), MathHelper.floor(d2));
          }
  
@@ -82,195 +82,11 @@ index f068436960c96b0df427bcdf337a4dcc6a9f66f5..253423acc3c3697a5e47136f34da9261
          public BlockPosition.MutableBlockPosition g(BaseBlockPosition baseblockposition) {
              return this.d(baseblockposition.getX(), baseblockposition.getY(), baseblockposition.getZ());
          }
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 0601e9cdeb33dec82642ee9fbfaac1712bd0fae9..49bcd959206eeb21ff743f827a076b0c4cd3c722 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -599,8 +599,8 @@ public class Chunk implements IChunkAccess {
-         this.entities.remove(entity); // Paper
-     }
- 
--    @Override
--    public int getHighestBlock(HeightMap.Type heightmap_type, int i, int j) {
-+    public final int getHighestBlockY(HeightMap.Type heightmap_type, int i, int j) { return this.getHighestBlock(heightmap_type, i, j) + 1; } // Paper - sort of an obfhelper, but without -1
-+    @Override public int getHighestBlock(HeightMap.Type heightmap_type, int i, int j) { // Paper
-         return ((HeightMap) this.heightMap.get(heightmap_type)).a(i & 15, j & 15) - 1;
-     }
- 
-diff --git a/src/main/java/net/minecraft/server/ChunkSection.java b/src/main/java/net/minecraft/server/ChunkSection.java
-index 90bb2f7ad9f82818d58de9be918f1299c6725070..668942c629732b8d46b7f2646df8e7827baae240 100644
---- a/src/main/java/net/minecraft/server/ChunkSection.java
-+++ b/src/main/java/net/minecraft/server/ChunkSection.java
-@@ -7,12 +7,14 @@ import javax.annotation.Nullable;
- public class ChunkSection {
- 
-     public static final DataPalette<IBlockData> GLOBAL_PALETTE = new DataPaletteGlobal<>(Block.REGISTRY_ID, Blocks.AIR.getBlockData());
--    private final int yPos;
-+    final int yPos; // Paper - private -> package-private
-     short nonEmptyBlockCount; // Paper - package-private
--    private short tickingBlockCount;
-+    short tickingBlockCount; // Paper - private -> package-private
-     private short e;
-     final DataPaletteBlock<IBlockData> blockIds; // Paper - package-private
- 
-+    final com.destroystokyo.paper.util.maplist.IBlockDataList tickingList = new com.destroystokyo.paper.util.maplist.IBlockDataList(); // Paper
-+
-     // Paper start - Anti-Xray - Add parameters
-     @Deprecated public ChunkSection(int i) { this(i, null, null, true); } // Notice for updates: Please make sure this constructor isn't used anywhere
-     public ChunkSection(int i, IChunkAccess chunk, World world, boolean initializeBlocks) {
-@@ -67,6 +69,9 @@ public class ChunkSection {
-             --this.nonEmptyBlockCount;
-             if (iblockdata1.isTicking()) {
-                 --this.tickingBlockCount;
-+                // Paper start
-+                this.tickingList.remove(i, j, k);
-+                // Paper end
-             }
-         }
- 
-@@ -78,6 +83,9 @@ public class ChunkSection {
-             ++this.nonEmptyBlockCount;
-             if (iblockdata.isTicking()) {
-                 ++this.tickingBlockCount;
-+                // Paper start
-+                this.tickingList.add(i, j, k, iblockdata);
-+                // Paper end
-             }
-         }
- 
-@@ -113,23 +121,29 @@ public class ChunkSection {
-     }
- 
-     public void recalcBlockCounts() {
-+        // Paper start
-+        this.tickingList.clear();
-+        // Paper end
-         this.nonEmptyBlockCount = 0;
-         this.tickingBlockCount = 0;
-         this.e = 0;
--        this.blockIds.a((iblockdata, i) -> {
-+        this.blockIds.forEachLocation((iblockdata, location) -> { // Paper
-             Fluid fluid = iblockdata.getFluid();
- 
-             if (!iblockdata.isAir()) {
--                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + i);
-+                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + 1);
-                 if (iblockdata.isTicking()) {
--                    this.tickingBlockCount = (short) (this.tickingBlockCount + i);
-+                    this.tickingBlockCount = (short) (this.tickingBlockCount + 1);
-+                    // Paper start
-+                    this.tickingList.add(location, iblockdata);
-+                    // Paper end
-                 }
-             }
- 
-             if (!fluid.isEmpty()) {
--                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + i);
-+                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + 1);
-                 if (fluid.f()) {
--                    this.e = (short) (this.e + i);
-+                    this.e = (short) (this.e + 1);
-                 }
-             }
- 
-diff --git a/src/main/java/net/minecraft/server/DataBits.java b/src/main/java/net/minecraft/server/DataBits.java
-index 2a01a48ad347fb123492218a60404b034cfcfbc5..f0c9009fb808ca664a7c3ebaeb8cfa8e2ba7b97e 100644
---- a/src/main/java/net/minecraft/server/DataBits.java
-+++ b/src/main/java/net/minecraft/server/DataBits.java
-@@ -111,4 +111,32 @@ public class DataBits {
-         }
- 
-     }
-+
-+    // Paper start
-+    public final void forEach(DataBitConsumer consumer) {
-+        int i = 0;
-+        long[] along = this.b;
-+        int j = along.length;
-+
-+        for (int k = 0; k < j; ++k) {
-+            long l = along[k];
-+
-+            for (int i1 = 0; i1 < this.f; ++i1) {
-+                consumer.accept(i, (int) (l & this.d));
-+                l >>= this.c;
-+                ++i;
-+                if (i >= this.e) {
-+                    return;
-+                }
-+            }
-+        }
-+    }
-+
-+    @FunctionalInterface
-+    static interface DataBitConsumer {
-+
-+        void accept(int location, int data);
-+
-+    }
-+    // Paper end
- }
-diff --git a/src/main/java/net/minecraft/server/DataPaletteBlock.java b/src/main/java/net/minecraft/server/DataPaletteBlock.java
-index ed77117630d54b7ad81f633110c7d2a7c59288e9..95ef96286855624590b72d69514b0fc0e08fddba 100644
---- a/src/main/java/net/minecraft/server/DataPaletteBlock.java
-+++ b/src/main/java/net/minecraft/server/DataPaletteBlock.java
-@@ -277,6 +277,14 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
-         });
-     }
- 
-+    // Paper start
-+    public void forEachLocation(DataPaletteBlock.a<T> datapaletteblock_a) {
-+        this.getDataBits().forEach((int location, int data) -> {
-+            datapaletteblock_a.accept(this.getDataPalette().getObject(data), location);
-+        });
-+    }
-+    // Paper end
-+
-     @FunctionalInterface
-     public interface a<T> {
- 
-diff --git a/src/main/java/net/minecraft/server/EntityTurtle.java b/src/main/java/net/minecraft/server/EntityTurtle.java
-index fa8eab20bb839c53bf7989d02d2274f835002609..4ad393bc99881d813e2b349fb929fc8e69631723 100644
---- a/src/main/java/net/minecraft/server/EntityTurtle.java
-+++ b/src/main/java/net/minecraft/server/EntityTurtle.java
-@@ -28,7 +28,7 @@ public class EntityTurtle extends EntityAnimal {
-     }
- 
-     public void setHomePos(BlockPosition blockposition) {
--        this.datawatcher.set(EntityTurtle.bp, blockposition);
-+        this.datawatcher.set(EntityTurtle.bp, blockposition.immutableCopy()); // Paper - called with mutablepos...
-     }
- 
-     public BlockPosition getHomePos() { // Paper - public
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index c9c5c0b6f8837001db0b38dabfba7e01bc6de6db..4da88ce31cfb8baa6fa68c0115edadac0c5b2fba 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -1412,10 +1412,18 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
-     public abstract ITagRegistry p();
- 
-     public BlockPosition a(int i, int j, int k, int l) {
-+        // Paper start - allow use of mutable pos
-+        BlockPosition.MutableBlockPosition ret = new BlockPosition.MutableBlockPosition();
-+        this.getRandomBlockPosition(i, j, k, l, ret);
-+        return ret.immutableCopy();
-+    }
-+    public final BlockPosition.MutableBlockPosition getRandomBlockPosition(int i, int j, int k, int l, BlockPosition.MutableBlockPosition out) {
-+        // Paper end
-         this.n = this.n * 3 + 1013904223;
-         int i1 = this.n >> 2;
- 
--        return new BlockPosition(i + (i1 & 15), j + (i1 >> 16 & l), k + (i1 >> 8 & 15));
-+        out.setValues(i + (i1 & 15), j + (i1 >> 16 & l), k + (i1 >> 8 & 15)); // Paper - change to setValues call
-+        return out; // Paper
-     }
- 
-     public boolean isSavingDisabled() {
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 4688b302eaeb42b406a0690f48d97d8cb78e3528..640ae46d754f4af09ef3a404860b6b3db7d63a1a 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -561,7 +561,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index c4adf5d3c2389d3344e179562eee6817cd4fb298..f666b281926876636672e76a7a5e6386a9701b6a 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -673,7 +673,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          });
      }
  
@@ -284,7 +100,7 @@ index 4688b302eaeb42b406a0690f48d97d8cb78e3528..640ae46d754f4af09ef3a404860b6b3d
          ChunkCoordIntPair chunkcoordintpair = chunk.getPos();
          boolean flag = this.isRaining();
          int j = chunkcoordintpair.d();
-@@ -569,10 +574,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -681,10 +686,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
  
          gameprofilerfiller.enter("thunder");
@@ -297,7 +113,7 @@ index 4688b302eaeb42b406a0690f48d97d8cb78e3528..640ae46d754f4af09ef3a404860b6b3d
              if (this.isRainingAt(blockposition)) {
                  DifficultyDamageScaler difficultydamagescaler = this.getDamageScaler(blockposition);
                  boolean flag1 = this.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && this.random.nextDouble() < (double) difficultydamagescaler.b() * paperConfig.skeleHorseSpawnChance; // Paper
-@@ -595,59 +600,77 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -707,59 +712,77 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          }
  
          gameprofilerfiller.exitEnter("iceandsnow");
@@ -405,3 +221,187 @@ index 4688b302eaeb42b406a0690f48d97d8cb78e3528..640ae46d754f4af09ef3a404860b6b3d
      }
  
      protected BlockPosition a(BlockPosition blockposition) {
+diff --git a/src/main/java/net/minecraft/util/DataBits.java b/src/main/java/net/minecraft/util/DataBits.java
+index c4f3b680512fb15cea01ad12d0a00c6e60bf34b7..cfa444cf384920d446c6dc14b23e5158fc28df3b 100644
+--- a/src/main/java/net/minecraft/util/DataBits.java
++++ b/src/main/java/net/minecraft/util/DataBits.java
+@@ -112,4 +112,32 @@ public class DataBits {
+         }
+ 
+     }
++
++    // Paper start
++    public final void forEach(DataBitConsumer consumer) {
++        int i = 0;
++        long[] along = this.b;
++        int j = along.length;
++
++        for (int k = 0; k < j; ++k) {
++            long l = along[k];
++
++            for (int i1 = 0; i1 < this.f; ++i1) {
++                consumer.accept(i, (int) (l & this.d));
++                l >>= this.c;
++                ++i;
++                if (i >= this.e) {
++                    return;
++                }
++            }
++        }
++    }
++
++    @FunctionalInterface
++    public static interface DataBitConsumer {
++
++        void accept(int location, int data);
++
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+index 09a6310af6712d36c20167256b60dc3235e76021..ecec8a3c4d4b5d491f79ad60d7ce5a118f30b3db 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+@@ -91,7 +91,7 @@ public class EntityTurtle extends EntityAnimal {
+     }
+ 
+     public void setHomePos(BlockPosition blockposition) {
+-        this.datawatcher.set(EntityTurtle.bp, blockposition);
++        this.datawatcher.set(EntityTurtle.bp, blockposition.immutableCopy()); // Paper - called with mutablepos...
+     }
+ 
+     public BlockPosition getHomePos() { // Paper - public
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index c4680142bf23d30169555abe7db78d85811e042b..cc41dcd85760b57bb8076b37e9a907d1cb4e12c7 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -1472,10 +1472,18 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+     public abstract ITagRegistry p();
+ 
+     public BlockPosition a(int i, int j, int k, int l) {
++        // Paper start - allow use of mutable pos
++        BlockPosition.MutableBlockPosition ret = new BlockPosition.MutableBlockPosition();
++        this.getRandomBlockPosition(i, j, k, l, ret);
++        return ret.immutableCopy();
++    }
++    public final BlockPosition.MutableBlockPosition getRandomBlockPosition(int i, int j, int k, int l, BlockPosition.MutableBlockPosition out) {
++        // Paper end
+         this.n = this.n * 3 + 1013904223;
+         int i1 = this.n >> 2;
+ 
+-        return new BlockPosition(i + (i1 & 15), j + (i1 >> 16 & l), k + (i1 >> 8 & 15));
++        out.setValues(i + (i1 & 15), j + (i1 >> 16 & l), k + (i1 >> 8 & 15)); // Paper - change to setValues call
++        return out; // Paper
+     }
+ 
+     public boolean isSavingDisabled() {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index e7bb33125a25b9e5a68013b15d7b5b6b6769ab9b..fc55e89260fdec2c5045e8f00e091191980ff1f2 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -640,8 +640,8 @@ public class Chunk implements IChunkAccess {
+         this.entities.remove(entity); // Paper
+     }
+ 
+-    @Override
+-    public int getHighestBlock(HeightMap.Type heightmap_type, int i, int j) {
++    public final int getHighestBlockY(HeightMap.Type heightmap_type, int i, int j) { return this.getHighestBlock(heightmap_type, i, j) + 1; } // Paper - sort of an obfhelper, but without -1
++    @Override public int getHighestBlock(HeightMap.Type heightmap_type, int i, int j) { // Paper
+         return ((HeightMap) this.heightMap.get(heightmap_type)).a(i & 15, j & 15) - 1;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+index 0b4e346daaea91565fde2f789fafa8b431a7b042..4bc26a7a4ae91aac90c256758ec8868d83027c0c 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+@@ -14,12 +14,14 @@ import net.minecraft.world.level.material.Fluid;
+ public class ChunkSection {
+ 
+     public static final DataPalette<IBlockData> GLOBAL_PALETTE = new DataPaletteGlobal<>(Block.REGISTRY_ID, Blocks.AIR.getBlockData());
+-    private final int yPos;
++    final int yPos; // Paper - private -> package-private
+     short nonEmptyBlockCount; // Paper - package-private
+-    private short tickingBlockCount;
++    short tickingBlockCount; // Paper - private -> package-private
+     private short e;
+     final DataPaletteBlock<IBlockData> blockIds; // Paper - package-private
+ 
++    public final com.destroystokyo.paper.util.maplist.IBlockDataList tickingList = new com.destroystokyo.paper.util.maplist.IBlockDataList(); // Paper
++
+     // Paper start - Anti-Xray - Add parameters
+     @Deprecated public ChunkSection(int i) { this(i, null, null, true); } // Notice for updates: Please make sure this constructor isn't used anywhere
+     public ChunkSection(int i, IChunkAccess chunk, World world, boolean initializeBlocks) {
+@@ -74,6 +76,9 @@ public class ChunkSection {
+             --this.nonEmptyBlockCount;
+             if (iblockdata1.isTicking()) {
+                 --this.tickingBlockCount;
++                // Paper start
++                this.tickingList.remove(i, j, k);
++                // Paper end
+             }
+         }
+ 
+@@ -85,6 +90,9 @@ public class ChunkSection {
+             ++this.nonEmptyBlockCount;
+             if (iblockdata.isTicking()) {
+                 ++this.tickingBlockCount;
++                // Paper start
++                this.tickingList.add(i, j, k, iblockdata);
++                // Paper end
+             }
+         }
+ 
+@@ -120,23 +128,29 @@ public class ChunkSection {
+     }
+ 
+     public void recalcBlockCounts() {
++        // Paper start
++        this.tickingList.clear();
++        // Paper end
+         this.nonEmptyBlockCount = 0;
+         this.tickingBlockCount = 0;
+         this.e = 0;
+-        this.blockIds.a((iblockdata, i) -> {
++        this.blockIds.forEachLocation((iblockdata, location) -> { // Paper
+             Fluid fluid = iblockdata.getFluid();
+ 
+             if (!iblockdata.isAir()) {
+-                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + i);
++                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + 1);
+                 if (iblockdata.isTicking()) {
+-                    this.tickingBlockCount = (short) (this.tickingBlockCount + i);
++                    this.tickingBlockCount = (short) (this.tickingBlockCount + 1);
++                    // Paper start
++                    this.tickingList.add(location, iblockdata);
++                    // Paper end
+                 }
+             }
+ 
+             if (!fluid.isEmpty()) {
+-                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + i);
++                this.nonEmptyBlockCount = (short) (this.nonEmptyBlockCount + 1);
+                 if (fluid.f()) {
+-                    this.e = (short) (this.e + i);
++                    this.e = (short) (this.e + 1);
+                 }
+             }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java b/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
+index 68d53a51acc9790b9cda20ec4d2ec6edd1baac1a..86dfab740883c138a0df8a3da9dfb4eb9acefaa3 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
++++ b/src/main/java/net/minecraft/world/level/chunk/DataPaletteBlock.java
+@@ -286,6 +286,14 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
+         });
+     }
+ 
++    // Paper start
++    public void forEachLocation(DataPaletteBlock.a<T> datapaletteblock_a) {
++        this.getDataBits().forEach((int location, int data) -> {
++            datapaletteblock_a.accept(this.getDataPalette().getObject(data), location);
++        });
++    }
++    // Paper end
++
+     @FunctionalInterface
+     public interface a<T> {
+ 

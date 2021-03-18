@@ -24,11 +24,11 @@ index abbbe1786eb68af02f9d39650aad730ac44aac8a..3ac2ac3db9b1c271b3c21930bb137166
 +        nonPlayerEntitiesOnScoreboards = getBoolean("allow-non-player-entities-on-scoreboards", false);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 295fbae9946fda8061c5c7294cdaefc426d0edce..31857636a08eeb281b4d21dd72811d40eb00055c 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -2199,6 +2199,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 40eb6bae8ca4e2b57d4f91547808eb00ac1fd455..b7df4d8eb3ccb9e8dc85898352f41c5c20abcb34 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2284,6 +2284,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
  
      @Nullable
      public ScoreboardTeamBase getScoreboardTeam() {
@@ -36,11 +36,11 @@ index 295fbae9946fda8061c5c7294cdaefc426d0edce..31857636a08eeb281b4d21dd72811d40
          return this.world.getScoreboard().getPlayerTeam(this.getName());
      }
  
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 9295f72aa5a2a95efa89fdc90ae7106540403042..276f06982b3c17b8ae29497e1f561bb7d1559e29 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -648,6 +648,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 3598db4144141a8701a2879be13a81a8ee48018c..318c96ee92fc8c6f5926aeadaa597d32ad590974 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -741,6 +741,7 @@ public abstract class EntityLiving extends Entity {
          if (nbttagcompound.hasKeyOfType("Team", 8)) {
              String s = nbttagcompound.getString("Team");
              ScoreboardTeam scoreboardteam = this.world.getScoreboard().getTeam(s);

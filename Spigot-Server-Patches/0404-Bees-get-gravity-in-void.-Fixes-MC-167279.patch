@@ -4,11 +4,11 @@ Date: Sun, 26 Jan 2020 16:30:19 -0600
 Subject: [PATCH] Bees get gravity in void. Fixes MC-167279
 
 
-diff --git a/src/main/java/net/minecraft/server/ControllerMove.java b/src/main/java/net/minecraft/server/ControllerMove.java
-index 558523817e98711cca6d1671af98df6f8c5f0b07..8f9fb058c11ba5c2e887df048025284cd834ffe9 100644
---- a/src/main/java/net/minecraft/server/ControllerMove.java
-+++ b/src/main/java/net/minecraft/server/ControllerMove.java
-@@ -2,7 +2,7 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/entity/ai/control/ControllerMove.java b/src/main/java/net/minecraft/world/entity/ai/control/ControllerMove.java
+index 4044861622294a317fef7e93aa86e96e8474b513..2aa5789437ba7eb20579da238c407a65a25b1d44 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/control/ControllerMove.java
++++ b/src/main/java/net/minecraft/world/entity/ai/control/ControllerMove.java
+@@ -16,7 +16,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  
  public class ControllerMove {
  
@@ -17,11 +17,11 @@ index 558523817e98711cca6d1671af98df6f8c5f0b07..8f9fb058c11ba5c2e887df048025284c
      protected double b;
      protected double c;
      protected double d;
-diff --git a/src/main/java/net/minecraft/server/ControllerMoveFlying.java b/src/main/java/net/minecraft/server/ControllerMoveFlying.java
-index 2778cb9069ef3ba4049a9a3dc7c788cd50f98c28..2b1db4bf21f7341dbdf27673e123936d9eaa7f95 100644
---- a/src/main/java/net/minecraft/server/ControllerMoveFlying.java
-+++ b/src/main/java/net/minecraft/server/ControllerMoveFlying.java
-@@ -12,7 +12,7 @@ public class ControllerMoveFlying extends ControllerMove {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/control/ControllerMoveFlying.java b/src/main/java/net/minecraft/world/entity/ai/control/ControllerMoveFlying.java
+index 80cba36bc59e89c40c96ca556594a4285f06fc6f..d0cbc429144b89498a7f4dc6ff64924c5ba54ad8 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/control/ControllerMoveFlying.java
++++ b/src/main/java/net/minecraft/world/entity/ai/control/ControllerMoveFlying.java
+@@ -16,7 +16,7 @@ public class ControllerMoveFlying extends ControllerMove {
      }
  
      @Override
@@ -30,11 +30,11 @@ index 2778cb9069ef3ba4049a9a3dc7c788cd50f98c28..2b1db4bf21f7341dbdf27673e123936d
          if (this.h == ControllerMove.Operation.MOVE_TO) {
              this.h = ControllerMove.Operation.WAIT;
              this.a.setNoGravity(true);
-diff --git a/src/main/java/net/minecraft/server/EntityBee.java b/src/main/java/net/minecraft/server/EntityBee.java
-index 882c430f645a1addb24f83bc5f592cbe19daade8..c14e07f3c3017e5a5355b1770b94ee4dcc8cc017 100644
---- a/src/main/java/net/minecraft/server/EntityBee.java
-+++ b/src/main/java/net/minecraft/server/EntityBee.java
-@@ -37,7 +37,17 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityBee.java b/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
+index 1ecf73f874f404f58a99316ae027f76db6b557db..7ce8eaeb9af3547869f467910b6a458118c63c1f 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
+@@ -111,7 +111,17 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
  
      public EntityBee(EntityTypes<? extends EntityBee> entitytypes, World world) {
          super(entitytypes, world);

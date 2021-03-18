@@ -17,10 +17,10 @@ was added, resulting in 2 different ways to modify an items enchantments.
 For consistency, the old API methods now forward to use the
 ItemMeta API equivalents, and should deprecate the old API's.
 
-diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
-index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09371762f3 100644
---- a/src/main/java/net/minecraft/server/ItemStack.java
-+++ b/src/main/java/net/minecraft/server/ItemStack.java
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 4010152dccc93019f2e7f284d80b92bae0d91c34..d7c5065457d910f3e5481fda046d368d5f66f67b 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
 @@ -9,6 +9,8 @@ import com.mojang.serialization.Codec;
  import com.mojang.serialization.codecs.RecordCodecBuilder;
  import java.text.DecimalFormat;
@@ -30,7 +30,7 @@ index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09
  import java.util.Locale;
  import java.util.Objects;
  import java.util.Optional;
-@@ -66,6 +68,23 @@ public final class ItemStack {
+@@ -120,6 +122,23 @@ public final class ItemStack {
      private ShapeDetectorBlock n;
      private boolean o;
  
@@ -54,7 +54,7 @@ index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09
      public ItemStack(IMaterial imaterial) {
          this(imaterial, 1);
      }
-@@ -108,6 +127,7 @@ public final class ItemStack {
+@@ -162,6 +181,7 @@ public final class ItemStack {
          if (nbttagcompound.hasKeyOfType("tag", 10)) {
              // CraftBukkit start - make defensive copy as this data may be coming from the save thread
              this.tag = (NBTTagCompound) nbttagcompound.getCompound("tag").clone();
@@ -62,7 +62,7 @@ index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09
              this.getItem().b(this.tag);
              // CraftBukkit end
          }
-@@ -626,6 +646,7 @@ public final class ItemStack {
+@@ -680,6 +700,7 @@ public final class ItemStack {
      // Paper end
      public void setTag(@Nullable NBTTagCompound nbttagcompound) {
          this.tag = nbttagcompound;
@@ -70,7 +70,7 @@ index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09
          if (this.getItem().usesDurability()) {
              this.setDamage(this.getDamage());
          }
-@@ -716,6 +737,7 @@ public final class ItemStack {
+@@ -770,6 +791,7 @@ public final class ItemStack {
          nbttagcompound.setString("id", String.valueOf(IRegistry.ENCHANTMENT.getKey(enchantment)));
          nbttagcompound.setShort("lvl", (short) ((byte) i));
          nbttaglist.add(nbttagcompound);
@@ -79,7 +79,7 @@ index 7d98fe348d6b4a3bc2972217f9a9f0c9d902edbd..eee69f9ac8936cf7ad84629aba91bf09
  
      public boolean hasEnchantments() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
-index 721a1c6bd4505cb132e7004c45b795d4959389e3..9913d0136841dac35b6649cb1afbe1e93b36bf4c 100644
+index 275b943a59ef28c831a068987e111e84ebba3bb7..7221ac52c9f66ae0af6f6cbf15c8d47f9c0291a0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
 @@ -178,28 +178,11 @@ public final class CraftItemStack extends ItemStack {
@@ -115,7 +115,7 @@ index 721a1c6bd4505cb132e7004c45b795d4959389e3..9913d0136841dac35b6649cb1afbe1e9
 +        // Paper end
      }
  
-     static boolean makeTag(net.minecraft.server.ItemStack item) {
+     static boolean makeTag(net.minecraft.world.item.ItemStack item) {
 @@ -216,66 +199,33 @@ public final class CraftItemStack extends ItemStack {
  
      @Override
@@ -192,9 +192,9 @@ index 721a1c6bd4505cb132e7004c45b795d4959389e3..9913d0136841dac35b6649cb1afbe1e9
 +        return hasItemMeta() ? getItemMeta().getEnchants() : ImmutableMap.<Enchantment, Integer>of(); // Paper - use Item Meta
      }
  
-     static Map<Enchantment, Integer> getEnchantments(net.minecraft.server.ItemStack item) {
+     static Map<Enchantment, Integer> getEnchantments(net.minecraft.world.item.ItemStack item) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-index ac6be3da812c927a5486809c096b5a2e1aba617b..da1af372453b0e32177454d87437bda5c5b530d0 100644
+index 7a11b2ddfa4244459253c918315aaab78ef2eb4a..57a6e66866ea82caccbbbfd55948a081f50f6bbe 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 @@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;

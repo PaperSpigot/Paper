@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 3 Jul 2020 15:03:33 -0700
+Subject: [PATCH] Improve EntityTargetLivingEntityEvent for 1.16 mobs
+
+CraftBukkit has a bug in their implementation and is incorrectly handling forget
+Also adds more target reasons for why it forgot target.
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorAttackTargetForget.java b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorAttackTargetForget.java
+index ad2e4be7483d39aeb7be3727aba6a5fe89ea9602..05c507270ff5b4c0d684d0fc4a69ee47618cd281 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorAttackTargetForget.java
++++ b/src/main/java/net/minecraft/world/entity/ai/behavior/BehaviorAttackTargetForget.java
+@@ -33,15 +33,15 @@ public class BehaviorAttackTargetForget<E extends EntityInsentient> extends Beha
+ 
+     protected void a(WorldServer worldserver, E e0, long i) {
+         if (a((EntityLiving) e0)) {
+-            this.d(e0);
++            this.d(e0, org.bukkit.event.entity.EntityTargetEvent.TargetReason.FORGOT_TARGET); // Paper
+         } else if (this.c(e0)) {
+-            this.d(e0);
++            this.d(e0, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_DIED); // Paper
+         } else if (this.a(e0)) {
+-            this.d(e0);
++            this.d(e0, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_OTHER_LEVEL); // Paper
+         } else if (!IEntitySelector.f.test(this.b(e0))) {
+-            this.d(e0);
++            this.d(e0, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_INVALID); // Paper
+         } else if (this.b.test(this.b(e0))) {
+-            this.d(e0);
++            this.d(e0, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_INVALID); // Paper
+         }
+     }
+ 
+@@ -65,17 +65,20 @@ public class BehaviorAttackTargetForget<E extends EntityInsentient> extends Beha
+         return optional.isPresent() && !((EntityLiving) optional.get()).isAlive();
+     }
+ 
+-    private void d(E e0) {
++    private void d(E e0, EntityTargetEvent.TargetReason reason) {
+         // CraftBukkit start
+-        EntityLiving old = e0.getBehaviorController().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+-        EntityTargetEvent event = CraftEventFactory.callEntityTargetLivingEvent(e0, null, (old != null && !old.isAlive()) ? EntityTargetEvent.TargetReason.TARGET_DIED : EntityTargetEvent.TargetReason.FORGOT_TARGET);
++        // Paper start - fix this event
++        //EntityLiving old = e0.getBehaviorController().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
++        EntityTargetEvent event = CraftEventFactory.callEntityTargetLivingEvent(e0, null, reason);
+         if (event.isCancelled()) {
+             return;
+         }
+-        if (event.getTarget() != null) {
++        // comment out, bad logic - bad
++        /*if (event.getTarget() != null) {
+             e0.getBehaviorController().setMemory(MemoryModuleType.ATTACK_TARGET, ((CraftLivingEntity) event.getTarget()).getHandle());
+             return;
+-        }
++        }*/
++        // Paper end
+         // CraftBukkit end
+         e0.getBehaviorController().removeMemory(MemoryModuleType.ATTACK_TARGET);
+     }

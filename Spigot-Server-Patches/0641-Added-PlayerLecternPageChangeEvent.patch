@@ -4,11 +4,11 @@ Date: Mon, 23 Nov 2020 12:58:51 -0800
 Subject: [PATCH] Added PlayerLecternPageChangeEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/Container.java b/src/main/java/net/minecraft/server/Container.java
-index 73a057b074af938a03decb0a53784aff321411ab..1eba0ccad798ee0d9e9d573e58a8dcd5363b6ffd 100644
---- a/src/main/java/net/minecraft/server/Container.java
-+++ b/src/main/java/net/minecraft/server/Container.java
-@@ -546,6 +546,7 @@ public abstract class Container {
+diff --git a/src/main/java/net/minecraft/world/inventory/Container.java b/src/main/java/net/minecraft/world/inventory/Container.java
+index e7c29d194d5c3e3b1b79228758f7a3d8aa060fbd..9c6330da4e026a7753698b5d103c009730154c3e 100644
+--- a/src/main/java/net/minecraft/world/inventory/Container.java
++++ b/src/main/java/net/minecraft/world/inventory/Container.java
+@@ -562,6 +562,7 @@ public abstract class Container {
          this.getSlot(i).set(itemstack);
      }
  
@@ -16,11 +16,11 @@ index 73a057b074af938a03decb0a53784aff321411ab..1eba0ccad798ee0d9e9d573e58a8dcd5
      public void a(int i, int j) {
          ((ContainerProperty) this.d.get(i)).set(j);
      }
-diff --git a/src/main/java/net/minecraft/server/ContainerLectern.java b/src/main/java/net/minecraft/server/ContainerLectern.java
-index 360c1c16fa3a09e7548081b3edd3c4dd3ec06efc..d7bb956287fe8a5c76570242d68bab7e2f1a8c3f 100644
---- a/src/main/java/net/minecraft/server/ContainerLectern.java
-+++ b/src/main/java/net/minecraft/server/ContainerLectern.java
-@@ -7,6 +7,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerLectern.java b/src/main/java/net/minecraft/world/inventory/ContainerLectern.java
+index 910c3eab0675b84694317427d7317caba89d74c3..10c829efd9ecb7dfa29e92586f99e40a8984f840 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerLectern.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerLectern.java
+@@ -13,6 +13,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
  import org.bukkit.entity.Player;
  import org.bukkit.event.player.PlayerTakeLecternBookEvent;
  // CraftBukkit end
@@ -28,7 +28,7 @@ index 360c1c16fa3a09e7548081b3edd3c4dd3ec06efc..d7bb956287fe8a5c76570242d68bab7e
  
  public class ContainerLectern extends Container {
  
-@@ -54,6 +55,7 @@ public class ContainerLectern extends Container {
+@@ -60,6 +61,7 @@ public class ContainerLectern extends Container {
      @Override
      public boolean a(EntityHuman entityhuman, int i) {
          int j;
@@ -36,7 +36,7 @@ index 360c1c16fa3a09e7548081b3edd3c4dd3ec06efc..d7bb956287fe8a5c76570242d68bab7e
  
          if (i >= 100) {
              j = i - 100;
-@@ -63,11 +65,25 @@ public class ContainerLectern extends Container {
+@@ -69,11 +71,25 @@ public class ContainerLectern extends Container {
              switch (i) {
                  case 1:
                      j = this.containerProperties.getProperty(0);

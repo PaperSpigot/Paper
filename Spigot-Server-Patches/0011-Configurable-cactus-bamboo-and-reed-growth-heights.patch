@@ -28,11 +28,11 @@ index b31109d2dadd29e8852468c19265066b773d2be0..3618cc017feb60e257a28f67cbddca3f
 +
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/BlockBamboo.java b/src/main/java/net/minecraft/server/BlockBamboo.java
-index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb1f94a5cd 100644
---- a/src/main/java/net/minecraft/server/BlockBamboo.java
-+++ b/src/main/java/net/minecraft/server/BlockBamboo.java
-@@ -99,7 +99,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockBamboo.java b/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
+index 00bae3689c4d53ef8e6055c16995e6069acba049..21be9869bf995e6235c874ebb269f3918382e18c 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
+@@ -124,7 +124,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
              if (random.nextInt(Math.max(1, (int) (100.0F / worldserver.spigotConfig.bambooModifier) * 3)) == 0 && worldserver.isEmpty(blockposition.up()) && worldserver.getLightLevel(blockposition.up(), 0) >= 9) { // Spigot
                  int i = this.b(worldserver, blockposition) + 1;
  
@@ -41,7 +41,7 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
                      this.a(iblockdata, (World) worldserver, blockposition, random, i);
                  }
              }
-@@ -130,7 +130,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+@@ -155,7 +155,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
          int i = this.a(iblockaccess, blockposition);
          int j = this.b(iblockaccess, blockposition);
  
@@ -50,7 +50,7 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
      }
  
      @Override
-@@ -149,7 +149,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+@@ -174,7 +174,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
              BlockPosition blockposition1 = blockposition.up(i);
              IBlockData iblockdata1 = worldserver.getType(blockposition1);
  
@@ -59,7 +59,7 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
                  return;
              }
  
-@@ -190,7 +190,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+@@ -215,7 +215,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
          }
  
          int j = (Integer) iblockdata.get(BlockBamboo.d) != 1 && !iblockdata2.a(Blocks.BAMBOO) ? 0 : 1;
@@ -68,7 +68,7 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
  
          // CraftBukkit start
          if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition.up(), (IBlockData) ((IBlockData) ((IBlockData) this.getBlockData().set(BlockBamboo.d, j)).set(BlockBamboo.e, blockpropertybamboosize)).set(BlockBamboo.f, k), 3)) {
-@@ -205,7 +205,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+@@ -230,7 +230,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
      protected int a(IBlockAccess iblockaccess, BlockPosition blockposition) {
          int i;
  
@@ -77,7 +77,7 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
              ;
          }
  
-@@ -215,7 +215,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
+@@ -240,7 +240,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
      protected int b(IBlockAccess iblockaccess, BlockPosition blockposition) {
          int i;
  
@@ -86,11 +86,11 @@ index f208ab50985d71996c65fcf31615052b967acc93..535535214119c2c0f080c328b70a02bb
              ;
          }
  
-diff --git a/src/main/java/net/minecraft/server/BlockCactus.java b/src/main/java/net/minecraft/server/BlockCactus.java
-index 4a3049575ad78e1c75d1b43a35311974c1d489de..13e4517bd04096001ca1caf32b9949abb3cf9c7f 100644
---- a/src/main/java/net/minecraft/server/BlockCactus.java
-+++ b/src/main/java/net/minecraft/server/BlockCactus.java
-@@ -35,7 +35,7 @@ public class BlockCactus extends Block {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockCactus.java b/src/main/java/net/minecraft/world/level/block/BlockCactus.java
+index c2316e346f9b647edae4c9709defa4531e04eaa6..9f1e9fc5361cd051b909e2e1b2095722064185da 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockCactus.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockCactus.java
+@@ -55,7 +55,7 @@ public class BlockCactus extends Block {
                  ;
              }
  
@@ -99,11 +99,11 @@ index 4a3049575ad78e1c75d1b43a35311974c1d489de..13e4517bd04096001ca1caf32b9949ab
                  int j = (Integer) iblockdata.get(BlockCactus.AGE);
  
                  if (j >= (byte) range(3, ((100.0F / worldserver.spigotConfig.cactusModifier) * 15) + 0.5F, 15)) { // Spigot
-diff --git a/src/main/java/net/minecraft/server/BlockReed.java b/src/main/java/net/minecraft/server/BlockReed.java
-index 30282f73d263a96a14bd7bf7d3ac520e315b093a..c051decd19ff763a061822bc2a4b03289dfe3ac7 100644
---- a/src/main/java/net/minecraft/server/BlockReed.java
-+++ b/src/main/java/net/minecraft/server/BlockReed.java
-@@ -35,7 +35,7 @@ public class BlockReed extends Block {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockReed.java b/src/main/java/net/minecraft/world/level/block/BlockReed.java
+index eb95d65e1a37b91a71a9ad8968710ba9047f3980..a4ede7968ba0134f0d2cf880a6b4a6b9a81f2fcd 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockReed.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockReed.java
+@@ -51,7 +51,7 @@ public class BlockReed extends Block {
                  ;
              }
  

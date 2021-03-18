@@ -12,10 +12,10 @@ Previous implementation did not calculate TPS correctly.
 Switch to a realistic rolling average and factor in std deviation as an extra reporting variable
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 82768ab4663b6dc220212581f92bf8c5188c73b5..f54300a107477e6b6aa79114212f0088dc4f5be5 100644
+index 60a768ea8ffa965dd309c05bebddf5563b5e1992..2b3c32bda846b1a559f9a9d9d6870cb4ec6bfe12 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -146,7 +146,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -253,7 +253,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public org.bukkit.command.ConsoleCommandSender console;
      public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
      public ConsoleReader reader;
@@ -24,7 +24,7 @@ index 82768ab4663b6dc220212581f92bf8c5188c73b5..f54300a107477e6b6aa79114212f0088
      public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
      public int autosavePeriod;
      public CommandDispatcher vanillaCommandDispatcher;
-@@ -155,7 +155,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -262,7 +262,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      // Spigot start
      public static final int TPS = 20;
      public static final int TICK_TIME = 1000000000 / TPS;
@@ -33,7 +33,7 @@ index 82768ab4663b6dc220212581f92bf8c5188c73b5..f54300a107477e6b6aa79114212f0088
      public final double[] recentTps = new double[ 3 ];
      public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
      // Spigot end
-@@ -808,6 +808,57 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -915,6 +915,57 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      {
          return ( avg * exp ) + ( tps * ( 1 - exp ) );
      }
@@ -91,7 +91,7 @@ index 82768ab4663b6dc220212581f92bf8c5188c73b5..f54300a107477e6b6aa79114212f0088
      // Spigot End
  
      protected void w() {
-@@ -820,30 +871,38 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -927,30 +978,38 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
                  // Spigot start
                  Arrays.fill( recentTps, 20 );
@@ -140,7 +140,7 @@ index 82768ab4663b6dc220212581f92bf8c5188c73b5..f54300a107477e6b6aa79114212f0088
                      GameProfilerTick gameprofilertick = GameProfilerTick.a("Server");
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 6352c45db0053ce75356494ffa3b31b42d6e6414..2832610d080db4d8a6c26d946c441306404f6aba 100644
+index 1818a6af3a55d15be698d5219e0eea63e2077611..f84fe5929cb7bcedff5fc587163380172bc1e8be 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2113,6 +2113,17 @@ public final class CraftServer implements Server {

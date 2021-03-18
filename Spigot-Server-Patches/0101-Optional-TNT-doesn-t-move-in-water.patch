@@ -31,11 +31,24 @@ index eb04fdb172a50ec1f5b7fe78fa0e7655246abd60..6eca3f300020006f02dd36253b522db4
 +        log("Prevent TNT from moving in water: " + preventTntFromMovingInWater);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 0dd63d2e0ed16eb08cf97dbf8c293e24a5a1bda9..6aa29495802b7d52c4c0f283495c7d1762f657fa 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -2681,6 +2681,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+index f5227aa761d326376d057eaadcdbef024ed30241..44b79c97d5cc7570683e1b7f025b4f3ad65beb81 100644
+--- a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+@@ -67,7 +67,7 @@ public class EntityTrackerEntry {
+     private boolean q;
+     private boolean r;
+     // CraftBukkit start
+-    private final Set<EntityPlayer> trackedPlayers;
++    final Set<EntityPlayer> trackedPlayers; // Paper - private -> package
+     // Paper start
+     private java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = null;
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index f942d75982409f7640f073f9c77f8939225c6939..88ffc594a2ee7f8718337883609ad4c082f85f50 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2766,6 +2766,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      }
  
      public boolean bV() {
@@ -47,11 +60,26 @@ index 0dd63d2e0ed16eb08cf97dbf8c293e24a5a1bda9..6aa29495802b7d52c4c0f283495c7d17
          return true;
      }
  
-diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index f71e82c365947de822be7b87083b46bd7ce4b902..6e77dc89f5441f0f483571fee9aa9f34b6d1dd1c 100644
---- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-+++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-@@ -81,7 +81,27 @@ public class EntityTNTPrimed extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java b/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
+index 535e7d7297d81026b8586d5049b72fa65519b464..63b35feac07f01b200dd68c4836ceb419e951660 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
+@@ -4,10 +4,14 @@ import javax.annotation.Nullable;
+ import net.minecraft.core.particles.Particles;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.protocol.Packet;
++import net.minecraft.network.protocol.game.PacketPlayOutEntityTeleport;
++import net.minecraft.network.protocol.game.PacketPlayOutEntityVelocity;
+ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
++import net.minecraft.server.level.PlayerChunkMap;
++import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityLiving;
+ import net.minecraft.world.entity.EntityPose;
+@@ -96,7 +100,27 @@ public class EntityTNTPrimed extends Entity {
                  this.world.addParticle(Particles.SMOKE, this.locX(), this.locY() + 0.5D, this.locZ(), 0.0D, 0.0D, 0.0D);
              }
          }
@@ -80,7 +108,7 @@ index f71e82c365947de822be7b87083b46bd7ce4b902..6e77dc89f5441f0f483571fee9aa9f34
      }
  
      private void explode() {
-@@ -150,4 +170,11 @@ public class EntityTNTPrimed extends Entity {
+@@ -165,4 +189,11 @@ public class EntityTNTPrimed extends Entity {
      public Packet<?> P() {
          return new PacketPlayOutSpawnEntity(this);
      }
@@ -92,16 +120,3 @@ index f71e82c365947de822be7b87083b46bd7ce4b902..6e77dc89f5441f0f483571fee9aa9f34
 +    }
 +    // Paper end
  }
-diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-index dec48226d713ef0198ef3c679daf553a9d05a099..c346ca8ba30da401ea1a421e8ce6ed1d5b6e4c13 100644
---- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-+++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-@@ -38,7 +38,7 @@ public class EntityTrackerEntry {
-     private boolean q;
-     private boolean r;
-     // CraftBukkit start
--    private final Set<EntityPlayer> trackedPlayers;
-+    final Set<EntityPlayer> trackedPlayers; // Paper - private -> package
-     // Paper start
-     private java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = null;
- 

@@ -6,11 +6,11 @@ Subject: [PATCH] Prevent Double PlayerChunkMap adds crashing server
 Suspected case would be around the technique used in .stopRiding
 Stack will identify any causer of this and warn instead of crashing.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 08eaaabb712c7a6c9b6631d62874a72e96bf73d5..9600ded94f127da50e05129aa00e5b0979b973a3 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -1447,6 +1447,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 4be5f3be285b1944eee66684c1a565ac1eceb024..12cfe9f3c89316557e94c8b944b4f82277fb8877 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -1495,6 +1495,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      protected void addEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
@@ -25,11 +25,11 @@ index 08eaaabb712c7a6c9b6631d62874a72e96bf73d5..9600ded94f127da50e05129aa00e5b09
          if (!(entity instanceof EntityComplexPart)) {
              EntityTypes<?> entitytypes = entity.getEntityType();
              int i = entitytypes.getChunkRange() * 16;
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index cd04994ed38c7f5d4db6b1ef1796f95ef2c490e1..cbfe3cc34922c4dffb3dea5a279970072de1daae 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1417,7 +1417,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 928d884dcdf1ff6aa1aa4a0e7f6d68f7ae5bce13..ddc0057e0bd77bf7187df45b9bac9ac025f297b1 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1529,7 +1529,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  }
              }
  
@@ -38,7 +38,7 @@ index cd04994ed38c7f5d4db6b1ef1796f95ef2c490e1..cbfe3cc34922c4dffb3dea5a27997007
              // CraftBukkit start - SPIGOT-5278
              if (entity instanceof EntityDrowned) {
                  this.navigators.add(((EntityDrowned) entity).navigationWater);
-@@ -1428,6 +1428,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1540,6 +1540,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  this.navigators.add(((EntityInsentient) entity).getNavigation());
              }
              entity.valid = true; // CraftBukkit

@@ -4,11 +4,11 @@ Date: Mon, 3 Jul 2017 18:11:10 -0500
 Subject: [PATCH] ProfileWhitelistVerifyEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index a56f9a07472e9a56da12a096400e69bd0d0cd17f..2411832c96794f3c39a5e9083b20217880f773ff 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -539,9 +539,9 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 9db65b9d8f66ff83dcf32274fec98a425e7353d8..738a69a1a5765897fb3ca3b4ceb07cddade0d27f 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -615,9 +615,9 @@ public abstract class PlayerList {
  
              // return chatmessage;
              if (!gameprofilebanentry.hasExpired()) event.disallow(PlayerLoginEvent.Result.KICK_BANNED, PaperAdventure.asAdventure(chatmessage)); // Spigot // Paper - Adventure
@@ -21,7 +21,7 @@ index a56f9a07472e9a56da12a096400e69bd0d0cd17f..2411832c96794f3c39a5e9083b202178
          } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
              IpBanEntry ipbanentry = this.l.get(socketaddress);
  
-@@ -933,9 +933,25 @@ public abstract class PlayerList {
+@@ -1009,9 +1009,25 @@ public abstract class PlayerList {
          this.server.getCommandDispatcher().a(entityplayer);
      }
  

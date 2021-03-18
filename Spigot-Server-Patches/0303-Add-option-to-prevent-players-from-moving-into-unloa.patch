@@ -19,11 +19,11 @@ index f280dbff4a09bc611a9ca565c6d697d08801f53b..fbf3ccfb347a5ba6e895339e9576629d
 +        preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 3321be2ba2d1c565d8f41945f09cf12f38fb88b6..fa74b0266172bf83339f85a4e739bbf2256e4ccf 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -396,6 +396,13 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 933ccc459bba527739666d33b6399187f49d43c7..0cdfc38c3f07b28e1db0ee28952494c1950a698d 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -541,6 +541,13 @@ public class PlayerConnection implements PacketListenerPlayIn {
                  }
                  speed *= 2f; // TODO: Get the speed of the vehicle instead of the player
  
@@ -37,7 +37,7 @@ index 3321be2ba2d1c565d8f41945f09cf12f38fb88b6..fa74b0266172bf83339f85a4e739bbf2
                  if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && !this.isExemptPlayer()) {
                  // CraftBukkit end
                      PlayerConnection.LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", entity.getDisplayName().getString(), this.player.getDisplayName().getString(), d6, d7, d8);
-@@ -994,9 +1001,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1139,9 +1146,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
                          double d1 = this.player.locY();
                          double d2 = this.player.locZ();
                          double d3 = this.player.locY();
@@ -49,7 +49,7 @@ index 3321be2ba2d1c565d8f41945f09cf12f38fb88b6..fa74b0266172bf83339f85a4e739bbf2
                          float f = packetplayinflying.a(this.player.yaw);
                          float f1 = packetplayinflying.b(this.player.pitch);
                          double d7 = d4 - this.l;
-@@ -1035,6 +1042,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1180,6 +1187,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
                              } else {
                                  speed = player.abilities.walkSpeed * 10f;
                              }

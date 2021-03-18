@@ -24,11 +24,23 @@ index e6e18f309dc09ea9416ea37dcc697ddc2b571a96..4881b03d470646843bad1bc343eb6a6a
 +        log("Optimize explosions: " + optimizeExplosions);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index afe61a1ddc75f155836411b6749198f71ed09919..ac39b02ec5f02f6f2db9f293513686d2d29d4036 100644
---- a/src/main/java/net/minecraft/server/Explosion.java
-+++ b/src/main/java/net/minecraft/server/Explosion.java
-@@ -173,7 +173,7 @@ public class Explosion {
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 2b3c32bda846b1a559f9a9d9d6870cb4ec6bfe12..2c295e070a0418c7d3bc4a4a531df699acadb0ff 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1316,6 +1316,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+ 
+             this.methodProfiler.exit();
+             this.methodProfiler.exit();
++            worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+         }
+ 
+         this.methodProfiler.exitEnter("connection");
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index 7786a06ba09aacaa70c346e85a9eeed9f2ffec6e..6a7af2c0c3c294b10c6ddbf98babb0f30d7d5f56 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -201,7 +201,7 @@ public class Explosion {
                          d8 /= d11;
                          d9 /= d11;
                          d10 /= d11;
@@ -37,7 +49,7 @@ index afe61a1ddc75f155836411b6749198f71ed09919..ac39b02ec5f02f6f2db9f293513686d2
                          double d13 = (1.0D - d7) * d12;
  
                          // CraftBukkit start
-@@ -392,4 +392,84 @@ public class Explosion {
+@@ -420,4 +420,84 @@ public class Explosion {
  
          private Effect() {}
      }
@@ -122,23 +134,11 @@ index afe61a1ddc75f155836411b6749198f71ed09919..ac39b02ec5f02f6f2db9f293513686d2
 +    }
 +    // Paper end
  }
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index f54300a107477e6b6aa79114212f0088dc4f5be5..38b0863bf470682b9afaab016c5c41af65800e5d 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1209,6 +1209,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
- 
-             this.methodProfiler.exit();
-             this.methodProfiler.exit();
-+            worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
-         }
- 
-         this.methodProfiler.exitEnter("connection");
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index bc1946ea3060220f4598aae2e1aed3d84ab18387..e062f68b87bd70b128f46394881c09ad63278fdc 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -84,6 +84,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 87e37c38825ad20fc11f41ea2a4512753266d2b4..06455fb3916e347c075c6aa84977dca7e25760c2 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -136,6 +136,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      private org.spigotmc.TickLimiter entityLimiter;
      private org.spigotmc.TickLimiter tileLimiter;
      private int tileTickPosition;

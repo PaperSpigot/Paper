@@ -5,7 +5,7 @@ Subject: [PATCH] added option to disable pathfinding updates on block changes
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index ac96011d4e104c99bb37833d91b8121f03b9d349..0776e68340b0510cc99084bea80791d562dfea40 100644
+index 1ceacb6bbfe99069763845a8aef48a3fb4841e32..d2f6e1308a4dfec663770e2c7f4de0cf22402a97 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -799,4 +799,9 @@ public class PaperWorldConfig {
@@ -18,11 +18,11 @@ index ac96011d4e104c99bb37833d91b8121f03b9d349..0776e68340b0510cc99084bea80791d5
 +        updatePathfindingOnBlockUpdate = getBoolean("update-pathfinding-on-block-update", this.updatePathfindingOnBlockUpdate);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 466bb6297bd3bf7bb0ff1f4d0bd1f4ddfe294fa2..cf7d94aabab600822eb5e27f38690b06456d5fcc 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1571,6 +1571,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 07396504fbabc2eb006f2b7f8e53faafe67d5672..0a698a5a4a6502a488c9afb0ad97165e60030896 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1684,6 +1684,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      @Override
      public void notify(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1, int i) {
          this.getChunkProvider().flagDirty(blockposition);
@@ -30,7 +30,7 @@ index 466bb6297bd3bf7bb0ff1f4d0bd1f4ddfe294fa2..cf7d94aabab600822eb5e27f38690b06
          VoxelShape voxelshape = iblockdata.getCollisionShape(this, blockposition);
          VoxelShape voxelshape1 = iblockdata1.getCollisionShape(this, blockposition);
  
-@@ -1599,6 +1600,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1712,6 +1713,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
              this.tickingEntities = wasTicking; // Paper
          }

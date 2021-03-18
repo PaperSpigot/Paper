@@ -5,11 +5,11 @@ Subject: [PATCH] Enderman.teleportRandomly()
 
 Ability to trigger the vanilla "teleport randomly" mechanic of an enderman.
 
-diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
-index b9ede7d533a813f4de27404dc14b0ef99c8fcd62..1e7aa2ee1c399bf3484e0245d57ab428d48d32f5 100644
---- a/src/main/java/net/minecraft/server/EntityEnderman.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderman.java
-@@ -224,6 +224,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+index b889c1954df39b6180351c418393f5c772702589..ef2f0211cd4d20dad0d3757c38c3c2882e99b2f2 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+@@ -278,6 +278,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
          super.mobTick();
      }
  
@@ -18,7 +18,7 @@ index b9ede7d533a813f4de27404dc14b0ef99c8fcd62..1e7aa2ee1c399bf3484e0245d57ab428
          if (!this.world.s_() && this.isAlive()) {
              double d0 = this.locX() + (this.random.nextDouble() - 0.5D) * 64.0D;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEnderman.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEnderman.java
-index 970efabd37d380ee1028c80a8e967e0f7aee9760..0c5f35934617529e92c02729687b524c3796128c 100644
+index 8894d619796c7b81acde9ff27d0f9191122eade4..f54175a4b13ddedc475ef028942edb08eb4ff631 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEnderman.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEnderman.java
 @@ -16,6 +16,7 @@ public class CraftEnderman extends CraftMonster implements Enderman {

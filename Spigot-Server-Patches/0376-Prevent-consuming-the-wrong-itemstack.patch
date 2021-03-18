@@ -4,11 +4,11 @@ Date: Mon, 19 Aug 2019 19:42:35 +0500
 Subject: [PATCH] Prevent consuming the wrong itemstack
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 870aa56735bae3344d7d01d252b943225cc056c4..4567b0fe175765748bb787049e10fbe0af0a61d9 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -3107,10 +3107,13 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index ecceb272028e1ae1dd40c0c39d6f687fccfabb58..903c3cfdaae3dd1750aa2f32f6cdbb423909eb47 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3201,10 +3201,13 @@ public abstract class EntityLiving extends Entity {
          this.datawatcher.set(EntityLiving.ag, (byte) j);
      }
  
@@ -24,7 +24,7 @@ index 870aa56735bae3344d7d01d252b943225cc056c4..4567b0fe175765748bb787049e10fbe0
              this.activeItem = itemstack;
              this.bd = itemstack.k();
              if (!this.world.isClientSide) {
-@@ -3188,6 +3191,7 @@ public abstract class EntityLiving extends Entity {
+@@ -3282,6 +3285,7 @@ public abstract class EntityLiving extends Entity {
              this.releaseActiveItem();
          } else {
              if (!this.activeItem.isEmpty() && this.isHandRaised()) {
@@ -32,7 +32,7 @@ index 870aa56735bae3344d7d01d252b943225cc056c4..4567b0fe175765748bb787049e10fbe0
                  this.b(this.activeItem, 16);
                  // CraftBukkit start - fire PlayerItemConsumeEvent
                  ItemStack itemstack;
-@@ -3222,8 +3226,8 @@ public abstract class EntityLiving extends Entity {
+@@ -3316,8 +3320,8 @@ public abstract class EntityLiving extends Entity {
                  }
  
                  this.clearActiveItem();

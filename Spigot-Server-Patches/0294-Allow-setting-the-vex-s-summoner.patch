@@ -4,11 +4,11 @@ Date: Sat, 6 Oct 2018 21:47:44 -0500
 Subject: [PATCH] Allow setting the vex's summoner
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityVex.java b/src/main/java/net/minecraft/server/EntityVex.java
-index 00568a19d7a25189d599fc84afb6ca6d642e2855..9a33866e7529e1636c228bab01205737bc678b47 100644
---- a/src/main/java/net/minecraft/server/EntityVex.java
-+++ b/src/main/java/net/minecraft/server/EntityVex.java
-@@ -129,6 +129,7 @@ public class EntityVex extends EntityMonster {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityVex.java b/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
+index 3b74ade60b3b0ae0e908866cb4ac11acd75620ff..9645d052069957311478a1ceca42ad52f7a9aa0b 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityVex.java
+@@ -165,6 +165,7 @@ public class EntityVex extends EntityMonster {
          this.a(1, flag);
      }
  
@@ -17,15 +17,15 @@ index 00568a19d7a25189d599fc84afb6ca6d642e2855..9a33866e7529e1636c228bab01205737
          this.c = entityinsentient;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
-index 169c951ec30fc5b78eb4ba29352ba009b7fa5efd..2f7df3074f8fd66fe2ea1cced08db910078e1848 100644
+index 962d6017f6acc47ebe4b754ccd9b97a1fc97cc58..30e2c169388b09b94d801be7543e75ea0bd56fcd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftVex.java
-@@ -23,6 +23,10 @@ public class CraftVex extends CraftMonster implements Vex {
-         EntityInsentient owner = getHandle().getOwner();
-         return owner != null ? (Mob) owner.getBukkitEntity() : null;
+@@ -21,6 +21,10 @@ public class CraftVex extends CraftMonster implements Vex {
+         net.minecraft.world.entity.EntityInsentient owner = getHandle().getOwner();
+         return owner != null ? (org.bukkit.entity.Mob) owner.getBukkitEntity() : null;
      }
 +
-+    public void setSummoner(Mob summoner) {
++    public void setSummoner(org.bukkit.entity.Mob summoner) {
 +        getHandle().setOwner(summoner == null ? null : ((CraftMob) summoner).getHandle());
 +    }
      // Paper end

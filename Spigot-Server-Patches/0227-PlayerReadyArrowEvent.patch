@@ -6,11 +6,11 @@ Subject: [PATCH] PlayerReadyArrowEvent
 Called when a player is firing a bow and the server is choosing an arrow to use.
 Plugins can skip selection of certain arrows and control which is used.
 
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index c0c8373af47d24a8b9c25a3bebb59b13626a3733..67df400f80b8bbafecaefa3e8986dd7fe615fd04 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -2045,6 +2045,17 @@ public abstract class EntityHuman extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 7839553662d7f1f378969d42fb7a560e489852f4..408732c59ed817c056671a78e43a734b048a818e 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -2142,6 +2142,17 @@ public abstract class EntityHuman extends EntityLiving {
          return ImmutableList.of(EntityPose.STANDING, EntityPose.CROUCHING, EntityPose.SWIMMING);
      }
  
@@ -28,7 +28,7 @@ index c0c8373af47d24a8b9c25a3bebb59b13626a3733..67df400f80b8bbafecaefa3e8986dd7f
      @Override
      public ItemStack f(ItemStack itemstack) {
          if (!(itemstack.getItem() instanceof ItemProjectileWeapon)) {
-@@ -2061,7 +2072,7 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -2158,7 +2169,7 @@ public abstract class EntityHuman extends EntityLiving {
                  for (int i = 0; i < this.inventory.getSize(); ++i) {
                      ItemStack itemstack2 = this.inventory.getItem(i);
  

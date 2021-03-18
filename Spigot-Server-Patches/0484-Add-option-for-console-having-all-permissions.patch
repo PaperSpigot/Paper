@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Sat, 16 May 2020 10:12:15 +0200
+Subject: [PATCH] Add option for console having all permissions
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+index 5f3b0d95cc7e6a0434d78ea7305a70689c41c71c..7f140333c2e62012fa572c1a061d84432426997f 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+@@ -429,4 +429,9 @@ public class PaperConfig {
+ 
+     }
+ 
++    public static boolean consoleHasAllPermissions = false;
++    private static void consoleHasAllPermissions() {
++        consoleHasAllPermissions = getBoolean("settings.console-has-all-permissions", consoleHasAllPermissions);
++    }
++
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 202fa94d5dc55b549475ae0309bbcfca8f1b2c96..ec0956a98c133bcd3d4f92f696c667eab6ff98f1 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -1889,7 +1889,7 @@ public abstract class EntityHuman extends EntityLiving {
+         }
+     }
+ 
+-    protected void releaseShoulderEntities() {
++    public void releaseShoulderEntities() { // Paper - protected -> public
+         if (this.e + 20L < this.world.getTime()) {
+             // CraftBukkit start
+             if (this.spawnEntityFromShoulder(this.getShoulderEntityLeft())) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
+index af986adfdb547cb61fbd52f0f89858f1a9e52cc3..80a67deaeaae3b3f0ceb9a298de5bb38b8ee707b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
+@@ -86,5 +86,15 @@ public class CraftConsoleCommandSender extends ServerCommandSender implements Co
+     public void sendMessage(final net.kyori.adventure.identity.Identity identity, final net.kyori.adventure.text.Component message, final net.kyori.adventure.audience.MessageType type) {
+         this.sendRawMessage(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(io.papermc.paper.adventure.PaperAdventure.asVanilla(message)));
+     }
++
++    @Override
++    public boolean hasPermission(String name) {
++        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
++    }
++
++    @Override
++    public boolean hasPermission(org.bukkit.permissions.Permission perm) {
++        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
++    }
+     // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+index 24662d58cb4a9bf2f3b252858b504165d91d4419..a6f3594def0abe076ff44fcfa61dd05bee729387 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+@@ -39,4 +39,16 @@ public class CraftRemoteConsoleCommandSender extends ServerCommandSender impleme
+     public void setOp(boolean value) {
+         throw new UnsupportedOperationException("Cannot change operator status of remote controller.");
+     }
++
++    // Paper start
++    @Override
++    public boolean hasPermission(String name) {
++        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
++    }
++
++    @Override
++    public boolean hasPermission(org.bukkit.permissions.Permission perm) {
++        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
++    }
++    // Paper end
+ }

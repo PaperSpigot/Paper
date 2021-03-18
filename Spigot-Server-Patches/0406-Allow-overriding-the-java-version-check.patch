@@ -6,13 +6,13 @@ Subject: [PATCH] Allow overriding the java version check
 -DPaper.IgnoreJavaVersion=true
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 6095e6ef45f6e2c1188a623192362f8879f5fcd9..67331fa5463dd31e4aea3aebf6204ec5cb43d99e 100644
+index 7d7b9984b867461b0a1025e5ec21ff7798281b8f..100772ba60cb7e717c5e626a4d7b44c15375b0e5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -175,7 +175,7 @@ public class Main {
              float javaVersion = Float.parseFloat(System.getProperty("java.class.version"));
-             if (javaVersion > 59.0) {
-                 System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 15 is supported.");
+             if (javaVersion > 60.0) {
+                 System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 16 is supported.");
 -                return;
 +                if (!Boolean.getBoolean("Paper.IgnoreJavaVersion")) return; // Paper
              }

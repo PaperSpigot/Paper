@@ -73,7 +73,7 @@ if [ ! -d "$classdir" ]; then
     mkdir -p "$classdir"
     cd "$classdir"
     set +e
-    jar xf "$decompiledir/$minecraftversion-mapped.jar" net/minecraft/server
+    jar xf "$decompiledir/$minecraftversion-mapped.jar" net/minecraft com/mojang/math
     if [ "$?" != "0" ]; then
         cd "$basedir"
         echo "Failed to extract NMS classes."

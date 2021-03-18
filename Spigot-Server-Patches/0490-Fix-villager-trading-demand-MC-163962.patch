@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: chickeneer <emcchickeneer@gmail.com>
+Date: Fri, 5 Jun 2020 20:02:04 -0500
+Subject: [PATCH] Fix villager trading demand - MC-163962
+
+Prevent demand from going negative and tending to negative infinity
+
+diff --git a/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java b/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
+index d840c657a6a992c86364a5f4536da0b217515c53..9e2fe0d5e6d4ea1f4c9cea96b755ddcd1e3c9009 100644
+--- a/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
++++ b/src/main/java/net/minecraft/world/item/trading/MerchantRecipe.java
+@@ -109,7 +109,7 @@ public class MerchantRecipe {
+     }
+ 
+     public void e() {
+-        this.demand = this.demand + this.uses - (this.maxUses - this.uses);
++        this.demand = Math.max(0, this.demand + this.uses - (this.maxUses - this.uses)); // Paper
+     }
+ 
+     public ItemStack f() {

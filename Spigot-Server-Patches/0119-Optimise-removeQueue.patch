@@ -4,11 +4,11 @@ Date: Fri, 25 Nov 2016 13:22:40 +0000
 Subject: [PATCH] Optimise removeQueue
 
 
-diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index b6544feaffacd511191054386614d3e921b26d6c..643c66a8a81ce7131cfd6d9f956d1a9cc85fc56b 100644
---- a/src/main/java/net/minecraft/server/LoginListener.java
-+++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -98,6 +98,12 @@ public class LoginListener implements PacketLoginInListener {
+diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
+index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9e64aecf1 100644
+--- a/src/main/java/net/minecraft/server/network/LoginListener.java
++++ b/src/main/java/net/minecraft/server/network/LoginListener.java
+@@ -116,6 +116,12 @@ public class LoginListener implements PacketLoginInListener {
  
      }
  
@@ -21,7 +21,7 @@ index b6544feaffacd511191054386614d3e921b26d6c..643c66a8a81ce7131cfd6d9f956d1a9c
      // Spigot start
      public void initUUID()
      {
-@@ -176,8 +182,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -194,8 +200,8 @@ public class LoginListener implements PacketLoginInListener {
              this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic().getEncoded(), this.e));
          } else {
              // Spigot start
@@ -32,7 +32,7 @@ index b6544feaffacd511191054386614d3e921b26d6c..643c66a8a81ce7131cfd6d9f956d1a9c
                  @Override
                  public void run() {
                      try {
-@@ -188,7 +194,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -206,7 +212,8 @@ public class LoginListener implements PacketLoginInListener {
                          server.server.getLogger().log(java.util.logging.Level.WARNING, "Exception verifying " + i.getName(), ex);
                      }
                  }
@@ -42,7 +42,7 @@ index b6544feaffacd511191054386614d3e921b26d6c..643c66a8a81ce7131cfd6d9f956d1a9c
              // Spigot end
          }
  
-@@ -217,7 +224,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -235,7 +242,8 @@ public class LoginListener implements PacketLoginInListener {
              throw new IllegalStateException("Protocol error", cryptographyexception);
          }
  
@@ -52,7 +52,7 @@ index b6544feaffacd511191054386614d3e921b26d6c..643c66a8a81ce7131cfd6d9f956d1a9c
              public void run() {
                  GameProfile gameprofile = LoginListener.this.i;
  
-@@ -262,10 +270,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -280,10 +288,8 @@ public class LoginListener implements PacketLoginInListener {
  
                  return LoginListener.this.server.W() && socketaddress instanceof InetSocketAddress ? ((InetSocketAddress) socketaddress).getAddress() : null;
              }

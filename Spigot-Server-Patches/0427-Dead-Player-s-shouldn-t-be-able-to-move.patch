@@ -6,11 +6,11 @@ Subject: [PATCH] Dead Player's shouldn't be able to move
 This fixes a lot of game state issues where packets were delayed for processing
 due to 1.15's new queue but processed while dead.
 
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index eecf72651a1981288eddadfe9ff802cfe2b2e4b6..26f78d0acdd1d6a7914799a96346480df6c66034 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -952,7 +952,7 @@ public abstract class EntityHuman extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 564dfa98c166fde509044e6e1938efb321ece53d..8981dfacd10cae9de052e1b36ce5181cd0e6752d 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -1049,7 +1049,7 @@ public abstract class EntityHuman extends EntityLiving {
  
      @Override
      protected boolean isFrozen() {

@@ -17,11 +17,57 @@ an invalid entity.
 
 This should reduce log occurrences of dupe uuid messages.
 
-diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index d30c4d5a4ee83e21ba9269c0b92af2b72b85d3cc..3a292bccb2295bf7ae46fc3d7e5c9c63a72f403d 100644
---- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-+++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-@@ -307,6 +307,7 @@ public class ChunkRegionLoader {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 04b708e776f277985340f329dc8cb3c16a6100a7..c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1155,6 +1155,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         List[] aentityslice = chunk.getEntitySlices(); // Spigot
+         int i = aentityslice.length;
+ 
++        java.util.List<Entity> toMoveChunks = new java.util.ArrayList<>(); // Paper
+         for (int j = 0; j < i; ++j) {
+             List<Entity> entityslice = aentityslice[j]; // Spigot
+             Iterator iterator = entityslice.iterator();
+@@ -1167,11 +1168,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+                         throw (IllegalStateException) SystemUtils.c((Throwable) (new IllegalStateException("Removing entity while ticking!")));
+                     }
+ 
++                    // Paper start - move out entities that shouldn't be in this chunk before it unloads
++                    if (!entity.dead && (int) Math.floor(entity.locX()) >> 4 != chunk.getPos().x || (int) Math.floor(entity.locZ()) >> 4 != chunk.getPos().z) {
++                        toMoveChunks.add(entity);
++                        continue;
++                    }
++                    // Paper end
++
+                     this.entitiesById.remove(entity.getId());
+                     this.unregisterEntity(entity);
++
++                    if (entity.dead) iterator.remove(); // Paper - don't save dead entities during unload
+                 }
+             }
+         }
++        // Paper start - move out entities that shouldn't be in this chunk before it unloads
++        for (Entity entity : toMoveChunks) {
++            this.chunkCheck(entity);
++        }
++        // Paper end
+ 
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+index f301c7ba4b17b92c6cf2fcee6da1e67081dad4fa..69bc9dc18bab157851d8080a672504598e8572a8 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+@@ -26,6 +26,7 @@ import net.minecraft.nbt.NBTTagList;
+ import net.minecraft.nbt.NBTTagLongArray;
+ import net.minecraft.nbt.NBTTagShort;
+ import net.minecraft.server.level.ChunkProviderServer;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.LightEngineThreaded;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.entity.Entity;
+@@ -349,6 +350,7 @@ public class ChunkRegionLoader {
          nbttagcompound1.set("TileEntities", nbttaglist1);
          NBTTagList nbttaglist2 = new NBTTagList();
  
@@ -29,7 +75,7 @@ index d30c4d5a4ee83e21ba9269c0b92af2b72b85d3cc..3a292bccb2295bf7ae46fc3d7e5c9c63
          if (ichunkaccess.getChunkStatus().getType() == ChunkStatus.Type.LEVELCHUNK) {
              Chunk chunk = (Chunk) ichunkaccess;
  
-@@ -324,13 +325,28 @@ public class ChunkRegionLoader {
+@@ -366,13 +368,28 @@ public class ChunkRegionLoader {
                  while (iterator1.hasNext()) {
                      Entity entity = (Entity) iterator1.next();
                      NBTTagCompound nbttagcompound4 = new NBTTagCompound();
@@ -59,7 +105,7 @@ index d30c4d5a4ee83e21ba9269c0b92af2b72b85d3cc..3a292bccb2295bf7ae46fc3d7e5c9c63
          } else {
              ProtoChunk protochunk = (ProtoChunk) ichunkaccess;
  
-@@ -389,6 +405,19 @@ public class ChunkRegionLoader {
+@@ -431,6 +448,19 @@ public class ChunkRegionLoader {
          nbttagcompound1.set("Structures", a(chunkcoordintpair, ichunkaccess.h(), ichunkaccess.v()));
          return nbttagcompound;
      }
@@ -79,41 +125,3 @@ index d30c4d5a4ee83e21ba9269c0b92af2b72b85d3cc..3a292bccb2295bf7ae46fc3d7e5c9c63
  
      public static ChunkStatus.Type a(@Nullable NBTTagCompound nbttagcompound) {
          if (nbttagcompound != null) {
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 041dfa08066667501f18e043e8b894c660b949a7..d6c319c1177e43eebeb7d9f366da3495b38b6b97 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1046,6 +1046,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-         List[] aentityslice = chunk.getEntitySlices(); // Spigot
-         int i = aentityslice.length;
- 
-+        java.util.List<Entity> toMoveChunks = new java.util.ArrayList<>(); // Paper
-         for (int j = 0; j < i; ++j) {
-             List<Entity> entityslice = aentityslice[j]; // Spigot
-             Iterator iterator = entityslice.iterator();
-@@ -1058,11 +1059,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-                         throw (IllegalStateException) SystemUtils.c((Throwable) (new IllegalStateException("Removing entity while ticking!")));
-                     }
- 
-+                    // Paper start - move out entities that shouldn't be in this chunk before it unloads
-+                    if (!entity.dead && (int) Math.floor(entity.locX()) >> 4 != chunk.getPos().x || (int) Math.floor(entity.locZ()) >> 4 != chunk.getPos().z) {
-+                        toMoveChunks.add(entity);
-+                        continue;
-+                    }
-+                    // Paper end
-+
-                     this.entitiesById.remove(entity.getId());
-                     this.unregisterEntity(entity);
-+
-+                    if (entity.dead) iterator.remove(); // Paper - don't save dead entities during unload
-                 }
-             }
-         }
-+        // Paper start - move out entities that shouldn't be in this chunk before it unloads
-+        for (Entity entity : toMoveChunks) {
-+            this.chunkCheck(entity);
-+        }
-+        // Paper end
- 
-     }
- 

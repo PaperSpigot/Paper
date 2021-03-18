@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: virustotalop <virustotalop@gmail.com>
+Date: Thu, 16 Apr 2020 20:51:32 -0700
+Subject: [PATCH] Optimize brigadier child sorting performance
+
+
+diff --git a/src/main/java/com/mojang/brigadier/tree/CommandNode.java b/src/main/java/com/mojang/brigadier/tree/CommandNode.java
+index f0f25fa40d4a0aa0e299ad11847b6a5f9102c214..7ef6c99d2235eed38197aa76bc9553d7efbe52a4 100644
+--- a/src/main/java/com/mojang/brigadier/tree/CommandNode.java
++++ b/src/main/java/com/mojang/brigadier/tree/CommandNode.java
+@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
+ import net.minecraft.commands.CommandListenerWrapper; // CraftBukkit
+ 
+ public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
+-    private Map<String, CommandNode<S>> children = Maps.newLinkedHashMap();
++    private Map<String, CommandNode<S>> children = Maps.newTreeMap(); //Paper - Switch to tree map for automatic sorting
+     private Map<String, LiteralCommandNode<S>> literals = Maps.newLinkedHashMap();
+     private Map<String, ArgumentCommandNode<S, ?>> arguments = Maps.newLinkedHashMap();
+     private final Predicate<S> requirement;
+@@ -107,8 +107,7 @@ public abstract class CommandNode<S> implements Comparable<CommandNode<S>> {
+                 arguments.put(node.getName(), (ArgumentCommandNode<S, ?>) node);
+             }
+         }
+-
+-        children = children.entrySet().stream().sorted(Map.Entry.comparingByValue()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
++        //Paper - Remove manual sorting, it is no longer needed
+     }
+ 
+     public void findAmbiguities(final AmbiguityConsumer<S> consumer) {

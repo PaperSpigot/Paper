@@ -4,11 +4,11 @@ Date: Wed, 24 Jun 2020 12:39:08 -0600
 Subject: [PATCH] Beacon API - custom effect ranges
 
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityBeacon.java b/src/main/java/net/minecraft/server/TileEntityBeacon.java
-index fdf73eca821bab5ec7a742645893793679b5d42c..9019db391bc98b55eaa8bef11ab78c9d88fa7a18 100644
---- a/src/main/java/net/minecraft/server/TileEntityBeacon.java
-+++ b/src/main/java/net/minecraft/server/TileEntityBeacon.java
-@@ -43,6 +43,26 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeacon.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeacon.java
+index f9b1ab0e19ff398a16b1452e86f1a165a4b54219..8dfb9eb12d07c2d4737ecf3de1ae7f6de31891bf 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeacon.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeacon.java
+@@ -73,6 +73,26 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
          return (hasSecondaryEffect()) ? CraftPotionUtil.toBukkit(new MobEffect(this.secondaryEffect, getLevel(), getAmplification(), true, true)) : null;
      }
      // CraftBukkit end
@@ -35,7 +35,7 @@ index fdf73eca821bab5ec7a742645893793679b5d42c..9019db391bc98b55eaa8bef11ab78c9d
  
      public TileEntityBeacon() {
          super(TileEntityTypes.BEACON);
-@@ -233,7 +253,8 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
+@@ -263,7 +283,8 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
  
      public List getHumansInRange() {
          {
@@ -45,7 +45,7 @@ index fdf73eca821bab5ec7a742645893793679b5d42c..9019db391bc98b55eaa8bef11ab78c9d
  
              AxisAlignedBB axisalignedbb = (new AxisAlignedBB(this.position)).g(d0).b(0.0D, (double) this.world.getBuildHeight(), 0.0D);
              List<EntityHuman> list = this.world.a(EntityHuman.class, axisalignedbb);
-@@ -334,6 +355,9 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
+@@ -364,6 +385,9 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
          this.secondaryEffect = MobEffectList.fromId(nbttagcompound.getInt("Secondary"));
          this.levels = nbttagcompound.getInt("Levels"); // SPIGOT-5053, use where available
          // CraftBukkit end
@@ -55,7 +55,7 @@ index fdf73eca821bab5ec7a742645893793679b5d42c..9019db391bc98b55eaa8bef11ab78c9d
          if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
              this.customName = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
          }
-@@ -350,6 +374,8 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
+@@ -380,6 +404,8 @@ public class TileEntityBeacon extends TileEntity implements ITileInventory, ITic
          if (this.customName != null) {
              nbttagcompound.setString("CustomName", IChatBaseComponent.ChatSerializer.a(this.customName));
          }
@@ -65,7 +65,7 @@ index fdf73eca821bab5ec7a742645893793679b5d42c..9019db391bc98b55eaa8bef11ab78c9d
          this.chestLock.a(nbttagcompound);
          return nbttagcompound;
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBeacon.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBeacon.java
-index 252b03e287cbe9212c7ec80be049647c4c77d37a..939782a75258b2228a5566648ce5a4ec2cc3e76e 100644
+index d3ae5cadd88f9012203d2c04cbe38af9b215ef0b..c2e054853cba891326d45e9129bbc09e32fa3cc7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBeacon.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBeacon.java
 @@ -108,4 +108,19 @@ public class CraftBeacon extends CraftBlockEntityState<TileEntityBeacon> impleme

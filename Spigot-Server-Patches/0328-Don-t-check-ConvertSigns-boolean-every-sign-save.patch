@@ -6,11 +6,11 @@ Subject: [PATCH] Don't check ConvertSigns boolean every sign save
 property lookups arent super cheap. they synchronize, validate
 and check security managers.
 
-diff --git a/src/main/java/net/minecraft/server/TileEntitySign.java b/src/main/java/net/minecraft/server/TileEntitySign.java
-index 144975889a5a8dd9121b821695f6f35604bcbdb2..3c7847b1156a486e253a0e9f74a857e841d90619 100644
---- a/src/main/java/net/minecraft/server/TileEntitySign.java
-+++ b/src/main/java/net/minecraft/server/TileEntitySign.java
-@@ -11,6 +11,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index 6d0fe58d7e574ce5189e1f7a8485060d60b466d9..7f78f388584899b13ff983f0dc37c679bfb1507e 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -31,6 +31,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
      private final FormattedString[] g;
      private EnumColor color;
      public java.util.UUID signEditor; // Paper
@@ -18,7 +18,7 @@ index 144975889a5a8dd9121b821695f6f35604bcbdb2..3c7847b1156a486e253a0e9f74a857e8
  
      public TileEntitySign() {
          super(TileEntityTypes.SIGN);
-@@ -31,7 +32,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+@@ -51,7 +52,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
          }
  
          // CraftBukkit start

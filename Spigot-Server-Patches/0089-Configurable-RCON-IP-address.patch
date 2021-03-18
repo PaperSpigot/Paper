@@ -5,11 +5,11 @@ Subject: [PATCH] Configurable RCON IP address
 
 For servers with multiple IP's, ability to bind to a specific interface.
 
-diff --git a/src/main/java/net/minecraft/server/DedicatedServerProperties.java b/src/main/java/net/minecraft/server/DedicatedServerProperties.java
-index ebeea0df593bc82e7740203bec6b45e16318ab35..205d56f88440789df8a028b3827dd388fea56f63 100644
---- a/src/main/java/net/minecraft/server/DedicatedServerProperties.java
-+++ b/src/main/java/net/minecraft/server/DedicatedServerProperties.java
-@@ -61,6 +61,8 @@ public class DedicatedServerProperties extends PropertyManager<DedicatedServerPr
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
+index 0ecff9f5e2ba444b196d80da341ff851dd5ce26f..b7cf02301c02ed0a6b696384e656426762ae2105 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
+@@ -67,6 +67,8 @@ public class DedicatedServerProperties extends PropertyManager<DedicatedServerPr
      public final PropertyManager<DedicatedServerProperties>.EditableProperty<Boolean> whiteList;
      public final GeneratorSettings generatorSettings;
  
@@ -18,7 +18,7 @@ index ebeea0df593bc82e7740203bec6b45e16318ab35..205d56f88440789df8a028b3827dd388
      // CraftBukkit start
      public DedicatedServerProperties(Properties properties, IRegistryCustom iregistrycustom, OptionSet optionset) {
          super(properties, optionset);
-@@ -112,6 +114,10 @@ public class DedicatedServerProperties extends PropertyManager<DedicatedServerPr
+@@ -118,6 +120,10 @@ public class DedicatedServerProperties extends PropertyManager<DedicatedServerPr
          this.textFilteringConfig = this.getString("text-filtering-config", "");
          this.playerIdleTimeout = this.b("player-idle-timeout", 0);
          this.whiteList = this.b("white-list", false);
@@ -29,11 +29,11 @@ index ebeea0df593bc82e7740203bec6b45e16318ab35..205d56f88440789df8a028b3827dd388
          this.generatorSettings = GeneratorSettings.a(iregistrycustom, properties);
      }
  
-diff --git a/src/main/java/net/minecraft/server/PropertyManager.java b/src/main/java/net/minecraft/server/PropertyManager.java
-index 3aa05fd2b38562039960b58cab0ea40743ef06bb..2170d539a72a3e254a688e6148b282975e84e491 100644
---- a/src/main/java/net/minecraft/server/PropertyManager.java
-+++ b/src/main/java/net/minecraft/server/PropertyManager.java
-@@ -127,8 +127,8 @@ public abstract class PropertyManager<T extends PropertyManager<T>> {
+diff --git a/src/main/java/net/minecraft/server/dedicated/PropertyManager.java b/src/main/java/net/minecraft/server/dedicated/PropertyManager.java
+index cb85d8bc1b81f9e5fa95c4dfeffbe689667f56a2..03dd6dc3a1aa8d1be6990c750f96e8a280bc1f25 100644
+--- a/src/main/java/net/minecraft/server/dedicated/PropertyManager.java
++++ b/src/main/java/net/minecraft/server/dedicated/PropertyManager.java
+@@ -129,8 +129,8 @@ public abstract class PropertyManager<T extends PropertyManager<T>> {
          };
      }
  
@@ -44,11 +44,11 @@ index 3aa05fd2b38562039960b58cab0ea40743ef06bb..2170d539a72a3e254a688e6148b28297
          return (String) getOverride(s, this.properties.getProperty(s)); // CraftBukkit
      }
  
-diff --git a/src/main/java/net/minecraft/server/RemoteControlListener.java b/src/main/java/net/minecraft/server/RemoteControlListener.java
-index 44afacf7ebbdf09a25189cc636e9c8149e03c9f2..8006659f167879863b5e89e527813e6f664e90d6 100644
---- a/src/main/java/net/minecraft/server/RemoteControlListener.java
-+++ b/src/main/java/net/minecraft/server/RemoteControlListener.java
-@@ -60,7 +60,7 @@ public class RemoteControlListener extends RemoteConnectionThread {
+diff --git a/src/main/java/net/minecraft/server/rcon/thread/RemoteControlListener.java b/src/main/java/net/minecraft/server/rcon/thread/RemoteControlListener.java
+index 797a450a08da1b799e32fae2a71a7a50bb90d127..3b3e21d1d86629d6c5e06108e53d1c5e807074d8 100644
+--- a/src/main/java/net/minecraft/server/rcon/thread/RemoteControlListener.java
++++ b/src/main/java/net/minecraft/server/rcon/thread/RemoteControlListener.java
+@@ -62,7 +62,7 @@ public class RemoteControlListener extends RemoteConnectionThread {
      @Nullable
      public static RemoteControlListener a(IMinecraftServer iminecraftserver) {
          DedicatedServerProperties dedicatedserverproperties = iminecraftserver.getDedicatedServerProperties();

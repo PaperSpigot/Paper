@@ -5,28 +5,11 @@ Subject: [PATCH] Optimise IEntityAccess#getPlayerByUUID
 
 Use the world entity map instead of iterating over all players
 
-diff --git a/src/main/java/net/minecraft/server/IEntityAccess.java b/src/main/java/net/minecraft/server/IEntityAccess.java
-index 90c94729edf8d18f33d72e872f7969abef0067a0..2639c17b7f6100533f33124f9e49990cd303d161 100644
---- a/src/main/java/net/minecraft/server/IEntityAccess.java
-+++ b/src/main/java/net/minecraft/server/IEntityAccess.java
-@@ -268,6 +268,12 @@ public interface IEntityAccess {
- 
-     @Nullable
-     default EntityHuman b(UUID uuid) {
-+        // Paper start - allow WorldServer to override
-+        return this.getPlayerByUUID(uuid);
-+    }
-+    @Nullable
-+    default EntityHuman getPlayerByUUID(UUID uuid) {
-+        // Paper end
-         for (int i = 0; i < this.getPlayers().size(); ++i) {
-             EntityHuman entityhuman = (EntityHuman) this.getPlayers().get(i);
- 
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 0d8ef258422c0aaba31afbecf4bee6da7678259a..15d68e08a51ae83ae4a8031f47d512b7c89deae0 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -177,6 +177,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 23f88bd794b2c738463e1aa1180b6826d33f3b77..f11617dc37771f65d574cd14ae9cea09103d11e1 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -289,6 +289,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
      // Paper end
  
@@ -42,3 +25,20 @@ index 0d8ef258422c0aaba31afbecf4bee6da7678259a..15d68e08a51ae83ae4a8031f47d512b7
      // Add env and gen to constructor, WorldData -> WorldDataServer
      public WorldServer(MinecraftServer minecraftserver, Executor executor, Convertable.ConversionSession convertable_conversionsession, IWorldDataServer iworlddataserver, ResourceKey<World> resourcekey, DimensionManager dimensionmanager, WorldLoadListener worldloadlistener, ChunkGenerator chunkgenerator, boolean flag, long i, List<MobSpawner> list, boolean flag1, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
          super(iworlddataserver, resourcekey, dimensionmanager, minecraftserver::getMethodProfiler, false, flag, i, gen, env, executor); // Paper pass executor
+diff --git a/src/main/java/net/minecraft/world/level/IEntityAccess.java b/src/main/java/net/minecraft/world/level/IEntityAccess.java
+index 8fdc4b22e8c99d653bd213fe64339c133b46b4e9..1ff9e771788a4ab52129070e355ca48df2949470 100644
+--- a/src/main/java/net/minecraft/world/level/IEntityAccess.java
++++ b/src/main/java/net/minecraft/world/level/IEntityAccess.java
+@@ -277,6 +277,12 @@ public interface IEntityAccess {
+ 
+     @Nullable
+     default EntityHuman b(UUID uuid) {
++        // Paper start - allow WorldServer to override
++        return this.getPlayerByUUID(uuid);
++    }
++    @Nullable
++    default EntityHuman getPlayerByUUID(UUID uuid) {
++        // Paper end
+         for (int i = 0; i < this.getPlayers().size(); ++i) {
+             EntityHuman entityhuman = (EntityHuman) this.getPlayers().get(i);
+ 

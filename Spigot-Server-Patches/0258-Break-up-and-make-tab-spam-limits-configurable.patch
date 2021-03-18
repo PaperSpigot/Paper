@@ -44,11 +44,11 @@ index 77a03abd59db4a43f6f2d59d4c7ef176e782f205..bd508025b771424c942fd856c31d520b
 +        tabSpamLimit = getInt("settings.spam-limiter.tab-spam-limit", tabSpamLimit);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 92e5e880081066c01310ac5561a90f16af7a629b..370bf14e04a5989ed306f94e669bd789e3ebd61b 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -83,6 +83,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index f727b6ffa0db33e59ce8e4ff64723c79b401ad70..e24997fd0d43ff8293537e8fdefe66f1f3dadcdb 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -228,6 +228,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      // CraftBukkit start - multithreaded fields
      private volatile int chatThrottle;
      private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(PlayerConnection.class, "chatThrottle");
@@ -56,7 +56,7 @@ index 92e5e880081066c01310ac5561a90f16af7a629b..370bf14e04a5989ed306f94e669bd789
      // CraftBukkit end
      private int j;
      private final Int2ShortMap k = new Int2ShortOpenHashMap();
-@@ -218,6 +219,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -363,6 +364,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
          this.minecraftServer.getMethodProfiler().exit();
          // CraftBukkit start
          for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
@@ -64,7 +64,7 @@ index 92e5e880081066c01310ac5561a90f16af7a629b..370bf14e04a5989ed306f94e669bd789
          /* Use thread-safe field access instead
          if (this.chatThrottle > 0) {
              --this.chatThrottle;
-@@ -569,7 +571,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -714,7 +716,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      public void a(PacketPlayInTabComplete packetplayintabcomplete) {
          // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
          // CraftBukkit start

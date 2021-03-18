@@ -19,7 +19,7 @@ Other changes:
     configuration
 
 diff --git a/pom.xml b/pom.xml
-index b89112912a5b70fb0d77645e4b140f3ee6e6c55a..9888ac56e4fd14f17c032b44d1de5809e598a1a5 100644
+index 2559c83c1b811177ade56537aeab1982ac53ee67..26e59ca76d856cc37222963fd14cb6eaa410c749 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -45,10 +45,27 @@
@@ -54,7 +54,7 @@ index b89112912a5b70fb0d77645e4b140f3ee6e6c55a..9888ac56e4fd14f17c032b44d1de5809
          </dependency>
          <dependency>
              <groupId>org.apache.logging.log4j</groupId>
-@@ -259,10 +276,18 @@
+@@ -265,10 +282,18 @@
                                  <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                      <resource>META-INF/services/java.sql.Driver</resource>
                                  </transformer>
@@ -75,13 +75,13 @@ index b89112912a5b70fb0d77645e4b140f3ee6e6c55a..9888ac56e4fd14f17c032b44d1de5809
                  <groupId>org.apache.maven.plugins</groupId>
 diff --git a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..74ed02fa9296583977bb721014b10ff8b708b43c
+index 0000000000000000000000000000000000000000..89eeb9d202405747409e65fcf226d95379987e29
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
 @@ -0,0 +1,41 @@
 +package com.destroystokyo.paper.console;
 +
-+import net.minecraft.server.DedicatedServer;
++import net.minecraft.server.dedicated.DedicatedServer;
 +import net.minecrell.terminalconsole.SimpleTerminalConsole;
 +import org.bukkit.craftbukkit.command.ConsoleCommandCompleter;
 +import org.jline.reader.LineReader;
@@ -143,62 +143,20 @@ index 0000000000000000000000000000000000000000..685deaa0e5d1ddc13e3a7c0471b1cfcf
 +    }
 +
 +}
-diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index dc0cb79525adf0d5afee1f677e1fde546529cf97..750b1dc10ffb7adb9194e6cc8ace8fa92a5f0dec 100644
---- a/src/main/java/net/minecraft/server/DedicatedServer.java
-+++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -63,6 +63,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-                 if (!org.bukkit.craftbukkit.Main.useConsole) {
-                     return;
-                 }
-+                // Paper start - Use TerminalConsoleAppender
-+                new com.destroystokyo.paper.console.PaperConsole(DedicatedServer.this).start();
-+                /*
-                 jline.console.ConsoleReader bufferedreader = reader;
- 
-                 // MC-33041, SPIGOT-5538: if System.in is not valid due to javaw, then return
-@@ -102,6 +105,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-                     DedicatedServer.LOGGER.error("Exception handling console input", ioexception);
-                 }
- 
-+                */
-+                // Paper end
-             }
-         };
- 
-@@ -113,6 +118,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-         }
-         global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
- 
-+        // Paper start - Not needed with TerminalConsoleAppender
-+        final org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
-+        /*
-         final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger());
-         for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
-             if (appender instanceof org.apache.logging.log4j.core.appender.ConsoleAppender) {
-@@ -121,6 +129,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-         }
- 
-         new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader).start();
-+        */
-+        // Paper end
- 
-         System.setOut(IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
-         System.setErr(IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900ef7f7f37 100644
+index 7637e17e8a811214931c2df3dab50651a4cbcde6..d181a41c1724ee6e84f5239649ab74df158d5f24 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -59,7 +59,7 @@ import org.apache.logging.log4j.Logger;
+@@ -160,7 +160,7 @@ import org.apache.logging.log4j.Logger;
  import com.mojang.serialization.DynamicOps;
  import com.mojang.serialization.Lifecycle;
  import com.google.common.collect.ImmutableSet;
 -import jline.console.ConsoleReader;
 +// import jline.console.ConsoleReader; // Paper
  import joptsimple.OptionSet;
- import org.bukkit.Bukkit;
- import org.bukkit.craftbukkit.CraftServer;
-@@ -147,7 +147,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+ import net.minecraft.nbt.DynamicOpsNBT;
+ import net.minecraft.nbt.NBTBase;
+@@ -255,7 +255,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      public OptionSet options;
      public org.bukkit.command.ConsoleCommandSender console;
      public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
@@ -207,7 +165,7 @@ index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900
      public static int currentTick = 0; // Paper - Further improve tick loop
      public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
      public int autosavePeriod;
-@@ -216,7 +216,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -324,7 +324,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          this.options = options;
          this.datapackconfiguration = datapackconfiguration;
          this.vanillaCommandDispatcher = datapackresources.commandDispatcher; // CraftBukkit
@@ -217,7 +175,7 @@ index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900
          if (System.console() == null && System.getProperty("jline.terminal") == null) {
              System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
              Main.useJline = false;
-@@ -237,6 +239,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -345,6 +347,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  LOGGER.warn((String) null, ex);
              }
          }
@@ -226,7 +184,7 @@ index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
      }
      // CraftBukkit end
-@@ -980,7 +984,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1088,7 +1092,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  org.spigotmc.WatchdogThread.doStop(); // Spigot
                  // CraftBukkit start - Restore terminal to original settings
                  try {
@@ -235,7 +193,7 @@ index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900
                  } catch (Exception ignored) {
                  }
                  // CraftBukkit end
-@@ -1351,7 +1355,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1459,7 +1463,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      @Override
      public void sendMessage(IChatBaseComponent ichatbasecomponent, UUID uuid) {
@@ -244,11 +202,53 @@ index 3baf1be1b58ea53ab1ee8d388b5f9a4595ca478a..5e64853fca8e1baa103dd69c050a4900
      }
  
      public KeyPair getKeyPair() {
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 74e55f85e2b128913015397ddec70322739e39d5..a56f9a07472e9a56da12a096400e69bd0d0cd17f 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -76,8 +76,7 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 8ae72e8c8325d9b03803f29fcdd83a0ce8d34450..a0804c4df6f047cf913ae70970219617052e853f 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -102,6 +102,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+                 if (!org.bukkit.craftbukkit.Main.useConsole) {
+                     return;
+                 }
++                // Paper start - Use TerminalConsoleAppender
++                new com.destroystokyo.paper.console.PaperConsole(DedicatedServer.this).start();
++                /*
+                 jline.console.ConsoleReader bufferedreader = reader;
+ 
+                 // MC-33041, SPIGOT-5538: if System.in is not valid due to javaw, then return
+@@ -141,6 +144,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+                     DedicatedServer.LOGGER.error("Exception handling console input", ioexception);
+                 }
+ 
++                */
++                // Paper end
+             }
+         };
+ 
+@@ -152,6 +157,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         }
+         global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
+ 
++        // Paper start - Not needed with TerminalConsoleAppender
++        final org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
++        /*
+         final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger());
+         for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
+             if (appender instanceof org.apache.logging.log4j.core.appender.ConsoleAppender) {
+@@ -160,6 +168,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         }
+ 
+         new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader).start();
++        */
++        // Paper end
+ 
+         System.setOut(IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
+         System.setErr(IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 6c80f328016b6cd30c77b5a5b1e2f6be0b3cd2f0..a892bcf08dddac90f01caec81229259e1070c3ea 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -150,8 +150,7 @@ public abstract class PlayerList {
  
      public PlayerList(MinecraftServer minecraftserver, IRegistryCustom.Dimension iregistrycustom_dimension, WorldNBTStorage worldnbtstorage, int i) {
          this.cserver = minecraftserver.server = new CraftServer((DedicatedServer) minecraftserver, this);
@@ -259,18 +259,25 @@ index 74e55f85e2b128913015397ddec70322739e39d5..a56f9a07472e9a56da12a096400e69bd
  
          this.k = new GameProfileBanList(PlayerList.b);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 1203780c0b1ac0f79c0a5a7d648e973371159e52..126debf6b1734368a6147e758de039b51867353d 100644
+index 1f0021c5374e1af9c9cd29d44e6b0bd9522394d9..5d357b0f84b5242066dcce203752a0f46e9a249c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -46,7 +46,7 @@ import java.util.function.Consumer;
+@@ -46,7 +46,6 @@ import java.util.function.Consumer;
  import java.util.logging.Level;
  import java.util.logging.Logger;
  import javax.imageio.ImageIO;
 -import jline.console.ConsoleReader;
+ import net.minecraft.advancements.Advancement;
+ import net.minecraft.commands.CommandDispatcher;
+ import net.minecraft.commands.CommandListenerWrapper;
+@@ -59,6 +58,7 @@ import net.minecraft.nbt.NBTBase;
+ import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.resources.RegistryReadOps;
+ import net.minecraft.resources.ResourceKey;
 +//import jline.console.ConsoleReader; // Paper
- import net.minecraft.server.Advancement;
- import net.minecraft.server.ArgumentEntity;
- import net.minecraft.server.BiomeManager;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.ServerCommand;
+ import net.minecraft.server.bossevents.BossBattleCustom;
 @@ -1201,9 +1201,13 @@ public final class CraftServer implements Server {
          return logger;
      }
@@ -365,7 +372,7 @@ index 4580642e0ee79e6d9c9bef0344e643bbc551205c..829c62b6d55cb5706be3ce6bdc758d6b
 +    }*/ // Paper
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index befcc19f9b56df9096b98a23b0020f1db793ea5b..5510266fb114954322823b72e3199f33c4d7a9a7 100644
+index befcc19f9b56df9096b98a23b0020f1db793ea5b..a957695457cf3252848ce6ef37069692841b8e28 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -4,20 +4,31 @@ import java.util.Collections;
@@ -373,11 +380,11 @@ index befcc19f9b56df9096b98a23b0020f1db793ea5b..5510266fb114954322823b72e3199f33
  import java.util.concurrent.ExecutionException;
  import java.util.logging.Level;
 -import jline.console.completer.Completer;
++import net.minecraft.server.dedicated.DedicatedServer;
  import org.bukkit.craftbukkit.CraftServer;
  import org.bukkit.craftbukkit.util.Waitable;
 +
 +// Paper start - JLine update
-+import net.minecraft.server.DedicatedServer; // Paper
 +import org.jline.reader.Candidate;
 +import org.jline.reader.Completer;
 +import org.jline.reader.LineReader;

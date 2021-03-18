@@ -4,11 +4,11 @@ Date: Sat, 24 Oct 2020 16:37:44 +0200
 Subject: [PATCH] living entity allow attribute registration
 
 
-diff --git a/src/main/java/net/minecraft/server/AttributeMapBase.java b/src/main/java/net/minecraft/server/AttributeMapBase.java
-index c57e23e16b79017fe6dc084d634226cfdac772b5..f5f2f31e88433d894ff1e7c2f26686f671744c56 100644
---- a/src/main/java/net/minecraft/server/AttributeMapBase.java
-+++ b/src/main/java/net/minecraft/server/AttributeMapBase.java
-@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
+diff --git a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMapBase.java b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMapBase.java
+index 8f6b78c68da555f96033df567da581af52195e6c..e4cd1848e8700de4ab64f3037bb0c41d99e7c97d 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMapBase.java
++++ b/src/main/java/net/minecraft/world/entity/ai/attributes/AttributeMapBase.java
+@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
  public class AttributeMapBase {
  
      private static final Logger LOGGER = LogManager.getLogger();
@@ -17,21 +17,21 @@ index c57e23e16b79017fe6dc084d634226cfdac772b5..f5f2f31e88433d894ff1e7c2f26686f6
      private final Set<AttributeModifiable> c = Sets.newHashSet();
      private final AttributeProvider d;
  
-@@ -130,4 +130,12 @@ public class AttributeMapBase {
+@@ -135,4 +135,12 @@ public class AttributeMapBase {
          }
  
      }
 +
 +    // Paper - start
 +    public void registerAttribute(AttributeBase attributeBase) {
-+        net.minecraft.server.AttributeModifiable attributeModifiable = new net.minecraft.server.AttributeModifiable(attributeBase, net.minecraft.server.AttributeModifiable::getAttribute);
++        AttributeModifiable attributeModifiable = new AttributeModifiable(attributeBase, AttributeModifiable::getAttribute);
 +        attributeMap.put(attributeBase, attributeModifiable);
 +    }
 +    // Paper - end
 +
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/attribute/CraftAttributeMap.java b/src/main/java/org/bukkit/craftbukkit/attribute/CraftAttributeMap.java
-index c5dd25add39298342a6f4b2a05e137de93d1e62b..e343878a1755ee885f84c082ccba2777927c64bb 100644
+index 673948947bd918c1dbb6c4c99486b4200e3c09fe..2e83b8855070077e90e5ab2c4beae819c620e480 100644
 --- a/src/main/java/org/bukkit/craftbukkit/attribute/CraftAttributeMap.java
 +++ b/src/main/java/org/bukkit/craftbukkit/attribute/CraftAttributeMap.java
 @@ -40,6 +40,14 @@ public class CraftAttributeMap implements Attributable {
@@ -50,10 +50,10 @@ index c5dd25add39298342a6f4b2a05e137de93d1e62b..e343878a1755ee885f84c082ccba2777
          return IRegistry.ATTRIBUTE.get(CraftNamespacedKey.toMinecraft(attribute.getKey()));
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 16e69cfd4994fd6850ee3635ea819379412351c9..c1350bbf62fc5c5e18509f378edf16e8b210cfe8 100644
+index e574e2453c7bc848168ff24372d6772bd423b672..3d497f69f89455b88fba423de8effb3db83e7af4 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -665,6 +665,13 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -675,6 +675,13 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
          return getHandle().craftAttributes.getAttribute(attribute);
      }
  

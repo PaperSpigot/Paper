@@ -7,10 +7,10 @@ Subject: [PATCH] Improve ServerGUI
 - Show tps in the server stats
 
 diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
-index e463a86a6ad6c4f2885f4df159411bad294e1208..d21d081ef3e3eee1d14ce3dfdd8c810cc8382b80 100644
+index 67d064e3959ed8d886df30ce9d97f86c2443fa39..dc6bc1910ad0f9b27144d5750078c3ca607d03d3 100644
 --- a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
 +++ b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
-@@ -58,9 +58,18 @@ public class RAMDetails extends JList<String> {
+@@ -57,9 +57,18 @@ public class RAMDetails extends JList<String> {
      public void update() {
          GraphData data = RAMGraph.DATA.peekLast();
          Vector<String> vector = new Vector<>();
@@ -29,7 +29,7 @@ index e463a86a6ad6c4f2885f4df159411bad294e1208..d21d081ef3e3eee1d14ce3dfdd8c810c
          setListData(vector);
      }
  
-@@ -71,4 +80,9 @@ public class RAMDetails extends JList<String> {
+@@ -70,4 +79,9 @@ public class RAMDetails extends JList<String> {
          }
          return ((double) total / (double) tickTimes.length) * 1.0E-6D;
      }
@@ -39,11 +39,11 @@ index e463a86a6ad6c4f2885f4df159411bad294e1208..d21d081ef3e3eee1d14ce3dfdd8c810c
 +        return ( ( tps > 21.0 ) ? "*" : "" ) + Math.min( Math.round( tps * 100.0 ) / 100.0, 20.0 );
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/GuiStatsComponent.java b/src/main/java/net/minecraft/server/GuiStatsComponent.java
-index 859e31c63f94bdc7729c6d475990750b76e24b9c..d7ed094a4f9337c42b661b1ff1bdd93b357b550f 100644
---- a/src/main/java/net/minecraft/server/GuiStatsComponent.java
-+++ b/src/main/java/net/minecraft/server/GuiStatsComponent.java
-@@ -16,7 +16,7 @@ public class GuiStatsComponent extends JComponent {
+diff --git a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+index f85a4079bb2931fd29a526379ba350eb7e8ae636..79cc587d8ad9f576f9e4478a41baabcaf690c568 100644
+--- a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
++++ b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+@@ -18,7 +18,7 @@ public class GuiStatsComponent extends JComponent {
      });
      private final int[] b = new int[256];
      private int c;
@@ -52,7 +52,7 @@ index 859e31c63f94bdc7729c6d475990750b76e24b9c..d7ed094a4f9337c42b661b1ff1bdd93b
      private final MinecraftServer e;
      private final Timer f;
  
-@@ -35,8 +35,18 @@ public class GuiStatsComponent extends JComponent {
+@@ -37,8 +37,18 @@ public class GuiStatsComponent extends JComponent {
      private void b() {
          long i = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
  
@@ -71,7 +71,7 @@ index 859e31c63f94bdc7729c6d475990750b76e24b9c..d7ed094a4f9337c42b661b1ff1bdd93b
          this.b[this.c++ & 255] = (int) (i * 100L / Runtime.getRuntime().maxMemory());
          this.repaint();
      }
-@@ -83,4 +93,10 @@ public class GuiStatsComponent extends JComponent {
+@@ -85,4 +95,10 @@ public class GuiStatsComponent extends JComponent {
      public void a() {
          this.f.stop();
      }
@@ -82,12 +82,12 @@ index 859e31c63f94bdc7729c6d475990750b76e24b9c..d7ed094a4f9337c42b661b1ff1bdd93b
 +    }
 +    // Paper end
  }
-diff --git a/src/main/java/net/minecraft/server/ServerGUI.java b/src/main/java/net/minecraft/server/ServerGUI.java
-index e51434f2323bcb9385d11e99d0438d66434e3e63..232a8c2fb98bc0d079484bea1da4e35b7f55ac0d 100644
---- a/src/main/java/net/minecraft/server/ServerGUI.java
-+++ b/src/main/java/net/minecraft/server/ServerGUI.java
-@@ -29,6 +29,11 @@ import javax.swing.text.BadLocationException;
- import javax.swing.text.Document;
+diff --git a/src/main/java/net/minecraft/server/gui/ServerGUI.java b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+index c2c075b9e3b70f863b6c450e4f31d6fde2935be6..d1d98c2f192514a3f511bebb00c088b03e6be84c 100644
+--- a/src/main/java/net/minecraft/server/gui/ServerGUI.java
++++ b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+@@ -31,6 +31,11 @@ import net.minecraft.DefaultUncaughtExceptionHandler;
+ import net.minecraft.server.dedicated.DedicatedServer;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
 +// Paper start
@@ -98,7 +98,7 @@ index e51434f2323bcb9385d11e99d0438d66434e3e63..232a8c2fb98bc0d079484bea1da4e35b
  
  public class ServerGUI extends JComponent {
  
-@@ -54,6 +59,15 @@ public class ServerGUI extends JComponent {
+@@ -56,6 +61,15 @@ public class ServerGUI extends JComponent {
          jframe.pack();
          jframe.setLocationRelativeTo((Component) null);
          jframe.setVisible(true);

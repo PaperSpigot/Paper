@@ -4,11 +4,11 @@ Date: Fri, 22 Mar 2019 22:24:03 -0700
 Subject: [PATCH] Update entity Metadata for all tracked players
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-index c346ca8ba30da401ea1a421e8ce6ed1d5b6e4c13..d89d53e9990918fb9863a7eed3111ef026c95386 100644
---- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-+++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-@@ -393,6 +393,12 @@ public class EntityTrackerEntry {
+diff --git a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+index 44b79c97d5cc7570683e1b7f025b4f3ad65beb81..bcc1103e21cc10d5b405a2b89f3dfe78eda271bd 100644
+--- a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
+@@ -422,6 +422,12 @@ public class EntityTrackerEntry {
          return PacketPlayOutEntity.a(this.xLoc, this.yLoc, this.zLoc);
      }
  
@@ -21,17 +21,17 @@ index c346ca8ba30da401ea1a421e8ce6ed1d5b6e4c13..d89d53e9990918fb9863a7eed3111ef0
      private void broadcastIncludingSelf(Packet<?> packet) {
          this.f.accept(packet);
          if (this.tracker instanceof EntityPlayer) {
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index fb98cfecbcf4c7773cd9fde37a6614ced107e07a..95c5f956055d43ee0aeb291ad8f66cadf7a6d507 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -2141,7 +2141,14 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 8f442eae6519c3d0658e6ed77ecfa7aa8161a0f2..5d4ab95ca7498671888580f68382667c2282d604 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2285,7 +2285,14 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
                      if (event.isCancelled() || this.player.inventory.getItemInHand() == null || this.player.inventory.getItemInHand().getItem() != origItem) {
                          // Refresh the current entity metadata
--                        this.sendPacket(new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true));
+-                        this.sendPacket(new PacketPlayOutEntityMetadata(entity.getId(), entity.getDataWatcher(), true));
 +                        // Paper start - update entity for all players
-+                        PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true);
++                        PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(entity.getId(), entity.getDataWatcher(), true);
 +                        if (entity.tracker != null) {
 +                            entity.tracker.broadcast(packet);
 +                        } else {

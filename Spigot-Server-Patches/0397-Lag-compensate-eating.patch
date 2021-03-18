@@ -6,11 +6,11 @@ Subject: [PATCH] Lag compensate eating
 When the server is lagging, players will wait longer when eating.
 Change to also use a time check instead if it passes.
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887574f59e0 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -120,7 +120,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 58cf4bb4c6267c4d8d71bbd29ed34575eb93aed3..00f94e94aa302e24d286164ae829c935d2bcce95 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -214,7 +214,7 @@ public abstract class EntityLiving extends Entity {
      private int jumpTicks;
      private float bw;
      public ItemStack activeItem; // Paper - public
@@ -19,7 +19,7 @@ index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887
      protected int be;
      private BlockPosition bx;
      private Optional<BlockPosition> by;
-@@ -3057,6 +3057,11 @@ public abstract class EntityLiving extends Entity {
+@@ -3151,6 +3151,11 @@ public abstract class EntityLiving extends Entity {
          return ((Byte) this.datawatcher.get(EntityLiving.ag) & 2) > 0 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
      }
  
@@ -31,7 +31,7 @@ index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887
      private void t() {
          if (this.isHandRaised()) {
              if (ItemStack.d(this.b(this.getRaisedHand()), this.activeItem)) {
-@@ -3066,7 +3071,12 @@ public abstract class EntityLiving extends Entity {
+@@ -3160,7 +3165,12 @@ public abstract class EntityLiving extends Entity {
                      this.b(this.activeItem, 5);
                  }
  
@@ -45,7 +45,7 @@ index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887
                      this.s();
                  }
              } else {
-@@ -3116,7 +3126,10 @@ public abstract class EntityLiving extends Entity {
+@@ -3210,7 +3220,10 @@ public abstract class EntityLiving extends Entity {
  
          if (!itemstack.isEmpty() && !this.isHandRaised() || forceUpdate) { // Paper use override flag
              this.activeItem = itemstack;
@@ -57,7 +57,7 @@ index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887
              if (!this.world.isClientSide) {
                  this.c(1, true);
                  this.c(2, enumhand == EnumHand.OFF_HAND);
-@@ -3140,7 +3153,10 @@ public abstract class EntityLiving extends Entity {
+@@ -3234,7 +3247,10 @@ public abstract class EntityLiving extends Entity {
                  }
              } else if (!this.isHandRaised() && !this.activeItem.isEmpty()) {
                  this.activeItem = ItemStack.b;
@@ -69,7 +69,7 @@ index 11a1fad5450ec94aeb4b135d7efc72718297c9cd..cfc4422aaaf79a7b198f7991d422f887
              }
          }
  
-@@ -3268,7 +3284,10 @@ public abstract class EntityLiving extends Entity {
+@@ -3362,7 +3378,10 @@ public abstract class EntityLiving extends Entity {
          }
  
          this.activeItem = ItemStack.b;

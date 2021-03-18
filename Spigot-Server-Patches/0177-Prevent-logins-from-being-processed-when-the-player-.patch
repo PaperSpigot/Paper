@@ -5,11 +5,11 @@ Subject: [PATCH] Prevent logins from being processed when the player has
  disconnected
 
 
-diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index a8f155b7149d5702896375c7cae1c8c573543060..144df45865105a65ed87053935878b3f12146f4a 100644
---- a/src/main/java/net/minecraft/server/LoginListener.java
-+++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -57,7 +57,11 @@ public class LoginListener implements PacketLoginInListener {
+diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
+index 5b96c69014dbfb8eb3e2ecf370ad69f2ffc31453..714f44a668eb35b3c61bb9ab140f884917efd6f5 100644
+--- a/src/main/java/net/minecraft/server/network/LoginListener.java
++++ b/src/main/java/net/minecraft/server/network/LoginListener.java
+@@ -75,7 +75,11 @@ public class LoginListener implements PacketLoginInListener {
          }
          // Paper end
          if (this.g == LoginListener.EnumProtocolState.READY_TO_ACCEPT) {

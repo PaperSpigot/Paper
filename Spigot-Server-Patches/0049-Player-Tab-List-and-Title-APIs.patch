@@ -4,23 +4,11 @@ Date: Thu, 3 Mar 2016 02:32:10 -0600
 Subject: [PATCH] Player Tab List and Title APIs
 
 
-diff --git a/src/main/java/net/minecraft/server/IChatBaseComponent.java b/src/main/java/net/minecraft/server/IChatBaseComponent.java
-index 921fe6399745318c18570360fb438c45762b1b8e..2b8916e3b3ecfd3917b5acf3ea6dfc2793e242c8 100644
---- a/src/main/java/net/minecraft/server/IChatBaseComponent.java
-+++ b/src/main/java/net/minecraft/server/IChatBaseComponent.java
-@@ -359,6 +359,7 @@ public interface IChatBaseComponent extends Message, IChatFormatted, Iterable<IC
-             return IChatBaseComponent.ChatSerializer.a.toJsonTree(ichatbasecomponent);
-         }
- 
-+        @Nullable public static IChatBaseComponent jsonToComponent(String json) { return a(json);} // Paper - OBFHELPER
-         @Nullable
-         public static IChatMutableComponent a(String s) {
-             return (IChatMutableComponent) ChatDeserializer.a(IChatBaseComponent.ChatSerializer.a, s, IChatMutableComponent.class, false);
-diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index 6c9aed49d5e63d6df608719ed17e813f86e93fcc..391f96e585d80f7921fd96f207b0b60d88961ae7 100644
---- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
-+++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-@@ -158,6 +158,11 @@ public class PacketDataSerializer extends ByteBuf {
+diff --git a/src/main/java/net/minecraft/network/PacketDataSerializer.java b/src/main/java/net/minecraft/network/PacketDataSerializer.java
+index 5f1c5dd7902f6cff5acae05e8c6bf58a1ba5bdf1..df459918c14589155a574730205cb35d463b8079 100644
+--- a/src/main/java/net/minecraft/network/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/network/PacketDataSerializer.java
+@@ -171,6 +171,11 @@ public class PacketDataSerializer extends ByteBuf {
      public PacketDataSerializer writeComponent(final net.kyori.adventure.text.Component component) {
          return this.writeUtf(PaperAdventure.asJsonString(component, this.adventure$locale), 262144);
      }
@@ -32,11 +20,23 @@ index 6c9aed49d5e63d6df608719ed17e813f86e93fcc..391f96e585d80f7921fd96f207b0b60d
      // Paper end
  
      public PacketDataSerializer a(IChatBaseComponent ichatbasecomponent) {
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutTitle.java b/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
-index 772ca6256964692a2b9c12e2edc532d2a8f51f7b..71168d9d0252e93253fa3b3f0bface3ae58757b7 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
-@@ -44,6 +44,17 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
+diff --git a/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java b/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
+index c7c191b0a9889450fdf495f5aa45d59f159f1401..e0fe2ba95bd3cb6afcf9c804007438a513c095b7 100644
+--- a/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
++++ b/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
+@@ -363,6 +363,7 @@ public interface IChatBaseComponent extends Message, IChatFormatted, Iterable<IC
+             return IChatBaseComponent.ChatSerializer.a.toJsonTree(ichatbasecomponent);
+         }
+ 
++        @Nullable public static IChatBaseComponent jsonToComponent(String json) { return a(json);} // Paper - OBFHELPER
+         @Nullable
+         public static IChatMutableComponent a(String s) {
+             return (IChatMutableComponent) ChatDeserializer.a(IChatBaseComponent.ChatSerializer.a, s, IChatMutableComponent.class, false);
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutTitle.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutTitle.java
+index fff22c40ba38575951e8e4821ade22b29d580a89..c397c52e8e24b85d892e4906178720cc70edc143 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutTitle.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutTitle.java
+@@ -47,6 +47,17 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
          }
  
      }
@@ -54,7 +54,7 @@ index 772ca6256964692a2b9c12e2edc532d2a8f51f7b..71168d9d0252e93253fa3b3f0bface3a
  
      @Override
      public void b(PacketDataSerializer packetdataserializer) throws IOException {
-@@ -52,6 +63,8 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
+@@ -55,6 +66,8 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
              // Paper start
              if (this.adventure$text != null) {
                  packetdataserializer.writeComponent(this.adventure$text);
@@ -64,7 +64,7 @@ index 772ca6256964692a2b9c12e2edc532d2a8f51f7b..71168d9d0252e93253fa3b3f0bface3a
              // Paper end
              packetdataserializer.a(this.b);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 2e7e2ed1bb7d42a6ac26a6da965ed4eed9c8b554..efc8f23b43f9b9765b3c49f9dde9fdbe64291cd4 100644
+index 62f8d96f996ece87b7ab8d5d05d1dc214d10dbfa..9837f7364f3efd0aa22d33058bec369c41cd03ef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -1,5 +1,6 @@

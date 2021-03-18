@@ -4,11 +4,11 @@ Date: Tue, 19 Apr 2016 14:09:31 -0500
 Subject: [PATCH] Implement PlayerLocaleChangeEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 74727e9e1d689e4a280fb223db9196fef16103f7..103a7fe192182d92ae21783c728e494b5533917a 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -1558,7 +1558,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 1f31104a1a350f3b53ce45b034cafe528d406291..3d5d1b83094b5ca45fae47055db397630fdd4f04 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -1685,7 +1685,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          return s;
      }
  
@@ -17,7 +17,7 @@ index 74727e9e1d689e4a280fb223db9196fef16103f7..103a7fe192182d92ae21783c728e494b
      public java.util.Locale adventure$locale = java.util.Locale.US; // Paper
      public void a(PacketPlayInSettings packetplayinsettings) {
          // CraftBukkit start
-@@ -1566,9 +1566,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1693,9 +1693,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), getMainHand() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT);
              this.server.server.getPluginManager().callEvent(event);
          }
@@ -30,7 +30,7 @@ index 74727e9e1d689e4a280fb223db9196fef16103f7..103a7fe192182d92ae21783c728e494b
          this.locale = packetplayinsettings.locale;
          // Paper start
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index b93e6c6ec058c3cc73c7fec47e081a5295c1ec6b..f2cb1d8d82f07019d79a3b967f999b26270f7c29 100644
+index facf2a79144a2d0fbea907c084becaea7bbdc48c..6d7f1dee9ae2fb0b9620d85969de86eee09020cc 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -1874,8 +1874,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

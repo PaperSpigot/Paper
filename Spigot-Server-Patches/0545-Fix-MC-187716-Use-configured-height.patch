@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Sat, 15 Aug 2020 08:04:49 -0500
+Subject: [PATCH] Fix MC-187716 Use configured height
+
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNether.java b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNether.java
+index 9efe3a1dc5da760f0d8b0b39a10e642a53321aa5..ea2b107cddc7c9a6e8b8a0590e3b22a9cd7e34a6 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNether.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNether.java
+@@ -36,7 +36,7 @@ public class WorldGenSurfaceNether extends WorldGenSurface<WorldGenSurfaceConfig
+         IBlockData iblockdata2 = worldgensurfaceconfigurationbase.a();
+         IBlockData iblockdata3 = worldgensurfaceconfigurationbase.b();
+ 
+-        for (int k2 = 127; k2 >= 0; --k2) {
++        for (int k2 = k; k2 >= 0; --k2) { // Paper - fix MC-187716 - use configured height
+             blockposition_mutableblockposition.d(k1, k2, l1);
+             IBlockData iblockdata4 = ichunkaccess.getType(blockposition_mutableblockposition);
+ 
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherAbstract.java b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherAbstract.java
+index 22926296e66866c7fca13466004c20a16e94dc47..b9523f5611b5b8d786fddcc5fd265e8a2043ab6c 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherAbstract.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherAbstract.java
+@@ -44,7 +44,7 @@ public abstract class WorldGenSurfaceNetherAbstract extends WorldGenSurface<Worl
+         BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+         IBlockData iblockdata4 = ichunkaccess.getType(blockposition_mutableblockposition.d(k1, 128, l1));
+ 
+-        for (int k2 = 127; k2 >= 0; --k2) {
++        for (int k2 = k; k2 >= 0; --k2) { // Paper - fix MC-187716 - use configured height
+             blockposition_mutableblockposition.d(k1, k2, l1);
+             IBlockData iblockdata5 = ichunkaccess.getType(blockposition_mutableblockposition);
+             int l2;
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherForest.java b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherForest.java
+index 3bd78b0fc75a536e4e37f5ac67843ff778cd1b5f..a2abfc8816f2dad6c95aa89b443af0d3dec480aa 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherForest.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/surfacebuilders/WorldGenSurfaceNetherForest.java
+@@ -34,7 +34,7 @@ public class WorldGenSurfaceNetherForest extends WorldGenSurface<WorldGenSurface
+         int j2 = -1;
+         IBlockData iblockdata2 = worldgensurfaceconfigurationbase.b();
+ 
+-        for (int k2 = 127; k2 >= 0; --k2) {
++        for (int k2 = k; k2 >= 0; --k2) { // Paper - fix MC-187716 - use configured height
+             blockposition_mutableblockposition.d(k1, k2, l1);
+             IBlockData iblockdata3 = worldgensurfaceconfigurationbase.a();
+             IBlockData iblockdata4 = ichunkaccess.getType(blockposition_mutableblockposition);

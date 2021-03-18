@@ -5,11 +5,11 @@ Subject: [PATCH] Auto fix bad Y levels on player login
 
 Bring down to a saner Y level if super high, as this can cause the server to crash
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 89b1561bfce8b0a0b34e3f2ce706e3149fb5949d..a0bc829ed49661bc381f535d1e462bf8e0dc6ae1 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -212,6 +212,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 3d5d1b83094b5ca45fae47055db397630fdd4f04..82085f30e4eefa1867536a8c591210380ebad725 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -339,6 +339,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      @Override
      public void loadData(NBTTagCompound nbttagcompound) {
          super.loadData(nbttagcompound);

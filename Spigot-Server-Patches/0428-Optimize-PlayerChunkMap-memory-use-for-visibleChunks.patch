@@ -56,24 +56,11 @@ index 0000000000000000000000000000000000000000..f6ff4d8132a95895680f5bc81f8f873e
 +        return clone;
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 1f4776f6f2debb4e000440ed8e47e3e063202850..475e35a5d3f25929e60ef34d7f41e2db193443ef 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -756,7 +756,7 @@ public class ChunkProviderServer extends IChunkProvider {
-                 entityPlayer.playerNaturallySpawnedEvent.callEvent();
-             };
-             // Paper end
--            this.playerChunkMap.f().forEach((playerchunk) -> { // Paper - no... just no...
-+            this.playerChunkMap.forEachVisibleChunk((playerchunk) -> { // Paper - safe iterator incase chunk loads, also no wrapping
-                 Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
- 
-                 if (optional.isPresent()) {
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index c470c6527b214026c230feaae0c0875c86dea673..df3150072fd36dac28d83309e50342c9cfa326b3 100644
+index 5a410550cfb48505c9de9979465ed1528c8fbf05..9edbde8299bcd127e1727d34ed441f638e716b2a 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -599,7 +599,7 @@ public final class MCUtil {
+@@ -616,7 +616,7 @@ public final class MCUtil {
  
              WorldServer world = ((org.bukkit.craftbukkit.CraftWorld)bukkitWorld).getHandle();
              PlayerChunkMap chunkMap = world.getChunkProvider().playerChunkMap;
@@ -82,11 +69,24 @@ index c470c6527b214026c230feaae0c0875c86dea673..df3150072fd36dac28d83309e50342c9
              ChunkMapDistance chunkMapDistance = chunkMap.chunkDistanceManager;
              List<PlayerChunk> allChunks = new ArrayList<>(visibleChunks.values());
              List<EntityPlayer> players = world.players;
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3879f520f 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -58,8 +58,33 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index a444f6214b90f7707be2265f4b2ab12632986c53..138676e5b03bc80a777a1f4c12f3f4b5316e8dea 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -780,7 +780,7 @@ public class ChunkProviderServer extends IChunkProvider {
+                 entityPlayer.playerNaturallySpawnedEvent.callEvent();
+             };
+             // Paper end
+-            this.playerChunkMap.f().forEach((playerchunk) -> { // Paper - no... just no...
++            this.playerChunkMap.forEachVisibleChunk((playerchunk) -> { // Paper - safe iterator incase chunk loads, also no wrapping
+                 Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
+ 
+                 if (optional.isPresent()) {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407bba65dad5 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -106,8 +106,33 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      private static final Logger LOGGER = LogManager.getLogger();
      public static final int GOLDEN_TICKET = 33 + ChunkStatus.b();
@@ -120,9 +120,9 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
 +    public final com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<PlayerChunk> pendingVisibleChunks = new com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<PlayerChunk>(); // Paper - this is used if the visible chunks is updated while iterating only
 +    public transient com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<PlayerChunk> visibleChunksClone; // Paper - used for async access of visible chunks, clone and cache only when needed
      private final Long2ObjectLinkedOpenHashMap<PlayerChunk> pendingUnload;
-     final LongSet loadedChunks; // Paper - private -> package
+     public final LongSet loadedChunks; // Paper - private -> public
      public final WorldServer world;
-@@ -132,7 +157,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -180,7 +205,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      public PlayerChunkMap(WorldServer worldserver, Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, DefinedStructureManager definedstructuremanager, Executor executor, IAsyncTaskHandler<Runnable> iasynctaskhandler, ILightAccess ilightaccess, ChunkGenerator chunkgenerator, WorldLoadListener worldloadlistener, Supplier<WorldPersistentData> supplier, int i, boolean flag) {
          super(new File(convertable_conversionsession.a(worldserver.getDimensionKey()), "region"), datafixer, flag);
@@ -131,7 +131,7 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
          this.pendingUnload = new Long2ObjectLinkedOpenHashMap();
          this.loadedChunks = new LongOpenHashSet();
          this.unloadQueue = new LongOpenHashSet();
-@@ -224,9 +249,52 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -272,9 +297,52 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          return (PlayerChunk) this.updatingChunks.get(i);
      }
  
@@ -185,7 +185,7 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
      }
  
      protected IntSupplier c(long i) {
-@@ -414,8 +482,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -462,8 +530,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      // Paper end
  
      protected void save(boolean flag) {
@@ -196,7 +196,7 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
              MutableBoolean mutableboolean = new MutableBoolean();
  
              do {
-@@ -443,7 +512,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -491,7 +560,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  //            this.i(); // Paper - nuke IOWorker
              PlayerChunkMap.LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.w.getName());
          } else {
@@ -205,7 +205,7 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
                  IChunkAccess ichunkaccess = (IChunkAccess) playerchunk.getChunkSave().getNow(null); // CraftBukkit - decompile error
  
                  if (ichunkaccess instanceof ProtoChunkExtension || ichunkaccess instanceof Chunk) {
-@@ -614,7 +683,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -662,7 +731,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          if (!this.updatingChunksModified) {
              return false;
          } else {
@@ -227,7 +227,7 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
              this.updatingChunksModified = false;
              return true;
          }
-@@ -1085,12 +1167,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1133,12 +1215,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      }
  
      protected Iterable<PlayerChunk> f() {
@@ -243,26 +243,18 @@ index 9600ded94f127da50e05129aa00e5b0979b973a3..2622e418cde9f70e38e8d28d7dfde5c3
          while (objectbidirectionaliterator.hasNext()) {
              Entry<PlayerChunk> entry = (Entry) objectbidirectionaliterator.next();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 1d76bf1045cd27e70c115ba490ceb5854b996604..c11f6e647957c353e78f6331de74264079566e1b 100644
+index 2d142699ebe2062947ba3eb228aaad4468c11371..adcb2bd279f1f87d174556cb1b8aac497c11d7d3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -74,6 +74,7 @@ import net.minecraft.server.GroupDataEntity;
- import net.minecraft.server.IBlockData;
- import net.minecraft.server.IChunkAccess;
- import net.minecraft.server.IRegistry;
-+import net.minecraft.server.MCUtil;
- import net.minecraft.server.MinecraftKey;
- import net.minecraft.server.MinecraftServer;
- import net.minecraft.server.MovingObjectPosition;
-@@ -295,6 +296,7 @@ public class CraftWorld implements World {
+@@ -294,6 +294,7 @@ public class CraftWorld implements World {
          return ret;
      }
      public int getTileEntityCount() {
-+        return MCUtil.ensureMain(() -> {
++        return net.minecraft.server.MCUtil.ensureMain(() -> {
          // We don't use the full world tile entity list, so we must iterate chunks
          Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkProvider().playerChunkMap.visibleChunks;
          int size = 0;
-@@ -306,11 +308,13 @@ public class CraftWorld implements World {
+@@ -305,11 +306,13 @@ public class CraftWorld implements World {
              size += chunk.tileEntities.size();
          }
          return size;
@@ -272,11 +264,11 @@ index 1d76bf1045cd27e70c115ba490ceb5854b996604..c11f6e647957c353e78f6331de742640
          return world.tileEntityListTick.size();
      }
      public int getChunkCount() {
-+        return MCUtil.ensureMain(() -> {
++        return net.minecraft.server.MCUtil.ensureMain(() -> {
          int ret = 0;
  
          for (PlayerChunk chunkHolder : world.getChunkProvider().playerChunkMap.visibleChunks.values()) {
-@@ -319,7 +323,7 @@ public class CraftWorld implements World {
+@@ -318,7 +321,7 @@ public class CraftWorld implements World {
              }
          }
  
@@ -285,7 +277,7 @@ index 1d76bf1045cd27e70c115ba490ceb5854b996604..c11f6e647957c353e78f6331de742640
      }
      public int getPlayerCount() {
          return world.players.size();
-@@ -444,6 +448,14 @@ public class CraftWorld implements World {
+@@ -443,6 +446,14 @@ public class CraftWorld implements World {
  
      @Override
      public Chunk[] getLoadedChunks() {
@@ -293,10 +285,10 @@ index 1d76bf1045cd27e70c115ba490ceb5854b996604..c11f6e647957c353e78f6331de742640
 +        if (Thread.currentThread() != world.getMinecraftWorld().serverThread) {
 +            synchronized (world.getChunkProvider().playerChunkMap.visibleChunks) {
 +                Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkProvider().playerChunkMap.visibleChunks;
-+                return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.server.Chunk::getBukkitChunk).toArray(Chunk[]::new);
++                return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
 +            }
 +        }
 +        // Paper end
          Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkProvider().playerChunkMap.visibleChunks;
-         return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.server.Chunk::getBukkitChunk).toArray(Chunk[]::new);
+         return chunks.values().stream().map(PlayerChunk::getFullChunk).filter(Objects::nonNull).map(net.minecraft.world.level.chunk.Chunk::getBukkitChunk).toArray(Chunk[]::new);
      }

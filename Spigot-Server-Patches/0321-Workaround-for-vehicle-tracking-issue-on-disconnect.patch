@@ -4,11 +4,11 @@ Date: Mon, 7 Jan 2019 14:43:48 -0600
 Subject: [PATCH] Workaround for vehicle tracking issue on disconnect
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 0c494b9c463789cd35d906afbdba5bcfffdbb28d..b1835179de7789ee98da8daa1d96c2feefab7ff6 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -1391,6 +1391,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 66749184ec24d15af3aaa71e79475d2a3f51c843..920e0d7a3339197ad10747266af737753b025ba4 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -1518,6 +1518,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public void p() {
          this.ch = true;
          this.ejectPassengers();

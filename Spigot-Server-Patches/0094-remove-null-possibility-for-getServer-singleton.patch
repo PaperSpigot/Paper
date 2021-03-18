@@ -6,10 +6,10 @@ Subject: [PATCH] remove null possibility for getServer singleton
 to stop IDE complaining about potential NPE
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5fd43537ced63947cab0e179f88109d63d1c87e7..5c84033df42b2cba1719010e75aeeb00c817eb61 100644
+index 19ca2ea39ca3a3c820141467388eca65a0b744d0..3d20206c3817cc7bf1d0168c0b556b7505eebf93 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -72,6 +72,7 @@ import org.spigotmc.SlackActivityAccountant; // Spigot
+@@ -180,6 +180,7 @@ import org.spigotmc.SlackActivityAccountant; // Spigot
  
  public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTask> implements IMojangStatistics, ICommandListener, AutoCloseable {
  
@@ -17,7 +17,7 @@ index 5fd43537ced63947cab0e179f88109d63d1c87e7..5c84033df42b2cba1719010e75aeeb00
      public static final Logger LOGGER = LogManager.getLogger();
      public static final File b = new File("usercache.json");
      public static final WorldSettings c = new WorldSettings("Demo World", EnumGamemode.SURVIVAL, false, EnumDifficulty.NORMAL, false, new GameRules(), DataPackConfiguration.a);
-@@ -178,6 +179,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -286,6 +287,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      public MinecraftServer(OptionSet options, DataPackConfiguration datapackconfiguration, Thread thread, IRegistryCustom.Dimension iregistrycustom_dimension, Convertable.ConversionSession convertable_conversionsession, SaveData savedata, ResourcePackRepository resourcepackrepository, Proxy proxy, DataFixer datafixer, DataPackResources datapackresources, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache, WorldLoadListenerFactory worldloadlistenerfactory) {
          super("Server");
@@ -25,7 +25,7 @@ index 5fd43537ced63947cab0e179f88109d63d1c87e7..5c84033df42b2cba1719010e75aeeb00
          this.m = new GameProfilerSwitcher(SystemUtils.a, this::ai);
          this.methodProfiler = GameProfilerDisabled.a;
          this.serverPing = new ServerPing();
-@@ -2045,7 +2047,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -2153,7 +2155,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      @Deprecated
      public static MinecraftServer getServer() {

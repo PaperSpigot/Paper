@@ -5,11 +5,19 @@ Subject: [PATCH] Extend block drop capture to capture all items added to the
  world
 
 
-diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-index 942b38aaf1845468852ac41e9fba230837f137e3..3bae1c39bf122cec88a481b18c01c3d32d6eb747 100644
---- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
-+++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
-@@ -386,10 +386,12 @@ public class PlayerInteractManager {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+index 831bc83cdbf15f08961cc8703be348b458d47fd3..5974cc9f895478eebd4922faa26d5a944064d7b6 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+@@ -12,6 +12,7 @@ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.ITileInventory;
+ import net.minecraft.world.InteractionResultWrapper;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.context.ItemActionContext;
+@@ -418,10 +419,12 @@ public class PlayerInteractManager {
                      // return true; // CraftBukkit
                  }
                  // CraftBukkit start
@@ -24,11 +32,19 @@ index 942b38aaf1845468852ac41e9fba230837f137e3..3bae1c39bf122cec88a481b18c01c3d3
  
                  // Drop event experience
                  if (flag && event != null) {
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index dbba898b226d72d3b88695d62c711256d7e3aee2..493e3cd8a3dbc77f73dd1e026c9e580896995675 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1177,6 +1177,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 7f5d3bcf8be30a6bcdd077bfbc416079e3d969c1..595194e0a0e746c45e3766433bb827b7b51129b5 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -99,6 +99,7 @@ import net.minecraft.world.entity.animal.EntityWaterAnimal;
+ import net.minecraft.world.entity.animal.horse.EntityHorseSkeleton;
+ import net.minecraft.world.entity.boss.EntityComplexPart;
+ import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.entity.npc.NPC;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.raid.PersistentRaid;
+@@ -1289,6 +1290,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          } else if (this.isUUIDTaken(entity)) {
              return false;
          } else {

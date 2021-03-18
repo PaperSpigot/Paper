@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MeFisto94 <MeFisto94@users.noreply.github.com>
+Date: Tue, 12 May 2020 23:02:43 +0200
+Subject: [PATCH] Workaround for Client Lag Spikes (MC-162253)
+
+When crossing certain chunk boundaries, the client needlessly
+calculates light maps for chunk neighbours. In some specific map
+configurations, these calculations cause a 500ms+ freeze on the Client.
+
+This patch basically serves as a workaround by sending light maps
+to the client, so that it doesn't attempt to calculate them.
+This mitigates the frametime impact to a minimum (but it's still there).
+
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index ede47aaaace80280756fe4463def1ea26792c9e4..d5c939281df21683efc63937a9146b0dfeb22e2c 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -85,6 +85,7 @@ import net.minecraft.world.level.World;
+ import net.minecraft.world.level.chunk.Chunk;
+ import net.minecraft.world.level.chunk.ChunkConverter;
+ import net.minecraft.world.level.chunk.ChunkGenerator;
++import net.minecraft.world.level.chunk.ChunkSection;
+ import net.minecraft.world.level.chunk.ChunkStatus;
+ import net.minecraft.world.level.chunk.IChunkAccess;
+ import net.minecraft.world.level.chunk.ILightAccess;
+@@ -2055,9 +2056,68 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+     public final void sendChunk(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) { this.a(entityplayer, apacket, chunk); } // Paper - OBFHELPER
+     private void a(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) {
+         if (apacket[0] == null) {
++            // Paper start - add 8 for light fix workaround
++            if (apacket.length != 10) { // in case Plugins call sendChunk, resize
++                apacket = new Packet[10];
++            }
++            // Paper end
+             apacket[0] = new PacketPlayOutMapChunk(chunk, 65535, chunk.world.chunkPacketBlockController.shouldModify(entityplayer, chunk, 65535)); // Paper - Anti-Xray - Bypass
+             apacket[1] = new PacketPlayOutLightUpdate(chunk.getPos(), this.lightEngine, true);
++
++            // Paper start - Fix MC-162253
++            final int lightMask = getLightMask(chunk);
++            int i = 1;
++            for (int x = -1; x <= 1; x++) {
++                for (int z = -1; z <= 1; z++) {
++                    if (x == 0 && z == 0) {
++                        continue;
++                    }
++
++                    ++i;
++
++                    if (!chunk.isNeighbourLoaded(x, z)) {
++                        continue;
++                    }
++
++                    final Chunk neighbor = chunk.getRelativeNeighbourIfLoaded(x, z);
++                    final int updateLightMask = lightMask & ~getCeilingLightMask(neighbor);
++
++                    if (updateLightMask == 0) {
++                        continue;
++                    }
++
++                    apacket[i] = new PacketPlayOutLightUpdate(new ChunkCoordIntPair(chunk.getPos().x + x, chunk.getPos().z + z), lightEngine, updateLightMask, 0, true);
++                }
++            }
++        }
++
++        final int viewDistance = playerViewDistanceBroadcastMap.getLastViewDistance(entityplayer);
++        final long lastPosition = playerViewDistanceBroadcastMap.getLastCoordinate(entityplayer);
++
++        int j = 1;
++        for (int x = -1; x <= 1; x++) {
++            for (int z = -1; z <= 1; z++) {
++                if (x == 0 && z == 0) {
++                    continue;
++                }
++
++                ++j;
++
++                Packet<?> packet = apacket[j];
++                if (packet == null) {
++                    continue;
++                }
++
++                final int distX = Math.abs(MCUtil.getCoordinateX(lastPosition) - (chunk.getPos().x + x));
++                final int distZ = Math.abs(MCUtil.getCoordinateZ(lastPosition) - (chunk.getPos().z + z));
++
++                if (Math.max(distX, distZ) > viewDistance) {
++                    continue;
++                }
++                entityplayer.playerConnection.sendPacket(packet);
++            }
+         }
++        // Paper end - Fix MC-162253
+ 
+         entityplayer.a(chunk.getPos(), apacket[0], apacket[1]);
+         PacketDebug.a(this.world, chunk.getPos());
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index 90e895e9eac6158a28de4a30589bf7538e5ec9cc..34a9f7b2f998f77b1279516cd09397ab6c2ac1cc 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -280,7 +280,7 @@ public class Chunk implements IChunkAccess {
+ 
+                     // broadcast
+                     Object[] backingSet = inRange.getBackingSet();
+-                    Packet[] chunkPackets = new Packet[2];
++                    Packet[] chunkPackets = new Packet[10];
+                     for (int index = 0, len = backingSet.length; index < len; ++index) {
+                         Object temp = backingSet[index];
+                         if (!(temp instanceof EntityPlayer)) {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+index 973aa060d6964c7d470bc7aff89b879daf1df153..8fe060c3b2ad0873f96218eb7d02cdff3279224e 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+@@ -107,6 +107,7 @@ public class ChunkSection {
+         return this.nonEmptyBlockCount == 0;
+     }
+ 
++    public static boolean isEmpty(@Nullable ChunkSection chunksection) { return a(chunksection) ; } // Paper - OBFHELPER
+     public static boolean a(@Nullable ChunkSection chunksection) {
+         return chunksection == Chunk.a || chunksection.c();
+     }

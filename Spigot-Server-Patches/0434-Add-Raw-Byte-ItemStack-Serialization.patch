@@ -5,35 +5,11 @@ Subject: [PATCH] Add Raw Byte ItemStack Serialization
 
 Serializes using NBT which is safer for server data migrations than bukkits format.
 
-diff --git a/src/main/java/net/minecraft/server/DataConverterRegistry.java b/src/main/java/net/minecraft/server/DataConverterRegistry.java
-index 08c11270c0409f3af9ba9b3a64488a2381b2a423..48e31e9142ffeb2725af6b1f483de67410e25694 100644
---- a/src/main/java/net/minecraft/server/DataConverterRegistry.java
-+++ b/src/main/java/net/minecraft/server/DataConverterRegistry.java
-@@ -24,6 +24,7 @@ public class DataConverterRegistry {
-         return datafixerbuilder.build(SystemUtils.e());
-     }
- 
-+    public static DataFixer getDataFixer() { return a(); } // Paper - OBFHELPER
-     public static DataFixer a() {
-         return DataConverterRegistry.c;
-     }
-diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
-index e3e2ecfcc6dabf02844551d94138e6c6ae18358a..b6f771ed5032cd18b1bcc086a937f66996a26057 100644
---- a/src/main/java/net/minecraft/server/ItemStack.java
-+++ b/src/main/java/net/minecraft/server/ItemStack.java
-@@ -144,6 +144,7 @@ public final class ItemStack {
-         this.checkEmpty();
-     }
- 
-+    public static ItemStack fromCompound(NBTTagCompound nbttagcompound) { return a(nbttagcompound); } // Paper - OBFHELPER
-     public static ItemStack a(NBTTagCompound nbttagcompound) {
-         try {
-             return new ItemStack(nbttagcompound);
-diff --git a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-index 6e6cabc03bc3822ee973bdafef8f4adb61b6c263..0282dcb68fa185b342f59c5aaafe8f42c632cac3 100644
---- a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-+++ b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
-@@ -47,6 +47,7 @@ public class NBTCompressedStreamTools {
+diff --git a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
+index 9da608c9dde183ad813fa5b7643314ce05c85aa5..a6e4bc57ed057f3cbb54817b991d0cef3f0c74fe 100644
+--- a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
++++ b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
+@@ -50,6 +50,7 @@ public class NBTCompressedStreamTools {
          return nbttagcompound;
      }
  
@@ -41,7 +17,7 @@ index 6e6cabc03bc3822ee973bdafef8f4adb61b6c263..0282dcb68fa185b342f59c5aaafe8f42
      public static NBTTagCompound a(InputStream inputstream) throws IOException {
          DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
          Throwable throwable = null;
-@@ -102,6 +103,7 @@ public class NBTCompressedStreamTools {
+@@ -105,6 +106,7 @@ public class NBTCompressedStreamTools {
  
      }
  
@@ -49,8 +25,32 @@ index 6e6cabc03bc3822ee973bdafef8f4adb61b6c263..0282dcb68fa185b342f59c5aaafe8f42
      public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException {
          DataOutputStream dataoutputstream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputstream)));
          Throwable throwable = null;
+diff --git a/src/main/java/net/minecraft/util/datafix/DataConverterRegistry.java b/src/main/java/net/minecraft/util/datafix/DataConverterRegistry.java
+index 6527509e6aed7187667c681af682e9a02937a224..28e36ee76da533f8aa0a09cfc4f1fc0f744af715 100644
+--- a/src/main/java/net/minecraft/util/datafix/DataConverterRegistry.java
++++ b/src/main/java/net/minecraft/util/datafix/DataConverterRegistry.java
+@@ -208,6 +208,7 @@ public class DataConverterRegistry {
+         return datafixerbuilder.build(SystemUtils.e());
+     }
+ 
++    public static DataFixer getDataFixer() { return a(); } // Paper - OBFHELPER
+     public static DataFixer a() {
+         return DataConverterRegistry.c;
+     }
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 8a2ff2ef17aba806a63be3aaebfa779dac96831d..3d5a4d662ae4880fa27bd681127ddf7d1f70b51c 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -198,6 +198,7 @@ public final class ItemStack {
+         this.checkEmpty();
+     }
+ 
++    public static ItemStack fromCompound(NBTTagCompound nbttagcompound) { return a(nbttagcompound); } // Paper - OBFHELPER
+     public static ItemStack a(NBTTagCompound nbttagcompound) {
+         try {
+             return new ItemStack(nbttagcompound);
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index e60ee5f6bd990ce89a130a85b6821c5b7f346ae8..cb95d6f29ecedae0c901fe202fdd7c1d1c1bf4e1 100644
+index 79ac4e1f3aad1a855a5d7ef7df2a3bfd1c4362f2..51aa0c37df947a229eddaa3c4e3372f64575617e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -360,6 +360,46 @@ public final class CraftMagicNumbers implements UnsafeValues {
@@ -67,7 +67,7 @@ index e60ee5f6bd990ce89a130a85b6821c5b7f346ae8..cb95d6f29ecedae0c901fe202fdd7c1d
 +        NBTTagCompound compound = (item instanceof CraftItemStack ? ((CraftItemStack) item).getHandle() : CraftItemStack.asNMSCopy(item)).save(new NBTTagCompound());
 +        compound.setInt("DataVersion", getDataVersion());
 +        try {
-+            net.minecraft.server.NBTCompressedStreamTools.writeNBT(
++            net.minecraft.nbt.NBTCompressedStreamTools.writeNBT(
 +                compound,
 +                outputStream
 +            );
@@ -84,14 +84,14 @@ index e60ee5f6bd990ce89a130a85b6821c5b7f346ae8..cb95d6f29ecedae0c901fe202fdd7c1d
 +        Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
 +
 +        try {
-+            NBTTagCompound compound = net.minecraft.server.NBTCompressedStreamTools.readNBT(
++            NBTTagCompound compound = net.minecraft.nbt.NBTCompressedStreamTools.readNBT(
 +                new java.io.ByteArrayInputStream(data)
 +            );
 +            int dataVersion = compound.getInt("DataVersion");
 +
 +            Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
 +            Dynamic<NBTBase> converted = DataConverterRegistry.getDataFixer().update(DataConverterTypes.ITEM_STACK, new Dynamic<NBTBase>(DynamicOpsNBT.a, compound), dataVersion, getDataVersion());
-+            return CraftItemStack.asCraftMirror(net.minecraft.server.ItemStack.fromCompound((NBTTagCompound) converted.getValue()));
++            return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.fromCompound((NBTTagCompound) converted.getValue()));
 +        } catch (IOException ex) {
 +            com.destroystokyo.paper.util.SneakyThrow.sneaky(ex);
 +            throw new RuntimeException();

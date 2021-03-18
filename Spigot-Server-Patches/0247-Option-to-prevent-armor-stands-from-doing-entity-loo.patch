@@ -18,11 +18,11 @@ index 4813f62d1e382d5ac6971b2244df3f13c80d1950..3562950df4868b1393790b1a1ff1fe0d
 +        armorStandEntityLookups = getBoolean("armor-stands-do-collision-entity-lookups", true);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
-index e17637cfee773b1b79c05d7a8e6558963c7a9c14..9a3183e55fcb6809d2b324ad52e27f3e77d8fcb2 100644
---- a/src/main/java/net/minecraft/server/EntityArmorStand.java
-+++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
-@@ -321,6 +321,7 @@ public class EntityArmorStand extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index 57e0ea95df34fab22d6c5868ab839d56a3fa85fc..829013f57128cc6c92a45098c6883f2305cf4ea5 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -356,6 +356,7 @@ public class EntityArmorStand extends EntityLiving {
  
      @Override
      protected void collideNearby() {
@@ -30,11 +30,19 @@ index e17637cfee773b1b79c05d7a8e6558963c7a9c14..9a3183e55fcb6809d2b324ad52e27f3e
          List<Entity> list = this.world.getEntities(this, this.getBoundingBox(), EntityArmorStand.br);
  
          for (int i = 0; i < list.size(); ++i) {
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index cb1330ef117224aea07208cebff544c714ae313a..51c57f4752ea49859b9e00045a40899783731f28 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -801,6 +801,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 0d375af209e9768f430e08bd7a4bde1863b14da5..8c7263f9dbb00cf6484e7f70b8d97639bab0cefc 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -37,6 +37,7 @@ import net.minecraft.world.DifficultyDamageScaler;
+ import net.minecraft.world.damagesource.DamageSource;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityTypes;
++import net.minecraft.world.entity.decoration.EntityArmorStand;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.crafting.CraftingManager;
+@@ -854,6 +855,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
              // Paper end
          }
      }

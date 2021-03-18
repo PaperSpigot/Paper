@@ -20,11 +20,11 @@ index 62621562137cba4804f0465c58d25ca2786328e5..7178b37f7978c7e9031a22726005c509
      private static void savePlayerData() {
          Object val = config.get("settings.save-player-data");
          if (val instanceof Boolean) {
-diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 6d9080abb63a6d13d1184ff6949ba86a470ea390..471826ee4b32fe73d3c39755005e3287f9673c3c 100644
---- a/src/main/java/net/minecraft/server/HandshakeListener.java
-+++ b/src/main/java/net/minecraft/server/HandshakeListener.java
-@@ -35,7 +35,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index 965dd2a4a446ca31597b9e91bd405e4f01ad8348..6d001843d8f899e91f19c384ddf57e6987bfb79e 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -46,7 +46,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                      synchronized (throttleTracker) {
                          if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
                              throttleTracker.put(address, currentTime);

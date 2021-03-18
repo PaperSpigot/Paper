@@ -6,7 +6,7 @@ Subject: [PATCH] Clear SyncLoadInfo
 This patch merely adds the extra argument "clear" after /paper syncloadinfo to clear currently stored syncload info.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index 352f1ce8ecfc8457d141c10f7ce698bea45b342b..4994f0e3934c4c3a7dd74b92a9a7c6c1b9a17614 100644
+index 4b3efe01750d79bcc27a42b5a145d9aa6b124d18..12313a37ceeb6a0b6a539c38fdba67e5e43d7413 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
 @@ -295,6 +295,13 @@ public class PaperCommand extends Command {
@@ -24,10 +24,10 @@ index 352f1ce8ecfc8457d141c10f7ce698bea45b342b..4994f0e3934c4c3a7dd74b92a9a7c6c1
              "sync-load-info" + DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss").format(LocalDateTime.now()) + ".txt");
          file.getParentFile().mkdirs();
 diff --git a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
-index 1a68a8012f83bab9e814159c76b8c3710c7b1112..82a1e4386522684876e5febaf90bbe161a2f1ed2 100644
+index d381f91cf105bfc01846ada90da8971a3618e784..c51401bcfac0a1e45099af1dd355073c19790476 100644
 --- a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
 +++ b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
-@@ -27,6 +27,10 @@ public class SyncLoadFinder {
+@@ -26,6 +26,10 @@ public class SyncLoadFinder {
          public final Long2IntOpenHashMap coordinateTimes = new Long2IntOpenHashMap();
      }
  

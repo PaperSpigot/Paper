@@ -9,12 +9,12 @@ replace them with the standard iterator.
 Also optimise the stream.anyMatch statement to move to a bitset
 where we can replace the call with a single bitwise operation.
 
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoal.java b/src/main/java/net/minecraft/server/PathfinderGoal.java
-index b132cb42da9a733e46fe9059258db7b77f811b3b..42b690b9215d82346990d93a5cead727b1fa10ab 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoal.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoal.java
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
+index b505c23c57a4b84faf5906c6295455b4720c4426..5c32cbe81c47fcb9ae347faa6fc007c5d28d79bf 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
 @@ -1,10 +1,12 @@
- package net.minecraft.server;
+ package net.minecraft.world.entity.ai.goal;
  
 +import com.destroystokyo.paper.util.set.OptimizedSmallEnumSet; // Paper - remove streams from pathfindergoalselector
  import java.util.EnumSet;
@@ -52,12 +52,12 @@ index b132cb42da9a733e46fe9059258db7b77f811b3b..42b690b9215d82346990d93a5cead727
      }
  
      public static enum Type {
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
-index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d1f3b564b 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
+index 8c234c09a4d9ada83e36e3cdbcc1f2f5c6202f28..385cd079e264a7e66e91ab3b70b90afb59688dcd 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
 @@ -1,8 +1,10 @@
- package net.minecraft.server;
+ package net.minecraft.world.entity.ai.goal;
  
 +import com.destroystokyo.paper.util.set.OptimizedSmallEnumSet; // Paper - remove streams from pathfindergoalselector
  import com.google.common.collect.Sets;
@@ -67,7 +67,7 @@ index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d
  import java.util.Map;
  import java.util.Set;
  import java.util.function.Supplier;
-@@ -27,7 +29,8 @@ public class PathfinderGoalSelector {
+@@ -28,7 +30,8 @@ public class PathfinderGoalSelector {
      private final Map<PathfinderGoal.Type, PathfinderGoalWrapped> c = new EnumMap(PathfinderGoal.Type.class);
      private final Set<PathfinderGoalWrapped> d = Sets.newLinkedHashSet(); private Set<PathfinderGoalWrapped> getTasks() { return d; }// Paper - OBFHELPER
      private final Supplier<GameProfilerFiller> e;
@@ -77,7 +77,7 @@ index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d
      private int g = 3;private int getTickRate() { return g; } // Paper - OBFHELPER
      private int curRate;private int getCurRate() { return curRate; } private void incRate() { this.curRate++; } // Paper TODO
  
-@@ -55,35 +58,38 @@ public class PathfinderGoalSelector {
+@@ -56,35 +59,38 @@ public class PathfinderGoalSelector {
      // Paper end
  
      public void a(PathfinderGoal pathfindergoal) {
@@ -138,7 +138,7 @@ index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d
          this.c.forEach((pathfindergoal_type, pathfindergoalwrapped) -> {
              if (!pathfindergoalwrapped.g()) {
                  this.c.remove(pathfindergoal_type);
-@@ -92,30 +98,58 @@ public class PathfinderGoalSelector {
+@@ -93,30 +99,58 @@ public class PathfinderGoalSelector {
          });
          gameprofilerfiller.exit();
          gameprofilerfiller.enter("goalUpdate");
@@ -219,7 +219,7 @@ index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d
          gameprofilerfiller.exit();
      }
  
-@@ -124,11 +158,11 @@ public class PathfinderGoalSelector {
+@@ -125,11 +159,11 @@ public class PathfinderGoalSelector {
      }
  
      public void a(PathfinderGoal.Type pathfindergoal_type) {
@@ -233,10 +233,10 @@ index 2926c98d1f94a4879d21ba7b507755b0573fb05a..3343e2df9dd8a66fd7678ce13000177d
      }
  
      public void a(PathfinderGoal.Type pathfindergoal_type, boolean flag) {
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoalWrapped.java b/src/main/java/net/minecraft/server/PathfinderGoalWrapped.java
-index f3df10587e652d3a26d15deb09304b97a727cd88..22773eca7561d39cd838338efe6d40ab9421feba 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoalWrapped.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoalWrapped.java
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalWrapped.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalWrapped.java
+index 7bb531e47668cf445083c4dedb03ccafe6a9c96b..8c8e39d35fb56aa6cf7d456adab01dff5d13a60d 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalWrapped.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalWrapped.java
 @@ -59,9 +59,10 @@ public class PathfinderGoalWrapped extends PathfinderGoal {
          this.a.a(enumset);
      }

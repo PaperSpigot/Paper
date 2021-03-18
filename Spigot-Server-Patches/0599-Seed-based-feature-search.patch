@@ -32,23 +32,11 @@ index 424754a0183b071d20c86f0420cec784a8992e2b..a98e25917193043633e2120beb4fe2d4
      public int maxCollisionsPerEntity;
      private void maxEntityCollision() {
          maxCollisionsPerEntity = getInt( "max-entity-collisions", this.spigotConfig.getInt("max-entity-collisions", 8) );
-diff --git a/src/main/java/net/minecraft/server/BiomeManager.java b/src/main/java/net/minecraft/server/BiomeManager.java
-index 5c992812e0c066109763a30c9399e5b71a335398..fddcd205ee4d841546463913f56f998059cba248 100644
---- a/src/main/java/net/minecraft/server/BiomeManager.java
-+++ b/src/main/java/net/minecraft/server/BiomeManager.java
-@@ -22,6 +22,7 @@ public class BiomeManager {
-         return new BiomeManager(worldchunkmanager, this.b, this.c);
-     }
- 
-+    public BiomeBase getBiome(BlockPosition blockposition) { return a(blockposition); } // Paper - OBFHELPER
-     public BiomeBase a(BlockPosition blockposition) {
-         return this.c.a(this.b, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a);
-     }
-diff --git a/src/main/java/net/minecraft/server/ChunkCoordIntPair.java b/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
-index dcaf9f8574a9c913b64ba3a1d8b02220db720225..271fddbbf73ca5c0e4e2722d7246c14b778d6072 100644
---- a/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
-+++ b/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
-@@ -67,10 +67,12 @@ public class ChunkCoordIntPair {
+diff --git a/src/main/java/net/minecraft/world/level/ChunkCoordIntPair.java b/src/main/java/net/minecraft/world/level/ChunkCoordIntPair.java
+index e41d63596c32eee5f0c04a6f043d576d8021ff1a..53eb5b65683a2ab208edfc3f3bbf78ffee61bc85 100644
+--- a/src/main/java/net/minecraft/world/level/ChunkCoordIntPair.java
++++ b/src/main/java/net/minecraft/world/level/ChunkCoordIntPair.java
+@@ -68,10 +68,12 @@ public class ChunkCoordIntPair {
          }
      }
  
@@ -61,11 +49,38 @@ index dcaf9f8574a9c913b64ba3a1d8b02220db720225..271fddbbf73ca5c0e4e2722d7246c14b
      public int e() {
          return this.z << 4;
      }
-diff --git a/src/main/java/net/minecraft/server/StructureGenerator.java b/src/main/java/net/minecraft/server/StructureGenerator.java
-index c3bd58069d8dbdf36f70f1dafd7c24000f31708b..a62c87bceab2c9700a7b3925f208b0ffa2b9b393 100644
---- a/src/main/java/net/minecraft/server/StructureGenerator.java
-+++ b/src/main/java/net/minecraft/server/StructureGenerator.java
-@@ -143,6 +143,14 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index ae5f9a6af810b524f6dcbed64bc943122f0536cc..f40be366ebc5f98b417b677565fa89d3f817f3fb 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -1511,8 +1511,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         return this.methodProfiler;
+     }
+ 
+-    @Override
+-    public BiomeManager d() {
++    public BiomeManager getBiomeManager() { return d(); } // Paper - OBFHELPER
++    @Override public BiomeManager d() {
+         return this.biomeManager;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/biome/BiomeManager.java b/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
+index 340508e0ba8b8883a3037ecaa2d4e09e61e709d3..3b1d9b26ba3249b1df0c15a22428e4211ae0e024 100644
+--- a/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
++++ b/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
+@@ -23,6 +23,7 @@ public class BiomeManager {
+         return new BiomeManager(worldchunkmanager, this.b, this.c);
+     }
+ 
++    public BiomeBase getBiome(BlockPosition blockposition) { return a(blockposition); } // Paper - OBFHELPER
+     public BiomeBase a(BlockPosition blockposition) {
+         return this.c.a(this.b, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a);
+     }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+index ea7e3e15fa778c573d24f956f72f60579ea0b1a1..6df42ff26ff6e65ec2885122fe53dde857a3d1d2 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/StructureGenerator.java
+@@ -176,6 +176,14 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
                              int j2 = i1 + k * l1;
                              ChunkCoordIntPair chunkcoordintpair = this.a(structuresettingsfeature, j, seededrandom, i2, j2);
                              if (!iworldreader.getWorldBorder().isChunkInBounds(chunkcoordintpair.x, chunkcoordintpair.z)) { continue; } // Paper
@@ -79,19 +94,4 @@ index c3bd58069d8dbdf36f70f1dafd7c24000f31708b..a62c87bceab2c9700a7b3925f208b0ff
 +                            // Paper end
                              IChunkAccess ichunkaccess = iworldreader.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, ChunkStatus.STRUCTURE_STARTS);
                              StructureStart<?> structurestart = structuremanager.a(SectionPosition.a(ichunkaccess.getPos(), 0), this, ichunkaccess);
- 
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 23e5ad868f1acfb99ec313fbda9bb83a138ccf0b..179915312cd35845216a196018726345324614de 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -1451,8 +1451,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
-         return this.methodProfiler;
-     }
- 
--    @Override
--    public BiomeManager d() {
-+    public BiomeManager getBiomeManager() { return d(); } // Paper - OBFHELPER
-+    @Override public BiomeManager d() {
-         return this.biomeManager;
-     }
  

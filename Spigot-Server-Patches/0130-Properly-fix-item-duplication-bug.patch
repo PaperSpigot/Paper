@@ -5,24 +5,26 @@ Subject: [PATCH] Properly fix item duplication bug
 
 Credit to prplz for figuring out the real issue
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index a812bb96596ddebe6118b2fd79a75e5e87d622f2..7a9e237d23051b43fe0ac3720cd6a36faabc9dd2 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -1933,7 +1933,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index fa315f10219dc340da4f51a8d4a78e1f33023bb3..afa87cf70ad978161853771c59f5a4906733cab3 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -2059,8 +2059,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     }
  
      @Override
-     protected boolean isFrozen() {
+-    public boolean isFrozen() {
 -        return super.isFrozen() || !getBukkitEntity().isOnline();
++    protected boolean isFrozen() {
 +        return super.isFrozen() || (this.playerConnection != null && this.playerConnection.isDisconnected()); // Paper
      }
  
      @Override
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 5b51b2b0b47a39ed1fcbb89cb240032de0b32aa8..9d4f0a309a2328aff7b036dafa0a21921e36bacd 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -2661,7 +2661,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 010d4d33a2044bd54bf0bab055708711865b8d12..bc0b1d0cc9c54d53c68ee59b0a707e0335297441 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2806,7 +2806,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      }
  
      public final boolean isDisconnected() {

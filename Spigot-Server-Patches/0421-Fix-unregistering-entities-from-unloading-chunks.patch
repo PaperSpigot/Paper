@@ -14,11 +14,11 @@ This then results in dead entities lingering in the Chunk.
 Combine that with a buggy detail of the previous implementation of
 the Dupe UUID patch, then this was the likely source of the "Ghost entities"
 
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 69060be0daf3fbae2763852209c915be59caac4f..cd04994ed38c7f5d4db6b1ef1796f95ef2c490e1 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1451,9 +1451,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index ae4db654658675f05b678a3d2d6c4a6be503761e..928d884dcdf1ff6aa1aa4a0e7f6d68f7ae5bce13 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1563,9 +1563,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      private void removeEntityFromChunk(Entity entity) {

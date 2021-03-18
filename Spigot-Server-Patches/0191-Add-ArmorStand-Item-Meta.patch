@@ -13,7 +13,7 @@ starting point for future additions in this area.
 Fixes GH-559
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaArmorStand.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaArmorStand.java
-index 9be4f8d56eaa6dd0d798dc5c1ae7e2bb0ba39d49..2cdabee85fcb377a563951f13386b13431aed1e1 100644
+index c593499aee3a2737cd80739ce61e7fba133d11ec..6b460841a8428727dd55a841fe5af06de9b1bdd1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaArmorStand.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaArmorStand.java
 @@ -9,9 +9,22 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -264,7 +264,7 @@ index 9be4f8d56eaa6dd0d798dc5c1ae7e2bb0ba39d49..2cdabee85fcb377a563951f13386b134
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-index da1af372453b0e32177454d87437bda5c5b530d0..6408cfdd52754167deed3a31d0913eb2e7bc4500 100644
+index 57a6e66866ea82caccbbbfd55948a081f50f6bbe..7f790c484fec77e1d1f1dc6abe0daa19d009ae46 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 @@ -1442,6 +1442,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
@@ -283,18 +283,10 @@ index da1af372453b0e32177454d87437bda5c5b530d0..6408cfdd52754167deed3a31d0913eb2
                          CraftMetaCompass.LODESTONE_POS.NBT,
                          CraftMetaCompass.LODESTONE_TRACKED.NBT
 diff --git a/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java b/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
-index a33cb37f934f74865c49dd3fd483cf4ca5de85cf..ddbcbd565d5dcb5b1c8d46558e06887e85d589c5 100644
+index 9a351c137776ac622f4df7353bb353142b3a6ccc..42f577ed3508ba5a380648461e149f16ce97c9bd 100644
 --- a/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
 +++ b/src/test/java/org/bukkit/craftbukkit/inventory/ItemMetaTest.java
-@@ -6,6 +6,7 @@ import java.util.ArrayList;
- import java.util.Arrays;
- import java.util.List;
- import java.util.UUID;
-+import com.destroystokyo.paper.inventory.meta.ArmorStandMeta; // Paper
- import net.minecraft.server.Block;
- import net.minecraft.server.IRegistry;
- import net.minecraft.server.ITileEntity;
-@@ -313,6 +314,7 @@ public class ItemMetaTest extends AbstractTestingBase {
+@@ -313,6 +313,7 @@ public class ItemMetaTest extends AbstractTestingBase {
                      final CraftMetaArmorStand meta = (CraftMetaArmorStand) cleanStack.getItemMeta();
                      meta.entityTag = new NBTTagCompound();
                      meta.entityTag.setBoolean("Small", true);

@@ -4,11 +4,11 @@ Date: Thu, 19 Nov 2020 02:07:10 +0000
 Subject: [PATCH] Fix console spam when removing chests in water
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
-index 12a0230448dd8d56f6dc20e23cacaf0b8a9433d1..c4ff93a6b908c1bd157c7fe45b504909b189d09c 100644
---- a/src/main/java/net/minecraft/server/BlockChest.java
-+++ b/src/main/java/net/minecraft/server/BlockChest.java
-@@ -195,7 +195,7 @@ public class BlockChest extends BlockChestAbstract<TileEntityChest> implements I
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockChest.java b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+index b2c29cff5883868cb56a4e376ab946ac929abc94..a45ee959f41e7f349ff2c309f21fa44ec671cb87 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockChest.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+@@ -239,7 +239,7 @@ public class BlockChest extends BlockChestAbstract<TileEntityChest> implements I
      @Override
      public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
          if (!iblockdata.a(iblockdata1.getBlock())) {

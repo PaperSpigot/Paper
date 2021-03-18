@@ -27,11 +27,11 @@ respond to the request.
 [1]: https://netty.io/wiki/user-guide-for-4.x.html#wiki-h3-11
 [2]: https://netty.io/wiki/user-guide-for-4.x.html#wiki-h4-13
 
-diff --git a/src/main/java/net/minecraft/server/LegacyPingHandler.java b/src/main/java/net/minecraft/server/LegacyPingHandler.java
-index 9ee5a1ff026d413c21da86643732f859b6123916..063efe9bbe3a95da91ef1e504033e29ccf3300af 100644
---- a/src/main/java/net/minecraft/server/LegacyPingHandler.java
-+++ b/src/main/java/net/minecraft/server/LegacyPingHandler.java
-@@ -14,6 +14,7 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+diff --git a/src/main/java/net/minecraft/server/network/LegacyPingHandler.java b/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
+index e0edebf3eb93c11de2ed5c9013565950b4ad2375..0286d30b63e42224028b343315e1d1a9db2fe3d1 100644
+--- a/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
++++ b/src/main/java/net/minecraft/server/network/LegacyPingHandler.java
+@@ -15,6 +15,7 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
  
      private static final Logger LOGGER = LogManager.getLogger();
      private final ServerConnection b;
@@ -39,7 +39,7 @@ index 9ee5a1ff026d413c21da86643732f859b6123916..063efe9bbe3a95da91ef1e504033e29c
  
      public LegacyPingHandler(ServerConnection serverconnection) {
          this.b = serverconnection;
-@@ -22,6 +23,16 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -23,6 +24,16 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
      public void channelRead(ChannelHandlerContext channelhandlercontext, Object object) throws Exception {
          ByteBuf bytebuf = (ByteBuf) object;
  
@@ -56,7 +56,7 @@ index 9ee5a1ff026d413c21da86643732f859b6123916..063efe9bbe3a95da91ef1e504033e29c
          bytebuf.markReaderIndex();
          boolean flag = true;
  
-@@ -52,6 +63,10 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -53,6 +64,10 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
                      this.a(channelhandlercontext, this.a(s));
                      break;
                  default:
@@ -67,7 +67,7 @@ index 9ee5a1ff026d413c21da86643732f859b6123916..063efe9bbe3a95da91ef1e504033e29c
                      boolean flag1 = bytebuf.readUnsignedByte() == 1;
  
                      flag1 &= bytebuf.readUnsignedByte() == 250;
-@@ -75,6 +90,7 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -76,6 +91,7 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
                      } finally {
                          bytebuf1.release();
                      }
@@ -75,7 +75,7 @@ index 9ee5a1ff026d413c21da86643732f859b6123916..063efe9bbe3a95da91ef1e504033e29c
              }
  
              bytebuf.release();
-@@ -92,6 +108,90 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+@@ -93,6 +109,90 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
  
      }
  

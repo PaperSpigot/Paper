@@ -4,11 +4,51 @@ Date: Sun, 17 Mar 2019 21:46:56 +0200
 Subject: [PATCH] Fire event on GS4 query
 
 
-diff --git a/src/main/java/net/minecraft/server/RemoteStatusListener.java b/src/main/java/net/minecraft/server/RemoteStatusListener.java
-index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856cdf24fdb0 100644
---- a/src/main/java/net/minecraft/server/RemoteStatusListener.java
-+++ b/src/main/java/net/minecraft/server/RemoteStatusListener.java
-@@ -22,18 +22,18 @@ public class RemoteStatusListener extends RemoteConnectionThread {
+diff --git a/src/main/java/net/minecraft/server/rcon/RemoteStatusReply.java b/src/main/java/net/minecraft/server/rcon/RemoteStatusReply.java
+index 57ff3db0a0199ef03045b880e598407886b0306b..1b6761f75d97c49b1bf1ce3db631b7250c9489bd 100644
+--- a/src/main/java/net/minecraft/server/rcon/RemoteStatusReply.java
++++ b/src/main/java/net/minecraft/server/rcon/RemoteStatusReply.java
+@@ -18,15 +18,27 @@ public class RemoteStatusReply {
+         this.b.write(abyte, 0, abyte.length);
+     }
+ 
++    public void writeString(String string) throws IOException { this.a(string); } // Paper - OBFHELPER
+     public void a(String s) throws IOException {
+         this.b.writeBytes(s);
+         this.b.write(0);
+     }
++    // Paper start - unchecked exception variant to use in Stream API
++    public void writeStringUnchecked(String string) {
++        try {
++            writeString(string);
++        } catch (IOException e) {
++            com.destroystokyo.paper.util.SneakyThrow.sneaky(e);
++        }
++    }
++    // Paper end
+ 
++    public void writeInt(int i) throws IOException { this.a(i); } // Paper - OBFHELPER
+     public void a(int i) throws IOException {
+         this.b.write(i);
+     }
+ 
++    public void writeShort(short i) throws IOException { this.a(i); } // Paper - OBFHELPER
+     public void a(short short0) throws IOException {
+         this.b.writeShort(Short.reverseBytes(short0));
+     }
+diff --git a/src/main/java/net/minecraft/server/rcon/thread/RemoteStatusListener.java b/src/main/java/net/minecraft/server/rcon/thread/RemoteStatusListener.java
+index 55b379af2e0c8c3513a76a346d381cd3dbcabe40..59769f7ea808b952cd02192c7121c248756998e9 100644
+--- a/src/main/java/net/minecraft/server/rcon/thread/RemoteStatusListener.java
++++ b/src/main/java/net/minecraft/server/rcon/thread/RemoteStatusListener.java
+@@ -16,6 +16,7 @@ import java.util.Random;
+ import javax.annotation.Nullable;
+ import net.minecraft.SystemUtils;
+ import net.minecraft.server.IMinecraftServer;
++import net.minecraft.server.dedicated.DedicatedServer;
+ import net.minecraft.server.rcon.RemoteStatusReply;
+ import net.minecraft.server.rcon.StatusChallengeUtils;
+ import org.apache.logging.log4j.LogManager;
+@@ -26,18 +27,18 @@ public class RemoteStatusListener extends RemoteConnectionThread {
      private static final Logger LOGGER = LogManager.getLogger();
      private long e;
      private final int f;
@@ -34,7 +74,7 @@ index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856c
  
      private RemoteStatusListener(IMinecraftServer iminecraftserver, int i) {
          super("Query Listener");
-@@ -103,6 +103,7 @@ public class RemoteStatusListener extends RemoteConnectionThread {
+@@ -107,6 +108,7 @@ public class RemoteStatusListener extends RemoteConnectionThread {
  
                          remotestatusreply.a((int) 0);
                          remotestatusreply.a(this.a(datagrampacket.getSocketAddress()));
@@ -42,7 +82,7 @@ index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856c
                          remotestatusreply.a(this.i);
                          remotestatusreply.a("SMP");
                          remotestatusreply.a(this.j);
-@@ -110,6 +111,31 @@ public class RemoteStatusListener extends RemoteConnectionThread {
+@@ -114,6 +116,31 @@ public class RemoteStatusListener extends RemoteConnectionThread {
                          remotestatusreply.a(Integer.toString(this.h));
                          remotestatusreply.a((short) this.g);
                          remotestatusreply.a(this.m);
@@ -74,7 +114,7 @@ index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856c
                          this.a(remotestatusreply.a(), datagrampacket);
                          RemoteStatusListener.LOGGER.debug("Status [{}]", socketaddress);
                      }
-@@ -146,6 +172,7 @@ public class RemoteStatusListener extends RemoteConnectionThread {
+@@ -150,6 +177,7 @@ public class RemoteStatusListener extends RemoteConnectionThread {
              this.p.a("splitnum");
              this.p.a((int) 128);
              this.p.a((int) 0);
@@ -82,7 +122,7 @@ index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856c
              this.p.a("hostname");
              this.p.a(this.i);
              this.p.a("gametype");
-@@ -181,6 +208,79 @@ public class RemoteStatusListener extends RemoteConnectionThread {
+@@ -185,6 +213,79 @@ public class RemoteStatusListener extends RemoteConnectionThread {
              }
  
              this.p.a((int) 0);
@@ -161,36 +201,4 @@ index 98bca890b7cc77200f69394e2ba7e0eabf188127..abae8aefe2cf793dd1db2b478207856c
 +            // Paper end
              return this.p.a();
          }
-     }
-diff --git a/src/main/java/net/minecraft/server/RemoteStatusReply.java b/src/main/java/net/minecraft/server/RemoteStatusReply.java
-index 848b5c3f0e00f32d565dc5a241e17fa6d152ae8d..73efea7e1354df306c0eadfc52b75ec8ed9883d9 100644
---- a/src/main/java/net/minecraft/server/RemoteStatusReply.java
-+++ b/src/main/java/net/minecraft/server/RemoteStatusReply.java
-@@ -18,15 +18,27 @@ public class RemoteStatusReply {
-         this.b.write(abyte, 0, abyte.length);
-     }
- 
-+    public void writeString(String string) throws IOException { this.a(string); } // Paper - OBFHELPER
-     public void a(String s) throws IOException {
-         this.b.writeBytes(s);
-         this.b.write(0);
-     }
-+    // Paper start - unchecked exception variant to use in Stream API
-+    public void writeStringUnchecked(String string) {
-+        try {
-+            writeString(string);
-+        } catch (IOException e) {
-+            com.destroystokyo.paper.util.SneakyThrow.sneaky(e);
-+        }
-+    }
-+    // Paper end
- 
-+    public void writeInt(int i) throws IOException { this.a(i); } // Paper - OBFHELPER
-     public void a(int i) throws IOException {
-         this.b.write(i);
-     }
- 
-+    public void writeShort(short i) throws IOException { this.a(i); } // Paper - OBFHELPER
-     public void a(short short0) throws IOException {
-         this.b.writeShort(Short.reverseBytes(short0));
      }

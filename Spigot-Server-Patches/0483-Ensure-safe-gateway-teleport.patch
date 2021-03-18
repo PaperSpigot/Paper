@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: kickash32 <kickash32@gmail.com>
+Date: Fri, 15 May 2020 01:10:03 -0400
+Subject: [PATCH] Ensure safe gateway teleport
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
+index b7548d0b3938d95328fc86db4000190532eaa8f5..855c49164277ca96ca08fb204d851a5ad6789990 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityEndGateway.java
+@@ -89,9 +89,14 @@ public class TileEntityEndGateway extends TileEntityEnderPortal implements ITick
+         } else if (!this.world.isClientSide) {
+             List<Entity> list = this.world.a(Entity.class, new AxisAlignedBB(this.getPosition()), TileEntityEndGateway::a);
+ 
+-            if (!list.isEmpty()) {
+-                this.b((Entity) list.get(this.world.random.nextInt(list.size())));
++            // Paper start
++            for (Entity entity : list) {
++                if (entity.canPortal()) {
++                    this.b(entity);
++                    break;
++                }
+             }
++            // Paper end
+ 
+             if (this.age % 2400L == 0L) {
+                 this.h();

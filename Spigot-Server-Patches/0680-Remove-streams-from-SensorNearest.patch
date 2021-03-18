@@ -18,11 +18,11 @@ compared to the previous stream-based implementation.
 
 See: https://nipafx.dev/java-stream-performance/
 
-diff --git a/src/main/java/net/minecraft/server/SensorNearestItems.java b/src/main/java/net/minecraft/server/SensorNearestItems.java
-index 2e747158d48ab28ac1611990cc97aa4a9e30b30e..edf7d31e8e06f67be58282b2a76d1ac899b4f3e8 100644
---- a/src/main/java/net/minecraft/server/SensorNearestItems.java
-+++ b/src/main/java/net/minecraft/server/SensorNearestItems.java
-@@ -21,18 +21,16 @@ public class SensorNearestItems extends Sensor<EntityInsentient> {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestItems.java b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestItems.java
+index 418cd6d8b40d35aa3be73eb12f2e3b75597238b9..2e3149a0b15299468079796bd3ea56eabdb4998c 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestItems.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestItems.java
+@@ -27,18 +27,16 @@ public class SensorNearestItems extends Sensor<EntityInsentient> {
          List<EntityItem> list = worldserver.a(EntityItem.class, entityinsentient.getBoundingBox().grow(8.0D, 4.0D, 8.0D), (entityitem) -> {
              return true;
          });
@@ -51,11 +51,11 @@ index 2e747158d48ab28ac1611990cc97aa4a9e30b30e..edf7d31e8e06f67be58282b2a76d1ac8
 +        // Paper end
      }
  }
-diff --git a/src/main/java/net/minecraft/server/SensorNearestLivingEntities.java b/src/main/java/net/minecraft/server/SensorNearestLivingEntities.java
-index f6568a54ab85bc3a682f6fbb19dda7a783625bbe..b3388d4a665e8f91083a2e746482a9f0bd988da1 100644
---- a/src/main/java/net/minecraft/server/SensorNearestLivingEntities.java
-+++ b/src/main/java/net/minecraft/server/SensorNearestLivingEntities.java
-@@ -21,10 +21,12 @@ public class SensorNearestLivingEntities extends Sensor<EntityLiving> {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestLivingEntities.java b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestLivingEntities.java
+index d3bb1c02d80fcd3586030b07f84e7ebdd97d873e..0bc17d148e91277efdf72541e5470fa56d455670 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestLivingEntities.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestLivingEntities.java
+@@ -26,10 +26,12 @@ public class SensorNearestLivingEntities extends Sensor<EntityLiving> {
          list.sort(Comparator.comparingDouble(entityliving::h));
          BehaviorController<?> behaviorcontroller = entityliving.getBehaviorController();
  
@@ -72,11 +72,11 @@ index f6568a54ab85bc3a682f6fbb19dda7a783625bbe..b3388d4a665e8f91083a2e746482a9f0
      }
  
      @Override
-diff --git a/src/main/java/net/minecraft/server/SensorNearestPlayers.java b/src/main/java/net/minecraft/server/SensorNearestPlayers.java
-index 904a6d5ac61d2ac81f1057068383e9ab432852db..ae946619f10a757171e4217e414d6a5248a45494 100644
---- a/src/main/java/net/minecraft/server/SensorNearestPlayers.java
-+++ b/src/main/java/net/minecraft/server/SensorNearestPlayers.java
-@@ -19,22 +19,26 @@ public class SensorNearestPlayers extends Sensor<EntityLiving> {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestPlayers.java b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestPlayers.java
+index 29abc7feec5358dce7d16958f0c5807f4bda992f..60e4da9217d4d950b5077baf6b50eaee20f8df09 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestPlayers.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorNearestPlayers.java
+@@ -26,22 +26,26 @@ public class SensorNearestPlayers extends Sensor<EntityLiving> {
  
      @Override
      protected void a(WorldServer worldserver, EntityLiving entityliving) {

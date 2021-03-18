@@ -4,11 +4,11 @@ Date: Mon, 28 Mar 2016 20:32:58 -0400
 Subject: [PATCH] Entity AddTo/RemoveFrom World Events
 
 
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 7e44af3e933f16fc00cd2b43e913f87380fb1cae..d199191220b5afc42d639f316878501c91514a50 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1103,7 +1103,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 3b82b358d53454dcde4e64123e6262a68a5ed1b0..acff0752aba49bb360d944e5f648b80a82bc984d 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1212,7 +1212,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          if (entity instanceof EntityInsentient) {
              this.navigators.remove(((EntityInsentient) entity).getNavigation());
          }
@@ -17,7 +17,7 @@ index 7e44af3e933f16fc00cd2b43e913f87380fb1cae..d199191220b5afc42d639f316878501c
          entity.valid = false; // CraftBukkit
      }
  
-@@ -1141,6 +1141,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1250,6 +1250,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  entity.origin = entity.getBukkitEntity().getLocation();
              }
              // Paper end

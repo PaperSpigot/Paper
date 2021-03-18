@@ -4,11 +4,35 @@ Date: Mon, 16 Jul 2018 00:05:05 +0300
 Subject: [PATCH] Add TNTPrimeEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
-index e79f3872de2989d0b9b28a8b49cc399968f5bdbf..4716f366342a3ef70d0ea50e3747786fad1e3573 100644
---- a/src/main/java/net/minecraft/server/BlockFire.java
-+++ b/src/main/java/net/minecraft/server/BlockFire.java
-@@ -3,6 +3,7 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+index 97ef4c65c8cc569a99d9697f56bd44d32b151328..51993191e01f55e16667c25b8b57d6a6ddaf493b 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
+@@ -61,6 +61,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
+ import org.bukkit.event.entity.EntityExplodeEvent;
+ import org.bukkit.event.entity.EntityRegainHealthEvent;
+ // CraftBukkit end
++import com.destroystokyo.paper.event.block.TNTPrimeEvent; // Paper - TNTPrimeEvent
+ 
+ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+ 
+@@ -515,6 +516,11 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
+                     });
+                     craftBlock.getNMS().dropNaturally((WorldServer) world, blockposition, ItemStack.b);
+                 }
++                // Paper start - TNTPrimeEvent
++                org.bukkit.block.Block tntBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++                if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.EXPLOSION, explosionSource.getSource().getBukkitEntity()).callEvent())
++                    continue;
++                // Paper end
+                 nmsBlock.wasExploded(world, blockposition, explosionSource);
+ 
+                 this.world.a(blockposition, false);
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockFire.java b/src/main/java/net/minecraft/world/level/block/BlockFire.java
+index c22fad0038fdb0769e23db782e3341206fbd80f9..5ef38414d87fbce453e3ab11579c89a8ff089ae0 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockFire.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockFire.java
+@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
  import com.google.common.collect.ImmutableMap;
  import it.unimi.dsi.fastutil.objects.Object2IntMap;
  import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -16,7 +40,15 @@ index e79f3872de2989d0b9b28a8b49cc399968f5bdbf..4716f366342a3ef70d0ea50e3747786f
  import java.util.Map;
  import java.util.Random;
  import java.util.function.Function;
-@@ -269,7 +270,7 @@ public class BlockFire extends BlockFireAbstract {
+@@ -11,6 +12,7 @@ import net.minecraft.SystemUtils;
+ import net.minecraft.core.BaseBlockPosition;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.item.context.BlockActionContext;
+ import net.minecraft.world.level.GameRules;
+@@ -289,7 +291,7 @@ public class BlockFire extends BlockFireAbstract {
  
                  world.setTypeAndData(blockposition, this.a(world, blockposition, l), 3);
              } else {
@@ -25,7 +57,7 @@ index e79f3872de2989d0b9b28a8b49cc399968f5bdbf..4716f366342a3ef70d0ea50e3747786f
              }
  
              Block block = iblockdata.getBlock();
-@@ -277,6 +278,13 @@ public class BlockFire extends BlockFireAbstract {
+@@ -297,6 +299,13 @@ public class BlockFire extends BlockFireAbstract {
              if (block instanceof BlockTNT) {
                  BlockTNT blocktnt = (BlockTNT) block;
  
@@ -39,48 +71,48 @@ index e79f3872de2989d0b9b28a8b49cc399968f5bdbf..4716f366342a3ef70d0ea50e3747786f
                  BlockTNT.a(world, blockposition);
              }
          }
-diff --git a/src/main/java/net/minecraft/server/BlockTNT.java b/src/main/java/net/minecraft/server/BlockTNT.java
-index c6fe9c1f7ef06c4524533130b493ca5e72bd1693..7b601955f3fd36f06c838b896b455a606954d980 100644
---- a/src/main/java/net/minecraft/server/BlockTNT.java
-+++ b/src/main/java/net/minecraft/server/BlockTNT.java
-@@ -1,6 +1,7 @@
- package net.minecraft.server;
- 
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockTNT.java b/src/main/java/net/minecraft/world/level/block/BlockTNT.java
+index b5d40898bb4a10b3170cd1f42f1a44de539d53c3..71c46d5042f7e4585b364682cd5464edccdf43f6 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockTNT.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockTNT.java
+@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.block.state.properties.BlockProperties;
+ import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
 +import com.destroystokyo.paper.event.block.TNTPrimeEvent; // Paper - TNTPrimeEvent
  
  public class BlockTNT extends Block {
  
-@@ -15,6 +16,11 @@ public class BlockTNT extends Block {
+@@ -36,6 +37,11 @@ public class BlockTNT extends Block {
      public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
          if (!iblockdata1.a(iblockdata.getBlock())) {
              if (world.isBlockIndirectlyPowered(blockposition)) {
 +                // Paper start - TNTPrimeEvent
-+                org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);;
++                org.bukkit.block.Block tntBlock = net.minecraft.server.MCUtil.toBukkitBlock(world, blockposition);;
 +                if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.REDSTONE, null).callEvent())
 +                    return;
 +                // Paper end
                  a(world, blockposition);
                  world.a(blockposition, false);
              }
-@@ -25,6 +31,11 @@ public class BlockTNT extends Block {
+@@ -46,6 +52,11 @@ public class BlockTNT extends Block {
      @Override
      public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
          if (world.isBlockIndirectlyPowered(blockposition)) {
 +            // Paper start - TNTPrimeEvent
-+            org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);;
++            org.bukkit.block.Block tntBlock = net.minecraft.server.MCUtil.toBukkitBlock(world, blockposition);;
 +            if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.REDSTONE, null).callEvent())
 +                return;
 +            // Paper end
              a(world, blockposition);
              world.a(blockposition, false);
          }
-@@ -43,6 +54,12 @@ public class BlockTNT extends Block {
+@@ -64,6 +75,12 @@ public class BlockTNT extends Block {
      @Override
      public void wasExploded(World world, BlockPosition blockposition, Explosion explosion) {
          if (!world.isClientSide) {
 +            // Paper start - TNTPrimeEvent
-+            org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);
++            org.bukkit.block.Block tntBlock = net.minecraft.server.MCUtil.toBukkitBlock(world, blockposition);
 +            org.bukkit.entity.Entity source = explosion.source != null ? explosion.source.getBukkitEntity() : null;
 +            if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.EXPLOSION, source).callEvent())
 +                return;
@@ -88,24 +120,24 @@ index c6fe9c1f7ef06c4524533130b493ca5e72bd1693..7b601955f3fd36f06c838b896b455a60
              EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, explosion.getSource());
  
              entitytntprimed.setFuseTicks((short) (world.random.nextInt(entitytntprimed.getFuseTicks() / 4) + entitytntprimed.getFuseTicks() / 8));
-@@ -71,6 +88,11 @@ public class BlockTNT extends Block {
+@@ -92,6 +109,11 @@ public class BlockTNT extends Block {
          if (item != Items.FLINT_AND_STEEL && item != Items.FIRE_CHARGE) {
              return super.interact(iblockdata, world, blockposition, entityhuman, enumhand, movingobjectpositionblock);
          } else {
 +            // Paper start - TNTPrimeEvent
-+            org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);
++            org.bukkit.block.Block tntBlock = net.minecraft.server.MCUtil.toBukkitBlock(world, blockposition);
 +            if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.ITEM, entityhuman.getBukkitEntity()).callEvent())
 +                return EnumInteractionResult.FAIL;
 +            // Paper end
              a(world, blockposition, (EntityLiving) entityhuman);
              world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 11);
              if (!entityhuman.isCreative()) {
-@@ -100,6 +122,13 @@ public class BlockTNT extends Block {
+@@ -121,6 +143,13 @@ public class BlockTNT extends Block {
                  }
                  // CraftBukkit end
  
 +                // Paper start - TNTPrimeEvent
-+                org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);
++                org.bukkit.block.Block tntBlock = net.minecraft.server.MCUtil.toBukkitBlock(world, blockposition);
 +                if (!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.PROJECTILE, iprojectile.getBukkitEntity()).callEvent()) {
 +                    return;
 +                }
@@ -114,27 +146,3 @@ index c6fe9c1f7ef06c4524533130b493ca5e72bd1693..7b601955f3fd36f06c838b896b455a60
                  a(world, blockposition, entity instanceof EntityLiving ? (EntityLiving) entity : null);
                  world.a(blockposition, false);
              }
-diff --git a/src/main/java/net/minecraft/server/EntityEnderDragon.java b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-index 348d3575115ed6c95b4aee56f0fd930103651489..90a3d3711f71209b7db89d2515377ed1818c3c83 100644
---- a/src/main/java/net/minecraft/server/EntityEnderDragon.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderDragon.java
-@@ -12,6 +12,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
- import org.bukkit.event.entity.EntityExplodeEvent;
- import org.bukkit.event.entity.EntityRegainHealthEvent;
- // CraftBukkit end
-+import com.destroystokyo.paper.event.block.TNTPrimeEvent; // Paper - TNTPrimeEvent
- 
- public class EntityEnderDragon extends EntityInsentient implements IMonster {
- 
-@@ -466,6 +467,11 @@ public class EntityEnderDragon extends EntityInsentient implements IMonster {
-                     });
-                     craftBlock.getNMS().dropNaturally((WorldServer) world, blockposition, ItemStack.b);
-                 }
-+                // Paper start - TNTPrimeEvent
-+                org.bukkit.block.Block tntBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
-+                if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.EXPLOSION, explosionSource.getSource().getBukkitEntity()).callEvent())
-+                    continue;
-+                // Paper end
-                 nmsBlock.wasExploded(world, blockposition, explosionSource);
- 
-                 this.world.a(blockposition, false);

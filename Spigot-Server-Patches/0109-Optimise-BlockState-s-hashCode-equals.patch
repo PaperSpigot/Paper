@@ -8,10 +8,10 @@ object identity checks safely.
 
 Use a simpler optimized hashcode
 
-diff --git a/src/main/java/net/minecraft/server/BlockStateBoolean.java b/src/main/java/net/minecraft/server/BlockStateBoolean.java
-index 8df150f4cabb3dd98cb66c9d1af7fae035a6a6fe..4ca8db630434915de4eaeac6c4ecd60714d7f5d9 100644
---- a/src/main/java/net/minecraft/server/BlockStateBoolean.java
-+++ b/src/main/java/net/minecraft/server/BlockStateBoolean.java
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateBoolean.java b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateBoolean.java
+index 0701c1a178852345b6bf01bce8b1d0559c535d45..f2f94950681b198ae7a4c31a044fd62e98e448ab 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateBoolean.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateBoolean.java
 @@ -30,8 +30,7 @@ public class BlockStateBoolean extends IBlockState<Boolean> {
          return obool.toString();
      }
@@ -22,11 +22,11 @@ index 8df150f4cabb3dd98cb66c9d1af7fae035a6a6fe..4ca8db630434915de4eaeac6c4ecd607
          if (this == object) {
              return true;
          } else if (object instanceof BlockStateBoolean && super.equals(object)) {
-diff --git a/src/main/java/net/minecraft/server/BlockStateEnum.java b/src/main/java/net/minecraft/server/BlockStateEnum.java
-index 8162c11d14b8e88c2b572f9ddf6b7a15977047f8..8dc620b22bb904aa6a82e2127aa9da861986525c 100644
---- a/src/main/java/net/minecraft/server/BlockStateEnum.java
-+++ b/src/main/java/net/minecraft/server/BlockStateEnum.java
-@@ -49,8 +49,7 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends IBlockState<T>
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
+index de85894beae7ee7d276cf2af3daa77377ce131c3..3079cd13ea1465f4221fde4fec7df639f7c1eb49 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateEnum.java
+@@ -50,8 +50,7 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends IBlockState<T>
          return ((INamable) t0).getName();
      }
  
@@ -36,10 +36,10 @@ index 8162c11d14b8e88c2b572f9ddf6b7a15977047f8..8dc620b22bb904aa6a82e2127aa9da86
          if (this == object) {
              return true;
          } else if (object instanceof BlockStateEnum && super.equals(object)) {
-diff --git a/src/main/java/net/minecraft/server/BlockStateInteger.java b/src/main/java/net/minecraft/server/BlockStateInteger.java
-index 5bd7a236b948666ca31e53cb3a8aa0dc147e274b..36b84446e96faefad3b783f73df74e0f3bce8255 100644
---- a/src/main/java/net/minecraft/server/BlockStateInteger.java
-+++ b/src/main/java/net/minecraft/server/BlockStateInteger.java
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateInteger.java b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateInteger.java
+index 518c2ebe4cdfe4704bbec2abe81522cbca38da55..190978c889222185b47065e9e5f96a82e59c7b4e 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateInteger.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/BlockStateInteger.java
 @@ -38,8 +38,7 @@ public class BlockStateInteger extends IBlockState<Integer> {
          return this.a;
      }
@@ -50,11 +50,11 @@ index 5bd7a236b948666ca31e53cb3a8aa0dc147e274b..36b84446e96faefad3b783f73df74e0f
          if (this == object) {
              return true;
          } else if (object instanceof BlockStateInteger && super.equals(object)) {
-diff --git a/src/main/java/net/minecraft/server/IBlockState.java b/src/main/java/net/minecraft/server/IBlockState.java
-index d63a4e4916ed5f5d901be0f4dd2c13cf66239055..6550b55067db31dbbc903fe17a13849383651c5a 100644
---- a/src/main/java/net/minecraft/server/IBlockState.java
-+++ b/src/main/java/net/minecraft/server/IBlockState.java
-@@ -59,23 +59,17 @@ public abstract class IBlockState<T extends Comparable<T>> {
+diff --git a/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java b/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
+index e3969bad5be64bb41e2973751605d6820c16f021..759d6a4adaa511488ace5e2650eb685cbb6c4c16 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
++++ b/src/main/java/net/minecraft/world/level/block/state/properties/IBlockState.java
+@@ -60,23 +60,17 @@ public abstract class IBlockState<T extends Comparable<T>> {
      }
  
      public boolean equals(Object object) {

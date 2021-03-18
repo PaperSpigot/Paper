@@ -10,11 +10,19 @@ everything to the Whitelist object.
 
 https://github.com/PaperMC/Paper/issues/1880
 
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 9271ac8f0f5272f1eef751443dd0e9238b55f54e..5be6a3d2ed8f51cb7490183ebb14ffe41cb0728d 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -940,9 +940,9 @@ public abstract class PlayerList {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 3ef632928bf93a8af5eccada3b1cc76354ed5617..317c921eaf734e890706f962b29233e3306a13be 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -55,6 +55,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutViewDistance;
+ import net.minecraft.network.protocol.game.PacketPlayOutWorldBorder;
+ import net.minecraft.resources.ResourceKey;
+ import net.minecraft.server.AdvancementDataPlayer;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.ScoreboardServer;
+ import net.minecraft.server.level.DemoPlayerInteractManager;
+@@ -1016,9 +1017,9 @@ public abstract class PlayerList {
      }
      public boolean isWhitelisted(GameProfile gameprofile, org.bukkit.event.player.PlayerLoginEvent loginEvent) {
          boolean isOp = this.operators.d(gameprofile);

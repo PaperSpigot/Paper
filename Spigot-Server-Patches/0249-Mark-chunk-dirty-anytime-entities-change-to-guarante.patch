@@ -5,11 +5,11 @@ Subject: [PATCH] Mark chunk dirty anytime entities change to guarantee it
  saves
 
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 380690cdb1052b12d0574c111c2162bd7ed8ecca..84ad87f4a1ab9c136e00f4c9f029853d82f57247 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -524,6 +524,7 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index 7918dd4ad3e8cbb905b3929062a70fb7961b7d68..f56ff8e727c74870229d4d146b13534863f620d6 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -560,6 +560,7 @@ public class Chunk implements IChunkAccess {
          entity.chunkZ = this.loc.z;
          this.entities.add(entity); // Paper - per chunk entity list
          this.entitySlices[k].add(entity);
@@ -17,7 +17,7 @@ index 380690cdb1052b12d0574c111c2162bd7ed8ecca..84ad87f4a1ab9c136e00f4c9f029853d
      }
  
      @Override
-@@ -552,6 +553,7 @@ public class Chunk implements IChunkAccess {
+@@ -588,6 +589,7 @@ public class Chunk implements IChunkAccess {
              return;
          }
          entityCounts.decrement(entity.getMinecraftKeyString());

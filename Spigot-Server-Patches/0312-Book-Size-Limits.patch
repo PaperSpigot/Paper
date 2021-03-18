@@ -21,19 +21,11 @@ index 3139c194f9b1bc3510d51a81f13ae43d00a3dc29..13edb435b3fa65b4980bd7472aa5a519
 +        maxBookTotalSizeMultiplier = getDouble("settings.book-size.total-multiplier", maxBookTotalSizeMultiplier);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index a448773cc46889df37d563beb227beaa433d726e..188af7af384ca35f2e659dfb1f7518dd06803be3 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -20,6 +20,7 @@ import java.util.function.Consumer;
- import java.util.stream.Collectors;
- import java.util.stream.Stream;
- import javax.annotation.Nullable;
-+import org.apache.commons.lang3.StringEscapeUtils;
- import org.apache.commons.lang3.StringUtils;
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
-@@ -854,6 +855,52 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 76bba793ea2afb52919bcf1cb430b9412fceb319..a2413a4e1d16b856df9f74e42eb141f72b0893c6 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -999,6 +999,52 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
      @Override
      public void a(PacketPlayInBEdit packetplayinbedit) {

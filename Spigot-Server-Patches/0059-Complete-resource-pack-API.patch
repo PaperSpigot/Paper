@@ -4,11 +4,11 @@ Date: Sat, 4 Apr 2015 23:17:52 -0400
 Subject: [PATCH] Complete resource pack API
 
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index bb74049fb2baffbe67f9e34cc0ee0b83180d02eb..9a9847c217a6f7a2e2bc09b68b3d2821fcecbbc3 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1457,7 +1457,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index a70fb56b0f44372cc62adbb9a263684224c264d2..98189c2f4c973427563c48a231bf8e6c21e0391d 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1602,7 +1602,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
      // CraftBukkit start
      public void a(PacketPlayInResourcePackStatus packetplayinresourcepackstatus) {
          PlayerConnectionUtils.ensureMainThread(packetplayinresourcepackstatus, this, this.player.getWorldServer());
@@ -22,7 +22,7 @@ index bb74049fb2baffbe67f9e34cc0ee0b83180d02eb..9a9847c217a6f7a2e2bc09b68b3d2821
      // CraftBukkit end
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 928492e9dd30cf75aff891ac098cac653b46d822..15a515535d6c8c71e0de4a7ab4c0a8759ca3537f 100644
+index da193bfc1d98e489eedc373ee87ab58b75d4377e..144faef77e69c6c3bf963327179a51bb4c37cc18 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -138,6 +138,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

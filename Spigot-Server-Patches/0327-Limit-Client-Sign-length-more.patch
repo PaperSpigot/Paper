@@ -21,11 +21,11 @@ it only impacts data sent from the client.
 
 Set -DPaper.maxSignLength=XX to change limit or -1 to disable
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 081077c3e00d424baa8f6a293c3a911da447cb69..86572dd0d7f415a9a141785518452bf1b051e10d 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -110,6 +110,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 593609ff38b01ae35e17dd65bf101e38d080dc3a..8f442eae6519c3d0658e6ed77ecfa7aa8161a0f2 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -254,6 +254,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private int E;
      private int receivedMovePackets;
      private int processedMovePackets;
@@ -33,7 +33,7 @@ index 081077c3e00d424baa8f6a293c3a911da447cb69..86572dd0d7f415a9a141785518452bf1
      private static final long KEEPALIVE_LIMIT = Long.getLong("paper.playerconnection.keepalive", 30) * 1000; // Paper - provide property to set keepalive limit
  
      public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
-@@ -2704,7 +2705,17 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -2848,7 +2849,17 @@ public class PlayerConnection implements PacketListenerPlayIn {
              List<net.kyori.adventure.text.Component> lines = new java.util.ArrayList<>();
  
              for (int i = 0; i < list.size(); ++i) {

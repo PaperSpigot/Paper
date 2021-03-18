@@ -4,11 +4,11 @@ Date: Sun, 17 Jan 2021 13:16:09 +1000
 Subject: [PATCH] Implement BlockPreDispenseEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockDispenser.java b/src/main/java/net/minecraft/server/BlockDispenser.java
-index 063453552b7b6c2395c8f9be27cdb71a15a56ca4..89325af931b5ca43729758e94e971b612f65eea2 100644
---- a/src/main/java/net/minecraft/server/BlockDispenser.java
-+++ b/src/main/java/net/minecraft/server/BlockDispenser.java
-@@ -55,6 +55,7 @@ public class BlockDispenser extends BlockTileEntity {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+index 966051ab3e720e5b3f0fb9ab852c8908c5f23f3b..9b92824f1c2797e321ced953d33d2c2fd339374a 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+@@ -88,6 +88,7 @@ public class BlockDispenser extends BlockTileEntity {
              IDispenseBehavior idispensebehavior = this.a(itemstack);
  
              if (idispensebehavior != IDispenseBehavior.NONE) {
@@ -17,18 +17,18 @@ index 063453552b7b6c2395c8f9be27cdb71a15a56ca4..89325af931b5ca43729758e94e971b61
                  tileentitydispenser.setItem(i, idispensebehavior.dispense(sourceblock, itemstack));
              }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 579e1b3cde06a1138d90cda61a2bcf87aed3be98..a7ac877014853bb2b2e826ad6950da959f56b268 100644
+index acb65ec8bd09b642c79bb8304bd82fb22a48608b..8330c04124c0c1f4f9c78ad43c34d4b00e6b42ed 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -13,6 +13,7 @@ import java.util.List;
- import java.util.Map;
- import java.util.stream.Collectors;
- import javax.annotation.Nullable;
-+import io.papermc.paper.event.block.BlockPreDispenseEvent;
- import net.minecraft.server.BlockPosition;
- import net.minecraft.server.BlockPropertyInstrument;
- import net.minecraft.server.Container;
-@@ -1778,5 +1779,11 @@ public class CraftEventFactory {
+@@ -69,6 +69,7 @@ import net.minecraft.world.phys.MovingObjectPosition;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
++import io.papermc.paper.event.block.BlockPreDispenseEvent; // Paper
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location; // Paper
+ import org.bukkit.Material;
+@@ -1780,5 +1781,11 @@ public class CraftEventFactory {
          BlockFailedDispenseEvent event = new BlockFailedDispenseEvent(block);
          return event.callEvent();
      }

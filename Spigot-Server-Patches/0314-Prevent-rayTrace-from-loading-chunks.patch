@@ -6,11 +6,11 @@ Subject: [PATCH] Prevent rayTrace from loading chunks
 ray tracing into an unloaded chunk should be treated as a miss
 this saves a ton of lag for when AI tries to raytrace near unloaded chunks.
 
-diff --git a/src/main/java/net/minecraft/server/IBlockAccess.java b/src/main/java/net/minecraft/server/IBlockAccess.java
-index 93946d15c08fa71c63273f6b4e096bb8b4448394..c4a83448ed4513f6e4ab179d1d43e5bb0cb13641 100644
---- a/src/main/java/net/minecraft/server/IBlockAccess.java
-+++ b/src/main/java/net/minecraft/server/IBlockAccess.java
-@@ -46,7 +46,15 @@ public interface IBlockAccess {
+diff --git a/src/main/java/net/minecraft/world/level/IBlockAccess.java b/src/main/java/net/minecraft/world/level/IBlockAccess.java
+index e799765ecfada1eec78beb71651e52ad355a30aa..21ce19b9caf3150535a3f84027242a93bdd0d263 100644
+--- a/src/main/java/net/minecraft/world/level/IBlockAccess.java
++++ b/src/main/java/net/minecraft/world/level/IBlockAccess.java
+@@ -58,7 +58,15 @@ public interface IBlockAccess {
  
      // CraftBukkit start - moved block handling into separate method for use by Block#rayTrace
      default MovingObjectPositionBlock rayTraceBlock(RayTrace raytrace1, BlockPosition blockposition) {

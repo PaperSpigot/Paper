@@ -5,11 +5,19 @@ Subject: [PATCH] Send attack SoundEffects only to players who can see the
  attacker
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index 14ab88c1a417c9b9a5fee1756006eb6cfcebc996..8b2de281fbab8c2ef36cb7c2e3c9195a6abc0a1b 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -1030,7 +1030,7 @@ public abstract class EntityHuman extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 63e8062ae3f3407b92b72b5fccaa958c39282fb8..f9d0623a3ed5f49758cd5e97fe9f63a5b3198e58 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -28,6 +28,7 @@ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.chat.IChatMutableComponent;
+ import net.minecraft.network.protocol.game.PacketPlayOutEntityVelocity;
++import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
+@@ -1126,7 +1127,7 @@ public abstract class EntityHuman extends EntityLiving {
                      int i = b0 + EnchantmentManager.b((EntityLiving) this);
  
                      if (this.isSprinting() && flag) {
@@ -18,7 +26,7 @@ index 14ab88c1a417c9b9a5fee1756006eb6cfcebc996..8b2de281fbab8c2ef36cb7c2e3c9195a
                          ++i;
                          flag1 = true;
                      }
-@@ -1105,7 +1105,7 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -1201,7 +1202,7 @@ public abstract class EntityHuman extends EntityLiving {
                                  }
                              }
  
@@ -27,7 +35,7 @@ index 14ab88c1a417c9b9a5fee1756006eb6cfcebc996..8b2de281fbab8c2ef36cb7c2e3c9195a
                              this.ex();
                          }
  
-@@ -1133,15 +1133,15 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -1229,15 +1230,15 @@ public abstract class EntityHuman extends EntityLiving {
                          }
  
                          if (flag2) {
@@ -46,7 +54,7 @@ index 14ab88c1a417c9b9a5fee1756006eb6cfcebc996..8b2de281fbab8c2ef36cb7c2e3c9195a
                              }
                          }
  
-@@ -1193,7 +1193,7 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -1289,7 +1290,7 @@ public abstract class EntityHuman extends EntityLiving {
  
                          this.applyExhaustion(world.spigotConfig.combatExhaustion, EntityExhaustionEvent.ExhaustionReason.ATTACK); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value
                      } else {
@@ -55,7 +63,7 @@ index 14ab88c1a417c9b9a5fee1756006eb6cfcebc996..8b2de281fbab8c2ef36cb7c2e3c9195a
                          if (flag4) {
                              entity.extinguish();
                          }
-@@ -1628,6 +1628,14 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -1724,6 +1725,14 @@ public abstract class EntityHuman extends EntityLiving {
      public int getExpToLevel() {
          return this.expLevel >= 30 ? 112 + (this.expLevel - 30) * 9 : (this.expLevel >= 15 ? 37 + (this.expLevel - 15) * 5 : 7 + this.expLevel * 2);
      }

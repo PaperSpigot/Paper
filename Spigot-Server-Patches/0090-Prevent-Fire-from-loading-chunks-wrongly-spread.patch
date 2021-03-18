@@ -8,11 +8,11 @@ bad behavior.
 
 This also stops fire from spreading to illegal locations.
 
-diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
-index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc399968f5bdbf 100644
---- a/src/main/java/net/minecraft/server/BlockFire.java
-+++ b/src/main/java/net/minecraft/server/BlockFire.java
-@@ -115,7 +115,7 @@ public class BlockFire extends BlockFireAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockFire.java b/src/main/java/net/minecraft/world/level/block/BlockFire.java
+index ee5400fd3e493e1f0518a9e47ddbc997e7a0fb92..c22fad0038fdb0769e23db782e3341206fbd80f9 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockFire.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockFire.java
+@@ -135,7 +135,7 @@ public class BlockFire extends BlockFireAbstract {
                  BlockStateBoolean blockstateboolean = (BlockStateBoolean) BlockFire.h.get(enumdirection);
  
                  if (blockstateboolean != null) {
@@ -21,7 +21,7 @@ index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc3999
                  }
              }
  
-@@ -195,6 +195,7 @@ public class BlockFire extends BlockFireAbstract {
+@@ -215,6 +215,7 @@ public class BlockFire extends BlockFireAbstract {
                                  }
  
                                  blockposition_mutableblockposition.a((BaseBlockPosition) blockposition, l, j1, i1);
@@ -29,7 +29,7 @@ index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc3999
                                  int l1 = this.a((IWorldReader) worldserver, (BlockPosition) blockposition_mutableblockposition);
  
                                  if (l1 > 0) {
-@@ -240,10 +241,16 @@ public class BlockFire extends BlockFireAbstract {
+@@ -260,10 +261,16 @@ public class BlockFire extends BlockFireAbstract {
      }
  
      private void trySpread(World world, BlockPosition blockposition, int i, Random random, int j, BlockPosition sourceposition) { // CraftBukkit add sourceposition
@@ -48,7 +48,7 @@ index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc3999
  
              // CraftBukkit start
              org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
-@@ -289,7 +296,7 @@ public class BlockFire extends BlockFireAbstract {
+@@ -309,7 +316,7 @@ public class BlockFire extends BlockFireAbstract {
          for (int j = 0; j < i; ++j) {
              EnumDirection enumdirection = aenumdirection[j];
  
@@ -57,7 +57,7 @@ index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc3999
                  return true;
              }
          }
-@@ -307,7 +314,12 @@ public class BlockFire extends BlockFireAbstract {
+@@ -327,7 +334,12 @@ public class BlockFire extends BlockFireAbstract {
  
              for (int k = 0; k < j; ++k) {
                  EnumDirection enumdirection = aenumdirection[k];
@@ -71,7 +71,7 @@ index 3d6aae40cab0cefbfc56389d9d2d37d2f0badd98..e79f3872de2989d0b9b28a8b49cc3999
  
                  i = Math.max(this.getFlameChance(iblockdata), i);
              }
-@@ -318,7 +330,7 @@ public class BlockFire extends BlockFireAbstract {
+@@ -338,7 +350,7 @@ public class BlockFire extends BlockFireAbstract {
  
      @Override
      protected boolean e(IBlockData iblockdata) {

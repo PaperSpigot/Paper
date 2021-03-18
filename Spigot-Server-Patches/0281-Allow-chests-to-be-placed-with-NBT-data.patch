@@ -4,11 +4,11 @@ Date: Sat, 8 Sep 2018 18:43:31 -0500
 Subject: [PATCH] Allow chests to be placed with NBT data
 
 
-diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
-index 22568201a292edc8e25396e55cad1572d419b775..7ad595d5d7e090c523aa45a10d0f84b609ea86df 100644
---- a/src/main/java/net/minecraft/server/ItemStack.java
-+++ b/src/main/java/net/minecraft/server/ItemStack.java
-@@ -244,6 +244,7 @@ public final class ItemStack {
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index ce5d8463763dd39e1225d9dec0514b1754df5411..30db766c54db08a472caef82fdcc7cf1b7855fbf 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -298,6 +298,7 @@ public final class ItemStack {
                      enuminteractionresult = EnumInteractionResult.FAIL; // cancel placement
                      // PAIL: Remove this when MC-99075 fixed
                      placeEvent.getPlayer().updateInventory();
@@ -16,11 +16,11 @@ index 22568201a292edc8e25396e55cad1572d419b775..7ad595d5d7e090c523aa45a10d0f84b6
                      // revert back all captured blocks
                      for (BlockState blockstate : blocks) {
                          blockstate.update(true, false);
-diff --git a/src/main/java/net/minecraft/server/TileEntityChest.java b/src/main/java/net/minecraft/server/TileEntityChest.java
-index 54cad33750efd80b104664723e1115d107c7a72d..28df29649a3e78708564b5ab9dc4d340835db9a3 100644
---- a/src/main/java/net/minecraft/server/TileEntityChest.java
-+++ b/src/main/java/net/minecraft/server/TileEntityChest.java
-@@ -301,7 +301,7 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
+index 51167d776c710decb0107bebcb35bdf43103772b..111f62d0e5b40e945793b8f504f2c035c0884a6a 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityChest.java
+@@ -327,7 +327,7 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
      // CraftBukkit start
      @Override
      public boolean isFilteredNBT() {

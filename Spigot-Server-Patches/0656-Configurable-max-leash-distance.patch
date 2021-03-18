@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable max leash distance
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 89f3a28c20f0e4db4650c435dbcbc923b7bde8aa..4735dcba31b556fafe9c7d7440c89e940755c81f 100644
+index 5801fe872aff240dc8209069b978d6a4dba30f06..849603de7c918788f1f80d7effb93658a69b0fd6 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -167,6 +167,12 @@ public class PaperWorldConfig {
@@ -21,11 +21,11 @@ index 89f3a28c20f0e4db4650c435dbcbc923b7bde8aa..4735dcba31b556fafe9c7d7440c89e94
      public boolean disableEndCredits;
      private void disableEndCredits() {
          disableEndCredits = getBoolean("game-mechanics.disable-end-credits", false);
-diff --git a/src/main/java/net/minecraft/server/EntityCreature.java b/src/main/java/net/minecraft/server/EntityCreature.java
-index 4757e5a92c9cf04fa52d62bac6dae782e08ddab1..eaa10d6e3a3c37b83fed58637941273fee9b0be8 100644
---- a/src/main/java/net/minecraft/server/EntityCreature.java
-+++ b/src/main/java/net/minecraft/server/EntityCreature.java
-@@ -40,7 +40,7 @@ public abstract class EntityCreature extends EntityInsentient {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityCreature.java b/src/main/java/net/minecraft/world/entity/EntityCreature.java
+index bbf0f345bfdd8a3a1f7fe902a42b2b18cdcf07a5..20570580367697e37e6c45147168c3beb6c8d31b 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityCreature.java
++++ b/src/main/java/net/minecraft/world/entity/EntityCreature.java
+@@ -47,7 +47,7 @@ public abstract class EntityCreature extends EntityInsentient {
              float f = this.g(entity);
  
              if (this instanceof EntityTameableAnimal && ((EntityTameableAnimal) this).isSitting()) {
@@ -34,7 +34,7 @@ index 4757e5a92c9cf04fa52d62bac6dae782e08ddab1..eaa10d6e3a3c37b83fed58637941273f
                      this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), EntityUnleashEvent.UnleashReason.DISTANCE)); // CraftBukkit
                      this.unleash(true, true);
                  }
-@@ -49,7 +49,7 @@ public abstract class EntityCreature extends EntityInsentient {
+@@ -56,7 +56,7 @@ public abstract class EntityCreature extends EntityInsentient {
              }
  
              this.x(f);

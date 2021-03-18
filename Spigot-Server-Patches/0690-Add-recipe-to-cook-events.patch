@@ -4,11 +4,11 @@ Date: Wed, 6 Jan 2021 12:04:03 -0800
 Subject: [PATCH] Add recipe to cook events
 
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityCampfire.java b/src/main/java/net/minecraft/server/TileEntityCampfire.java
-index c56c588f508b51677c599412215f043aa0a35f98..3239d8dd120fda2faa6b770603c5f613c13f7c43 100644
---- a/src/main/java/net/minecraft/server/TileEntityCampfire.java
-+++ b/src/main/java/net/minecraft/server/TileEntityCampfire.java
-@@ -56,7 +56,10 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
+index 62a19f39405cff27f34a3b98fb9310b1c9c27563..08759f461ec947c0d5655557f49d8717afee6f00 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityCampfire.java
+@@ -74,7 +74,10 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
  
                  if (this.cookingTimes[i] >= this.cookingTotalTimes[i]) {
                      InventorySubcontainer inventorysubcontainer = new InventorySubcontainer(new ItemStack[]{itemstack});
@@ -20,7 +20,7 @@ index c56c588f508b51677c599412215f043aa0a35f98..3239d8dd120fda2faa6b770603c5f613
                          return recipecampfire.a(inventorysubcontainer);
                      }).orElse(itemstack);
                      BlockPosition blockposition = this.getPosition();
-@@ -65,7 +68,7 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
+@@ -83,7 +86,7 @@ public class TileEntityCampfire extends TileEntity implements Clearable, ITickab
                      CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
                      org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
  
@@ -29,11 +29,11 @@ index c56c588f508b51677c599412215f043aa0a35f98..3239d8dd120fda2faa6b770603c5f613
                      this.world.getServer().getPluginManager().callEvent(blockCookEvent);
  
                      if (blockCookEvent.isCancelled()) {
-diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
-index eb6aa82c3c25928070475815288ec215938322c7..935c7f111a7d7b9cc7c8e384d43e7ab6092cfc5f 100644
---- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
-+++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
-@@ -366,7 +366,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+index 54316a8079b4331a48cac3c43f3f8c506a4af091..1997139fb87dc1947acfdf02e1f116577c3fa943 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+@@ -395,7 +395,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
              CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
              org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
  

@@ -5,11 +5,11 @@ Subject: [PATCH] LivingEntity Hand Raised/Item Use API
 
 How long an entity has raised hands to charge an attack or use an item
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 014f27ab7c183e3b416e96d6bbbbfc776e54ca84..e118f96fb9b67874ec86db8dede00cf34473e085 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -119,7 +119,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 61bd7afdafc77725c24c6af978578df0b2d8ca0f..189a00cb68ce9a9060117b79c5356ebb93d7fa62 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -212,7 +212,7 @@ public abstract class EntityLiving extends Entity {
      private float bu;
      private int jumpTicks;
      private float bw;
@@ -18,7 +18,7 @@ index 014f27ab7c183e3b416e96d6bbbbfc776e54ca84..e118f96fb9b67874ec86db8dede00cf3
      protected int bd;
      protected int be;
      private BlockPosition bx;
-@@ -3201,10 +3201,12 @@ public abstract class EntityLiving extends Entity {
+@@ -3294,10 +3294,12 @@ public abstract class EntityLiving extends Entity {
          return this.activeItem;
      }
  
@@ -32,10 +32,10 @@ index 014f27ab7c183e3b416e96d6bbbbfc776e54ca84..e118f96fb9b67874ec86db8dede00cf3
          return this.isHandRaised() ? this.activeItem.k() - this.dZ() : 0;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 2e146ec4ba0c6db67c558a48ce5ec60bc2ca337f..a91070c3674dc47e0019e642f0f76a3cf76b7387 100644
+index 2d1c54eed8fa6885837d63014ff1f4b33dd35bd7..bd24b9865f37c34ffd63cd411ddc84abe5ab30d0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-@@ -720,5 +720,25 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+@@ -721,5 +721,25 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
      public void setShieldBlockingDelay(int delay) {
          getHandle().setShieldBlockingDelay(delay);
      }

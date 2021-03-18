@@ -4,11 +4,11 @@ Date: Mon, 13 Apr 2020 07:31:44 +0100
 Subject: [PATCH] Prevent opening inventories when frozen
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index a2f364fb61c4a0a691e1617446c1dfcf997753fb..e858a8fe2f4be485dd18f753c30c7d58d4ce93db 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -431,7 +431,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 8371d5ac694f469804ad55669fdedb8b3fc627bd..320be04d9e3284d728adb2df9da7edb63e5f71d1 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -559,7 +559,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              containerUpdateDelay = world.paperConfig.containerUpdateTickRate;
          }
          // Paper end
@@ -17,7 +17,7 @@ index a2f364fb61c4a0a691e1617446c1dfcf997753fb..e858a8fe2f4be485dd18f753c30c7d58
              this.closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.CANT_USE); // Paper
              this.activeContainer = this.defaultContainer;
          }
-@@ -1270,7 +1270,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1398,7 +1398,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              } else {
                  // CraftBukkit start
                  this.activeContainer = container;
@@ -26,7 +26,7 @@ index a2f364fb61c4a0a691e1617446c1dfcf997753fb..e858a8fe2f4be485dd18f753c30c7d58
                  // CraftBukkit end
                  container.addSlotListener(this);
                  return OptionalInt.of(this.containerCounter);
-@@ -2071,7 +2071,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2199,7 +2199,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      }
  
      @Override
@@ -36,10 +36,10 @@ index a2f364fb61c4a0a691e1617446c1dfcf997753fb..e858a8fe2f4be485dd18f753c30c7d58
      }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-index a0c3600f7523d43e4e4eff7a574bf0fd9350899e..a2b0e01529646f7b0feabf9803bcaac5f5508cc3 100644
+index e8f8a07f256e01c5792199bf47f3cc1f0f3d1610..5b142e96248278c6bb6068879bb5ad1578b0f79f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-@@ -321,7 +321,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+@@ -322,7 +322,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
          if (adventure$title == null) adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(container.getBukkitView().getTitle()); // Paper
  
          //player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0])); // Paper // Paper - comment
@@ -48,7 +48,7 @@ index a0c3600f7523d43e4e4eff7a574bf0fd9350899e..a2b0e01529646f7b0feabf9803bcaac5
          getHandle().activeContainer = container;
          getHandle().activeContainer.addSlotListener(player);
      }
-@@ -395,7 +395,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+@@ -396,7 +396,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
          net.kyori.adventure.text.Component adventure$title = inventory.title(); // Paper
          if (adventure$title == null) adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(inventory.getTitle()); // Paper
          //player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0])); // Paper - comment

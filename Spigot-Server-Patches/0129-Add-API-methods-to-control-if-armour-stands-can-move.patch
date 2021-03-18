@@ -4,11 +4,40 @@ Date: Wed, 21 Dec 2016 11:47:25 -0600
 Subject: [PATCH] Add API methods to control if armour stands can move
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
-index ad3c2f4b448fe8a49c1c43374cd5cf14114c9b16..4870a6f9f894b2c9d0fea83dad0808ac6448f808 100644
---- a/src/main/java/net/minecraft/server/EntityArmorStand.java
-+++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
-@@ -45,6 +45,7 @@ public class EntityArmorStand extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityInsentient.java b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+index 0631cd531647239858b2a7298f58cc770720f69a..6ee5e1b0bb34ba490a130fbcbdb7a2706c5ecf86 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityInsentient.java
++++ b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+@@ -38,6 +38,7 @@ import net.minecraft.world.entity.ai.control.ControllerLook;
+ import net.minecraft.world.entity.ai.control.ControllerMove;
+ import net.minecraft.world.entity.ai.control.EntityAIBodyControl;
+ import net.minecraft.world.entity.ai.goal.PathfinderGoal;
++import net.minecraft.world.entity.ai.goal.PathfinderGoalFloat;
+ import net.minecraft.world.entity.ai.goal.PathfinderGoalSelector;
+ import net.minecraft.world.entity.ai.navigation.Navigation;
+ import net.minecraft.world.entity.ai.navigation.NavigationAbstract;
+@@ -45,6 +46,8 @@ import net.minecraft.world.entity.ai.sensing.EntitySenses;
+ import net.minecraft.world.entity.decoration.EntityHanging;
+ import net.minecraft.world.entity.decoration.EntityLeash;
+ import net.minecraft.world.entity.item.EntityItem;
++import net.minecraft.world.entity.monster.EntityBlaze;
++import net.minecraft.world.entity.monster.EntityEnderman;
+ import net.minecraft.world.entity.monster.IMonster;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.vehicle.EntityBoat;
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index 72e53968c5fb03301ddec7a0cf937ac2f8cf0901..2ef991aa7f739d3577fbbf4386064557e8f7c904 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -28,6 +28,7 @@ import net.minecraft.world.entity.EntitySize;
+ import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.entity.EnumItemSlot;
+ import net.minecraft.world.entity.EnumMainHand;
++import net.minecraft.world.entity.EnumMoveType;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.projectile.EntityArrow;
+ import net.minecraft.world.entity.vehicle.EntityMinecartAbstract;
+@@ -79,6 +80,7 @@ public class EntityArmorStand extends EntityLiving {
      public Vector3f rightArmPose;
      public Vector3f leftLegPose;
      public Vector3f rightLegPose;
@@ -16,7 +45,7 @@ index ad3c2f4b448fe8a49c1c43374cd5cf14114c9b16..4870a6f9f894b2c9d0fea83dad0808ac
  
      public EntityArmorStand(EntityTypes<? extends EntityArmorStand> entitytypes, World world) {
          super(entitytypes, world);
-@@ -828,4 +829,13 @@ public class EntityArmorStand extends EntityLiving {
+@@ -862,4 +864,13 @@ public class EntityArmorStand extends EntityLiving {
      private EntitySize s(boolean flag) {
          return flag ? EntityArmorStand.bp : (this.isBaby() ? EntityArmorStand.bq : this.getEntityType().l());
      }
@@ -31,7 +60,7 @@ index ad3c2f4b448fe8a49c1c43374cd5cf14114c9b16..4870a6f9f894b2c9d0fea83dad0808ac
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
-index 8f38500965a70fb713050321f71c97510703402a..6ff7a59cc7052e900516a89db8daf0720c64a1ac 100644
+index 86c8662b3864b264e26f8c63474fdd39bd6c873c..6f922e4cbb095439fcd76ee0d0c08bc4160b8107 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftArmorStand.java
 @@ -229,4 +229,15 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {

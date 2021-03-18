@@ -4,11 +4,11 @@ Date: Sat, 10 Mar 2018 16:33:15 -0500
 Subject: [PATCH] Prevent Frosted Ice from loading/holding chunks
 
 
-diff --git a/src/main/java/net/minecraft/server/BlockIceFrost.java b/src/main/java/net/minecraft/server/BlockIceFrost.java
-index 061b157f66999a733c3c4e990371b6f8d7860de2..77f5f835c60c181a0a2d6fc782d756338bc2ccb0 100644
---- a/src/main/java/net/minecraft/server/BlockIceFrost.java
-+++ b/src/main/java/net/minecraft/server/BlockIceFrost.java
-@@ -28,7 +28,8 @@ public class BlockIceFrost extends BlockIce {
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java b/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
+index e32e94868386ff06ff29254e6cc3bee9b446a293..cbe8a6db356396f9fd9ce7cc61a5845bb8e6499d 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockIceFrost.java
+@@ -40,7 +40,8 @@ public class BlockIceFrost extends BlockIce {
                  EnumDirection enumdirection = aenumdirection[j];
  
                  blockposition_mutableblockposition.a((BaseBlockPosition) blockposition, enumdirection);
@@ -18,7 +18,7 @@ index 061b157f66999a733c3c4e990371b6f8d7860de2..77f5f835c60c181a0a2d6fc782d75633
  
                  if (iblockdata1.a((Block) this) && !this.e(iblockdata1, (World) worldserver, blockposition_mutableblockposition)) {
                      worldserver.getBlockTickList().a(blockposition_mutableblockposition, this, MathHelper.nextInt(random, worldserver.paperConfig.frostedIceDelayMin, worldserver.paperConfig.frostedIceDelayMax)); // Paper - use configurable min/max delay
-@@ -71,7 +72,9 @@ public class BlockIceFrost extends BlockIce {
+@@ -83,7 +84,9 @@ public class BlockIceFrost extends BlockIce {
              EnumDirection enumdirection = aenumdirection[l];
  
              blockposition_mutableblockposition.a((BaseBlockPosition) blockposition, enumdirection);

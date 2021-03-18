@@ -5,11 +5,11 @@ Subject: [PATCH] Fixed TileEntityBell memory leak
 
 TileEntityBell has a list of entities (entitiesAtRing) that was not being cleared at the right time, causing leaks whenever a bell would be rung near a crowd of entities.
 
-diff --git a/src/main/java/net/minecraft/server/TileEntityBell.java b/src/main/java/net/minecraft/server/TileEntityBell.java
-index 4c5aa99e092a9476e837a3e68d4cbab4b89c0259..6963f3c8a0e257615084b558f5ce287aab9722ff 100644
---- a/src/main/java/net/minecraft/server/TileEntityBell.java
-+++ b/src/main/java/net/minecraft/server/TileEntityBell.java
-@@ -10,8 +10,8 @@ public class TileEntityBell extends TileEntity implements ITickable {
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBell.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBell.java
+index e97d229da3cf7631555f418a73bc74255494cc01..84f9f52c5b632621b509448ac1c760f64de6b062 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBell.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBell.java
+@@ -27,8 +27,8 @@ public class TileEntityBell extends TileEntity implements ITickable {
      public int a;
      public boolean b;
      public EnumDirection c;
@@ -20,7 +20,7 @@ index 4c5aa99e092a9476e837a3e68d4cbab4b89c0259..6963f3c8a0e257615084b558f5ce287a
      private int j;
  
      public TileEntityBell() {
-@@ -40,6 +40,11 @@ public class TileEntityBell extends TileEntity implements ITickable {
+@@ -57,6 +57,11 @@ public class TileEntityBell extends TileEntity implements ITickable {
  
          if (this.a >= 50) {
              this.b = false;
@@ -32,7 +32,7 @@ index 4c5aa99e092a9476e837a3e68d4cbab4b89c0259..6963f3c8a0e257615084b558f5ce287a
              this.a = 0;
          }
  
-@@ -54,6 +59,7 @@ public class TileEntityBell extends TileEntity implements ITickable {
+@@ -71,6 +76,7 @@ public class TileEntityBell extends TileEntity implements ITickable {
              } else {
                  this.a(this.world);
                  this.b(this.world);
@@ -40,7 +40,7 @@ index 4c5aa99e092a9476e837a3e68d4cbab4b89c0259..6963f3c8a0e257615084b558f5ce287a
                  this.i = false;
              }
          }
-@@ -94,11 +100,12 @@ public class TileEntityBell extends TileEntity implements ITickable {
+@@ -111,11 +117,12 @@ public class TileEntityBell extends TileEntity implements ITickable {
                  EntityLiving entityliving = (EntityLiving) iterator.next();
  
                  if (entityliving.isAlive() && !entityliving.dead && blockposition.a((IPosition) entityliving.getPositionVector(), 32.0D)) {

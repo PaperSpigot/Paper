@@ -5,11 +5,11 @@ Subject: [PATCH] Avoid blocking on Network Manager creation
 
 Per Paper issue 294
 
-diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 399420916da4c924cd28c0c4a45b4eca3972acb6..8fcd8f4056620713d0c02fdd9b829053ba95e851 100644
---- a/src/main/java/net/minecraft/server/ServerConnection.java
-+++ b/src/main/java/net/minecraft/server/ServerConnection.java
-@@ -39,6 +39,15 @@ public class ServerConnection {
+diff --git a/src/main/java/net/minecraft/server/network/ServerConnection.java b/src/main/java/net/minecraft/server/network/ServerConnection.java
+index f66a5ba901601c1d359a287861a2edd8e3a106a7..d992cb5cd827e0fe655809e1088939cdad9c2301 100644
+--- a/src/main/java/net/minecraft/server/network/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/network/ServerConnection.java
+@@ -52,6 +52,15 @@ public class ServerConnection {
      public volatile boolean c;
      private final List<ChannelFuture> listeningChannels = Collections.synchronizedList(Lists.newArrayList());
      private final List<NetworkManager> connectedChannels = Collections.synchronizedList(Lists.newArrayList());
@@ -25,7 +25,7 @@ index 399420916da4c924cd28c0c4a45b4eca3972acb6..8fcd8f4056620713d0c02fdd9b829053
  
      public ServerConnection(MinecraftServer minecraftserver) {
          this.e = minecraftserver;
-@@ -74,7 +83,8 @@ public class ServerConnection {
+@@ -87,7 +96,8 @@ public class ServerConnection {
                      int j = ServerConnection.this.e.k();
                      Object object = j > 0 ? new NetworkManagerServer(j) : new NetworkManager(EnumProtocolDirection.SERVERBOUND);
  
@@ -35,7 +35,7 @@ index 399420916da4c924cd28c0c4a45b4eca3972acb6..8fcd8f4056620713d0c02fdd9b829053
                      channel.pipeline().addLast("packet_handler", (ChannelHandler) object);
                      ((NetworkManager) object).setPacketListener(new HandshakeListener(ServerConnection.this.e, (NetworkManager) object));
                  }
-@@ -113,6 +123,7 @@ public class ServerConnection {
+@@ -126,6 +136,7 @@ public class ServerConnection {
  
          synchronized (this.connectedChannels) {
              // Spigot Start

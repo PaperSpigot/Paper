@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Thu, 2 Jul 2020 18:11:43 -0500
+Subject: [PATCH] Add entity liquid API
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 27e5ba64ed6406c1ece318bf79fca0f261a77818..743d4725c0a26a8abd0a98eed2ec45ffba6211ad 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1166,12 +1166,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         return this.inWater;
+     }
+ 
+-    private boolean isInRain() {
++    public boolean isInRain() { // Paper - private -> public
+         BlockPosition blockposition = this.getChunkCoordinates();
+ 
+         return this.world.isRainingAt(blockposition) || this.world.isRainingAt(new BlockPosition((double) blockposition.getX(), this.getBoundingBox().maxY, (double) blockposition.getZ()));
+     }
+ 
++    public final boolean isInBubbleColumn() { return k(); } // Paper - OBFHELPER
+     private boolean k() {
+         return this.world.getType(this.getChunkCoordinates()).a(Blocks.BUBBLE_COLUMN);
+     }
+@@ -1185,6 +1186,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         return this.isInWater() || this.isInRain() || this.k();
+     }
+ 
++    public final boolean isInWaterOrBubbleColumn() { return aH(); } // Paper - OBFHELPER
+     public boolean aH() {
+         return this.isInWater() || this.k();
+     }
+@@ -1327,6 +1329,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         return this.O == tag;
+     }
+ 
++    public final boolean isInLava() { return aQ(); } // Paper - OBFHELPER
+     public boolean aQ() {
+         return !this.justCreated && this.M.getDouble(TagsFluid.LAVA) > 0.0D;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 266b2cbd6bfaf10743929a1eeb9732a5d1fb4c62..387f6f6fa9bbb1cce544cfb907f68c7993752dd7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1137,5 +1137,29 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+     public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
+         return getHandle().spawnReason;
+     }
++
++    public boolean isInRain() {
++        return getHandle().isInRain();
++    }
++
++    public boolean isInBubbleColumn() {
++        return getHandle().isInBubbleColumn();
++    }
++
++    public boolean isInWaterOrRain() {
++        return getHandle().isInWaterOrRain();
++    }
++
++    public boolean isInWaterOrBubbleColumn() {
++        return getHandle().isInWaterOrBubbleColumn();
++    }
++    
++    public boolean isInWaterOrRainOrBubbleColumn() {
++        return getHandle().isInWaterOrRainOrBubble();
++    }
++
++    public boolean isInLava() {
++        return getHandle().isInLava();
++    }
+     // Paper end
+ }

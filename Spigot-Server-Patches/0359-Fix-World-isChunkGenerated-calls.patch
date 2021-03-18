@@ -7,11 +7,11 @@ Optimize World#loadChunk() too
 This patch also adds a chunk status cache on region files (note that
 its only purpose is to cache the status on DISK)
 
-diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index af597b8b3157ac76456f8575a8f85a48fb0f45cd..d340990000144d9500069824e7e6609400a54ece 100644
---- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
-+++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -30,7 +30,7 @@ public class ChunkProviderServer extends IChunkProvider {
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 94af98e250fe7ef37c16d432c05c6f2b68625fe1..f2d48659fdb9f030dbeec12ed820062d4d066e48 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -52,7 +52,7 @@ public class ChunkProviderServer extends IChunkProvider {
      private final WorldServer world;
      public final Thread serverThread; // Paper - private -> public
      private final LightEngineThreaded lightEngine;
@@ -20,7 +20,7 @@ index af597b8b3157ac76456f8575a8f85a48fb0f45cd..d340990000144d9500069824e7e66094
      public final PlayerChunkMap playerChunkMap;
      private final WorldPersistentData worldPersistentData;
      private long lastTickTime;
-@@ -295,6 +295,21 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -317,6 +317,21 @@ public class ChunkProviderServer extends IChunkProvider {
  
          return ret;
      }
@@ -42,76 +42,20 @@ index af597b8b3157ac76456f8575a8f85a48fb0f45cd..d340990000144d9500069824e7e66094
      // Paper end
  
      @Nullable
-diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index 3a292bccb2295bf7ae46fc3d7e5c9c63a72f403d..23664a8e7c6e642e601fd83c875e5be56826be74 100644
---- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-+++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-@@ -419,6 +419,17 @@ public class ChunkRegionLoader {
-     }
-     // Paper end
- 
-+    // Paper start
-+    public static ChunkStatus getStatus(NBTTagCompound compound) {
-+        if (compound == null) {
-+            return null;
-+        }
-+
-+        // Note: Copied from below
-+        return ChunkStatus.getStatus(compound.getCompound("Level").getString("Status"));
-+    }
-+    // Paper end
-+
-     public static ChunkStatus.Type a(@Nullable NBTTagCompound nbttagcompound) {
-         if (nbttagcompound != null) {
-             ChunkStatus chunkstatus = ChunkStatus.a(nbttagcompound.getCompound("Level").getString("Status"));
-diff --git a/src/main/java/net/minecraft/server/ChunkStatus.java b/src/main/java/net/minecraft/server/ChunkStatus.java
-index ca4b23007bec075412fd5c6f100b9b9fc5019db6..f231bb2f5bca184557182c50d251943932693614 100644
---- a/src/main/java/net/minecraft/server/ChunkStatus.java
-+++ b/src/main/java/net/minecraft/server/ChunkStatus.java
-@@ -182,6 +182,7 @@ public class ChunkStatus {
-         return this.s;
+@@ -768,7 +783,7 @@ public class ChunkProviderServer extends IChunkProvider {
+         return this.p;
      }
  
-+    public ChunkStatus getPreviousStatus() { return this.e(); } // Paper - OBFHELPER
-     public ChunkStatus e() {
-         return this.u;
-     }
-@@ -202,6 +203,17 @@ public class ChunkStatus {
-         return this.y;
-     }
+-    final class a extends IAsyncTaskHandler<Runnable> {
++    public final class a extends IAsyncTaskHandler<Runnable> { // Paper - package -> public
  
-+    // Paper start
-+    public static ChunkStatus getStatus(String name) {
-+        try {
-+            // We need this otherwise we return EMPTY for invalid names
-+            MinecraftKey key = new MinecraftKey(name);
-+            return IRegistry.CHUNK_STATUS.getOptional(key).orElse(null);
-+        } catch (Exception ex) {
-+            return null; // invalid name
-+        }
-+    }
-+    // Paper end
-     public static ChunkStatus a(String s) {
-         return (ChunkStatus) IRegistry.CHUNK_STATUS.get(MinecraftKey.a(s));
-     }
-diff --git a/src/main/java/net/minecraft/server/IChunkLoader.java b/src/main/java/net/minecraft/server/IChunkLoader.java
-index 2fde0b6ca8f38a998ac73b68be61fbfea9088cee..fa03834dacacf7ae6a326c88007256a261153c27 100644
---- a/src/main/java/net/minecraft/server/IChunkLoader.java
-+++ b/src/main/java/net/minecraft/server/IChunkLoader.java
-@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
- 
- public class IChunkLoader implements AutoCloseable {
- 
--    private final IOWorker a;
-+    private final IOWorker a; public IOWorker getIOWorker() { return a; } // Paper - OBFHELPER
-     protected final DataFixer b;
-     @Nullable
-     private PersistentStructureLegacy c;
-diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index b7af53dbf3139d7d51069e11388b945785cb47f6..2d749c07b159604e1ab904e026adf326eb9a732e 100644
---- a/src/main/java/net/minecraft/server/PlayerChunk.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunk.java
-@@ -117,6 +117,19 @@ public class PlayerChunk {
+         private a(World world) {
+             super("Chunk source main thread executor for " + world.getDimensionKey().a());
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunk.java b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+index 9891cf98f8c740f84f9135ee8176e67abb648b3a..6bced8533df49d7bfdb32dfa0caad9d788ffc2c8 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunk.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunk.java
+@@ -142,6 +142,19 @@ public class PlayerChunk {
          Either<IChunkAccess, PlayerChunk.Failure> either = (Either<IChunkAccess, PlayerChunk.Failure>) statusFuture.getNow(null);
          return either == null ? null : (Chunk) either.left().orElse(null);
      }
@@ -131,11 +75,11 @@ index b7af53dbf3139d7d51069e11388b945785cb47f6..2d749c07b159604e1ab904e026adf326
      // Paper end
  
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 21c261e3cb4d82e358a8e5c1151f59e68b483fd5..14288d7beaa9aea531b7eee16a4be4101d0380fa 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -939,12 +939,61 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index a0fcd20d4a7e951437756edb60a44c627612e04c..ccfde274edfe1b611ccf8c583c92b16d52e4518d 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -985,12 +985,61 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      }
  
      @Nullable
@@ -199,11 +143,84 @@ index 21c261e3cb4d82e358a8e5c1151f59e68b483fd5..14288d7beaa9aea531b7eee16a4be410
      boolean isOutsideOfRange(ChunkCoordIntPair chunkcoordintpair) {
          // Spigot start
          return isOutsideOfRange(chunkcoordintpair, false);
-diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
-index 2fb4131e5972d3b554a763098709470e8a725280..3e299ffaabf2a91336fae28031c8fc0712667bc5 100644
---- a/src/main/java/net/minecraft/server/RegionFile.java
-+++ b/src/main/java/net/minecraft/server/RegionFile.java
-@@ -38,6 +38,30 @@ public class RegionFile implements AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkStatus.java b/src/main/java/net/minecraft/world/level/chunk/ChunkStatus.java
+index 5e4c162654349f884becc10e8fbae4ded6889deb..711308cf84a816f09d116a7414f9cbee803c8713 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkStatus.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkStatus.java
+@@ -193,6 +193,7 @@ public class ChunkStatus {
+         return this.s;
+     }
+ 
++    public ChunkStatus getPreviousStatus() { return this.e(); } // Paper - OBFHELPER
+     public ChunkStatus e() {
+         return this.u;
+     }
+@@ -213,6 +214,17 @@ public class ChunkStatus {
+         return this.y;
+     }
+ 
++    // Paper start
++    public static ChunkStatus getStatus(String name) {
++        try {
++            // We need this otherwise we return EMPTY for invalid names
++            MinecraftKey key = new MinecraftKey(name);
++            return IRegistry.CHUNK_STATUS.getOptional(key).orElse(null);
++        } catch (Exception ex) {
++            return null; // invalid name
++        }
++    }
++    // Paper end
+     public static ChunkStatus a(String s) {
+         return (ChunkStatus) IRegistry.CHUNK_STATUS.get(MinecraftKey.a(s));
+     }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+index 69bc9dc18bab157851d8080a672504598e8572a8..98bc26c7ae01884eb53766e72fc7cbabbf065e6e 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+@@ -462,6 +462,17 @@ public class ChunkRegionLoader {
+     }
+     // Paper end
+ 
++    // Paper start
++    public static ChunkStatus getStatus(NBTTagCompound compound) {
++        if (compound == null) {
++            return null;
++        }
++
++        // Note: Copied from below
++        return ChunkStatus.getStatus(compound.getCompound("Level").getString("Status"));
++    }
++    // Paper end
++
+     public static ChunkStatus.Type a(@Nullable NBTTagCompound nbttagcompound) {
+         if (nbttagcompound != null) {
+             ChunkStatus chunkstatus = ChunkStatus.a(nbttagcompound.getCompound("Level").getString("Status"));
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
+index 247d14a3ca56734bbbf4dc0ec247d60a1f241e7a..d785f44cd503d4d91589f3fc4bc8dc805dff3d41 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
+@@ -25,7 +25,7 @@ import net.minecraft.world.level.dimension.DimensionManager;
+ 
+ public class IChunkLoader implements AutoCloseable {
+ 
+-    private final IOWorker a;
++    private final IOWorker a; public IOWorker getIOWorker() { return a; } // Paper - OBFHELPER
+     protected final DataFixer b;
+     @Nullable
+     private PersistentStructureLegacy c;
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+index a9cbe17f6ccf0ce4ace97ba4b951b3fd7415d71b..39d3a71f3945b1c97df35e28d1011b9d42b162f5 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
+@@ -26,6 +26,7 @@ import net.minecraft.SystemUtils;
+ import net.minecraft.nbt.NBTCompressedStreamTools;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.world.level.ChunkCoordIntPair;
++import net.minecraft.world.level.chunk.ChunkStatus;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -43,6 +44,30 @@ public class RegionFile implements AutoCloseable {
      protected final RegionFileBitSet freeSectors;
      public final File file; // Paper
  
@@ -234,7 +251,7 @@ index 2fb4131e5972d3b554a763098709470e8a725280..3e299ffaabf2a91336fae28031c8fc07
      public RegionFile(File file, File file1, boolean flag) throws IOException {
          this(file.toPath(), file1.toPath(), RegionFileCompression.b, flag);
      }
-@@ -374,11 +398,13 @@ public class RegionFile implements AutoCloseable {
+@@ -379,11 +404,13 @@ public class RegionFile implements AutoCloseable {
          return this.getOffset(chunkcoordintpair) != 0;
      }
  
@@ -248,11 +265,11 @@ index 2fb4131e5972d3b554a763098709470e8a725280..3e299ffaabf2a91336fae28031c8fc07
          try {
              this.d();
          } finally {
-diff --git a/src/main/java/net/minecraft/server/RegionFileCache.java b/src/main/java/net/minecraft/server/RegionFileCache.java
-index de926992e20da3ec433f9c7b4bc73805fd9d36ab..7a15944926427eb6cad976daabe5e710f4fbf1bb 100644
---- a/src/main/java/net/minecraft/server/RegionFileCache.java
-+++ b/src/main/java/net/minecraft/server/RegionFileCache.java
-@@ -21,7 +21,14 @@ public final class RegionFileCache implements AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
+index ab9f4d40fd1126a3d7ba5b16fdc6ab09de4a7fdb..55e7e983d2c760a8052d7b3ddbdc8447f619a60f 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileCache.java
+@@ -28,7 +28,14 @@ public final class RegionFileCache implements AutoCloseable {
          this.c = flag;
      }
  
@@ -268,7 +285,7 @@ index de926992e20da3ec433f9c7b4bc73805fd9d36ab..7a15944926427eb6cad976daabe5e710
          long i = ChunkCoordIntPair.pair(chunkcoordintpair.getRegionX(), chunkcoordintpair.getRegionZ());
          RegionFile regionfile = (RegionFile) this.cache.getAndMoveToFirst(i);
  
-@@ -168,6 +175,7 @@ public final class RegionFileCache implements AutoCloseable {
+@@ -175,6 +182,7 @@ public final class RegionFileCache implements AutoCloseable {
  
          try {
              NBTCompressedStreamTools.a(nbttagcompound, (DataOutput) dataoutputstream);
@@ -277,7 +294,7 @@ index de926992e20da3ec433f9c7b4bc73805fd9d36ab..7a15944926427eb6cad976daabe5e710
          } catch (Throwable throwable1) {
              throwable = throwable1;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72979068d9 100644
+index 9e47e9cfa5bf1819e6d6779c52828e4472e4eed0..bf1ebb108149f519ae29a2277020398c898d2bc3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -19,6 +19,7 @@ import java.util.Objects;
@@ -287,7 +304,7 @@ index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72
 +import java.util.concurrent.CompletableFuture;
  import java.util.function.Predicate;
  import java.util.stream.Collectors;
- import net.minecraft.server.ArraySetSorted;
+ import net.minecraft.core.BlockPosition;
 @@ -419,8 +420,22 @@ public class CraftWorld implements World {
  
      @Override
@@ -303,7 +320,7 @@ index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72
 +            chunk = world.getChunkProvider().playerChunkMap.getUnloadingChunk(x, z);
 +        }
 +        if (chunk != null) {
-+            return chunk instanceof ProtoChunkExtension || chunk instanceof net.minecraft.server.Chunk;
++            return chunk instanceof ProtoChunkExtension || chunk instanceof net.minecraft.world.level.chunk.Chunk;
 +        }
          try {
 -            return world.getChunkProvider().getChunkAtIfCachedImmediately(x, z) != null || world.getChunkProvider().playerChunkMap.read(new ChunkCoordIntPair(x, z)) != null; // Paper (TODO check if the first part can be removed)
@@ -312,7 +329,7 @@ index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72
          } catch (IOException ex) {
              throw new RuntimeException(ex);
          }
-@@ -531,20 +546,49 @@ public class CraftWorld implements World {
+@@ -531,20 +546,48 @@ public class CraftWorld implements World {
      @Override
      public boolean loadChunk(int x, int z, boolean generate) {
          org.spigotmc.AsyncCatcher.catchOp("chunk load"); // Spigot
@@ -326,24 +343,23 @@ index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72
 -            chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, true);
 -        }
 +        if (!generate) {
- 
--        if (chunk instanceof net.minecraft.server.Chunk) {
--            world.getChunkProvider().addTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
--            return true;
 +            IChunkAccess immediate = world.getChunkProvider().getChunkAtImmediately(x, z);
 +            if (immediate == null) {
 +                immediate = world.getChunkProvider().playerChunkMap.getUnloadingChunk(x, z);
 +            }
 +            if (immediate != null) {
-+                if (!(immediate instanceof ProtoChunkExtension) && !(immediate instanceof net.minecraft.server.Chunk)) {
++                if (!(immediate instanceof ProtoChunkExtension) && !(immediate instanceof net.minecraft.world.level.chunk.Chunk)) {
 +                    return false; // not full status
 +                }
 +                world.getChunkProvider().addTicket(TicketType.PLUGIN, chunkPos, 1, Unit.INSTANCE);
 +                world.getChunkAt(x, z); // make sure we're at ticket level 32 or lower
 +                return true;
 +            }
-+
-+            net.minecraft.server.RegionFile file;
+ 
+-        if (chunk instanceof net.minecraft.world.level.chunk.Chunk) {
+-            world.getChunkProvider().addTicket(TicketType.PLUGIN, new ChunkCoordIntPair(x, z), 1, Unit.INSTANCE);
+-            return true;
++            net.minecraft.world.level.chunk.storage.RegionFile file;
 +            try {
 +                file = world.getChunkProvider().playerChunkMap.getIOWorker().getRegionFileCache().getFile(chunkPos, false);
 +            } catch (IOException ex) {
@@ -356,7 +372,7 @@ index 0db39ef48c3f1a4c055185e70a09e5268115bd15..f750973175f15c782bd384c09a176e72
 +            }
 +
 +            IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.EMPTY, true);
-+            if (!(chunk instanceof ProtoChunkExtension) && !(chunk instanceof net.minecraft.server.Chunk)) {
++            if (!(chunk instanceof ProtoChunkExtension) && !(chunk instanceof net.minecraft.world.level.chunk.Chunk)) {
 +                return false;
 +            }
 +

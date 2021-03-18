@@ -4,11 +4,11 @@ Date: Sun, 27 Sep 2015 01:18:02 -0400
 Subject: [PATCH] handle NaN health/absorb values and repair bad data
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 7c74a13d875d12d4264e394c682ab515a14f8915..1fb7e29b29adef72bd5a49c87d954973f46f9c81 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -609,7 +609,13 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 9b12e15a6c377ae90193596a35114dd452cf6e0c..acbd10432b09172f7541b2f4081d1aa9812194ac 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -702,7 +702,13 @@ public abstract class EntityLiving extends Entity {
  
      @Override
      public void loadData(NBTTagCompound nbttagcompound) {
@@ -23,7 +23,7 @@ index 7c74a13d875d12d4264e394c682ab515a14f8915..1fb7e29b29adef72bd5a49c87d954973
          if (nbttagcompound.hasKeyOfType("Attributes", 9) && this.world != null && !this.world.isClientSide) {
              this.getAttributeMap().a(nbttagcompound.getList("Attributes", 10));
          }
-@@ -1058,6 +1064,10 @@ public abstract class EntityLiving extends Entity {
+@@ -1151,6 +1157,10 @@ public abstract class EntityLiving extends Entity {
      }
  
      public void setHealth(float f) {
@@ -34,7 +34,7 @@ index 7c74a13d875d12d4264e394c682ab515a14f8915..1fb7e29b29adef72bd5a49c87d954973
          // CraftBukkit start - Handle scaled health
          if (this instanceof EntityPlayer) {
              org.bukkit.craftbukkit.entity.CraftPlayer player = ((EntityPlayer) this).getBukkitEntity();
-@@ -2952,7 +2962,7 @@ public abstract class EntityLiving extends Entity {
+@@ -3045,7 +3055,7 @@ public abstract class EntityLiving extends Entity {
      }
  
      public void setAbsorptionHearts(float f) {
@@ -44,7 +44,7 @@ index 7c74a13d875d12d4264e394c682ab515a14f8915..1fb7e29b29adef72bd5a49c87d954973
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 15a515535d6c8c71e0de4a7ab4c0a8759ca3537f..0a24eab942354a03d5ddf4899cf7a80401b669a4 100644
+index 144faef77e69c6c3bf963327179a51bb4c37cc18..b4a2758ee246252d6076e861b45d11dae6e33096 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -1682,6 +1682,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

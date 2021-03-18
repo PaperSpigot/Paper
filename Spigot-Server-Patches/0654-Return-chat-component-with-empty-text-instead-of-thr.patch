@@ -5,11 +5,19 @@ Subject: [PATCH] Return chat component with empty text instead of throwing
  exception
 
 
-diff --git a/src/main/java/net/minecraft/server/Container.java b/src/main/java/net/minecraft/server/Container.java
-index 1eba0ccad798ee0d9e9d573e58a8dcd5363b6ffd..3de58cd344c37451873aa8a12b5d9e65f390ec8f 100644
---- a/src/main/java/net/minecraft/server/Container.java
-+++ b/src/main/java/net/minecraft/server/Container.java
-@@ -45,7 +45,12 @@ public abstract class Container {
+diff --git a/src/main/java/net/minecraft/world/inventory/Container.java b/src/main/java/net/minecraft/world/inventory/Container.java
+index 9c6330da4e026a7753698b5d103c009730154c3e..bdd00608a72dd81003731ff5fbe774dfdc5220e5 100644
+--- a/src/main/java/net/minecraft/world/inventory/Container.java
++++ b/src/main/java/net/minecraft/world/inventory/Container.java
+@@ -11,6 +11,7 @@ import net.minecraft.CrashReportSystemDetails;
+ import net.minecraft.ReportedException;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.core.NonNullList;
++import net.minecraft.network.chat.ChatComponentText;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.util.MathHelper;
+ import net.minecraft.world.IInventory;
+@@ -61,7 +62,12 @@ public abstract class Container {
      }
      private IChatBaseComponent title;
      public final IChatBaseComponent getTitle() {

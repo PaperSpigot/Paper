@@ -6,13 +6,13 @@ Subject: [PATCH] Implement CraftBlockSoundGroup
 
 diff --git a/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java b/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8183c94ff4883e1af02e82098f1f80cffdb793aa
+index 0000000000000000000000000000000000000000..34b3b858f616c4a1f877e6e58d315de2d8ff0720
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java
 @@ -0,0 +1,38 @@
 +package com.destroystokyo.paper.block;
 +
-+import net.minecraft.server.SoundEffectType;
++import net.minecraft.world.level.block.SoundEffectType;
 +import org.bukkit.Sound;
 +import org.bukkit.craftbukkit.CraftSound;
 +
@@ -48,11 +48,11 @@ index 0000000000000000000000000000000000000000..8183c94ff4883e1af02e82098f1f80cf
 +        return CraftSound.getBukkit(soundEffectType.getFallSound());
 +    }
 +}
-diff --git a/src/main/java/net/minecraft/server/SoundEffectType.java b/src/main/java/net/minecraft/server/SoundEffectType.java
-index 49093a5294d5e64ac149e6922e884e72f9f56c03..5f5153ec781c73d76bbf0b5b14b45bf4b74faefd 100644
---- a/src/main/java/net/minecraft/server/SoundEffectType.java
-+++ b/src/main/java/net/minecraft/server/SoundEffectType.java
-@@ -51,10 +51,10 @@ public class SoundEffectType {
+diff --git a/src/main/java/net/minecraft/world/level/block/SoundEffectType.java b/src/main/java/net/minecraft/world/level/block/SoundEffectType.java
+index 0987b25ac586d5d7b7954256c740fdf736498dae..b2a52c6bad5a83f34188b8f3db18c61ff9f52869 100644
+--- a/src/main/java/net/minecraft/world/level/block/SoundEffectType.java
++++ b/src/main/java/net/minecraft/world/level/block/SoundEffectType.java
+@@ -54,10 +54,10 @@ public class SoundEffectType {
      public static final SoundEffectType U = new SoundEffectType(1.0F, 1.0F, SoundEffects.BLOCK_GILDED_BLACKSTONE_BREAK, SoundEffects.BLOCK_GILDED_BLACKSTONE_STEP, SoundEffects.BLOCK_GILDED_BLACKSTONE_PLACE, SoundEffects.BLOCK_GILDED_BLACKSTONE_HIT, SoundEffects.BLOCK_GILDED_BLACKSTONE_FALL);
      public final float volume;
      public final float pitch;
@@ -66,7 +66,7 @@ index 49093a5294d5e64ac149e6922e884e72f9f56c03..5f5153ec781c73d76bbf0b5b14b45bf4
  
      public SoundEffectType(float f, float f1, SoundEffect soundeffect, SoundEffect soundeffect1, SoundEffect soundeffect2, SoundEffect soundeffect3, SoundEffect soundeffect4) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 661bb54c27966c8050644b293d99dfe86e3c04ce..41bd71a55626b933c948e5c7e7b8af534eb896c4 100644
+index e4fe55bb830cd43680de9d61652448b1ea879063..38122a0ae08667e69cf2eb78d36208bb19441554 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -738,4 +738,11 @@ public class CraftBlock implements Block {

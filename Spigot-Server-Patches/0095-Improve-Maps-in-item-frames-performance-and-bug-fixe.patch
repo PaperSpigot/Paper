@@ -12,11 +12,39 @@ custom renderers are in use, defaulting to the much simpler Vanilla system.
 
 Additionally, numerous issues to player position tracking on maps has been fixed.
 
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index dcc9984665a1b6458cee317bb79a3343656cea23..ed2c39502a123063996c7d36cacf5a7164d75438 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -595,6 +595,12 @@ public abstract class EntityHuman extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 5ac96a25a9010ab3ddbd4a2b30cef0bba2a02054..de95ff06f2eedd8f812d7e2a83955642c1f9bba9 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1168,6 +1168,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+                         {
+                             if ( iter.next().trackee == entity )
+                             {
++                                map.decorations.remove(entity.getDisplayName().getString()); // Paper
+                                 iter.remove();
+                             }
+                         }
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index f42e16589476c1bd10b13214dda5ac7bb3e52131..e3e3426a00128b56d523bb43a59b814b915ad0ff 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -86,6 +86,7 @@ import net.minecraft.world.item.ItemElytra;
+ import net.minecraft.world.item.ItemProjectileWeapon;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.ItemSword;
++import net.minecraft.world.item.ItemWorldMap;
+ import net.minecraft.world.item.Items;
+ import net.minecraft.world.item.crafting.IRecipe;
+ import net.minecraft.world.item.enchantment.EnchantmentManager;
+@@ -104,6 +105,7 @@ import net.minecraft.world.level.block.entity.TileEntitySign;
+ import net.minecraft.world.level.block.entity.TileEntityStructure;
+ import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.block.state.pattern.ShapeDetectorBlock;
++import net.minecraft.world.level.saveddata.maps.WorldMap;
+ import net.minecraft.world.phys.AxisAlignedBB;
+ import net.minecraft.world.phys.Vec3D;
+ import net.minecraft.world.scores.Scoreboard;
+@@ -689,6 +691,12 @@ public abstract class EntityHuman extends EntityLiving {
                  return null;
              }
              // CraftBukkit end
@@ -29,11 +57,11 @@ index dcc9984665a1b6458cee317bb79a3343656cea23..ed2c39502a123063996c7d36cacf5a71
  
              return entityitem;
          }
-diff --git a/src/main/java/net/minecraft/server/WorldMap.java b/src/main/java/net/minecraft/server/WorldMap.java
-index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41fc35cd32e 100644
---- a/src/main/java/net/minecraft/server/WorldMap.java
-+++ b/src/main/java/net/minecraft/server/WorldMap.java
-@@ -37,6 +37,7 @@ public class WorldMap extends PersistentBase {
+diff --git a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
+index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552e186a6bb 100644
+--- a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
++++ b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
+@@ -57,6 +57,7 @@ public class WorldMap extends PersistentBase {
      private final Map<String, MapIconBanner> m = Maps.newHashMap();
      public final Map<String, MapIcon> decorations = Maps.newLinkedHashMap();
      private final Map<String, WorldMapFrame> n = Maps.newHashMap();
@@ -41,7 +69,7 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
  
      // CraftBukkit start
      public final CraftMapView mapView;
-@@ -49,6 +50,7 @@ public class WorldMap extends PersistentBase {
+@@ -69,6 +70,7 @@ public class WorldMap extends PersistentBase {
          // CraftBukkit start
          mapView = new CraftMapView(this);
          server = (CraftServer) org.bukkit.Bukkit.getServer();
@@ -49,7 +77,7 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
          // CraftBukkit end
      }
  
-@@ -116,6 +118,7 @@ public class WorldMap extends PersistentBase {
+@@ -136,6 +138,7 @@ public class WorldMap extends PersistentBase {
              this.m.put(mapiconbanner.f(), mapiconbanner);
              this.a(mapiconbanner.c(), (GeneratorAccess) null, mapiconbanner.f(), (double) mapiconbanner.a().getX(), (double) mapiconbanner.a().getZ(), 180.0D, mapiconbanner.d());
          }
@@ -57,7 +85,7 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
  
          NBTTagList nbttaglist1 = nbttagcompound.getList("frames", 10);
  
-@@ -196,6 +199,7 @@ public class WorldMap extends PersistentBase {
+@@ -216,6 +219,7 @@ public class WorldMap extends PersistentBase {
          this.b();
      }
  
@@ -65,7 +93,7 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
      public void a(EntityHuman entityhuman, ItemStack itemstack) {
          if (!this.humans.containsKey(entityhuman)) {
              WorldMap.WorldMapHumanTracker worldmap_worldmaphumantracker = new WorldMap.WorldMapHumanTracker(entityhuman);
-@@ -431,6 +435,21 @@ public class WorldMap extends PersistentBase {
+@@ -451,6 +455,21 @@ public class WorldMap extends PersistentBase {
  
      public class WorldMapHumanTracker {
  
@@ -87,7 +115,7 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
          public final EntityHuman trackee;
          private boolean d = true;
          private int e;
-@@ -447,9 +466,12 @@ public class WorldMap extends PersistentBase {
+@@ -467,9 +486,12 @@ public class WorldMap extends PersistentBase {
          @Nullable
          public Packet<?> a(ItemStack itemstack) {
              // CraftBukkit start
@@ -101,18 +129,6 @@ index d11725d61b888ceb08c4ea30f23d563170ce944d..7251793423e5413dacc1e031ed75d41f
  
              for ( org.bukkit.map.MapCursor cursor : render.cursors) {
  
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 486ba1efc934c6851d2b570493af6e1079a7abd5..03b81f40e1ad394d7d287825dabe2ad4b905ac60 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1059,6 +1059,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-                         {
-                             if ( iter.next().trackee == entity )
-                             {
-+                                map.decorations.remove(entity.getDisplayName().getString()); // Paper
-                                 iter.remove();
-                             }
-                         }
 diff --git a/src/main/java/org/bukkit/craftbukkit/map/RenderData.java b/src/main/java/org/bukkit/craftbukkit/map/RenderData.java
 index 256a131781721c86dd6cdbc329335964570cbe8c..5768cd512ec166f1e8d1f4a28792015347297c3f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/map/RenderData.java

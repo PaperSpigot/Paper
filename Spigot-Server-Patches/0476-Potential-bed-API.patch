@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: JRoy <joshroy126@gmail.com>
+Date: Sun, 10 May 2020 23:06:30 -0400
+Subject: [PATCH] Potential bed API
+
+Adds a new method to fetch the location of a player's bed without generating any sync loads.
+
+getPotentialBedLocation - Gets the last known location of a player's bed. This does not preform any check if the bed is still valid and does not load any chunks.
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+index 5b142e96248278c6bb6068879bb5ad1578b0f79f..92501a415813b3b0f2be492a4711962320264a76 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+@@ -13,6 +13,7 @@ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
+ import net.minecraft.network.protocol.game.PacketPlayOutOpenWindow;
+ import net.minecraft.server.level.EntityPlayer;
++import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.ITileInventory;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.EntityTypes;
+@@ -127,6 +128,22 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+         return getHandle().sleepTicks;
+     }
+ 
++    // Paper start - Potential bed api
++    @Override
++    public Location getPotentialBedLocation() {
++        EntityPlayer handle = (EntityPlayer) getHandle();
++        BlockPosition bed = handle.getSpawn();
++        if (bed == null) {
++            return null;
++        }
++
++        WorldServer worldServer = handle.server.getWorldServer(handle.getSpawnDimension());
++        if (worldServer == null) {
++            return null;
++        }
++        return new Location(worldServer.getWorld(), bed.getX(), bed.getY(), bed.getZ());
++    }
++    // Paper end
+     @Override
+     public boolean sleep(Location location, boolean force) {
+         Preconditions.checkArgument(location != null, "Location cannot be null");

@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Phoenix616 <mail@moep.tv>
+Date: Wed, 10 Jun 2020 23:55:15 +0100
+Subject: [PATCH] Inventory getHolder method without block snapshot
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
+index 45634fded9916dca35a246921efb87964c860339..c3fa97ac34e1fc61ae02f224f8afe5a0b486fb4d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventory.java
+@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.InventoryCrafting;
+ import net.minecraft.world.inventory.InventoryEnderChest;
+ import net.minecraft.world.inventory.InventoryMerchant;
+ import net.minecraft.world.level.block.entity.IHopper;
++import net.minecraft.world.level.block.entity.TileEntity;
+ import net.minecraft.world.level.block.entity.TileEntityBarrel;
+ import net.minecraft.world.level.block.entity.TileEntityBlastFurnace;
+ import net.minecraft.world.level.block.entity.TileEntityBrewingStand;
+@@ -526,6 +527,13 @@ public class CraftInventory implements Inventory {
+         return inventory.getOwner();
+     }
+ 
++    // Paper start - getHolder without snapshot
++    @Override
++    public InventoryHolder getHolder(boolean useSnapshot) {
++        return inventory instanceof TileEntity ? ((TileEntity) inventory).getOwner(useSnapshot) : getHolder();
++    }
++    // Paper end
++
+     @Override
+     public int getMaxStackSize() {
+         return inventory.getMaxStackSize();
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
+index 47029af761e26453090980b9a231fd53d4238cc4..d22abb4259dfcfd3ec0e0516f87fc838a81353ce 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
+@@ -64,6 +64,13 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
+         return new DoubleChest(this);
+     }
+ 
++    // Paper start - getHolder without snapshot
++    @Override
++    public DoubleChest getHolder(boolean useSnapshot) {
++        return getHolder();
++    }
++    // Paper end
++
+     @Override
+     public Location getLocation() {
+         return getLeftSide().getLocation().add(getRightSide().getLocation()).multiply(0.5);

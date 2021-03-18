@@ -5,7 +5,7 @@ Subject: [PATCH] Add velocity warnings
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 5e97a52222dbccbdde7d478d76363495784facb8..f1aae33917fc8a61e38b410421c205a7bc5a13dd 100644
+index 96d4049f8a42f00dbbc092b391ae11c1326a5501..f6a1d52239216984da4a9c87312c6ed085213935 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -262,6 +262,7 @@ public final class CraftServer implements Server {
@@ -17,10 +17,10 @@ index 5e97a52222dbccbdde7d478d76363495784facb8..f1aae33917fc8a61e38b410421c205a7
      static {
          ConfigurationSerialization.registerClass(CraftOfflinePlayer.class);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 0582d15e14d4fde7630759849b573cb2e08fabe6..14c06298157c4a6c6061df01b213e69b6c3481d5 100644
+index 220bad90bbb9a90c3f23562bf0fb109fce379682..a58626b1a0160983a738a45c8a1d411eb347e6a2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-@@ -425,10 +425,41 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+@@ -424,10 +424,41 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
      public void setVelocity(Vector velocity) {
          Preconditions.checkArgument(velocity != null, "velocity");
          velocity.checkFinite();
@@ -63,12 +63,12 @@ index 0582d15e14d4fde7630759849b573cb2e08fabe6..14c06298157c4a6c6061df01b213e69b
      public double getHeight() {
          return getHandle().getHeight();
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index bf240231b70dbaf71f359318e5c0f8ba1490a067..0cb3028872041ce9f75e57fdd84b79636d8809f3 100644
+index 1b3a14784cac8e855633fae6172ad5479ebe9877..69e5054886b5858664fed333aca8c25a76e5cb11 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -80,7 +80,19 @@ public class WatchdogThread extends Thread
                      log.log( Level.SEVERE, "During the run of the server, a physics stackoverflow was supressed" );
-                     log.log( Level.SEVERE, "near " + net.minecraft.server.World.lastPhysicsProblem );
+                     log.log( Level.SEVERE, "near " + net.minecraft.world.level.World.lastPhysicsProblem );
                  }
 -                //
 +                // Paper start - Warn in watchdog if an excessive velocity was ever set

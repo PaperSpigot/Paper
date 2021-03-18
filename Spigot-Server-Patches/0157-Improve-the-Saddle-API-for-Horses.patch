@@ -7,10 +7,10 @@ Not all horses with Saddles have armor. This lets us break up the horses with sa
 and access their saddle state separately from an interface shared with Armor.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
-index 339656c623a5af7fbf1a7e81952dec1dd3c18205..8c59b9ce12d4148b209c3824d44f6e9c736de16c 100644
+index 00b97d9ee7a3dd622c87e8efa288795d34db8fc7..62ccef35e4b4238c50faf778fbf3ea9a494ca387 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
-@@ -6,6 +6,7 @@ import net.minecraft.server.GenericAttributes;
+@@ -6,6 +6,7 @@ import net.minecraft.world.entity.animal.horse.EntityHorseAbstract;
  import org.apache.commons.lang.Validate;
  import org.bukkit.craftbukkit.CraftServer;
  import org.bukkit.craftbukkit.inventory.CraftInventoryAbstractHorse;
@@ -27,10 +27,10 @@ index 339656c623a5af7fbf1a7e81952dec1dd3c18205..8c59b9ce12d4148b209c3824d44f6e9c
      }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
-index 63991bf4be23cddd3f3e1082aa5e5513ff0e4e44..9a47a1adc1dd21f4409609c8c73e8b0e2434c176 100644
+index c3599b29c0b32d6fcf18a4a0adfbe8454c37834d..0389d15f8e0b6bb68316eaed0cf91acab8951cc7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryHorse.java
-@@ -4,7 +4,7 @@ import net.minecraft.server.IInventory;
+@@ -4,7 +4,7 @@ import net.minecraft.world.IInventory;
  import org.bukkit.inventory.HorseInventory;
  import org.bukkit.inventory.ItemStack;
  
@@ -41,16 +41,13 @@ index 63991bf4be23cddd3f3e1082aa5e5513ff0e4e44..9a47a1adc1dd21f4409609c8c73e8b0e
          super(inventory);
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftSaddledInventory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftSaddledInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..99cfbaf90b5ccd828834b33b3c658206efd6ac21
+index 0000000000000000000000000000000000000000..8c2674ca1be1346ea84bcd7c9c5d6ea540802a5f
 --- /dev/null
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftSaddledInventory.java
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,12 @@
 +package org.bukkit.craftbukkit.inventory;
 +
-+import net.minecraft.server.IInventory;
-+
-+import org.bukkit.inventory.AbstractHorseInventory;
-+import org.bukkit.inventory.ItemStack;
++import net.minecraft.world.IInventory;
 +import org.bukkit.inventory.SaddledHorseInventory;
 +
 +public class CraftSaddledInventory extends CraftInventoryAbstractHorse implements SaddledHorseInventory {

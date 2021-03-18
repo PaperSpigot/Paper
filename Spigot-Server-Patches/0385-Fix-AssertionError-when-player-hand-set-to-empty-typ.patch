@@ -6,23 +6,11 @@ Subject: [PATCH] Fix AssertionError when player hand set to empty type
 Fixes an AssertionError when setting the player's item in hand to null or a new ItemStack of Air in PlayerInteractEvent
 Fixes GH-2718
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 4567b0fe175765748bb787049e10fbe0af0a61d9..11a1fad5450ec94aeb4b135d7efc72718297c9cd 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -2062,6 +2062,7 @@ public abstract class EntityLiving extends Entity {
-         return predicate.test(this.getItemInMainHand().getItem()) || predicate.test(this.getItemInOffHand().getItem());
-     }
- 
-+    public final ItemStack getItemInHand(EnumHand enumhand) { return this.b(enumhand); } // Paper - OBFHELPER
-     public ItemStack b(EnumHand enumhand) {
-         if (enumhand == EnumHand.MAIN_HAND) {
-             return this.getEquipment(EnumItemSlot.MAINHAND);
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 0c21e000e9bcb921d8dde4fe4957d1e47f6df16d..33112515865b6c2d357c0560637c0aa995ca6d0f 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1561,6 +1561,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index bae1fb41b1559373f73d4ed3ba145d81a71cabeb..28106cc6acbdcd026c646c030491d74049306861 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1705,6 +1705,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
                  this.player.getBukkitEntity().updateInventory(); // SPIGOT-2524
                  return;
              }
@@ -33,3 +21,15 @@ index 0c21e000e9bcb921d8dde4fe4957d1e47f6df16d..33112515865b6c2d357c0560637c0aa9
              EnumInteractionResult enuminteractionresult = this.player.playerInteractManager.a(this.player, worldserver, itemstack, enumhand);
  
              if (enuminteractionresult.b()) {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 903c3cfdaae3dd1750aa2f32f6cdbb423909eb47..58cf4bb4c6267c4d8d71bbd29ed34575eb93aed3 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -2156,6 +2156,7 @@ public abstract class EntityLiving extends Entity {
+         return predicate.test(this.getItemInMainHand().getItem()) || predicate.test(this.getItemInOffHand().getItem());
+     }
+ 
++    public final ItemStack getItemInHand(EnumHand enumhand) { return this.b(enumhand); } // Paper - OBFHELPER
+     public ItemStack b(EnumHand enumhand) {
+         if (enumhand == EnumHand.MAIN_HAND) {
+             return this.getEquipment(EnumItemSlot.MAINHAND);

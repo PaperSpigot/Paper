@@ -4,11 +4,11 @@ Date: Thu, 31 Mar 2016 19:17:58 -0400
 Subject: [PATCH] Do not load chunks for Pathfinding
 
 
-diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index 48cf95db7226b23fc688aba47aea3b378faec14c..5a8fbad220ed535a79539a4e25830c370ca1c89c 100644
---- a/src/main/java/net/minecraft/server/NavigationAbstract.java
-+++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -27,7 +27,7 @@ public abstract class NavigationAbstract {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+index 58225877ce4f2533c19d34e143ae374dc289bce5..d71a6e5991629ce59c8529d7cc8064960e385236 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/ai/navigation/NavigationAbstract.java
+@@ -48,7 +48,7 @@ public abstract class NavigationAbstract {
      private BlockPosition p;
      private int q;
      private float r;
@@ -17,11 +17,11 @@ index 48cf95db7226b23fc688aba47aea3b378faec14c..5a8fbad220ed535a79539a4e25830c37
      private boolean t;
  
      public NavigationAbstract(EntityInsentient entityinsentient, World world) {
-diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 8ba6dd459a863717c91dd59f3f2ee5e3a5ed8170..b31d1f73ce0f067e352868b53eab7557c34b17eb 100644
---- a/src/main/java/net/minecraft/server/Pathfinder.java
-+++ b/src/main/java/net/minecraft/server/Pathfinder.java
-@@ -17,7 +17,7 @@ public class Pathfinder {
+diff --git a/src/main/java/net/minecraft/world/level/pathfinder/Pathfinder.java b/src/main/java/net/minecraft/world/level/pathfinder/Pathfinder.java
+index 39cd22a820fdc4c75aefb625b45b0c8c6ce1f199..5784be69098805e4d550a0923ac8daa5aada73f9 100644
+--- a/src/main/java/net/minecraft/world/level/pathfinder/Pathfinder.java
++++ b/src/main/java/net/minecraft/world/level/pathfinder/Pathfinder.java
+@@ -20,7 +20,7 @@ public class Pathfinder {
  
      private final PathPoint[] a = new PathPoint[32];
      private final int b;
@@ -30,11 +30,11 @@ index 8ba6dd459a863717c91dd59f3f2ee5e3a5ed8170..b31d1f73ce0f067e352868b53eab7557
      private final Path d = new Path();
  
      public Pathfinder(PathfinderAbstract pathfinderabstract, int i) {
-diff --git a/src/main/java/net/minecraft/server/PathfinderNormal.java b/src/main/java/net/minecraft/server/PathfinderNormal.java
-index 449665f52c5f241d2119919abe4d4cde638ebe6f..07b021bd1fb174d1c1a0c83b415c84e582c4f681 100644
---- a/src/main/java/net/minecraft/server/PathfinderNormal.java
-+++ b/src/main/java/net/minecraft/server/PathfinderNormal.java
-@@ -456,7 +456,12 @@ public class PathfinderNormal extends PathfinderAbstract {
+diff --git a/src/main/java/net/minecraft/world/level/pathfinder/PathfinderNormal.java b/src/main/java/net/minecraft/world/level/pathfinder/PathfinderNormal.java
+index ed9c1dfbc84b9573784e6531186b3cd9513ddf75..d14f2800237c2a80912bf6f2d418a9ba9031070d 100644
+--- a/src/main/java/net/minecraft/world/level/pathfinder/PathfinderNormal.java
++++ b/src/main/java/net/minecraft/world/level/pathfinder/PathfinderNormal.java
+@@ -479,7 +479,12 @@ public class PathfinderNormal extends PathfinderAbstract {
                  for (int j1 = -1; j1 <= 1; ++j1) {
                      if (l != 0 || j1 != 0) {
                          blockposition_mutableblockposition.d(i + l, j + i1, k + j1);
@@ -48,7 +48,7 @@ index 449665f52c5f241d2119919abe4d4cde638ebe6f..07b021bd1fb174d1c1a0c83b415c84e5
  
                          if (iblockdata.a(Blocks.CACTUS)) {
                              return PathType.DANGER_CACTUS;
-@@ -473,6 +478,7 @@ public class PathfinderNormal extends PathfinderAbstract {
+@@ -496,6 +501,7 @@ public class PathfinderNormal extends PathfinderAbstract {
                          if (iblockaccess.getFluid(blockposition_mutableblockposition).a((Tag) TagsFluid.WATER)) {
                              return PathType.WATER_BORDER;
                          }
@@ -56,7 +56,7 @@ index 449665f52c5f241d2119919abe4d4cde638ebe6f..07b021bd1fb174d1c1a0c83b415c84e5
                      }
                  }
              }
-@@ -482,7 +488,8 @@ public class PathfinderNormal extends PathfinderAbstract {
+@@ -505,7 +511,8 @@ public class PathfinderNormal extends PathfinderAbstract {
      }
  
      protected static PathType b(IBlockAccess iblockaccess, BlockPosition blockposition) {

@@ -6,15 +6,15 @@ Subject: [PATCH] Implement extended PaperServerListPingEvent
 
 diff --git a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c1a8e295b66501e0580bcfc041bca51e69109062
+index 0000000000000000000000000000000000000000..e7f1efd0466a5d7bb9584ffbd6fbac1ecc6153a5
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
 @@ -0,0 +1,31 @@
 +package com.destroystokyo.paper.network;
 +
 +import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-+import net.minecraft.server.EntityPlayer;
 +import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.level.EntityPlayer;
 +import org.bukkit.entity.Player;
 +import org.bukkit.util.CachedServerIcon;
 +
@@ -43,13 +43,13 @@ index 0000000000000000000000000000000000000000..c1a8e295b66501e0580bcfc041bca51e
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a2a409e635dde08f7c53e67164b967a000511e94
+index 0000000000000000000000000000000000000000..46e84ac6ba5d32d030267fb0c991c281a673c716
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
 @@ -0,0 +1,11 @@
 +package com.destroystokyo.paper.network;
 +
-+import net.minecraft.server.NetworkManager;
++import net.minecraft.network.NetworkManager;
 +
 +class PaperStatusClient extends PaperNetworkClient implements StatusClient {
 +
@@ -60,7 +60,7 @@ index 0000000000000000000000000000000000000000..a2a409e635dde08f7c53e67164b967a0
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..39b236a6319b1f44fbe28bbe43f064be3073e725
+index 0000000000000000000000000000000000000000..174326871df9b61beec51ef6a1e5f26932404b6a
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 @@ -0,0 +1,110 @@
@@ -75,10 +75,10 @@ index 0000000000000000000000000000000000000000..39b236a6319b1f44fbe28bbe43f064be
 +import java.util.List;
 +import java.util.UUID;
 +import javax.annotation.Nonnull;
++import net.minecraft.network.NetworkManager;
++import net.minecraft.network.protocol.status.PacketStatusOutServerInfo;
++import net.minecraft.network.protocol.status.ServerPing;
 +import net.minecraft.server.MinecraftServer;
-+import net.minecraft.server.NetworkManager;
-+import net.minecraft.server.PacketStatusOutServerInfo;
-+import net.minecraft.server.ServerPing;
 +
 +public final class StandardPaperServerListPingEventImpl extends PaperServerListPingEventImpl {
 +
@@ -174,62 +174,19 @@ index 0000000000000000000000000000000000000000..39b236a6319b1f44fbe28bbe43f064be
 +    }
 +
 +}
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5e64853fca8e1baa103dd69c050a4900ef7f7f37..41fbdaa99f2c884371b7922d28551dffd44686ed 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -2,6 +2,9 @@ package net.minecraft.server;
- 
- import com.google.common.base.Splitter;
- import com.google.common.collect.ImmutableList;
-+import co.aikar.timings.Timings;
-+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-+import com.google.common.base.Stopwatch;
- import com.google.common.collect.Lists;
- import com.google.common.collect.Maps;
- import com.google.common.collect.Sets;
-@@ -1121,7 +1124,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-         if (i - this.T >= 5000000000L) {
-             this.T = i;
-             this.serverPing.setPlayerSample(new ServerPing.ServerPingPlayerSample(this.getMaxPlayers(), this.getPlayerCount()));
--            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), 12)];
-+            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), org.spigotmc.SpigotConfig.playerSample)]; // Paper
-             int j = MathHelper.nextInt(this.r, 0, this.getPlayerCount() - agameprofile.length);
- 
-             for (int k = 0; k < agameprofile.length; ++k) {
-diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
-index 7875d4c08969b3adc6f95504686cc9fe99e3f29a..d0fad346dd4511722f958a8c0bda67492184fb62 100644
---- a/src/main/java/net/minecraft/server/PacketStatusListener.java
-+++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
-@@ -35,6 +35,8 @@ public class PacketStatusListener implements PacketStatusInListener {
-             this.networkManager.close(PacketStatusListener.a);
-         } else {
-             this.d = true;
-+            // Paper start - Replace everything
-+            /*
-             // CraftBukkit start
-             // this.networkManager.sendPacket(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
-             final Object[] players = minecraftServer.getPlayerList().players.toArray();
-@@ -130,6 +132,9 @@ public class PacketStatusListener implements PacketStatusInListener {
-             ping.setServerInfo(new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), version));
- 
-             this.networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
-+            */
-+            com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.minecraftServer, this.networkManager);
-+            // Paper end
-         }
-         // CraftBukkit end
-     }
-diff --git a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-index 50d5fb62efa7c89c7a73ccf072a0e7e433bcc650..f81ed6cd2029bbd8bbf1ddac10851da31273e8dd 100644
---- a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-+++ b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-@@ -2,11 +2,14 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
+index 0ebeacaaeb265d202f52c758566a5160c42e8a55..cb37805c8cc5a064391f338c6359df518f6db39a 100644
+--- a/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
++++ b/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
+@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.status;
  
  import com.google.gson.Gson;
  import com.google.gson.GsonBuilder;
 +import io.papermc.paper.adventure.AdventureComponent; // Paper
  import java.io.IOException;
+ import net.minecraft.network.PacketDataSerializer;
+ import net.minecraft.network.chat.ChatModifier;
+@@ -12,7 +13,9 @@ import net.minecraft.util.ChatTypeAdapterFactory;
  
  public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener> {
  
@@ -240,11 +197,11 @@ index 50d5fb62efa7c89c7a73ccf072a0e7e433bcc650..f81ed6cd2029bbd8bbf1ddac10851da3
      private ServerPing b;
  
      public PacketStatusOutServerInfo() {}
-diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
-index aa125a52dcdf4f137cfe17c5dc808b17d5e9de0b..ea52e89bd965afbd74f15b0e2974657319c28e4a 100644
---- a/src/main/java/net/minecraft/server/ServerPing.java
-+++ b/src/main/java/net/minecraft/server/ServerPing.java
-@@ -29,6 +29,7 @@ public class ServerPing {
+diff --git a/src/main/java/net/minecraft/network/protocol/status/ServerPing.java b/src/main/java/net/minecraft/network/protocol/status/ServerPing.java
+index 005ae7a75dfb19152abb606da29acad07c85e499..b9e36a83837913cd3e5abe598f695ba7a9ffc417 100644
+--- a/src/main/java/net/minecraft/network/protocol/status/ServerPing.java
++++ b/src/main/java/net/minecraft/network/protocol/status/ServerPing.java
+@@ -31,6 +31,7 @@ public class ServerPing {
          this.a = ichatbasecomponent;
      }
  
@@ -252,7 +209,7 @@ index aa125a52dcdf4f137cfe17c5dc808b17d5e9de0b..ea52e89bd965afbd74f15b0e29746573
      public ServerPing.ServerPingPlayerSample b() {
          return this.b;
      }
-@@ -160,10 +161,12 @@ public class ServerPing {
+@@ -162,10 +163,12 @@ public class ServerPing {
              return this.b;
          }
  
@@ -265,8 +222,54 @@ index aa125a52dcdf4f137cfe17c5dc808b17d5e9de0b..ea52e89bd965afbd74f15b0e29746573
          public void a(GameProfile[] agameprofile) {
              this.c = agameprofile;
          }
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index d181a41c1724ee6e84f5239649ab74df158d5f24..9672619d3f206a5290d459b300ecdf53b7b70d91 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -2,6 +2,9 @@ package net.minecraft.server;
+ 
+ import com.google.common.base.Splitter;
+ import com.google.common.collect.ImmutableList;
++import co.aikar.timings.Timings;
++import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import com.google.common.base.Stopwatch;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+@@ -1229,7 +1232,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         if (i - this.T >= 5000000000L) {
+             this.T = i;
+             this.serverPing.setPlayerSample(new ServerPing.ServerPingPlayerSample(this.getMaxPlayers(), this.getPlayerCount()));
+-            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), 12)];
++            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), org.spigotmc.SpigotConfig.playerSample)]; // Paper
+             int j = MathHelper.nextInt(this.r, 0, this.getPlayerCount() - agameprofile.length);
+ 
+             for (int k = 0; k < agameprofile.length; ++k) {
+diff --git a/src/main/java/net/minecraft/server/network/PacketStatusListener.java b/src/main/java/net/minecraft/server/network/PacketStatusListener.java
+index d219eda271a71f786808a6958b829fca40a1aaba..e1997563984540e6edf5d3b697d029dc5f3c40e1 100644
+--- a/src/main/java/net/minecraft/server/network/PacketStatusListener.java
++++ b/src/main/java/net/minecraft/server/network/PacketStatusListener.java
+@@ -48,6 +48,8 @@ public class PacketStatusListener implements PacketStatusInListener {
+             this.networkManager.close(PacketStatusListener.a);
+         } else {
+             this.d = true;
++            // Paper start - Replace everything
++            /*
+             // CraftBukkit start
+             // this.networkManager.sendPacket(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
+             final Object[] players = minecraftServer.getPlayerList().players.toArray();
+@@ -143,6 +145,9 @@ public class PacketStatusListener implements PacketStatusInListener {
+             ping.setServerInfo(new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), version));
+ 
+             this.networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
++            */
++            com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.minecraftServer, this.networkManager);
++            // Paper end
+         }
+         // CraftBukkit end
+     }
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
-index bf00d6d263b692e8a597694c689768f177835fde..b830bfefd2984f012de0e3877592e5198a2a02ea 100644
+index e8e5e5b568ba53dd006f1461cb4f027ceeae5528..11f8a2e5bf43013bce8675ea310ff42eacf14754 100644
 --- a/src/main/java/org/spigotmc/SpigotConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotConfig.java
 @@ -289,7 +289,7 @@ public class SpigotConfig

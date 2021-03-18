@@ -6,7 +6,7 @@ Subject: [PATCH] Add MinecraftKey Information to Objects
 Stores the reference to the objects respective MinecraftKey
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index ed7e4220199f9c57d0ffe67f552027c0bade3af1..411aebed946991b899205fcc1fcf7f3bf83718c0 100644
+index 68cd4134cb6a00c1768100462f8e9e94f3fa6279..6943524c2dd8b12691b8ac5b08daee823ce50c3d 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
 @@ -208,7 +208,7 @@ public class PaperCommand extends Command {
@@ -18,20 +18,37 @@ index ed7e4220199f9c57d0ffe67f552027c0bade3af1..411aebed946991b899205fcc1fcf7f3b
  
                      MutablePair<Integer, Map<ChunkCoordIntPair, Integer>> info = list.computeIfAbsent(key, k -> MutablePair.of(0, Maps.newHashMap()));
                      ChunkCoordIntPair chunk = new ChunkCoordIntPair(e.chunkX, e.chunkZ);
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index f2fb9e661b6c2d87348c9144d32e568cc6ada5dc..b8267cf23f795fd7e586b0e567037eae5048d08e 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -51,7 +51,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
+diff --git a/src/main/java/net/minecraft/server/KeyedObject.java b/src/main/java/net/minecraft/server/KeyedObject.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..500477f0d98a277145c2b0dbb4d1496e2a588542
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/KeyedObject.java
+@@ -0,0 +1,11 @@
++package net.minecraft.server;
++
++import net.minecraft.resources.MinecraftKey;
++
++public interface KeyedObject {
++    MinecraftKey getMinecraftKey();
++    default String getMinecraftKeyString() {
++        MinecraftKey key = getMinecraftKey();
++        return key != null ? key.toString() : null;
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 3c8767d5fab575e61ca179b517f0bff1a38405ce..ec553e7d7595ef3652bfa3325a07483bb3c32245 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -136,7 +136,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
  import org.bukkit.plugin.PluginManager;
  // CraftBukkit end
  
 -public abstract class Entity implements INamableTileEntity, ICommandListener {
-+public abstract class Entity implements INamableTileEntity, ICommandListener, KeyedObject { // Paper
++public abstract class Entity implements INamableTileEntity, ICommandListener, net.minecraft.server.KeyedObject { // Paper
  
      // CraftBukkit start
      private static final int CURRENT_LEVEL = 2;
-@@ -1677,12 +1677,31 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
+@@ -1762,12 +1762,31 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
          return true;
      }
  
@@ -64,11 +81,11 @@ index f2fb9e661b6c2d87348c9144d32e568cc6ada5dc..b8267cf23f795fd7e586b0e567037eae
      }
  
      protected abstract void loadData(NBTTagCompound nbttagcompound);
-diff --git a/src/main/java/net/minecraft/server/EntityTypes.java b/src/main/java/net/minecraft/server/EntityTypes.java
-index ef2a276fa2bdcac789e2f195a9d06ecce38daa45..9946985407561596c6c364526d2fe7477771303a 100644
---- a/src/main/java/net/minecraft/server/EntityTypes.java
-+++ b/src/main/java/net/minecraft/server/EntityTypes.java
-@@ -254,6 +254,7 @@ public class EntityTypes<T extends Entity> {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityTypes.java b/src/main/java/net/minecraft/world/entity/EntityTypes.java
+index ac57ab9992e141c91cf48f033148ad78433b364c..dc92b112770955f9fa49a408262da2e5bbc4bf98 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityTypes.java
++++ b/src/main/java/net/minecraft/world/entity/EntityTypes.java
+@@ -384,6 +384,7 @@ public class EntityTypes<T extends Entity> {
          }
      }
  
@@ -76,35 +93,20 @@ index ef2a276fa2bdcac789e2f195a9d06ecce38daa45..9946985407561596c6c364526d2fe747
      public boolean a() {
          return this.bi;
      }
-diff --git a/src/main/java/net/minecraft/server/KeyedObject.java b/src/main/java/net/minecraft/server/KeyedObject.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..743142d0303fa25fe48a2abb07040d1228d04402
---- /dev/null
-+++ b/src/main/java/net/minecraft/server/KeyedObject.java
-@@ -0,0 +1,9 @@
-+package net.minecraft.server;
-+
-+public interface KeyedObject {
-+    MinecraftKey getMinecraftKey();
-+    default String getMinecraftKeyString() {
-+        MinecraftKey key = getMinecraftKey();
-+        return key != null ? key.toString() : null;
-+    }
-+}
-diff --git a/src/main/java/net/minecraft/server/TileEntity.java b/src/main/java/net/minecraft/server/TileEntity.java
-index 134c7a9567c97ecf206b272a0e0a28a8a7534009..c80f964aef02ac6edd0dcf9f4af9f849e8ac3da9 100644
---- a/src/main/java/net/minecraft/server/TileEntity.java
-+++ b/src/main/java/net/minecraft/server/TileEntity.java
-@@ -13,7 +13,7 @@ import org.bukkit.inventory.InventoryHolder;
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index 72d43b38de3e797a509de6591874af12fa7b9ec0..2b58ae6d91fe0d0f36eedbb78a3c8a8a66d92405 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -23,7 +23,7 @@ import org.bukkit.inventory.InventoryHolder;
  
  import org.spigotmc.CustomTimingsHandler; // Spigot
  
 -public abstract class TileEntity {
-+public abstract class TileEntity implements KeyedObject { // Paper
++public abstract class TileEntity implements net.minecraft.server.KeyedObject { // Paper
  
      public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getTileEntityTimings(this); // Spigot
      // CraftBukkit start - data containers
-@@ -21,7 +21,7 @@ public abstract class TileEntity {
+@@ -31,7 +31,7 @@ public abstract class TileEntity {
      public CraftPersistentDataContainer persistentDataContainer;
      // CraftBukkit end
      private static final Logger LOGGER = LogManager.getLogger();
@@ -113,7 +115,7 @@ index 134c7a9567c97ecf206b272a0e0a28a8a7534009..c80f964aef02ac6edd0dcf9f4af9f849
      @Nullable
      protected World world;
      protected BlockPosition position;
-@@ -35,6 +35,26 @@ public abstract class TileEntity {
+@@ -45,6 +45,26 @@ public abstract class TileEntity {
          this.tileType = tileentitytypes;
      }
  

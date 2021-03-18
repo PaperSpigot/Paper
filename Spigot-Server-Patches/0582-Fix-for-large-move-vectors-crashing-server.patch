@@ -5,11 +5,11 @@ Subject: [PATCH] Fix for large move vectors crashing server
 
 Check movement distance also based on current position.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 25744e01cfca42e9094b2a215270e4617553d18a..efd66e81492ec4f976b9db66b84f1c5d728c7a13 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -371,19 +371,24 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index acbb629345d09f6ea9b18d20ab3e334c039e3191..d44f3d1dea2a52c8a82fc1551663e125594432ea 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -516,19 +516,24 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
              if (entity != this.player && entity.getRidingPassenger() == this.player && entity == this.r) {
                  WorldServer worldserver = this.player.getWorldServer();
@@ -41,7 +41,7 @@ index 25744e01cfca42e9094b2a215270e4617553d18a..efd66e81492ec4f976b9db66b84f1c5d
  
  
                  // CraftBukkit start - handle custom speeds and skipped ticks
-@@ -1085,7 +1090,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1230,7 +1235,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                          double d2 = this.player.locZ();
                          double d3 = this.player.locY();
                          double d4 = packetplayinflying.a(this.player.locX());double toX = d4; // Paper - OBFHELPER
@@ -50,7 +50,7 @@ index 25744e01cfca42e9094b2a215270e4617553d18a..efd66e81492ec4f976b9db66b84f1c5d
                          double d6 = packetplayinflying.c(this.player.locZ());double toZ = d6; // Paper - OBFHELPER
                          float f = packetplayinflying.a(this.player.yaw);
                          float f1 = packetplayinflying.b(this.player.pitch);
-@@ -1093,7 +1098,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1238,7 +1243,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
                          double d8 = d5 - this.m;
                          double d9 = d6 - this.n;
                          double d10 = this.player.getMot().g();

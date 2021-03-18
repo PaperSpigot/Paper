@@ -5,11 +5,11 @@ Subject: [PATCH] Fix sounds when item frames are modified (MC-123450)
 
 This also fixes the adding sound playing when the item frame direction is changed.
 
-diff --git a/src/main/java/net/minecraft/server/EntityItemFrame.java b/src/main/java/net/minecraft/server/EntityItemFrame.java
-index 2b42906388f8c5b9bb2efeff5ec4d02d19d01f09..8a95e698d5caa3730954ce1135b0ec37a389dd70 100644
---- a/src/main/java/net/minecraft/server/EntityItemFrame.java
-+++ b/src/main/java/net/minecraft/server/EntityItemFrame.java
-@@ -247,7 +247,7 @@ public class EntityItemFrame extends EntityHanging {
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityItemFrame.java b/src/main/java/net/minecraft/world/entity/decoration/EntityItemFrame.java
+index 584f64946821092afab57b9409bc249403bc16e7..43152a6c70c9433d627a58051101530ddd693307 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityItemFrame.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityItemFrame.java
+@@ -277,7 +277,7 @@ public class EntityItemFrame extends EntityHanging {
          }
  
          this.getDataWatcher().set(EntityItemFrame.ITEM, itemstack);
@@ -19,7 +19,7 @@ index 2b42906388f8c5b9bb2efeff5ec4d02d19d01f09..8a95e698d5caa3730954ce1135b0ec37
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftItemFrame.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftItemFrame.java
-index 4452204684bc510d84834a7a0e5bbde51d3d262e..65f087828d00404b11211895c6fcb0297d45c1ba 100644
+index 86bb26cd1d327056a64926ed6fc53142ad3756c2..cbdbb89ec28f9b6c3a0eb31be94c440254c6e266 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftItemFrame.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftItemFrame.java
 @@ -50,7 +50,7 @@ public class CraftItemFrame extends CraftHanging implements ItemFrame {

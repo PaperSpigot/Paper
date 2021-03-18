@@ -7,11 +7,11 @@ Fires an event anytime an enderman intends to teleport away from the player
 
 You may cancel this, enabling ranged attacks to damage the enderman for example.
 
-diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
-index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef99c8fcd62 100644
---- a/src/main/java/net/minecraft/server/EntityEnderman.java
-+++ b/src/main/java/net/minecraft/server/EntityEnderman.java
-@@ -2,6 +2,7 @@ package net.minecraft.server;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+index 2de3210bd8988b156b756723d0f781fd92bc151a..b889c1954df39b6180351c418393f5c772702589 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+@@ -2,6 +2,7 @@ package net.minecraft.world.entity.monster;
  
  import java.util.EnumSet;
  import java.util.Optional;
@@ -19,7 +19,7 @@ index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef9
  import java.util.Random;
  import java.util.UUID;
  import java.util.function.Predicate;
-@@ -55,6 +56,12 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -109,6 +110,12 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
          setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.UNKNOWN, true);
      }
  
@@ -32,7 +32,7 @@ index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef9
      @Override
      public boolean setGoalTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent) {
          if (!super.setGoalTarget(entityliving, reason, fireEvent)) {
-@@ -208,7 +215,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -262,7 +269,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
          if (this.world.isDay() && this.ticksLived >= this.bs + 600) {
              float f = this.aR();
  
@@ -41,7 +41,7 @@ index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef9
                  this.setGoalTarget((EntityLiving) null);
                  this.eL();
              }
-@@ -306,17 +313,19 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -360,17 +367,19 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
          if (this.isInvulnerable(damagesource)) {
              return false;
          } else if (damagesource instanceof EntityDamageSourceIndirect) {
@@ -62,7 +62,7 @@ index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef9
                  this.eL();
              }
  
-@@ -461,7 +470,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -515,7 +524,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
  
      static class PathfinderGoalPlayerWhoLookedAtTarget extends PathfinderGoalNearestAttackableTarget<EntityHuman> {
  
@@ -71,7 +71,7 @@ index 4e7553a70e3caafdc661215f6c3e2cbf49c6db91..b9ede7d533a813f4de27404dc14b0ef9
          private EntityHuman j;
          private int k;
          private int l;
-@@ -524,7 +533,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+@@ -578,7 +587,7 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
              } else {
                  if (this.c != null && !this.i.isPassenger()) {
                      if (this.i.g((EntityHuman) this.c)) {

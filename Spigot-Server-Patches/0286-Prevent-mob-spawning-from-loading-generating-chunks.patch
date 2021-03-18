@@ -5,11 +5,11 @@ Subject: [PATCH] Prevent mob spawning from loading/generating chunks
 
 also prevents if out of world border bounds
 
-diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 0ecdfd45073235b7b01e84f4490f17088c4ee675..60f0301747ff2363007791432471c20471d79f01 100644
---- a/src/main/java/net/minecraft/server/SpawnerCreature.java
-+++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
-@@ -143,9 +143,9 @@ public final class SpawnerCreature {
+diff --git a/src/main/java/net/minecraft/world/level/SpawnerCreature.java b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+index 1969d1002b3182338614a2be0519fcdc385b7a44..5307488fa48ffa91446dd4457de1ce6a8f61da61 100644
+--- a/src/main/java/net/minecraft/world/level/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+@@ -176,9 +176,9 @@ public final class SpawnerCreature {
          StructureManager structuremanager = worldserver.getStructureManager();
          ChunkGenerator chunkgenerator = worldserver.getChunkProvider().getChunkGenerator();
          int i = blockposition.getY();
@@ -21,7 +21,7 @@ index 0ecdfd45073235b7b01e84f4490f17088c4ee675..60f0301747ff2363007791432471c204
              BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
              int j = 0;
              int k = 0;
-@@ -174,7 +174,7 @@ public final class SpawnerCreature {
+@@ -207,7 +207,7 @@ public final class SpawnerCreature {
                              if (entityhuman != null) {
                                  double d2 = entityhuman.h(d0, (double) i, d1);
  

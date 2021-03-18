@@ -77,19 +77,19 @@ index 1ee2cced100626e48eb36ee14f84b9257c79a2f8..b913cd2dd0cd1b369b3f7b5a9d8b1be7
 +        }
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 001ddbe669c8c1a534a4e023386c00085ee1af95..4a20ceaf649f91860047017028809cd8040c9e58 100644
---- a/src/main/java/net/minecraft/server/EntityItem.java
-+++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -7,6 +7,7 @@ import java.util.UUID;
- import javax.annotation.Nullable;
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityItem.java b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+index 02e4d6891adc902f73ed349f15dae3a429bd283a..0b2e6e72a85e05f239d56afb6785c91da5b25d55 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityItem.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityItem.java
+@@ -33,6 +33,7 @@ import net.minecraft.world.phys.Vec3D;
  
  // CraftBukkit start
+ import net.minecraft.server.MinecraftServer;
 +import org.bukkit.Material; // Paper
  import org.bukkit.event.entity.EntityPickupItemEvent;
  import org.bukkit.event.player.PlayerPickupItemEvent;
  // CraftBukkit end
-@@ -135,7 +136,7 @@ public class EntityItem extends Entity {
+@@ -161,7 +162,7 @@ public class EntityItem extends Entity {
                  }
              }
  
@@ -98,7 +98,7 @@ index 001ddbe669c8c1a534a4e023386c00085ee1af95..4a20ceaf649f91860047017028809cd8
                  // CraftBukkit start - fire ItemDespawnEvent
                  if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
                      this.age = 0;
-@@ -159,7 +160,7 @@ public class EntityItem extends Entity {
+@@ -185,7 +186,7 @@ public class EntityItem extends Entity {
          this.lastTick = MinecraftServer.currentTick;
          // CraftBukkit end
  
@@ -107,7 +107,7 @@ index 001ddbe669c8c1a534a4e023386c00085ee1af95..4a20ceaf649f91860047017028809cd8
              // CraftBukkit start - fire ItemDespawnEvent
              if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
                  this.age = 0;
-@@ -509,9 +510,16 @@ public class EntityItem extends Entity {
+@@ -535,9 +536,16 @@ public class EntityItem extends Entity {
  
      public void s() {
          this.o();

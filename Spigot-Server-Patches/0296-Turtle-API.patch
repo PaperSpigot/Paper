@@ -4,11 +4,32 @@ Date: Sat, 29 Sep 2018 16:08:23 -0500
 Subject: [PATCH] Turtle API
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityTurtle.java b/src/main/java/net/minecraft/server/EntityTurtle.java
-index 19c92bea21ddcc3917eb011dcfe41006299356ef..fa8eab20bb839c53bf7989d02d2274f835002609 100644
---- a/src/main/java/net/minecraft/server/EntityTurtle.java
-+++ b/src/main/java/net/minecraft/server/EntityTurtle.java
-@@ -31,7 +31,7 @@ public class EntityTurtle extends EntityAnimal {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalGotoTarget.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalGotoTarget.java
+index 62276550627bfe453794a2b3101426fe05a585ff..6a156a488bc073b3b60f4d1081e3f2ab65ba9e96 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalGotoTarget.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalGotoTarget.java
+@@ -14,7 +14,7 @@ public abstract class PathfinderGoalGotoTarget extends PathfinderGoal {
+     protected int c;
+     protected int d;
+     private int g;
+-    protected BlockPosition e;
++    protected BlockPosition e;public final BlockPosition getTargetPosition() { return this.e; } // Paper - OBFHELPER
+     private boolean h;
+     private final int i;
+     private final int j;
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+index bf224c97854daa379c61affff6a0ac9524c2c35d..09a6310af6712d36c20167256b60dc3235e76021 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.sounds.SoundCategory;
+@@ -93,7 +94,7 @@ public class EntityTurtle extends EntityAnimal {
          this.datawatcher.set(EntityTurtle.bp, blockposition);
      }
  
@@ -17,7 +38,7 @@ index 19c92bea21ddcc3917eb011dcfe41006299356ef..fa8eab20bb839c53bf7989d02d2274f8
          return (BlockPosition) this.datawatcher.get(EntityTurtle.bp);
      }
  
-@@ -47,31 +47,37 @@ public class EntityTurtle extends EntityAnimal {
+@@ -109,31 +110,37 @@ public class EntityTurtle extends EntityAnimal {
          return (Boolean) this.datawatcher.get(EntityTurtle.bq);
      }
  
@@ -56,7 +77,7 @@ index 19c92bea21ddcc3917eb011dcfe41006299356ef..fa8eab20bb839c53bf7989d02d2274f8
      private void w(boolean flag) {
          this.datawatcher.set(EntityTurtle.bu, flag);
      }
-@@ -438,14 +444,17 @@ public class EntityTurtle extends EntityAnimal {
+@@ -500,14 +507,17 @@ public class EntityTurtle extends EntityAnimal {
  
              if (!this.g.isInWater() && this.l()) {
                  if (this.g.bv < 1) {
@@ -77,7 +98,7 @@ index 19c92bea21ddcc3917eb011dcfe41006299356ef..fa8eab20bb839c53bf7989d02d2274f8
                      }
                      // CraftBukkit end
                      this.g.setHasEgg(false);
-@@ -574,7 +583,7 @@ public class EntityTurtle extends EntityAnimal {
+@@ -636,7 +646,7 @@ public class EntityTurtle extends EntityAnimal {
  
          @Override
          public boolean a() {
@@ -86,46 +107,24 @@ index 19c92bea21ddcc3917eb011dcfe41006299356ef..fa8eab20bb839c53bf7989d02d2274f8
          }
  
          @Override
-diff --git a/src/main/java/net/minecraft/server/PathfinderGoalGotoTarget.java b/src/main/java/net/minecraft/server/PathfinderGoalGotoTarget.java
-index 1295cb02ab9e39519d73e2c260a50b64d44929a1..9b0511e996a5e3952c6f975e7c93299c532a8ea1 100644
---- a/src/main/java/net/minecraft/server/PathfinderGoalGotoTarget.java
-+++ b/src/main/java/net/minecraft/server/PathfinderGoalGotoTarget.java
-@@ -9,7 +9,7 @@ public abstract class PathfinderGoalGotoTarget extends PathfinderGoal {
-     protected int c;
-     protected int d;
-     private int g;
--    protected BlockPosition e;
-+    protected BlockPosition e;public final BlockPosition getTargetPosition() { return this.e; } // Paper - OBFHELPER
-     private boolean h;
-     private final int i;
-     private final int j;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftTurtle.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftTurtle.java
-index 123a2c75cad410d079cfb23223ab509e4b4c63f7..f2b09a1e66dfbcd943612b5170d20bb284fbcc68 100644
+index b46bb75926c14ab54ea309a400eb57405b11ce27..31f1a6b2b9a432cdd25826ced884424eeb50df97 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftTurtle.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftTurtle.java
-@@ -1,6 +1,8 @@
- package org.bukkit.craftbukkit.entity;
- 
- import net.minecraft.server.EntityTurtle;
-+import net.minecraft.server.MCUtil;
-+import org.bukkit.Location;
- import org.bukkit.craftbukkit.CraftServer;
- import org.bukkit.entity.EntityType;
- import org.bukkit.entity.Turtle;
-@@ -25,4 +27,36 @@ public class CraftTurtle extends CraftAnimals implements Turtle {
+@@ -25,4 +25,36 @@ public class CraftTurtle extends CraftAnimals implements Turtle {
      public EntityType getType() {
          return EntityType.TURTLE;
      }
 +
 +    // Paper start
 +    @Override
-+    public Location getHome() {
-+        return MCUtil.toLocation(getHandle().world, getHandle().getHomePos());
++    public org.bukkit.Location getHome() {
++        return net.minecraft.server.MCUtil.toLocation(getHandle().world, getHandle().getHomePos());
 +    }
 +
 +    @Override
-+    public void setHome(Location location) {
-+        getHandle().setHomePos(MCUtil.toBlockPosition(location));
++    public void setHome(org.bukkit.Location location) {
++        getHandle().setHomePos(net.minecraft.server.MCUtil.toBlockPosition(location));
 +    }
 +
 +    @Override

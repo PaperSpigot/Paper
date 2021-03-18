@@ -4,11 +4,11 @@ Date: Tue, 17 Mar 2020 14:18:50 -0500
 Subject: [PATCH] Do not allow bees to load chunks for beehives
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityBee.java b/src/main/java/net/minecraft/server/EntityBee.java
-index c14e07f3c3017e5a5355b1770b94ee4dcc8cc017..f73641ddb3e82bc653732105ef0a3d41a28e845f 100644
---- a/src/main/java/net/minecraft/server/EntityBee.java
-+++ b/src/main/java/net/minecraft/server/EntityBee.java
-@@ -284,6 +284,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityBee.java b/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
+index 7ce8eaeb9af3547869f467910b6a458118c63c1f..1d1f71a995a99b2101891a7a5bda7bec5d67f118 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityBee.java
+@@ -358,6 +358,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
          if (this.hivePos == null) {
              return false;
          } else {
@@ -16,7 +16,7 @@ index c14e07f3c3017e5a5355b1770b94ee4dcc8cc017..f73641ddb3e82bc653732105ef0a3d41
              TileEntity tileentity = this.world.getTileEntity(this.hivePos);
  
              return tileentity instanceof TileEntityBeehive && ((TileEntityBeehive) tileentity).d();
-@@ -316,6 +317,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
+@@ -390,6 +391,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
      }
  
      private boolean i(BlockPosition blockposition) {
@@ -24,7 +24,7 @@ index c14e07f3c3017e5a5355b1770b94ee4dcc8cc017..f73641ddb3e82bc653732105ef0a3d41
          TileEntity tileentity = this.world.getTileEntity(blockposition);
  
          return tileentity instanceof TileEntityBeehive ? !((TileEntityBeehive) tileentity).isFull() : false;
-@@ -558,6 +560,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
+@@ -632,6 +634,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
          @Override
          public boolean g() {
              if (EntityBee.this.hasHivePos() && EntityBee.this.fd() && EntityBee.this.hivePos.a((IPosition) EntityBee.this.getPositionVector(), 2.0D)) {
@@ -32,7 +32,7 @@ index c14e07f3c3017e5a5355b1770b94ee4dcc8cc017..f73641ddb3e82bc653732105ef0a3d41
                  TileEntity tileentity = EntityBee.this.world.getTileEntity(EntityBee.this.hivePos);
  
                  if (tileentity instanceof TileEntityBeehive) {
-@@ -581,6 +584,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
+@@ -655,6 +658,7 @@ public class EntityBee extends EntityAnimal implements IEntityAngerable, EntityB
  
          @Override
          public void c() {

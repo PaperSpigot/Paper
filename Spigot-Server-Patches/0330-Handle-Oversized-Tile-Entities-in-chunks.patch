@@ -8,11 +8,11 @@ creating too large of a packet to sed.
 
 Co authored by Spottedleaf
 
-diff --git a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-index 34e92e544f37167317d58af4242acde49e588673..5fae0ec8933cef2b87d2f465c8019af0af2e130d 100644
---- a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-+++ b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
-@@ -22,7 +22,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
+index 0059ede4ba3ff271d47dd38ea87fddc2399aa008..a7d10d124021f3427f23fcd533f885367b64515c 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutMapChunk.java
+@@ -34,7 +34,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
      private boolean h;
  
      public PacketPlayOutMapChunk() {}
@@ -28,7 +28,7 @@ index 34e92e544f37167317d58af4242acde49e588673..5fae0ec8933cef2b87d2f465c8019af0
      public PacketPlayOutMapChunk(Chunk chunk, int i) {
          ChunkCoordIntPair chunkcoordintpair = chunk.getPos();
  
-@@ -49,6 +57,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+@@ -61,6 +69,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
          this.c = this.a(new PacketDataSerializer(this.j()), chunk, i);
          this.g = Lists.newArrayList();
          iterator = chunk.getTileEntities().entrySet().iterator();
@@ -36,7 +36,7 @@ index 34e92e544f37167317d58af4242acde49e588673..5fae0ec8933cef2b87d2f465c8019af0
  
          while (iterator.hasNext()) {
              entry = (Entry) iterator.next();
-@@ -57,6 +66,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+@@ -69,6 +78,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
              int j = blockposition.getY() >> 4;
  
              if (this.f() || (i & 1 << j) != 0) {

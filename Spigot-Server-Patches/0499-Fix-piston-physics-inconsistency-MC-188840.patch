@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Thu, 11 Jun 2020 17:29:42 -0700
+Subject: [PATCH] Fix piston physics inconsistency - MC-188840
+
+Pistons invoke physics when they move blocks. The physics can cause
+tnt blocks to ignite. However, pistons (when storing the blocks they "moved")
+don't actually go back to the world state sometimes to check if something
+like that happened. As a result they end up moving the tnt like it was
+never ignited. This resulted in the ability to create machines
+that can duplicate tnt, called "world eaters".
+This patch makes the piston logic retrieve the block state from the world
+prevent this from occuring.
+
+This patch also sets the moved pos to air immediately after creating
+the moving piston TE. This prevents the block from being updated from
+other physics calls by the piston.
+
+Tested against the following tnt duper design:
+https://www.youtube.com/watch?v=mS7xxNGhjxs
+
+This patch also affects every type of machine that utilises
+this mechanic. For example, dead coral is removed by a physics
+update when being moved while it is attached to slimeblocks.
+
+Standard piston machines that don't destroy or modify the
+blocks they move by physics updates should be entirely
+unaffected.
+
+This patch fixes https://bugs.mojang.com/browse/MC-188840
+
+This patch also fixes rail duping and carpet duping.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+index 7f140333c2e62012fa572c1a061d84432426997f..b67ba8f75e4a3358d7c2462918b85b0bf9b5a922 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+@@ -434,4 +434,10 @@ public class PaperConfig {
+         consoleHasAllPermissions = getBoolean("settings.console-has-all-permissions", consoleHasAllPermissions);
+     }
+ 
++    public static boolean allowPistonDuplication;
++    private static void allowPistonDuplication() {
++        config.set("settings.unsupported-settings.allow-piston-duplication-readme", "This setting controls if player should be able to use TNT duplication, but this also allows duplicating carpet, rails and potentially other items");
++        allowPistonDuplication = getBoolean("settings.unsupported-settings.allow-piston-duplication", config.getBoolean("settings.unsupported-settings.allow-tnt-duplication", false));
++        set("settings.unsupported-settings.allow-tnt-duplication", null);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java b/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
+index e062fd288098127fae22a55562e0207ceaf50163..8aa51fb207820a7629d50b80ea821ec6cccf8b54 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
+@@ -399,12 +399,24 @@ public class BlockPiston extends BlockDirectional {
+             }
+ 
+             for (k = list.size() - 1; k >= 0; --k) {
+-                blockposition3 = (BlockPosition) list.get(k);
+-                iblockdata1 = world.getType(blockposition3);
++                // Paper start - fix a variety of piston desync dupes
++                boolean allowDesync = com.destroystokyo.paper.PaperConfig.allowPistonDuplication;
++                BlockPosition oldPos = blockposition3 = (BlockPosition) list.get(k);
++                iblockdata1 = allowDesync ? world.getType(oldPos) : null;
++                // Paper end - fix a variety of piston desync dupes
+                 blockposition3 = blockposition3.shift(enumdirection1);
+                 map.remove(blockposition3);
+                 world.setTypeAndData(blockposition3, (IBlockData) Blocks.MOVING_PISTON.getBlockData().set(BlockPiston.FACING, enumdirection), 68);
+-                world.setTileEntity(blockposition3, BlockPistonMoving.a((IBlockData) list1.get(k), enumdirection, flag, false));
++                // Paper start - fix a variety of piston desync dupes
++                if (!allowDesync) {
++                    iblockdata1 = world.getType(oldPos);
++                    map.replace(oldPos, iblockdata1);
++                }
++                world.setTileEntity(blockposition3, BlockPistonMoving.a(allowDesync ? list1.get(k) : iblockdata1, enumdirection, flag, false));
++                if (!allowDesync) {
++                    world.setTypeAndData(oldPos, Blocks.AIR.getBlockData(), 2 | 4 | 16 | 1024); // set air to prevent later physics updates from seeing this block
++                }
++                // Paper end - fix a variety of piston desync dupes
+                 aiblockdata[j++] = iblockdata1;
+             }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java b/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
+index 8d13e60f40e1b760e9e69969dc3f37bc6c70dbe9..e70c3a8c9075b6c0bc73e6488d784dfe3b86e58d 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/TileEntityPiston.java
+@@ -279,7 +279,7 @@ public class TileEntityPiston extends TileEntity implements ITickable {
+                     IBlockData iblockdata = Block.b(this.a, (GeneratorAccess) this.world, this.position);
+ 
+                     if (iblockdata.isAir()) {
+-                        this.world.setTypeAndData(this.position, this.a, 84);
++                    this.world.setTypeAndData(this.position, this.a, com.destroystokyo.paper.PaperConfig.allowPistonDuplication ? 84 : (84 | 2)); // Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
+                         Block.a(this.a, iblockdata, this.world, this.position, 3);
+                     } else {
+                         if (iblockdata.b(BlockProperties.C) && (Boolean) iblockdata.get(BlockProperties.C)) {

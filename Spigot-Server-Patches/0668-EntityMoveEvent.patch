@@ -4,10 +4,42 @@ Date: Tue, 11 Feb 2020 21:56:48 -0600
 Subject: [PATCH] EntityMoveEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index b89eba804ab6cb6735bfcc6dd0219b468126e982..9a79371b40803947ed5deef68c50d45683aaae52 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index c4da751bed3014a5521ac0014b07c139b69b1187..5da58830459d2ff10e7fde28b41995699134459f 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -12,6 +12,7 @@ import com.mojang.datafixers.DataFixer;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.ByteBufOutputStream;
+ import io.netty.buffer.Unpooled;
++import io.papermc.paper.event.entity.EntityMoveEvent;
+ import it.unimi.dsi.fastutil.longs.LongIterator;
+ import java.awt.image.BufferedImage;
+ import java.io.BufferedWriter;
+@@ -1448,6 +1449,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         while (iterator.hasNext()) {
+             WorldServer worldserver = (WorldServer) iterator.next();
+             worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
++            worldserver.hasEntityMoveEvent =  EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
+             TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
+ 
+             this.methodProfiler.a(() -> {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 5da7d1df97e70248d01cb1c452b26cfba415a5b0..07396504fbabc2eb006f2b7f8e53faafe67d5672 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -213,6 +213,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     public final Convertable.ConversionSession convertable;
+     public final UUID uuid;
+     public boolean hasPhysicsEvent = true; // Paper
++    public boolean hasEntityMoveEvent = false; // Paper
+     private static Throwable getAddToWorldStackTrace(Entity entity) {
+         return new Throwable(entity + " Added to world at " + new java.util.Date());
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 800a8b8e1a49eb6ec920abaad4514a9a91a3542e..b0ee9e98d5f1e56c8d82e90dd7761c8ef79cfb1c 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
 @@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Pair;
  import com.mojang.serialization.DataResult;
  import com.mojang.serialization.Dynamic;
@@ -16,7 +48,7 @@ index b89eba804ab6cb6735bfcc6dd0219b468126e982..9a79371b40803947ed5deef68c50d456
  import java.util.Collection;
  import java.util.ConcurrentModificationException;
  import java.util.Iterator;
-@@ -2818,6 +2819,20 @@ public abstract class EntityLiving extends Entity {
+@@ -2912,6 +2913,20 @@ public abstract class EntityLiving extends Entity {
  
          this.collideNearby();
          this.world.getMethodProfiler().exit();
@@ -37,35 +69,3 @@ index b89eba804ab6cb6735bfcc6dd0219b468126e982..9a79371b40803947ed5deef68c50d456
          if (!this.world.isClientSide && this.dO() && this.aG()) {
              this.damageEntity(DamageSource.DROWN, 1.0F);
          }
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 20f44f9952d94aebc64b3ccd9271592bb0890735..b29705cb25423e2017f5b38cfa7affa738e0e592 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -12,6 +12,7 @@ import com.mojang.datafixers.DataFixer;
- import io.netty.buffer.ByteBuf;
- import io.netty.buffer.ByteBufOutputStream;
- import io.netty.buffer.Unpooled;
-+import io.papermc.paper.event.entity.EntityMoveEvent;
- import it.unimi.dsi.fastutil.longs.LongIterator;
- import java.awt.image.BufferedImage;
- import java.io.BufferedWriter;
-@@ -1336,6 +1337,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-         while (iterator.hasNext()) {
-             WorldServer worldserver = (WorldServer) iterator.next();
-             worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
-+            worldserver.hasEntityMoveEvent =  EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
-             TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
- 
-             this.methodProfiler.a(() -> {
-diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 53d3e1561ea33c38de5dc5dde181439153fa2775..466bb6297bd3bf7bb0ff1f4d0bd1f4ddfe294fa2 100644
---- a/src/main/java/net/minecraft/server/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -100,6 +100,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-     public final Convertable.ConversionSession convertable;
-     public final UUID uuid;
-     boolean hasPhysicsEvent = true; // Paper
-+    boolean hasEntityMoveEvent = false; // Paper
-     private static Throwable getAddToWorldStackTrace(Entity entity) {
-         return new Throwable(entity + " Added to world at " + new java.util.Date());
-     }

@@ -13,11 +13,11 @@ This change will synchronize the command execution back to the main thread, caus
 big slowdown in execution but throwing an exception at same time to raise awareness
 that it is happening so that plugin authors can fix their code to stop executing commands async.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 5636a76f1a893dc0609f16a240ae559396a4b46d..bb74049fb2baffbe67f9e34cc0ee0b83180d02eb 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1706,6 +1706,29 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index c417250f66805788d63434e2c360349a39996176..a70fb56b0f44372cc62adbb9a263684224c264d2 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1851,6 +1851,29 @@ public class PlayerConnection implements PacketListenerPlayIn {
          }
  
          if (!async && s.startsWith("/")) {
@@ -48,7 +48,7 @@ index 5636a76f1a893dc0609f16a240ae559396a4b46d..bb74049fb2baffbe67f9e34cc0ee0b83
          } else if (this.player.getChatFlags() == EnumChatVisibility.SYSTEM) {
              // Do nothing, this is coming from a plugin
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 4fdc38de35ce2f3ec20c6892bc9eb39ec0366498..66cbc94b8d5cb9e435e0fb32596f8f3cef0a49a5 100644
+index f84fe5929cb7bcedff5fc587163380172bc1e8be..8e9547fc745e8244ca1f439770571ca1175ff632 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -762,6 +762,29 @@ public final class CraftServer implements Server {
@@ -106,7 +106,7 @@ index aeed7697254af17ffefe8e578353ad216e15f9f3..9f7d2ef932ab41cef5d3d0736d20a7c7
      public static void catchOp(String reason)
      {
 diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
-index 56445844c7f542dd74c166bb09abd79cc17e1e12..26795b22e3ebc9594af79f93506a3c217cb784e2 100644
+index d76e01d73da7413f192132134caf201d7780e3f1..a45155cdd7d7a302c119f75bfe2b428ae5e8ab47 100644
 --- a/src/main/java/org/spigotmc/RestartCommand.java
 +++ b/src/main/java/org/spigotmc/RestartCommand.java
 @@ -43,6 +43,7 @@ public class RestartCommand extends Command

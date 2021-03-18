@@ -5,11 +5,11 @@ Subject: [PATCH] Optimize Biome Mob Lookups for Mob Spawning
 
 Uses an EnumMap as well as a Set paired List for O(1) contains calls.
 
-diff --git a/src/main/java/net/minecraft/server/BiomeSettingsMobs.java b/src/main/java/net/minecraft/server/BiomeSettingsMobs.java
-index 558344a2fa7f755152d4674c698d7f47ba1beaa2..a18ca3f0001a771f21012bd39711f581efb2fef0 100644
---- a/src/main/java/net/minecraft/server/BiomeSettingsMobs.java
-+++ b/src/main/java/net/minecraft/server/BiomeSettingsMobs.java
-@@ -24,18 +24,27 @@ public class BiomeSettingsMobs {
+diff --git a/src/main/java/net/minecraft/world/level/biome/BiomeSettingsMobs.java b/src/main/java/net/minecraft/world/level/biome/BiomeSettingsMobs.java
+index 5adaf5fdaaec25220878213df2c0839ccf025d63..233ae33b5cbf1aafc7d2632149ccb84c0b243162 100644
+--- a/src/main/java/net/minecraft/world/level/biome/BiomeSettingsMobs.java
++++ b/src/main/java/net/minecraft/world/level/biome/BiomeSettingsMobs.java
+@@ -30,18 +30,27 @@ public class BiomeSettingsMobs {
      }, (enumcreaturetype) -> {
          return ImmutableList.of();
      })), ImmutableMap.of(), false);
@@ -44,7 +44,7 @@ index 558344a2fa7f755152d4674c698d7f47ba1beaa2..a18ca3f0001a771f21012bd39711f581
              return biomesettingsmobs.f;
          }), Codec.BOOL.fieldOf("player_spawn_friendly").orElse(false).forGetter(BiomeSettingsMobs::b)).apply(instance, BiomeSettingsMobs::new);
      });
-@@ -70,11 +79,43 @@ public class BiomeSettingsMobs {
+@@ -76,11 +85,43 @@ public class BiomeSettingsMobs {
  
      public static class a {
  

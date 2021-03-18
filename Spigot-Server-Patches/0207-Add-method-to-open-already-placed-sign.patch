@@ -5,10 +5,18 @@ Subject: [PATCH] Add method to open already placed sign
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-index f209e6d8fa20ceb7db71a6bb1685fd79b13f0738..d53cbcb6bba9d2526dbecb118735443c839c67d2 100644
+index 8661f97ac885daca068057c1fcc4eed54c6d7f14..db7ad5a94d449f58a5749115776e61f448ff2f52 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-@@ -603,6 +603,17 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.BlockWorkbench;
+ import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.level.block.entity.TileEntity;
+ import net.minecraft.world.level.block.entity.TileEntityContainer;
++import net.minecraft.world.level.block.entity.TileEntitySign;
+ import net.minecraft.world.level.block.state.IBlockData;
+ import org.bukkit.GameMode;
+ import org.bukkit.Location;
+@@ -603,6 +604,17 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
          }
      }
  
@@ -17,7 +25,7 @@ index f209e6d8fa20ceb7db71a6bb1685fd79b13f0738..d53cbcb6bba9d2526dbecb118735443c
 +    public void openSign(org.bukkit.block.Sign sign) {
 +        org.apache.commons.lang.Validate.isTrue(sign.getWorld().equals(this.getWorld()), "Sign must be in the same world as player is in");
 +        org.bukkit.craftbukkit.block.CraftSign craftSign = (org.bukkit.craftbukkit.block.CraftSign) sign;
-+        net.minecraft.server.TileEntitySign teSign = craftSign.getTileEntity();
++        TileEntitySign teSign = craftSign.getTileEntity();
 +        // Make sign editable temporarily, will be set back to false in PlayerConnection later
 +        teSign.isEditable = true;
 +        getHandle().openSign(teSign);

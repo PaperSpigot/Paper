@@ -24,11 +24,11 @@ index 89e76dd73811fd0f6f8c8e7e5af804d5a4bb5a75..d16ae924bcbe31c964f7fb448757c748
 +        if (entityTNTHeightNerf != 0) log("TNT Entity Height Limit set to Y: " + entityTNTHeightNerf);
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index ae96ff73f78a514328862de86d3ecdb29fa9c145..09bab3828197e3078a4ed95e7c8a9f34e8bf1b8d 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -1765,6 +1765,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 0b86c697541e3ee6083b3c10ab3618ef740b1904..d7dfb89faa47817c51257bb124cfb3806c5e27da 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1850,6 +1850,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          return this.a(itemstack, 0.0F);
      }
  
@@ -36,11 +36,11 @@ index ae96ff73f78a514328862de86d3ecdb29fa9c145..09bab3828197e3078a4ed95e7c8a9f34
      @Nullable
      public EntityItem a(ItemStack itemstack, float f) {
          if (itemstack.isEmpty()) {
-diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
-index 55e6d9a94c648bac68b80a76eda041fb952db09f..6b226c04d40adff8b0f1d28c0cc79439df002b3d 100644
---- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
-+++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
-@@ -85,6 +85,17 @@ public class EntityFallingBlock extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+index b3dea8d65c3d1e27e59be142ec9e2ebb4164aed0..901522f24b8bc58861e46eda400dbab92bb6401d 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+@@ -124,6 +124,17 @@ public class EntityFallingBlock extends Entity {
              }
  
              this.move(EnumMoveType.SELF, this.getMot());
@@ -58,28 +58,11 @@ index 55e6d9a94c648bac68b80a76eda041fb952db09f..6b226c04d40adff8b0f1d28c0cc79439
              if (!this.world.isClientSide) {
                  blockposition = this.getChunkCoordinates();
                  boolean flag = this.block.getBlock() instanceof BlockConcretePowder;
-diff --git a/src/main/java/net/minecraft/server/EntityMinecartTNT.java b/src/main/java/net/minecraft/server/EntityMinecartTNT.java
-index 50d7c2899deb707dbbe333242e049b963d9b549c..3dfe3d13ac713c963256a662b52f54716e397672 100644
---- a/src/main/java/net/minecraft/server/EntityMinecartTNT.java
-+++ b/src/main/java/net/minecraft/server/EntityMinecartTNT.java
-@@ -26,6 +26,12 @@ public class EntityMinecartTNT extends EntityMinecartAbstract {
-     public void tick() {
-         super.tick();
-         if (this.b > 0) {
-+            // Paper start - Configurable TNT entity height nerf
-+            if (this.world.paperConfig.entityTNTHeightNerf != 0 && this.locY() > this.world.paperConfig.entityTNTHeightNerf) {
-+                this.die();
-+                return;
-+            }
-+            // Paper end
-             --this.b;
-             this.world.addParticle(Particles.SMOKE, this.locX(), this.locY() + 0.5D, this.locZ(), 0.0D, 0.0D, 0.0D);
-         } else if (this.b == 0) {
-diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index 7064fd8e8318797a94b5292d675992a902b681ab..914ff5b7a9787ae5e8d5b8829e6888ba2637cc26 100644
---- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-+++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-@@ -55,6 +55,12 @@ public class EntityTNTPrimed extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java b/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
+index c2e7161dc103c971908ff217eaf972e9f175d044..4f4b2b8d58223fa22d6a7af5c94cfb36399b9641 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityTNTPrimed.java
+@@ -70,6 +70,12 @@ public class EntityTNTPrimed extends Entity {
          }
  
          this.move(EnumMoveType.SELF, this.getMot());
@@ -92,3 +75,20 @@ index 7064fd8e8318797a94b5292d675992a902b681ab..914ff5b7a9787ae5e8d5b8829e6888ba
          this.setMot(this.getMot().a(0.98D));
          if (this.onGround) {
              this.setMot(this.getMot().d(0.7D, -0.5D, 0.7D));
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartTNT.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartTNT.java
+index ee31704ffb88ab68702657554d386e8ebfa05d03..4bec5c1d504b9456dafe1b76bdbb523d0a324abe 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartTNT.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartTNT.java
+@@ -47,6 +47,12 @@ public class EntityMinecartTNT extends EntityMinecartAbstract {
+     public void tick() {
+         super.tick();
+         if (this.b > 0) {
++            // Paper start - Configurable TNT entity height nerf
++            if (this.world.paperConfig.entityTNTHeightNerf != 0 && this.locY() > this.world.paperConfig.entityTNTHeightNerf) {
++                this.die();
++                return;
++            }
++            // Paper end
+             --this.b;
+             this.world.addParticle(Particles.SMOKE, this.locX(), this.locY() + 0.5D, this.locZ(), 0.0D, 0.0D, 0.0D);
+         } else if (this.b == 0) {

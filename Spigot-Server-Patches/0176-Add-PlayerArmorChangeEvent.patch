@@ -4,18 +4,18 @@ Date: Fri, 10 Nov 2017 23:46:34 -0500
 Subject: [PATCH] Add PlayerArmorChangeEvent
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 67b5b28c6c082a616ae2114874cdb0969f95ab98..087d961cb51dc3c9b24cf6e1785252c2c0afb296 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 851aed157a233ab690a57e5736fa01beaff45b5c..1dcdf9e328670b42d656e8ab65cb3da8a2312fe6 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
 @@ -1,5 +1,6 @@
- package net.minecraft.server;
+ package net.minecraft.world.entity;
  
 +import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent; // Paper
  import com.google.common.base.Objects;
  import com.google.common.collect.ImmutableList;
  import com.google.common.collect.ImmutableMap;
-@@ -2553,6 +2554,13 @@ public abstract class EntityLiving extends Entity {
+@@ -2646,6 +2647,13 @@ public abstract class EntityLiving extends Entity {
              ItemStack itemstack1 = this.getEquipment(enumitemslot);
  
              if (!ItemStack.matches(itemstack1, itemstack)) {
@@ -29,10 +29,10 @@ index 67b5b28c6c082a616ae2114874cdb0969f95ab98..087d961cb51dc3c9b24cf6e1785252c2
                  if (map == null) {
                      map = Maps.newEnumMap(EnumItemSlot.class);
                  }
-diff --git a/src/main/java/net/minecraft/server/EnumItemSlot.java b/src/main/java/net/minecraft/server/EnumItemSlot.java
-index 8862603d40ae6048345ef4cf34016c96fa12f76e..3ad9b3e69ef0ed8ad8eebcb323024670ce7599d1 100644
---- a/src/main/java/net/minecraft/server/EnumItemSlot.java
-+++ b/src/main/java/net/minecraft/server/EnumItemSlot.java
+diff --git a/src/main/java/net/minecraft/world/entity/EnumItemSlot.java b/src/main/java/net/minecraft/world/entity/EnumItemSlot.java
+index 8e7673c6072c3f8ddcebd7a719304ea41d809a36..59ad7d8dc1c8ee00d142dc6063c3416ccdce4ff8 100644
+--- a/src/main/java/net/minecraft/world/entity/EnumItemSlot.java
++++ b/src/main/java/net/minecraft/world/entity/EnumItemSlot.java
 @@ -16,6 +16,7 @@ public enum EnumItemSlot {
          this.j = s;
      }

@@ -5,33 +5,11 @@ Subject: [PATCH] Implement EntityKnockbackByEntityEvent
 
 This event is called when an entity receives knockback by another entity.
 
-diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index 67df400f80b8bbafecaefa3e8986dd7fe615fd04..f95e46e80f9e572227ee98cc181098c36f1dd5fe 100644
---- a/src/main/java/net/minecraft/server/EntityHuman.java
-+++ b/src/main/java/net/minecraft/server/EntityHuman.java
-@@ -1080,7 +1080,7 @@ public abstract class EntityHuman extends EntityLiving {
-                     if (flag5) {
-                         if (i > 0) {
-                             if (entity instanceof EntityLiving) {
--                                ((EntityLiving) entity).a((float) i * 0.5F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
-+                                ((EntityLiving) entity).doKnockback((float) i * 0.5F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)), this); // Paper
-                             } else {
-                                 entity.i((double) (-MathHelper.sin(this.yaw * 0.017453292F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 0.017453292F) * (float) i * 0.5F));
-                             }
-@@ -1104,7 +1104,7 @@ public abstract class EntityHuman extends EntityLiving {
-                                 if (entityliving != this && entityliving != entity && !this.r(entityliving) && (!(entityliving instanceof EntityArmorStand) || !((EntityArmorStand) entityliving).isMarker()) && this.h((Entity) entityliving) < 9.0D) {
-                                     // CraftBukkit start - Only apply knockback if the damage hits
-                                     if (entityliving.damageEntity(DamageSource.playerAttack(this).sweep(), f4)) {
--                                    entityliving.a(0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
-+                                    entityliving.doKnockback(0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)), this); // Paper
-                                     }
-                                     // CraftBukkit end
-                                 }
-diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index 6274cf1975270fdac8ae4986e1c170bd075d640e..fbecc8ccab47b428c43530ad344e325538cf242d 100644
---- a/src/main/java/net/minecraft/server/EntityInsentient.java
-+++ b/src/main/java/net/minecraft/server/EntityInsentient.java
-@@ -1500,7 +1500,7 @@ public abstract class EntityInsentient extends EntityLiving {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityInsentient.java b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+index c22b5f8fcdd4aa7dac242f634ef73edcd8745fc6..41566398f5eee6cf93376f2e2200728bb6d2181c 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityInsentient.java
++++ b/src/main/java/net/minecraft/world/entity/EntityInsentient.java
+@@ -1568,7 +1568,7 @@ public abstract class EntityInsentient extends EntityLiving {
  
          if (flag) {
              if (f1 > 0.0F && entity instanceof EntityLiving) {
@@ -40,11 +18,11 @@ index 6274cf1975270fdac8ae4986e1c170bd075d640e..fbecc8ccab47b428c43530ad344e3255
                  this.setMot(this.getMot().d(0.6D, 1.0D, 0.6D));
              }
  
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 646db2c9c3a05ac024ef43f65e9b8416154d7e90..2ac85eec14479415c0dd56e1aa255324715df23d 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1246,7 +1246,7 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 9f6f6ac15688a1010d466e6f0cc3ac5b8297eb21..61bd7afdafc77725c24c6af978578df0b2d8ca0f 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -1339,7 +1339,7 @@ public abstract class EntityLiving extends Entity {
                      }
  
                      this.ap = (float) (MathHelper.d(d1, d0) * 57.2957763671875D - (double) this.yaw);
@@ -53,7 +31,7 @@ index 646db2c9c3a05ac024ef43f65e9b8416154d7e90..2ac85eec14479415c0dd56e1aa255324
                  } else {
                      this.ap = (float) ((int) (Math.random() * 2.0D) * 180);
                  }
-@@ -1294,7 +1294,7 @@ public abstract class EntityLiving extends Entity {
+@@ -1387,7 +1387,7 @@ public abstract class EntityLiving extends Entity {
      }
  
      protected void e(EntityLiving entityliving) {
@@ -62,7 +40,7 @@ index 646db2c9c3a05ac024ef43f65e9b8416154d7e90..2ac85eec14479415c0dd56e1aa255324
      }
  
      private boolean f(DamageSource damagesource) {
-@@ -1537,6 +1537,11 @@ public abstract class EntityLiving extends Entity {
+@@ -1630,6 +1630,11 @@ public abstract class EntityLiving extends Entity {
      }
  
      public void a(float f, double d0, double d1) {
@@ -74,7 +52,7 @@ index 646db2c9c3a05ac024ef43f65e9b8416154d7e90..2ac85eec14479415c0dd56e1aa255324
          f = (float) ((double) f * (1.0D - this.b(GenericAttributes.KNOCKBACK_RESISTANCE)));
          if (f > 0.0F) {
              this.impulse = true;
-@@ -1544,6 +1549,16 @@ public abstract class EntityLiving extends Entity {
+@@ -1637,6 +1642,16 @@ public abstract class EntityLiving extends Entity {
              Vec3D vec3d1 = (new Vec3D(d0, 0.0D, d1)).d().a((double) f);
  
              this.setMot(vec3d.x / 2.0D - vec3d1.x, this.onGround ? Math.min(0.4D, vec3d.y / 2.0D + (double) f) : vec3d.y, vec3d.z / 2.0D - vec3d1.z);
@@ -91,3 +69,25 @@ index 646db2c9c3a05ac024ef43f65e9b8416154d7e90..2ac85eec14479415c0dd56e1aa255324
          }
      }
  
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 408732c59ed817c056671a78e43a734b048a818e..3c49d7acd4ad0717886adf6c469e8a49a58e859b 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -1177,7 +1177,7 @@ public abstract class EntityHuman extends EntityLiving {
+                     if (flag5) {
+                         if (i > 0) {
+                             if (entity instanceof EntityLiving) {
+-                                ((EntityLiving) entity).a((float) i * 0.5F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
++                                ((EntityLiving) entity).doKnockback((float) i * 0.5F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)), this); // Paper
+                             } else {
+                                 entity.i((double) (-MathHelper.sin(this.yaw * 0.017453292F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 0.017453292F) * (float) i * 0.5F));
+                             }
+@@ -1201,7 +1201,7 @@ public abstract class EntityHuman extends EntityLiving {
+                                 if (entityliving != this && entityliving != entity && !this.r(entityliving) && (!(entityliving instanceof EntityArmorStand) || !((EntityArmorStand) entityliving).isMarker()) && this.h((Entity) entityliving) < 9.0D) {
+                                     // CraftBukkit start - Only apply knockback if the damage hits
+                                     if (entityliving.damageEntity(DamageSource.playerAttack(this).sweep(), f4)) {
+-                                    entityliving.a(0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
++                                    entityliving.doKnockback(0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)), this); // Paper
+                                     }
+                                     // CraftBukkit end
+                                 }

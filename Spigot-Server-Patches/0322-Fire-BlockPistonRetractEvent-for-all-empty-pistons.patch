@@ -23,11 +23,11 @@ to WHY that was ever intended to be the case.
 Instead we opt to remove the check entirely so that the event fires for
 all piston types.
 
-diff --git a/src/main/java/net/minecraft/server/BlockPiston.java b/src/main/java/net/minecraft/server/BlockPiston.java
-index 9f56471cdd180950d279883b8da71700604a9e31..417d1a6c3dbd23905672a847939d92a953bbc91c 100644
---- a/src/main/java/net/minecraft/server/BlockPiston.java
-+++ b/src/main/java/net/minecraft/server/BlockPiston.java
-@@ -112,7 +112,7 @@ public class BlockPiston extends BlockDirectional {
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java b/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
+index 869aaae93bc83b8271644147bb569c868ab13fb8..7de86d6232eb84642fb6423a1b0a9f30d9df9f2b 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/BlockPiston.java
+@@ -141,7 +141,7 @@ public class BlockPiston extends BlockDirectional {
              }
  
              // CraftBukkit start
@@ -36,7 +36,7 @@ index 9f56471cdd180950d279883b8da71700604a9e31..417d1a6c3dbd23905672a847939d92a9
                  org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
                  BlockPistonRetractEvent event = new BlockPistonRetractEvent(block, ImmutableList.<org.bukkit.block.Block>of(), CraftBlock.notchToBlockFace(enumdirection));
                  world.getServer().getPluginManager().callEvent(event);
-@@ -120,7 +120,7 @@ public class BlockPiston extends BlockDirectional {
+@@ -149,7 +149,7 @@ public class BlockPiston extends BlockDirectional {
                  if (event.isCancelled()) {
                      return;
                  }

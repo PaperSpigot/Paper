@@ -12,24 +12,20 @@ Shulkers) may need to be changed in order for it to re-save properly
 
 No more crashing though.
 
-diff --git a/src/main/java/net/minecraft/server/CommandBlockListenerAbstract.java b/src/main/java/net/minecraft/server/CommandBlockListenerAbstract.java
-index e16f975e1babd2f08262cbbb42d7f47740525e97..e78809278b9159728722b2b33ad5dfae77e860ed 100644
---- a/src/main/java/net/minecraft/server/CommandBlockListenerAbstract.java
-+++ b/src/main/java/net/minecraft/server/CommandBlockListenerAbstract.java
-@@ -59,7 +59,7 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
-         this.command = nbttagcompound.getString("Command");
-         this.successCount = nbttagcompound.getInt("SuccessCount");
-         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
--            this.setName(IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName")));
-+            this.setName(MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound)); // Paper - Catch ParseException
-         }
- 
-         if (nbttagcompound.hasKeyOfType("TrackOutput", 1)) {
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 39174bca00b4535e92f6b325b3fd058ceae41f8b..816d55b17ea531bc2f25b92c003b127fe6e04112 100644
+index cd7dc7d90efddb8a1bb50cd964b43d18cf9c83d1..35d1444c5b75d9a3a6cface5dd70aea0a08ac89d 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -507,4 +507,19 @@ public final class MCUtil {
+@@ -7,6 +7,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
+ import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.EnumDirection;
++import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.level.ChunkCoordIntPair;
+@@ -514,4 +516,19 @@ public final class MCUtil {
                  return null;
          }
      }
@@ -49,11 +45,40 @@ index 39174bca00b4535e92f6b325b3fd058ceae41f8b..816d55b17ea531bc2f25b92c003b127f
 +        return null;
 +    }
  }
-diff --git a/src/main/java/net/minecraft/server/TileEntityBanner.java b/src/main/java/net/minecraft/server/TileEntityBanner.java
-index 4f886c4145325d8fd8217ae3f681632f0396689f..5397d8a69a0326cf73fe0ee1175d1871cac3769d 100644
---- a/src/main/java/net/minecraft/server/TileEntityBanner.java
-+++ b/src/main/java/net/minecraft/server/TileEntityBanner.java
-@@ -60,7 +60,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
+diff --git a/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java b/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
+index 94adf4d3b3a367e2a7fa383f1da6fb3b02b35c85..3fcdff3649c725580456dfc965d6c83bd5afe3da 100644
+--- a/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
++++ b/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
+@@ -12,6 +12,7 @@ import net.minecraft.commands.ICommandListener;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.chat.ChatComponentText;
+ import net.minecraft.network.chat.IChatBaseComponent;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.WorldServer;
+ import net.minecraft.util.UtilColor;
+@@ -72,7 +73,7 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
+         this.command = nbttagcompound.getString("Command");
+         this.successCount = nbttagcompound.getInt("SuccessCount");
+         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
+-            this.setName(IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName")));
++            this.setName(MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound)); // Paper - Catch ParseException
+         }
+ 
+         if (nbttagcompound.hasKeyOfType("TrackOutput", 1)) {
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+index fd8d39d04f39ea8aa389deb66ca0ddaa3e282c40..45958ffedca64e08e347ae65033700c0d798beb5 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagList;
+ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
+ import net.minecraft.network.protocol.game.PacketPlayOutTileEntityData;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.world.INamableTileEntity;
+ import net.minecraft.world.item.EnumColor;
+ import net.minecraft.world.item.ItemStack;
+@@ -70,7 +71,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
      public void load(IBlockData iblockdata, NBTTagCompound nbttagcompound) {
          super.load(iblockdata, nbttagcompound);
          if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
@@ -62,11 +87,19 @@ index 4f886c4145325d8fd8217ae3f681632f0396689f..5397d8a69a0326cf73fe0ee1175d1871
          }
  
          if (this.hasWorld()) {
-diff --git a/src/main/java/net/minecraft/server/TileEntityContainer.java b/src/main/java/net/minecraft/server/TileEntityContainer.java
-index 8f94b9c52c3842b9c32280499aee1b551dc16095..74390aebd353c969353a6efc0904bafe30774d65 100644
---- a/src/main/java/net/minecraft/server/TileEntityContainer.java
-+++ b/src/main/java/net/minecraft/server/TileEntityContainer.java
-@@ -17,7 +17,7 @@ public abstract class TileEntityContainer extends TileEntity implements IInvento
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityContainer.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityContainer.java
+index 19739ad1fb01c767288da2667a48909e4c1c36cc..fb7a1a854efcf42f0351ef521aff67d5fcc4ab27 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityContainer.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityContainer.java
+@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.network.chat.ChatMessage;
+ import net.minecraft.network.chat.IChatBaseComponent;
++import net.minecraft.server.MCUtil;
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.world.ChestLock;
+@@ -30,7 +31,7 @@ public abstract class TileEntityContainer extends TileEntity implements IInvento
          super.load(iblockdata, nbttagcompound);
          this.chestLock = ChestLock.b(nbttagcompound);
          if (nbttagcompound.hasKeyOfType("CustomName", 8)) {

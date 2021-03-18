@@ -5,11 +5,11 @@ Subject: [PATCH] Guard against serializing mismatching chunk coordinate
 
 Should help if something dumb happens
 
-diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index b09d9436d17159edd6733ab4856be44578353e3e..20388f4305957a83a678119dcda0249105125ab1 100644
---- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-+++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-@@ -24,6 +24,13 @@ public class ChunkRegionLoader {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+index c95fcdf47db8bfe59a83c0d28f4744b4d8540ef8..e16e046d165330326ed220c9c440a637007f3137 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkRegionLoader.java
+@@ -67,6 +67,13 @@ public class ChunkRegionLoader {
  
      private static final Logger LOGGER = LogManager.getLogger();
  
@@ -23,7 +23,7 @@ index b09d9436d17159edd6733ab4856be44578353e3e..20388f4305957a83a678119dcda02491
      // Paper start
      public static final class InProgressChunkHolder {
  
-@@ -49,8 +56,8 @@ public class ChunkRegionLoader {
+@@ -92,8 +99,8 @@ public class ChunkRegionLoader {
          // Paper end
          ChunkGenerator chunkgenerator = worldserver.getChunkProvider().getChunkGenerator();
          WorldChunkManager worldchunkmanager = chunkgenerator.getWorldChunkManager();
@@ -34,11 +34,19 @@ index b09d9436d17159edd6733ab4856be44578353e3e..20388f4305957a83a678119dcda02491
  
          if (!Objects.equals(chunkcoordintpair, chunkcoordintpair1)) {
              ChunkRegionLoader.LOGGER.error("Chunk file at {} is in the wrong location; relocating. (Expected {}, got {})", chunkcoordintpair, chunkcoordintpair, chunkcoordintpair1);
-diff --git a/src/main/java/net/minecraft/server/IChunkLoader.java b/src/main/java/net/minecraft/server/IChunkLoader.java
-index c0d2df8ef3b4d0224ede2b7a4ef4e3f930590209..582a5695bac7d078e3022b8ee70c512c0680d992 100644
---- a/src/main/java/net/minecraft/server/IChunkLoader.java
-+++ b/src/main/java/net/minecraft/server/IChunkLoader.java
-@@ -106,6 +106,13 @@ public class IChunkLoader implements AutoCloseable {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java b/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
+index 01ae13385dd0208c9f34da8b3897b571f86305d0..890362d28ab9cb760c73fe5014e144fb08ada6b8 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/IChunkLoader.java
+@@ -13,6 +13,7 @@ import net.minecraft.SharedConstants;
+ import net.minecraft.nbt.GameProfileSerializer;
+ import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.resources.ResourceKey;
++import net.minecraft.server.level.PlayerChunkMap;
+ import net.minecraft.util.datafix.DataFixTypes;
+ import net.minecraft.world.level.ChunkCoordIntPair;
+ import net.minecraft.world.level.World;
+@@ -123,6 +124,13 @@ public class IChunkLoader implements AutoCloseable {
  
      public void a(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) throws IOException { write(chunkcoordintpair, nbttagcompound); } // Paper OBFHELPER
      public void write(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) throws IOException { // Paper - OBFHELPER - (Switched around for safety)

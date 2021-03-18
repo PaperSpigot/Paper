@@ -5,7 +5,7 @@ Subject: [PATCH] Collision option for requiring a player participant
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 234d2daecc5d0bf6a99c0a5f4a87f947a15029d9..89f3a28c20f0e4db4650c435dbcbc923b7bde8aa 100644
+index bda4eeb032bea452ea368c679f96b2bd93118730..5801fe872aff240dc8209069b978d6a4dba30f06 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 @@ -716,6 +716,18 @@ public class PaperWorldConfig {
@@ -27,11 +27,11 @@ index 234d2daecc5d0bf6a99c0a5f4a87f947a15029d9..89f3a28c20f0e4db4650c435dbcbc923
      public int wanderingTraderSpawnMinuteTicks = 1200;
      public int wanderingTraderSpawnDayTicks = 24000;
      public int wanderingTraderSpawnChanceFailureIncrement = 25;
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index f9d7419e376268b00db2eb98a3db4116bdb72bd8..f307a6361144c7e315b2e0ea45df27527cdb26ca 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -1375,6 +1375,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index d801486565865cf3b56e9d80b7c1643e9b0f4597..f7223f214f911dd25abcf3a52745588ec630241d 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1467,6 +1467,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
      public void collide(Entity entity) {
          if (!this.isSameVehicle(entity)) {
              if (!entity.noclip && !this.noclip) {
@@ -39,11 +39,19 @@ index f9d7419e376268b00db2eb98a3db4116bdb72bd8..f307a6361144c7e315b2e0ea45df2752
                  double d0 = entity.locX() - this.locX();
                  double d1 = entity.locZ() - this.locZ();
                  double d2 = MathHelper.a(d0, d1);
-diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
-index da84cf98022b771bdf0c9d0b284aa7d4d59318e0..baa4a61114e7460c74027e1519332f0dd9582647 100644
---- a/src/main/java/net/minecraft/server/EntityBoat.java
-+++ b/src/main/java/net/minecraft/server/EntityBoat.java
-@@ -186,6 +186,7 @@ public class EntityBoat extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
+index 2609b83573e0e8532e6c4c36d4f475bf0da6a354..069076d3c7165440217a7632b089ab2aa0fbdb1d 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityBoat.java
+@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.sounds.SoundEffect;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.tags.Tag;
+@@ -230,6 +231,7 @@ public class EntityBoat extends Entity {
  
      @Override
      public void collide(Entity entity) {
@@ -51,11 +59,19 @@ index da84cf98022b771bdf0c9d0b284aa7d4d59318e0..baa4a61114e7460c74027e1519332f0d
          if (entity instanceof EntityBoat) {
              if (entity.getBoundingBox().minY < this.getBoundingBox().maxY) {
                  // CraftBukkit start
-diff --git a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-index efe5c0cecaf12ef921f6d32ff6670eff051bf323..022dfdc5b6af4b243e7e4da8660e8e41d04e1a30 100644
---- a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-+++ b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
-@@ -729,6 +729,7 @@ public abstract class EntityMinecartAbstract extends Entity {
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
+index 2e3ceab3e34f7756764b3471b13d48d1263ecba9..57821301ef031995e6044a17b46c70a693322455 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/EntityMinecartAbstract.java
+@@ -21,6 +21,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.tags.Tag;
+ import net.minecraft.tags.TagsBlock;
+ import net.minecraft.util.MathHelper;
+@@ -767,6 +768,7 @@ public abstract class EntityMinecartAbstract extends Entity {
      public void collide(Entity entity) {
          if (!this.world.isClientSide) {
              if (!entity.noclip && !this.noclip) {

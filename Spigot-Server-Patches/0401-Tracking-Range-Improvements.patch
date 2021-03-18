@@ -7,11 +7,11 @@ Sets tracking range of watermobs to animals instead of misc and simplifies code
 
 Also ignores Enderdragon, defaulting it to Mojang's setting
 
-diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 938439d22f47fb18b36c145c4f4ea355f8405673..08eaaabb712c7a6c9b6631d62874a72e96bf73d5 100644
---- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
-+++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -1741,6 +1741,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 9c5b1dd305567f09a23a3f189d4dadba323b643e..4be5f3be285b1944eee66684c1a565ac1eceb024 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -1789,6 +1789,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              while (iterator.hasNext()) {
                  Entity entity = (Entity) iterator.next();
                  int j = entity.getEntityType().getChunkRange() * 16;
@@ -20,19 +20,10 @@ index 938439d22f47fb18b36c145c4f4ea355f8405673..08eaaabb712c7a6c9b6631d62874a72e
                  if (j > i) {
                      i = j;
 diff --git a/src/main/java/org/spigotmc/TrackingRange.java b/src/main/java/org/spigotmc/TrackingRange.java
-index 646811932e9703510679080dd93586a3389aace9..03990231a8b6bc6925f054e9033825316abfafcc 100644
+index 0449451142d59e828a32fe237751c7d8484894a2..3277a8aaffb6a25624967aa0c62f61309a517739 100644
 --- a/src/main/java/org/spigotmc/TrackingRange.java
 +++ b/src/main/java/org/spigotmc/TrackingRange.java
-@@ -1,6 +1,8 @@
- package org.spigotmc;
- 
- import net.minecraft.server.Entity;
-+import net.minecraft.server.EntityEnderDragon; // Paper
-+import net.minecraft.server.WorldServer; // Paper
- import net.minecraft.server.EntityExperienceOrb;
- import net.minecraft.server.EntityGhast;
- import net.minecraft.server.EntityItem;
-@@ -25,26 +27,26 @@ public class TrackingRange
+@@ -25,26 +25,26 @@ public class TrackingRange
          if ( entity instanceof EntityPlayer )
          {
              return config.playerTrackingRange;
@@ -70,7 +61,7 @@ index 646811932e9703510679080dd93586a3389aace9..03990231a8b6bc6925f054e903382531
              return config.miscTrackingRange;
          } else
          {
-+            if (entity instanceof EntityEnderDragon) return ((WorldServer)(entity.getWorld())).getChunkProvider().playerChunkMap.getLoadViewDistance(); // Paper - enderdragon is exempt
++            if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon) return ((net.minecraft.server.level.WorldServer)(entity.getWorld())).getChunkProvider().playerChunkMap.getLoadViewDistance(); // Paper - enderdragon is exempt
              return config.otherTrackingRange;
          }
      }

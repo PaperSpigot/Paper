@@ -5,15 +5,15 @@ Subject: [PATCH] Merchant#getRecipes should return an immutable list
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchant.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchant.java
-index 50bc720d4268804f53b204091c9e8f0c17d8dd23..7159d73ac5c3ef881d9635d64e82847ac3731e22 100644
+index 00d43e4a77ed03bc9672cbaccad50b48aed0fb93..3c66d9217eb0b60595a59e2f296de332095d4a4c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchant.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchant.java
 @@ -25,7 +25,7 @@ public class CraftMerchant implements Merchant {
  
      @Override
      public List<MerchantRecipe> getRecipes() {
--        return Collections.unmodifiableList(Lists.transform(merchant.getOffers(), new Function<net.minecraft.server.MerchantRecipe, MerchantRecipe>() {
-+        return com.google.common.collect.ImmutableList.copyOf(Lists.transform(merchant.getOffers(), new Function<net.minecraft.server.MerchantRecipe, MerchantRecipe>() { // Paper - javadoc says 'an immutable list of trades' - not 'an unmodifiable view of a list of trades'. fixes issue with setRecipes(getRecipes())
+-        return Collections.unmodifiableList(Lists.transform(merchant.getOffers(), new Function<net.minecraft.world.item.trading.MerchantRecipe, MerchantRecipe>() {
++        return com.google.common.collect.ImmutableList.copyOf(Lists.transform(merchant.getOffers(), new Function<net.minecraft.world.item.trading.MerchantRecipe, MerchantRecipe>() { // Paper - javadoc says 'an immutable list of trades' - not 'an unmodifiable view of a list of trades'. fixes issue with setRecipes(getRecipes())
              @Override
-             public MerchantRecipe apply(net.minecraft.server.MerchantRecipe recipe) {
+             public MerchantRecipe apply(net.minecraft.world.item.trading.MerchantRecipe recipe) {
                  return recipe.asBukkit();

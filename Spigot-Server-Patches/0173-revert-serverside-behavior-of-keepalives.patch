@@ -16,11 +16,11 @@ whereas higher values will make this less sensitive to issues such as spikes
 from networking or during connections flood of chunk packets on slower clients,
  at the cost of dead connections being kept open for longer.
 
-diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 5ca6891f312092940607d82575b2e08d226efa4d..1b1de63c405a1e9a62787be11ac1ee3029ffc828 100644
---- a/src/main/java/net/minecraft/server/PlayerConnection.java
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -76,7 +76,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 9b0d00220406cf20421607ae234f4c0d674681bb..54a5b988e5dc8eec35cf91d45f282926d81a0043 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -221,7 +221,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private final MinecraftServer minecraftServer;
      public EntityPlayer player;
      private int e;
@@ -29,7 +29,7 @@ index 5ca6891f312092940607d82575b2e08d226efa4d..1b1de63c405a1e9a62787be11ac1ee30
      private boolean awaitingKeepAlive; private void setPendingPing(boolean isPending) { this.awaitingKeepAlive = isPending;}; private boolean isPendingPing() { return this.awaitingKeepAlive;}; // Paper - OBFHELPER
      private long h; private void setKeepAliveID(long keepAliveID) { this.h = keepAliveID;}; private long getKeepAliveID() {return this.h; };  // Paper - OBFHELPER
      // CraftBukkit start - multithreaded fields
-@@ -107,6 +107,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -252,6 +252,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private int E;
      private int receivedMovePackets;
      private int processedMovePackets;
@@ -37,7 +37,7 @@ index 5ca6891f312092940607d82575b2e08d226efa4d..1b1de63c405a1e9a62787be11ac1ee30
  
      public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
          this.minecraftServer = minecraftserver;
-@@ -193,18 +194,25 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -338,18 +339,25 @@ public class PlayerConnection implements PacketListenerPlayIn {
          }
  
          this.minecraftServer.getMethodProfiler().enter("keepAlive");

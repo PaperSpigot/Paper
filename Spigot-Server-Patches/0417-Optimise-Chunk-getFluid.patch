@@ -7,11 +7,11 @@ Removing the try catch and generally reducing ops should make it
 faster on its own, however removing the try catch makes it
 easier to inline due to code size
 
-diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 81504bfbbd4a987c95f35d0f25754dbf8b2487e4..8e91a0270a7a72f09dfc86331a788765de1f9f5e 100644
---- a/src/main/java/net/minecraft/server/Chunk.java
-+++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -390,17 +390,20 @@ public class Chunk implements IChunkAccess {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index fc55e89260fdec2c5045e8f00e091191980ff1f2..bb2ff043f0d159fa18769c31b08683ee12037c58 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -431,17 +431,20 @@ public class Chunk implements IChunkAccess {
      }
  
      public Fluid a(int i, int j, int k) {
@@ -39,7 +39,7 @@ index 81504bfbbd4a987c95f35d0f25754dbf8b2487e4..8e91a0270a7a72f09dfc86331a788765
              CrashReport crashreport = CrashReport.a(throwable, "Getting fluid state");
              CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being got");
  
-@@ -409,6 +412,7 @@ public class Chunk implements IChunkAccess {
+@@ -450,6 +453,7 @@ public class Chunk implements IChunkAccess {
              });
              throw new ReportedException(crashreport);
          }
@@ -47,11 +47,11 @@ index 81504bfbbd4a987c95f35d0f25754dbf8b2487e4..8e91a0270a7a72f09dfc86331a788765
      }
  
      // CraftBukkit start
-diff --git a/src/main/java/net/minecraft/server/ChunkSection.java b/src/main/java/net/minecraft/server/ChunkSection.java
-index 668942c629732b8d46b7f2646df8e7827baae240..39572cdce691a459cb9df0cc064fbf7bde83a99e 100644
---- a/src/main/java/net/minecraft/server/ChunkSection.java
-+++ b/src/main/java/net/minecraft/server/ChunkSection.java
-@@ -38,7 +38,7 @@ public class ChunkSection {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+index 4bc26a7a4ae91aac90c256758ec8868d83027c0c..973aa060d6964c7d470bc7aff89b879daf1df153 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkSection.java
+@@ -45,7 +45,7 @@ public class ChunkSection {
      }
  
      public Fluid b(int i, int j, int k) {

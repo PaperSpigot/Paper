@@ -5,11 +5,11 @@ Subject: [PATCH] Remote Connections shouldn't hold up shutdown
 
 Bugs in the connection logic appears to leave stale connections even, preventing shutdown
 
-diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index bec26885108442c8e22cdddf5e764ecab6994dca..a4db2527ff2defcfd25f08dd24722a37794a4a7e 100644
---- a/src/main/java/net/minecraft/server/DedicatedServer.java
-+++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -361,11 +361,11 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 2d42b863b3fd83d1ee0532d1fcb63861641ec47b..557f80accfa36b495c9a8cffdab2e248c1cbb514 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -400,11 +400,11 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
          }
  
          if (this.remoteControlListener != null) {

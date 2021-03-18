@@ -6,11 +6,11 @@ Subject: [PATCH] Don't tick dead players
 Causes sync chunk loads and who knows what all else.
 This is safe because Spectators are skipped in unloaded chunks too in vanilla.
 
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index e60dac038e8a414a45f8dab465d722ee3fb5ef54..cfccab0b33dfa387fdab09ad51d518d42b1b5775 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -480,7 +480,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 84b0f40edaff726e63f16611b364a692b332ae2b..da16b5773e182a10dca8c91b53b9aba7e924d22b 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -608,7 +608,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      public void playerTick() {
          try {

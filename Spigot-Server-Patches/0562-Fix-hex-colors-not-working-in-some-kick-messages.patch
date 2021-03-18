@@ -4,11 +4,11 @@ Date: Thu, 27 Aug 2020 16:57:25 -0400
 Subject: [PATCH] Fix hex colors not working in some kick messages
 
 
-diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index a9337dc61d6370453a15ad284e44ad071e00572f..5843632fedafbd3e5cafd799cc779c39c9866c76 100644
---- a/src/main/java/net/minecraft/server/HandshakeListener.java
-+++ b/src/main/java/net/minecraft/server/HandshakeListener.java
-@@ -35,7 +35,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index 6d001843d8f899e91f19c384ddf57e6987bfb79e..b97d289afdff81d9959e238639f4e3e186f8e9c8 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -46,7 +46,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                      synchronized (throttleTracker) {
                          if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
                              throttleTracker.put(address, currentTime);
@@ -17,7 +17,7 @@ index a9337dc61d6370453a15ad284e44ad071e00572f..5843632fedafbd3e5cafd799cc779c39
                              this.c.sendPacket(new PacketLoginOutDisconnect(chatmessage));
                              this.c.close(chatmessage);
                              return;
-@@ -61,12 +61,12 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -72,12 +72,12 @@ public class HandshakeListener implements PacketHandshakingInListener {
                  }
                  // CraftBukkit end
                  if (packethandshakinginsetprotocol.c() != SharedConstants.getGameVersion().getProtocolVersion()) {
@@ -33,7 +33,7 @@ index a9337dc61d6370453a15ad284e44ad071e00572f..5843632fedafbd3e5cafd799cc779c39
                      }
  
                      this.c.sendPacket(new PacketLoginOutDisconnect(chatmessage));
-@@ -83,7 +83,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -94,7 +94,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                      if (event.callEvent()) {
                          // If we've failed somehow, let the client know so and go no further.
                          if (event.isFailed()) {
@@ -42,11 +42,11 @@ index a9337dc61d6370453a15ad284e44ad071e00572f..5843632fedafbd3e5cafd799cc779c39
                              this.getNetworkManager().sendPacket(new PacketLoginOutDisconnect(chatmessage));
                              this.getNetworkManager().close(chatmessage);
                              return;
-diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index bdd4766976902e11411728e6faa93b7e43a7ba22..6be12b7ae8501c22a7c544638c44fc6faedd5b07 100644
---- a/src/main/java/net/minecraft/server/LoginListener.java
-+++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -86,14 +86,7 @@ public class LoginListener implements PacketLoginInListener {
+diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
+index 39aa50a386d0ab94914cd8f85c69cf404e0dc4b2..185667110cd6f566b23546728d20fc79223f3c92 100644
+--- a/src/main/java/net/minecraft/server/network/LoginListener.java
++++ b/src/main/java/net/minecraft/server/network/LoginListener.java
+@@ -106,14 +106,7 @@ public class LoginListener implements PacketLoginInListener {
      // CraftBukkit start
      @Deprecated
      public void disconnect(String s) {

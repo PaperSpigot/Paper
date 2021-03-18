@@ -5,11 +5,11 @@ Subject: [PATCH] Use a Shared Random for Entities
 
 Reduces memory usage and provides ensures more randomness, Especially since a lot of garbage entity objects get created.
 
-diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 31857636a08eeb281b4d21dd72811d40eb00055c..dba28796a921beda2e5d15ba1565c55f54e36435 100644
---- a/src/main/java/net/minecraft/server/Entity.java
-+++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -58,6 +58,21 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index b7df4d8eb3ccb9e8dc85898352f41c5c20abcb34..6cbb797cb0de4b26d8ddd7f0bf567f49bd36f9c0 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -143,6 +143,21 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
      }
  
@@ -31,7 +31,7 @@ index 31857636a08eeb281b4d21dd72811d40eb00055c..dba28796a921beda2e5d15ba1565c55f
      private CraftEntity bukkitEntity;
  
      public CraftEntity getBukkitEntity() {
-@@ -187,7 +202,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -272,7 +287,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
          this.x = Vec3D.ORIGIN;
          this.am = 1.0F;
          this.an = 1.0F;
