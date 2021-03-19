@@ -5,10 +5,10 @@ Subject: [PATCH] Can Fly Fall Damage
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
-index cc2127b26e41182c14fa95afde878e9b5100a117..58783db61a790457d8cd73ec68499c8e26c0ad03 100644
+index ec0956a98c133bcd3d4f92f696c667eab6ff98f1..fdc469d9d9f708e67d21757ac2227da261a7b532 100644
 --- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
 +++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
-@@ -72,6 +72,7 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -169,6 +169,7 @@ public abstract class EntityHuman extends EntityLiving {
      public EntityFishingHook hookedFish;
      // Paper start
      public boolean affectsSpawning = true;
@@ -16,7 +16,7 @@ index cc2127b26e41182c14fa95afde878e9b5100a117..58783db61a790457d8cd73ec68499c8e
      // Paper end
  
      // CraftBukkit start
-@@ -1511,7 +1512,7 @@ public abstract class EntityHuman extends EntityLiving {
+@@ -1608,7 +1609,7 @@ public abstract class EntityHuman extends EntityLiving {
  
      @Override
      public boolean b(float f, float f1) {
@@ -26,15 +26,26 @@ index cc2127b26e41182c14fa95afde878e9b5100a117..58783db61a790457d8cd73ec68499c8e
          } else {
              if (f >= 2.0F) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-index fc1cf7cc6b26171c0baf623f04f6b495d5adf517..d8fc028758fde6ecac31d2a399aa93b86bbe47a8 100644
+index b99423b3b413fc6364c6530a99e3c74dd406e1b4..6f2143fe7e6980561ad93d0ee6cdb2a3608a09d3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-@@ -698,7 +698,19 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
-         teSign.isEditable = true;
+@@ -701,6 +701,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
          getHandle().openSign(teSign);
      }
+     // Paper end
 +
-+    // Add method to enable fall damage if you have the allowFlight attribute
+     @Override
+     public boolean dropItem(boolean dropAll) {
+         return getHandle().dropItem(dropAll);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index e5549439b3d4d608cf37dd33b6c8c9e10dfe9328..16eecdfdaac84d41f09e26bb1f51e07270f60625 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1733,6 +1733,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         getHandle().updateAbilities();
+     }
+ 
++    // Paper start - Add method to enable fall damage if you have the allowFlight attribute
 +    @Override
 +    public void setEnableFallDamageWhileAllowFlight(boolean fallDamage) {
 +        getHandle().enableFallDamageWhileAllowFlight = fallDamage;
@@ -44,8 +55,8 @@ index fc1cf7cc6b26171c0baf623f04f6b495d5adf517..d8fc028758fde6ecac31d2a399aa93b8
 +    public boolean getEnableFallDamageWhileAllowFlight() {
 +        return getHandle().enableFallDamageWhileAllowFlight;
 +    }
-     // Paper end
++    // Paper end
 +
      @Override
-     public boolean dropItem(boolean dropAll) {
-         return getHandle().dropItem(dropAll);
+     public int getNoDamageTicks() {
+         if (getHandle().invulnerableTicks > 0) {

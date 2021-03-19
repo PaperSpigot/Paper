@@ -4,33 +4,30 @@ Date: Sat, 13 Mar 2021 13:55:27 -0700
 Subject: [PATCH] Can Fly Fall Damage
 
 
-diff --git a/src/main/java/org/bukkit/entity/HumanEntity.java b/src/main/java/org/bukkit/entity/HumanEntity.java
-index f0e0710fef5a3e0b722ece7ccf89c3d0f88f8f0f..70b2617dc9ef4cdaa04ad499f7d3211c50e42315 100644
---- a/src/main/java/org/bukkit/entity/HumanEntity.java
-+++ b/src/main/java/org/bukkit/entity/HumanEntity.java
-@@ -576,6 +576,25 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder
-      * @param sign The sign to open
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 2ea531eaef8c455fdd503f0c0258813fe9136085..07060b87100136fa5df6d751af51e50ea3d12021 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1184,6 +1184,22 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
-     void openSign(@NotNull org.bukkit.block.Sign sign);
-+
-+    // Add method to enable fall damage if you have the allowFlight attribute
+     public void setAllowFlight(boolean flight);
+ 
++    // Paper start - Add method to enable fall damage if you have the allowFlight attribute
 +    /**
-+     * Allows you to enable fall damage while {@link Player#getAllowFlight()} is true
-+     * <br>
-+     * Get with {@link #getEnableFallDamageWhileAllowFlight()}
++     * Allows you to enable fall damage while {@link #getAllowFlight()} is {@code true}
 +     *
-+     * @param fallDamage Enables fall damage with allowFlight is true
++     * @param fallDamage Enables fall damage when {@link #getAllowFlight()} is true
 +     */
 +    void setEnableFallDamageWhileAllowFlight(boolean fallDamage);
 +
 +    /**
-+     * Allows you get if fall damage is enabled while {@link Player#getAllowFlight()} is true
-+     * <br>
-+     * Set with {@link #setEnableFallDamageWhileAllowFlight(boolean)}
++     * Allows you get if fall damage is enabled while {@link #getAllowFlight()} is {@code true}
 +     *
-+     * @return True if fall damage is enabled with the allowFlight attribute
++     * @return True if fall damage is enabled when {@link #getAllowFlight()} is true
 +     */
 +    boolean getEnableFallDamageWhileAllowFlight();
-     // Paper end
- 
++    // Paper end
++
      /**
+      * Hides a player from this player
+      *
