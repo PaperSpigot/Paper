@@ -8,10 +8,10 @@ World checks and the Chunk Add logic are inconsistent on how Y > 256, < 0, is tr
 Keep them consistent
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index fd7767d420fe58b1bbd4d8f20d7a7bd8048afe31..1e9884e819ac2afe58b5f50b89355c2d58ed73d5 100644
+index 77da590174771ddf9c91344577fef06ef3fc08a9..42aa20f67b3feb62f0468f7de7593302ba2a6a68 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -845,7 +845,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -844,7 +844,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          if (entity.cl()) {
              this.getMethodProfiler().enter("chunkCheck");
              int i = MathHelper.floor(entity.locX() / 16.0D);

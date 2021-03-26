@@ -6,18 +6,10 @@ Subject: [PATCH] Remove some streams from structures
 This showed up a lot in the spark profiler, should have a low-medium performance improvement.
 
 diff --git a/src/main/java/net/minecraft/world/level/StructureManager.java b/src/main/java/net/minecraft/world/level/StructureManager.java
-index a6a3bd3d60c30859b5a59e057d430c826d93e83c..1077f988e16688f74c9e40d6da517c954cb06ecb 100644
+index a6a3bd3d60c30859b5a59e057d430c826d93e83c..883ca9ea1d81b44538d43eaa13e4a148a9485dfb 100644
 --- a/src/main/java/net/minecraft/world/level/StructureManager.java
 +++ b/src/main/java/net/minecraft/world/level/StructureManager.java
-@@ -1,6 +1,7 @@
- package net.minecraft.world.level;
- 
- import com.mojang.datafixers.DataFixUtils;
-+import it.unimi.dsi.fastutil.objects.ObjectArrayList; // Paper
- import java.util.stream.Stream;
- import javax.annotation.Nullable;
- import net.minecraft.core.BaseBlockPosition;
-@@ -11,11 +12,12 @@ import net.minecraft.world.level.chunk.ChunkStatus;
+@@ -11,11 +11,12 @@ import net.minecraft.world.level.chunk.ChunkStatus;
  import net.minecraft.world.level.chunk.IStructureAccess;
  import net.minecraft.world.level.levelgen.GeneratorSettings;
  import net.minecraft.world.level.levelgen.feature.StructureGenerator;
@@ -31,13 +23,13 @@ index a6a3bd3d60c30859b5a59e057d430c826d93e83c..1077f988e16688f74c9e40d6da517c95
      private final GeneratorSettings b;
  
      public StructureManager(GeneratorAccess generatoraccess, GeneratorSettings generatorsettings) {
-@@ -41,6 +43,20 @@ public class StructureManager {
+@@ -41,6 +42,20 @@ public class StructureManager {
          });
      }
  
 +    // Paper start - remove structure streams
 +    public java.util.List<StructureStart<?>> getFeatureStarts(SectionPosition sectionPosition, StructureGenerator<?> structureGenerator) {
-+        java.util.List<StructureStart<?>> list = new ObjectArrayList<>();
++        java.util.List<StructureStart<?>> list = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +        for (Long curLong: getLevel().getChunkAt(sectionPosition.a(), sectionPosition.c(), ChunkStatus.STRUCTURE_REFERENCES).b(structureGenerator)) {
 +            SectionPosition sectionPosition1 = SectionPosition.a(new ChunkCoordIntPair(curLong), 0);
 +            StructureStart<?> structurestart = a(sectionPosition1, structureGenerator, getLevel().getChunkAt(sectionPosition1.a(), sectionPosition1.c(), ChunkStatus.STRUCTURE_STARTS));
@@ -52,7 +44,7 @@ index a6a3bd3d60c30859b5a59e057d430c826d93e83c..1077f988e16688f74c9e40d6da517c95
      @Nullable
      public StructureStart<?> a(SectionPosition sectionposition, StructureGenerator<?> structuregenerator, IStructureAccess istructureaccess) {
          return istructureaccess.a(structuregenerator);
-@@ -59,13 +75,21 @@ public class StructureManager {
+@@ -59,13 +74,21 @@ public class StructureManager {
      }
  
      public StructureStart<?> a(BlockPosition blockposition, boolean flag, StructureGenerator<?> structuregenerator) {

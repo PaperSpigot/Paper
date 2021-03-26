@@ -5,7 +5,7 @@ Subject: [PATCH] Cache user authenticator threads
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 82085f30e4eefa1867536a8c591210380ebad725..fa315f10219dc340da4f51a8d4a78e1f33023bb3 100644
+index d2cd55ba8f2a66c7f49a0b607d094fa71123a4ac..bf434b4aacf1d25d7994b31d271b7bf939b318c2 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
@@ -18,7 +18,7 @@ index 82085f30e4eefa1867536a8c591210380ebad725..fa315f10219dc340da4f51a8d4a78e1f
  import java.util.Iterator;
  import java.util.List;
  import java.util.Optional;
-@@ -171,7 +173,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -170,7 +172,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public PlayerConnection playerConnection;
      public final MinecraftServer server;
      public final PlayerInteractManager playerInteractManager;
@@ -27,7 +27,7 @@ index 82085f30e4eefa1867536a8c591210380ebad725..fa315f10219dc340da4f51a8d4a78e1f
      private final AdvancementDataPlayer advancementDataPlayer;
      private final ServerStatisticManager serverStatisticManager;
      private float lastHealthScored = Float.MIN_VALUE;
-@@ -549,13 +551,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -548,13 +550,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          while (!this.removeQueue.isEmpty()) {
              int i = Math.min(this.removeQueue.size(), Integer.MAX_VALUE);
              int[] aint = new int[i];
@@ -50,7 +50,7 @@ index 82085f30e4eefa1867536a8c591210380ebad725..fa315f10219dc340da4f51a8d4a78e1f
  
              this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
          }
-@@ -1552,7 +1561,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1551,7 +1560,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.lastHealthSent = -1.0F;
          this.lastFoodSent = -1;
          // this.recipeBook.a((RecipeBook) entityplayer.recipeBook); // CraftBukkit

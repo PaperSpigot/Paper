@@ -6,10 +6,10 @@ Subject: [PATCH] Remove unused World Tile Entity List
 Massive hit to performance and it is completely unnecessary.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index acff0752aba49bb360d944e5f648b80a82bc984d..e96a92119dce25c34509e502e8dce8596af6fd67 100644
+index a57486210ae36f6a3f73b24ec9a97f2342c661df..61d8854fd38f877e07b16388f94528bd55231025 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1720,7 +1720,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1719,7 +1719,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              }
  
              bufferedwriter.write(String.format("entities: %d\n", this.entitiesById.size()));
@@ -18,7 +18,7 @@ index acff0752aba49bb360d944e5f648b80a82bc984d..e96a92119dce25c34509e502e8dce859
              bufferedwriter.write(String.format("block_ticks: %d\n", this.getBlockTickList().a()));
              bufferedwriter.write(String.format("fluid_ticks: %d\n", this.getFluidTickList().a()));
              bufferedwriter.write("distance_manager: " + playerchunkmap.e().c() + "\n");
-@@ -1859,7 +1859,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1858,7 +1858,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
      private void a(Writer writer) throws IOException {
          CSVWriter csvwriter = CSVWriter.a().a("x").a("y").a("z").a("type").a(writer);
@@ -28,7 +28,7 @@ index acff0752aba49bb360d944e5f648b80a82bc984d..e96a92119dce25c34509e502e8dce859
          while (iterator.hasNext()) {
              TileEntity tileentity = (TileEntity) iterator.next();
 diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
-index 7611481db980a230d42b3cec1d81fae2622ca634..2bb85896df999675d33f70a90f1c68865099ee83 100644
+index 8da8141c2320c0c1a9b95826a9be2dbe22e11c14..cad86b0273c05767f78bcb3bdfaa9ea01e26af4e 100644
 --- a/src/main/java/net/minecraft/world/level/World.java
 +++ b/src/main/java/net/minecraft/world/level/World.java
 @@ -91,7 +91,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {

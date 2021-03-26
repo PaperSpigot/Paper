@@ -14,10 +14,10 @@ behaviour, we need to move all of this dangerous logic outside
 of the move call and into an appropriate place in the tick method.
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index d8be5ff9620da8d96a0d157fb99145d3b43299df..caabb6c831ba280ef6b74ba8aee94c9c3375f38b 100644
+index 845472c5a013f02e7a206958c2ea91ff9888d88e..3f78e0f1bc6119f19c46dff0e892d7d5a012b8bf 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -1324,6 +1324,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1322,6 +1322,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
                              this.player.move(EnumMoveType.PLAYER, new Vec3D(d7, d8, d9));
                              this.player.setOnGround(packetplayinflying.b()); // CraftBukkit - SPIGOT-5810, SPIGOT-5835: reset by this.player.move

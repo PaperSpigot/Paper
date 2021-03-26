@@ -1,0 +1,100 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 20 Dec 2020 16:41:44 -0800
+Subject: [PATCH] Added WorldGameRuleChangeEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/commands/CommandGamerule.java b/src/main/java/net/minecraft/server/commands/CommandGamerule.java
+index 5b5c5d1299c267f620f5c59873b261a7b7e382a9..feebe4812ff7aec17a50cb5f2789fe88e10a5032 100644
+--- a/src/main/java/net/minecraft/server/commands/CommandGamerule.java
++++ b/src/main/java/net/minecraft/server/commands/CommandGamerule.java
+@@ -31,7 +31,7 @@ public class CommandGamerule {
+         CommandListenerWrapper commandlistenerwrapper = (CommandListenerWrapper) commandcontext.getSource();
+         T t0 = commandlistenerwrapper.getWorld().getGameRules().get(gamerules_gamerulekey); // CraftBukkit
+ 
+-        t0.b(commandcontext, "value");
++        t0.setValue(commandcontext, "value", gamerules_gamerulekey); // Paper
+         commandlistenerwrapper.sendMessage(new ChatMessage("commands.gamerule.set", new Object[]{gamerules_gamerulekey.a(), t0.toString()}), true);
+         return t0.getIntValue();
+     }
+diff --git a/src/main/java/net/minecraft/world/level/GameRules.java b/src/main/java/net/minecraft/world/level/GameRules.java
+index 276c28170b2a177dab6b2a0d5425044cd9f8df22..6b3e0df6e517c76d7e8904e29d274ff93d6ad98a 100644
+--- a/src/main/java/net/minecraft/world/level/GameRules.java
++++ b/src/main/java/net/minecraft/world/level/GameRules.java
+@@ -177,8 +177,11 @@ public class GameRules {
+         }
+ 
+         @Override
+-        protected void a(CommandContext<CommandListenerWrapper> commandcontext, String s) {
+-            this.b = BoolArgumentType.getBool(commandcontext, s);
++        protected void a(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<GameRuleBoolean> gameRuleKey) { // Paper start
++            io.papermc.paper.event.world.WorldGameRuleChangeEvent event = new io.papermc.paper.event.world.WorldGameRuleChangeEvent(commandcontext.getSource().getBukkitWorld(), commandcontext.getSource().getBukkitSender(), (org.bukkit.GameRule<Boolean>) org.bukkit.GameRule.getByName(gameRuleKey.toString()), String.valueOf(BoolArgumentType.getBool(commandcontext, s)));
++            if (!event.callEvent()) return;
++            this.b = Boolean.parseBoolean(event.getValue());
++            // Paper end
+         }
+ 
+         public boolean a() {
+@@ -237,8 +240,11 @@ public class GameRules {
+         }
+ 
+         @Override
+-        protected void a(CommandContext<CommandListenerWrapper> commandcontext, String s) {
+-            this.b = IntegerArgumentType.getInteger(commandcontext, s);
++        protected void a(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<GameRuleInt> gameRuleKey) { // Paper start
++            io.papermc.paper.event.world.WorldGameRuleChangeEvent event = new io.papermc.paper.event.world.WorldGameRuleChangeEvent(commandcontext.getSource().getBukkitWorld(), commandcontext.getSource().getBukkitSender(), (org.bukkit.GameRule<Integer>) org.bukkit.GameRule.getByName(gameRuleKey.toString()), String.valueOf(IntegerArgumentType.getInteger(commandcontext, s)));
++            if (!event.callEvent()) return;
++            this.b = Integer.parseInt(event.getValue());
++            // Paper end
+         }
+ 
+         public int a() {
+@@ -291,10 +297,12 @@ public class GameRules {
+             this.a = gamerules_gameruledefinition;
+         }
+ 
+-        protected abstract void a(CommandContext<CommandListenerWrapper> commandcontext, String s);
++        protected void updateValue(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<T> gameRuleKey) { this.a(commandcontext, s, gameRuleKey); } // Paper - OBFHELPER
++        protected abstract void a(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<T> gameRuleKey); // Paper
+ 
+-        public void b(CommandContext<CommandListenerWrapper> commandcontext, String s) {
+-            this.a(commandcontext, s);
++        public void setValue(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<T> gameRuleKey) { this.b(commandcontext, s, gameRuleKey); } // Paper - OBFHELPER
++        public void b(CommandContext<CommandListenerWrapper> commandcontext, String s, GameRules.GameRuleKey<T> gameRuleKey) { // Paper
++            this.updateValue(commandcontext, s, gameRuleKey); // Paper
+             this.onChange(((CommandListenerWrapper) commandcontext.getSource()).getServer());
+         }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 50b6829394af843350d70604d9151453e4c8bbef..2008e05c090e6a390d4210f2e8ed6ff75fb99e89 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2364,8 +2364,13 @@ public class CraftWorld implements World {
+ 
+         if (!isGameRule(rule)) return false;
+ 
++        // Paper start
++        GameRule<?> gameRule = GameRule.getByName(rule);
++        io.papermc.paper.event.world.WorldGameRuleChangeEvent event = new io.papermc.paper.event.world.WorldGameRuleChangeEvent(this, null, gameRule, value);
++        if (!event.callEvent()) return false;
++        // Paper end
+         GameRules.GameRuleValue<?> handle = getHandle().getGameRules().get(getGameRulesNMS().get(rule));
+-        handle.setValue(value);
++        handle.setValue(event.getValue().toString()); // Paper
+         handle.onChange(getHandle().getMinecraftServer());
+         return true;
+     }
+@@ -2400,8 +2405,12 @@ public class CraftWorld implements World {
+ 
+         if (!isGameRule(rule.getName())) return false;
+ 
++        // Paper start
++        io.papermc.paper.event.world.WorldGameRuleChangeEvent event = new io.papermc.paper.event.world.WorldGameRuleChangeEvent(this, null, rule, String.valueOf(newValue));
++        if (!event.callEvent()) return false;
++        // Paper end
+         GameRules.GameRuleValue<?> handle = getHandle().getGameRules().get(getGameRulesNMS().get(rule.getName()));
+-        handle.setValue(newValue.toString());
++        handle.setValue(event.getValue().toString()); // Paper
+         handle.onChange(getHandle().getMinecraftServer());
+         return true;
+     }

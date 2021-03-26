@@ -12,7 +12,7 @@ to the client, so that it doesn't attempt to calculate them.
 This mitigates the frametime impact to a minimum (but it's still there).
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index ede47aaaace80280756fe4463def1ea26792c9e4..d5c939281df21683efc63937a9146b0dfeb22e2c 100644
+index 29269a7096e5cb64f1b7e9812cc0140e144f673f..408b796a23ea03dd10ea7a72d77111d735b85bd0 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 @@ -85,6 +85,7 @@ import net.minecraft.world.level.World;
@@ -23,7 +23,7 @@ index ede47aaaace80280756fe4463def1ea26792c9e4..d5c939281df21683efc63937a9146b0d
  import net.minecraft.world.level.chunk.ChunkStatus;
  import net.minecraft.world.level.chunk.IChunkAccess;
  import net.minecraft.world.level.chunk.ILightAccess;
-@@ -2055,9 +2056,68 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+@@ -2054,9 +2055,68 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
      public final void sendChunk(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) { this.a(entityplayer, apacket, chunk); } // Paper - OBFHELPER
      private void a(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) {
          if (apacket[0] == null) {

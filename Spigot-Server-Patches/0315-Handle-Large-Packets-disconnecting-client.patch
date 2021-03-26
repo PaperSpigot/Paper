@@ -7,23 +7,15 @@ If a players inventory is too big to send in a single packet,
 split the inventory set into multiple packets instead.
 
 diff --git a/src/main/java/net/minecraft/network/NetworkManager.java b/src/main/java/net/minecraft/network/NetworkManager.java
-index 297820baef99e97e1216a64c527219e9ccc3e320..dc788d75a6a34fbbae990609bfbbd13ca6cdee5a 100644
+index 297820baef99e97e1216a64c527219e9ccc3e320..ce00395d6f680f96932970414ea076a15c463aca 100644
 --- a/src/main/java/net/minecraft/network/NetworkManager.java
 +++ b/src/main/java/net/minecraft/network/NetworkManager.java
-@@ -12,6 +12,7 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
- import io.netty.channel.local.LocalChannel;
- import io.netty.channel.local.LocalServerChannel;
- import io.netty.channel.nio.NioEventLoopGroup;
-+import io.netty.handler.codec.EncoderException; // Paper
- import io.netty.handler.timeout.TimeoutException;
- import io.netty.util.AttributeKey;
- import io.netty.util.concurrent.Future;
-@@ -107,6 +108,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -107,6 +107,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      }
  
      public void exceptionCaught(ChannelHandlerContext channelhandlercontext, Throwable throwable) {
 +        // Paper start
-+        if (throwable instanceof EncoderException && throwable.getCause() instanceof PacketEncoder.PacketTooLargeException) {
++        if (throwable instanceof io.netty.handler.codec.EncoderException && throwable.getCause() instanceof PacketEncoder.PacketTooLargeException) {
 +            if (((PacketEncoder.PacketTooLargeException) throwable.getCause()).getPacket().packetTooLarge(this)) {
 +                return;
 +            } else {
@@ -35,10 +27,10 @@ index 297820baef99e97e1216a64c527219e9ccc3e320..dc788d75a6a34fbbae990609bfbbd13c
              NetworkManager.LOGGER.debug("Skipping packet due to errors", throwable.getCause());
          } else {
 diff --git a/src/main/java/net/minecraft/network/PacketEncoder.java b/src/main/java/net/minecraft/network/PacketEncoder.java
-index 2f6da89d6b25ba5144ec15b1bf0e8ed13278e85e..037d989522d24a55eced1c462d40a6dc2a7ecfce 100644
+index efec0a12719f13397b08c96dcb4fab9f74148138..5b798eca68abd27991ce380e433f1e3348cd19d7 100644
 --- a/src/main/java/net/minecraft/network/PacketEncoder.java
 +++ b/src/main/java/net/minecraft/network/PacketEncoder.java
-@@ -53,7 +53,31 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
+@@ -52,7 +52,31 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
                          throw throwable;
                      }
                  }

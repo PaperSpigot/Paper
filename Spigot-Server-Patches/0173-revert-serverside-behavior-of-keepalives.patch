@@ -17,10 +17,10 @@ from networking or during connections flood of chunk packets on slower clients,
  at the cost of dead connections being kept open for longer.
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 9b0d00220406cf20421607ae234f4c0d674681bb..54a5b988e5dc8eec35cf91d45f282926d81a0043 100644
+index dc42642272804d4b51f9f48d878673383238891d..11911cc14decc5c51907dec4c03c13a6d5fcd3ef 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -221,7 +221,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -219,7 +219,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private final MinecraftServer minecraftServer;
      public EntityPlayer player;
      private int e;
@@ -29,7 +29,7 @@ index 9b0d00220406cf20421607ae234f4c0d674681bb..54a5b988e5dc8eec35cf91d45f282926
      private boolean awaitingKeepAlive; private void setPendingPing(boolean isPending) { this.awaitingKeepAlive = isPending;}; private boolean isPendingPing() { return this.awaitingKeepAlive;}; // Paper - OBFHELPER
      private long h; private void setKeepAliveID(long keepAliveID) { this.h = keepAliveID;}; private long getKeepAliveID() {return this.h; };  // Paper - OBFHELPER
      // CraftBukkit start - multithreaded fields
-@@ -252,6 +252,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -250,6 +250,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private int E;
      private int receivedMovePackets;
      private int processedMovePackets;
@@ -37,7 +37,7 @@ index 9b0d00220406cf20421607ae234f4c0d674681bb..54a5b988e5dc8eec35cf91d45f282926
  
      public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
          this.minecraftServer = minecraftserver;
-@@ -338,18 +339,25 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -336,18 +337,25 @@ public class PlayerConnection implements PacketListenerPlayIn {
          }
  
          this.minecraftServer.getMethodProfiler().enter("keepAlive");

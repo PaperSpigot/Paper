@@ -147,27 +147,6 @@ index 170a65cb13e7b87f64cd28331431ba55d53702cd..d6e51f82f6df2d7058806f3e483766e1
  
      default String asString() {
          return this.toString();
-diff --git a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
-index 020c041461aaf771d5ec35a9afc6c4b914966d64..f792ac1639e16522695082caed754b1c2cb333b9 100644
---- a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
-+++ b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
-@@ -17,6 +17,7 @@ import java.util.zip.GZIPOutputStream;
- import net.minecraft.CrashReport;
- import net.minecraft.CrashReportSystemDetails;
- import net.minecraft.ReportedException;
-+import io.netty.buffer.ByteBufInputStream; // Paper
- 
- public class NBTCompressedStreamTools {
- 
-@@ -136,7 +137,7 @@ public class NBTCompressedStreamTools {
- 
-     public static NBTTagCompound a(DataInput datainput, NBTReadLimiter nbtreadlimiter) throws IOException {
-         // Spigot start
--        if ( datainput instanceof io.netty.buffer.ByteBufInputStream )
-+        if ( datainput instanceof ByteBufInputStream) // Paper
-         {
-             datainput = new DataInputStream(new org.spigotmc.LimitStream((InputStream) datainput, nbtreadlimiter));
-         }
 diff --git a/src/main/java/net/minecraft/nbt/NBTTagList.java b/src/main/java/net/minecraft/nbt/NBTTagList.java
 index 35cca76fb7c7aa736e64185b44016e65cfaef6cd..4f6f6f51f9807bafa88482c0fe776c8b163107d7 100644
 --- a/src/main/java/net/minecraft/nbt/NBTTagList.java

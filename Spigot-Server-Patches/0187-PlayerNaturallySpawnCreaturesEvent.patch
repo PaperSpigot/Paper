@@ -9,10 +9,10 @@ from triggering monster spawns on a server.
 Also a highly more effecient way to blanket block spawns in a world
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 95af66ebb7849cbf2bcad6bc52aeb85ab2601b6c..eb576566708d50c002e73aa746d2bc58b9b04c2b 100644
+index 68977d1bab7a482669a4f33eebfe98084b1061a4..3358295225a1455ef18bc4f8d85149d88f751d77 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -611,6 +611,15 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -610,6 +610,15 @@ public class ChunkProviderServer extends IChunkProvider {
              this.world.getMethodProfiler().exit();
              //List<PlayerChunk> list = Lists.newArrayList(this.playerChunkMap.f()); // Paper
              //Collections.shuffle(list); // Paper
@@ -29,7 +29,7 @@ index 95af66ebb7849cbf2bcad6bc52aeb85ab2601b6c..eb576566708d50c002e73aa746d2bc58
                  Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
  
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index afa87cf70ad978161853771c59f5a4906733cab3..8b79d547a3296f056731cbb66508494d84809e94 100644
+index 13cbab6ad01951659bce13bbc9d3bb2534d112e2..34fbff8cbd169a37d408579f9fbd2ca39b8e61ac 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -1,5 +1,6 @@
@@ -39,7 +39,7 @@ index afa87cf70ad978161853771c59f5a4906733cab3..8b79d547a3296f056731cbb66508494d
  import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfile;
  import com.mojang.datafixers.util.Either;
-@@ -227,6 +228,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -226,6 +227,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean sentListPacket = false;
      public Integer clientViewDistance;
      // CraftBukkit end

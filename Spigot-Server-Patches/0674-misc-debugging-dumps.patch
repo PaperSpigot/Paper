@@ -1,0 +1,79 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Thu, 18 Feb 2021 20:23:28 +0000
+Subject: [PATCH] misc debugging dumps
+
+
+diff --git a/src/main/java/io/papermc/paper/util/TraceUtil.java b/src/main/java/io/papermc/paper/util/TraceUtil.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2d5494d2813b773e60ddba6790b750a9a08f21f8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/util/TraceUtil.java
+@@ -0,0 +1,18 @@
++package io.papermc.paper.util;
++
++import org.bukkit.Bukkit;
++
++public final class TraceUtil {
++
++    public static void dumpTraceForThread(Thread thread, String reason) {
++        Bukkit.getLogger().warning(thread.getName() + ": " + reason);
++        StackTraceElement[] trace = thread.getStackTrace();
++        for (StackTraceElement traceElement : trace) {
++            Bukkit.getLogger().warning("\tat " + traceElement);
++        }
++    }
++
++    public static void dumpTraceForThread(String reason) {
++        new Throwable(reason).printStackTrace();
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 5da58830459d2ff10e7fde28b41995699134459f..c372e6897c73fad6f9c478cec9f58303fb0cce17 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -13,6 +13,7 @@ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.ByteBufOutputStream;
+ import io.netty.buffer.Unpooled;
+ import io.papermc.paper.event.entity.EntityMoveEvent;
++import io.papermc.paper.util.TraceUtil;
+ import it.unimi.dsi.fastutil.longs.LongIterator;
+ import java.awt.image.BufferedImage;
+ import java.io.BufferedWriter;
+@@ -845,6 +846,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     // CraftBukkit start
+     private boolean hasStopped = false;
+     public volatile boolean hasFullyShutdown = false; // Paper
++    private boolean hasLoggedStop = false; // Paper
+     private final Object stopLock = new Object();
+     public final boolean hasStopped() {
+         synchronized (stopLock) {
+@@ -859,6 +861,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+             if (hasStopped) return;
+             hasStopped = true;
+         }
++        if (!hasLoggedStop && isDebugging()) TraceUtil.dumpTraceForThread("Server stopped"); // Paper
+         // Paper start - kill main thread, and kill it hard
+         shutdownThread = Thread.currentThread();
+         org.spigotmc.WatchdogThread.doStop(); // Paper
+@@ -975,6 +978,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     public void safeShutdown(boolean flag, boolean isRestarting) {
+         this.isRunning = false;
+         this.isRestarting = isRestarting;
++        this.hasLoggedStop = true; // Paper
++        if (isDebugging()) TraceUtil.dumpTraceForThread("Server stopped"); // Paper
+         if (flag) {
+             try {
+                 this.serverThread.join();
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index a4755e2cdb40afe6af47435f92963a53d7b719c7..ff694c92bac04c41df62b512049b9ef0d2180b5d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -941,6 +941,7 @@ public final class CraftServer implements Server {
+                 plugin.getDescription().getName(),
+                 "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
+             ));
++            if (console.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread(worker.getThread(), "still running"); // Paper
+         }
+         loadPlugins();
+         enablePlugins(PluginLoadOrder.STARTUP);

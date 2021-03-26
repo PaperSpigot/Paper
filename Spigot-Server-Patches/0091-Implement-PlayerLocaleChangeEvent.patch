@@ -5,10 +5,10 @@ Subject: [PATCH] Implement PlayerLocaleChangeEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 1f31104a1a350f3b53ce45b034cafe528d406291..3d5d1b83094b5ca45fae47055db397630fdd4f04 100644
+index 07b08af618d17c7ae82a091a3b5fcd40deb2a46b..9f67671784619a3ac902ed9269d5689a9bd17995 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -1685,7 +1685,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1684,7 +1684,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          return s;
      }
  
@@ -17,7 +17,7 @@ index 1f31104a1a350f3b53ce45b034cafe528d406291..3d5d1b83094b5ca45fae47055db39763
      public java.util.Locale adventure$locale = java.util.Locale.US; // Paper
      public void a(PacketPlayInSettings packetplayinsettings) {
          // CraftBukkit start
-@@ -1693,9 +1693,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1692,9 +1692,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), getMainHand() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT);
              this.server.server.getPluginManager().callEvent(event);
          }

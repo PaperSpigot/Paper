@@ -5,10 +5,10 @@ Subject: [PATCH] Fix stuck in sneak when changing worlds (MC-10657)
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index d66956b879ad7b05ea2a0252ca14b2d06dba135c..4ab293c49eba44ee3533b07866c5bdd68b1e849b 100644
+index a8e9b4cad336f71d1b81df6fbd8d6fd6de948248..61d1129dac677ebd9b6581865802049fd04db01e 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -1072,6 +1072,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1071,6 +1071,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  this.lastHealthSent = -1.0F;
                  this.lastFoodSent = -1;
  
@@ -18,10 +18,10 @@ index d66956b879ad7b05ea2a0252ca14b2d06dba135c..4ab293c49eba44ee3533b07866c5bdd6
                  PlayerChangedWorldEvent changeEvent = new PlayerChangedWorldEvent(this.getBukkitEntity(), worldserver1.getWorld());
                  this.world.getServer().getPluginManager().callEvent(changeEvent);
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index f1dd51f30a40613a1fa1e00be43d21684ea9c274..1f74fddfc6d9d9ae38fd35f83fa668e38591b222 100644
+index 8ee19fc86f1637325a207048a62d4c89b8dfd27c..886329a68c9854ca264da8569ed3942b15ca87eb 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -846,6 +846,8 @@ public abstract class PlayerList {
+@@ -844,6 +844,8 @@ public abstract class PlayerList {
              entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityEffect(entityplayer.getId(), mobEffect));
          }
  

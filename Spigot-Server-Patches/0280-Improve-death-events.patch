@@ -15,10 +15,10 @@ items and experience which is otherwise only properly possible by using
 internal code.
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index b3c5a22bf2eb360399ebfbf90fc74843dcd78509..1198de213b3809ddf7b7d6f1696d9f07bb4dc42e 100644
+index f9c70d0cab59c93ec6d8a3af932bf21aefc9a620..9462b26ae695fe414a5c73fde3a4ca22dd0f494e 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -213,6 +213,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -212,6 +212,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public int ping;
      public boolean viewingCredits;
      private int containerUpdateDelay; // Paper
@@ -29,10 +29,10 @@ index b3c5a22bf2eb360399ebfbf90fc74843dcd78509..1198de213b3809ddf7b7d6f1696d9f07
  
      // CraftBukkit start
      public String displayName;
-@@ -716,6 +720,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -715,6 +719,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          IChatBaseComponent defaultMessage = this.getCombatTracker().getDeathMessage();
  
-         org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, PaperAdventure.asAdventure(defaultMessage), defaultMessage.getString(), keepInventory); // Paper - Adventure
+         org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, io.papermc.paper.adventure.PaperAdventure.asAdventure(defaultMessage), defaultMessage.getString(), keepInventory); // Paper - Adventure
 +        // Paper start - cancellable death event
 +        if (event.isCancelled()) {
 +            // make compatible with plugins that might have already set the health in an event listener
@@ -45,7 +45,7 @@ index b3c5a22bf2eb360399ebfbf90fc74843dcd78509..1198de213b3809ddf7b7d6f1696d9f07
  
          // SPIGOT-943 - only call if they have an inventory open
          if (this.activeContainer != this.defaultContainer) {
-@@ -862,8 +875,17 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -861,8 +874,17 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                          }
                      }
                  }

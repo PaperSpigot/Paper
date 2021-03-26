@@ -10,10 +10,10 @@ Adds an option to control the force mode of the particle.
 This adds a new Builder API which is much friendlier to use.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 1e9884e819ac2afe58b5f50b89355c2d58ed73d5..3876958f20e675c4c8fd505c5fb333ccb9cdc8c9 100644
+index 42aa20f67b3feb62f0468f7de7593302ba2a6a68..575a73d85da867178e932d7726f3cf688f310a56 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -170,7 +170,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -169,7 +169,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      public final Int2ObjectMap<Entity> entitiesById = new Int2ObjectLinkedOpenHashMap();
      private final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap();
      private final Queue<Entity> entitiesToAdd = Queues.newArrayDeque();
@@ -22,7 +22,7 @@ index 1e9884e819ac2afe58b5f50b89355c2d58ed73d5..3876958f20e675c4c8fd505c5fb333cc
      public final ChunkProviderServer chunkProvider; // Paper - public
      boolean tickingEntities;
      private final MinecraftServer server;
-@@ -1477,12 +1477,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1476,12 +1476,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
@@ -43,7 +43,7 @@ index 1e9884e819ac2afe58b5f50b89355c2d58ed73d5..3876958f20e675c4c8fd505c5fb333cc
  
              if (this.a(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 4e255f2ca75ac0c1e1572f312a669cb6d3b60121..dfc3a2f6221c9e172d0d40510cb5edfc23649e53 100644
+index bff52575aab170c926afcbcd1d908f49a61fa251..9b64aad8834d9e9047331415bd4fc18800eac734 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -2353,11 +2353,17 @@ public class CraftWorld implements World {

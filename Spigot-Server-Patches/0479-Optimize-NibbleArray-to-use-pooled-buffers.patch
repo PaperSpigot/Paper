@@ -9,18 +9,10 @@ an object pool for these.
 Uses lots of advanced new capabilities of the Paper codebase :)
 
 diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutLightUpdate.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutLightUpdate.java
-index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8cc767779 100644
+index 247d969e7d1aa59d9650fce1032aaa09db3903e5..13be7d06f2a150bab8e633c3ab67baf46e39a778 100644
 --- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutLightUpdate.java
 +++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayOutLightUpdate.java
-@@ -1,12 +1,16 @@
- package net.minecraft.network.protocol.game;
- 
- import com.google.common.collect.Lists;
-+import io.netty.channel.ChannelFuture; // Paper
-+
- import java.io.IOException;
- import java.util.Iterator;
- import java.util.List;
+@@ -7,6 +7,8 @@ import java.util.List;
  import net.minecraft.core.SectionPosition;
  import net.minecraft.network.PacketDataSerializer;
  import net.minecraft.network.protocol.Packet;
@@ -29,7 +21,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
  import net.minecraft.world.level.ChunkCoordIntPair;
  import net.minecraft.world.level.EnumSkyBlock;
  import net.minecraft.world.level.chunk.NibbleArray;
-@@ -24,14 +28,43 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -24,14 +26,43 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
      private List<byte[]> h;
      private boolean i;
  
@@ -44,7 +36,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
 +    }
 +
 +    @Override
-+    public void onPacketDispatchFinish(EntityPlayer player, ChannelFuture future) {
++    public void onPacketDispatchFinish(EntityPlayer player, io.netty.channel.ChannelFuture future) {
 +        if (remainingSends.decrementAndGet() <= 0) {
 +            // incase of any race conditions, schedule this delayed
 +            MCUtil.scheduleTask(5, () -> {
@@ -75,7 +67,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
  
          for (int i = 0; i < 18; ++i) {
              NibbleArray nibblearray = lightengine.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkcoordintpair, -1 + i));
-@@ -42,7 +75,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -42,7 +73,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
                      this.e |= 1 << i;
                  } else {
                      this.c |= 1 << i;
@@ -84,7 +76,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
                  }
              }
  
-@@ -51,7 +84,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -51,7 +82,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
                      this.f |= 1 << i;
                  } else {
                      this.d |= 1 << i;
@@ -93,7 +85,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
                  }
              }
          }
-@@ -64,8 +97,8 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -64,8 +95,8 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
          this.i = flag;
          this.c = i;
          this.d = j;
@@ -104,7 +96,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
  
          for (int k = 0; k < 18; ++k) {
              NibbleArray nibblearray;
-@@ -73,7 +106,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -73,7 +104,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
              if ((this.c & 1 << k) != 0) {
                  nibblearray = lightengine.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkcoordintpair, -1 + k));
                  if (nibblearray != null && !nibblearray.c()) {
@@ -113,7 +105,7 @@ index 247d969e7d1aa59d9650fce1032aaa09db3903e5..9050ff7180f63c1f5756570446c4d0a8
                  } else {
                      this.c &= ~(1 << k);
                      if (nibblearray != null) {
-@@ -85,7 +118,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
+@@ -85,7 +116,7 @@ public class PacketPlayOutLightUpdate implements Packet<PacketListenerPlayOut> {
              if ((this.d & 1 << k) != 0) {
                  nibblearray = lightengine.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkcoordintpair, -1 + k));
                  if (nibblearray != null && !nibblearray.c()) {

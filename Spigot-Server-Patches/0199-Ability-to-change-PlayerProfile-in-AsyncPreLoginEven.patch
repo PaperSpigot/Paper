@@ -6,7 +6,7 @@ Subject: [PATCH] Ability to change PlayerProfile in AsyncPreLoginEvent
 This will allow you to change the players name or skin on login.
 
 diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
-index 714f44a668eb35b3c61bb9ab140f884917efd6f5..a903a073e6f5e8ae6ea383b786d930af69a966c5 100644
+index 33c75e45c40d94dc79e5dfe27b397cfdda5cd03e..2026e1ae96327a3fc5217b9a48384d15511391ff 100644
 --- a/src/main/java/net/minecraft/server/network/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/network/LoginListener.java
 @@ -1,5 +1,7 @@
@@ -17,15 +17,15 @@ index 714f44a668eb35b3c61bb9ab140f884917efd6f5..a903a073e6f5e8ae6ea383b786d930af
  import com.mojang.authlib.GameProfile;
  import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
  import java.math.BigInteger;
-@@ -38,6 +40,7 @@ import org.apache.logging.log4j.Logger;
+@@ -37,6 +39,7 @@ import org.apache.logging.log4j.Logger;
+ 
  // CraftBukkit start
  import net.minecraft.network.chat.ChatComponentText;
- import io.papermc.paper.adventure.PaperAdventure; // Paper
 +import org.bukkit.Bukkit;
  import org.bukkit.craftbukkit.util.Waitable;
  import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
  import org.bukkit.event.player.PlayerPreLoginEvent;
-@@ -315,8 +318,16 @@ public class LoginListener implements PacketLoginInListener {
+@@ -314,8 +317,16 @@ public class LoginListener implements PacketLoginInListener {
                          java.util.UUID uniqueId = i.getId();
                          final org.bukkit.craftbukkit.CraftServer server = LoginListener.this.server.server;
  

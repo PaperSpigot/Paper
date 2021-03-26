@@ -5,10 +5,10 @@ Subject: [PATCH] Optimise removeQueue
 
 
 diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
-index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9e64aecf1 100644
+index 6f69c862ea06aba7f6800e62ad25f643d8cb2079..f12d1784ad0c971ad2bd91f4ea9e8a559a15f3f9 100644
 --- a/src/main/java/net/minecraft/server/network/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/network/LoginListener.java
-@@ -116,6 +116,12 @@ public class LoginListener implements PacketLoginInListener {
+@@ -115,6 +115,12 @@ public class LoginListener implements PacketLoginInListener {
  
      }
  
@@ -21,7 +21,7 @@ index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9
      // Spigot start
      public void initUUID()
      {
-@@ -194,8 +200,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -193,8 +199,8 @@ public class LoginListener implements PacketLoginInListener {
              this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic().getEncoded(), this.e));
          } else {
              // Spigot start
@@ -32,7 +32,7 @@ index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9
                  @Override
                  public void run() {
                      try {
-@@ -206,7 +212,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -205,7 +211,8 @@ public class LoginListener implements PacketLoginInListener {
                          server.server.getLogger().log(java.util.logging.Level.WARNING, "Exception verifying " + i.getName(), ex);
                      }
                  }
@@ -42,7 +42,7 @@ index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9
              // Spigot end
          }
  
-@@ -235,7 +242,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -234,7 +241,8 @@ public class LoginListener implements PacketLoginInListener {
              throw new IllegalStateException("Protocol error", cryptographyexception);
          }
  
@@ -52,7 +52,7 @@ index c4e3dd34c20c97ae1397cf51125f51a5b77d9437..9f87503c58f64bbfa829faa58600d7d9
              public void run() {
                  GameProfile gameprofile = LoginListener.this.i;
  
-@@ -280,10 +288,8 @@ public class LoginListener implements PacketLoginInListener {
+@@ -279,10 +287,8 @@ public class LoginListener implements PacketLoginInListener {
  
                  return LoginListener.this.server.W() && socketaddress instanceof InetSocketAddress ? ((InetSocketAddress) socketaddress).getAddress() : null;
              }

@@ -70,10 +70,10 @@ index 5a410550cfb48505c9de9979465ed1528c8fbf05..9edbde8299bcd127e1727d34ed441f63
              List<PlayerChunk> allChunks = new ArrayList<>(visibleChunks.values());
              List<EntityPlayer> players = world.players;
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index a444f6214b90f7707be2265f4b2ab12632986c53..138676e5b03bc80a777a1f4c12f3f4b5316e8dea 100644
+index 889f43b8afe96b2ae53b69e3f4c44224242a177b..c1057b3b12a195aef5f784765de9bd7b7f0a3548 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -780,7 +780,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -779,7 +779,7 @@ public class ChunkProviderServer extends IChunkProvider {
                  entityPlayer.playerNaturallySpawnedEvent.callEvent();
              };
              // Paper end
@@ -83,10 +83,10 @@ index a444f6214b90f7707be2265f4b2ab12632986c53..138676e5b03bc80a777a1f4c12f3f4b5
  
                  if (optional.isPresent()) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407bba65dad5 100644
+index 1c669c6fc437c645804e4d736abc84af0046583d..f93bc70a5eec24a16925e517c08770294b2a330d 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -106,8 +106,33 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -105,8 +105,33 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      private static final Logger LOGGER = LogManager.getLogger();
      public static final int GOLDEN_TICKET = 33 + ChunkStatus.b();
@@ -122,7 +122,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
      private final Long2ObjectLinkedOpenHashMap<PlayerChunk> pendingUnload;
      public final LongSet loadedChunks; // Paper - private -> public
      public final WorldServer world;
-@@ -180,7 +205,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -179,7 +204,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      public PlayerChunkMap(WorldServer worldserver, Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, DefinedStructureManager definedstructuremanager, Executor executor, IAsyncTaskHandler<Runnable> iasynctaskhandler, ILightAccess ilightaccess, ChunkGenerator chunkgenerator, WorldLoadListener worldloadlistener, Supplier<WorldPersistentData> supplier, int i, boolean flag) {
          super(new File(convertable_conversionsession.a(worldserver.getDimensionKey()), "region"), datafixer, flag);
@@ -131,7 +131,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
          this.pendingUnload = new Long2ObjectLinkedOpenHashMap();
          this.loadedChunks = new LongOpenHashSet();
          this.unloadQueue = new LongOpenHashSet();
-@@ -272,9 +297,52 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -271,9 +296,52 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          return (PlayerChunk) this.updatingChunks.get(i);
      }
  
@@ -185,7 +185,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
      }
  
      protected IntSupplier c(long i) {
-@@ -462,8 +530,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -461,8 +529,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      // Paper end
  
      protected void save(boolean flag) {
@@ -196,7 +196,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
              MutableBoolean mutableboolean = new MutableBoolean();
  
              do {
-@@ -491,7 +560,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -490,7 +559,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  //            this.i(); // Paper - nuke IOWorker
              PlayerChunkMap.LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.w.getName());
          } else {
@@ -205,7 +205,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
                  IChunkAccess ichunkaccess = (IChunkAccess) playerchunk.getChunkSave().getNow(null); // CraftBukkit - decompile error
  
                  if (ichunkaccess instanceof ProtoChunkExtension || ichunkaccess instanceof Chunk) {
-@@ -662,7 +731,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -661,7 +730,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          if (!this.updatingChunksModified) {
              return false;
          } else {
@@ -227,7 +227,7 @@ index 12cfe9f3c89316557e94c8b944b4f82277fb8877..8050be2ed04fb0b8141f92595680407b
              this.updatingChunksModified = false;
              return true;
          }
-@@ -1133,12 +1215,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1132,12 +1214,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      }
  
      protected Iterable<PlayerChunk> f() {

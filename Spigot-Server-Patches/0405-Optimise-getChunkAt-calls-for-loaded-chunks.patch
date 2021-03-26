@@ -7,10 +7,10 @@ bypass the need to get a player chunk, then get the either,
 then unwrap it...
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 4998fad49755c08e20ebfb1dc97b558e1cf10b50..2f172f38f817f48fe2e62235c3859b91e60bc0df 100644
+index b06784f913f5e0ad80ff72765777af7fc479780f..2b13023480816b14c04ca592ae2652bafe896258 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -470,6 +470,12 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -469,6 +469,12 @@ public class ChunkProviderServer extends IChunkProvider {
                  return this.getChunkAt(i, j, chunkstatus, flag);
              }, this.serverThreadQueue).join();
          } else {
@@ -23,7 +23,7 @@ index 4998fad49755c08e20ebfb1dc97b558e1cf10b50..2f172f38f817f48fe2e62235c3859b91
              GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
  
              gameprofilerfiller.c("getChunk");
-@@ -520,39 +526,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -519,39 +525,7 @@ public class ChunkProviderServer extends IChunkProvider {
          if (Thread.currentThread() != this.serverThread) {
              return null;
          } else {

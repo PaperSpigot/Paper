@@ -901,7 +901,7 @@ index 8c0aeb51f5e230fd6109e750732eb54559bc9637..1fb931d4c0720a5e496030e25c865771
          return this.b(baseblockposition.getX(), baseblockposition.getY(), baseblockposition.getZ());
      }
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 0c8864eeae6e3b449514f52d95c17f2e4a304f0e..a444f6214b90f7707be2265f4b2ab12632986c53 100644
+index 2b13023480816b14c04ca592ae2652bafe896258..889f43b8afe96b2ae53b69e3f4c44224242a177b 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 @@ -21,6 +21,7 @@ import net.minecraft.SystemUtils;
@@ -912,7 +912,7 @@ index 0c8864eeae6e3b449514f52d95c17f2e4a304f0e..a444f6214b90f7707be2265f4b2ab126
  import net.minecraft.server.level.progress.WorldLoadListener;
  import net.minecraft.util.MathHelper;
  import net.minecraft.util.profiling.GameProfilerFiller;
-@@ -217,6 +218,13 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -216,6 +217,13 @@ public class ChunkProviderServer extends IChunkProvider {
      }
      // Paper end
  
@@ -942,10 +942,10 @@ index 6433463938d8bb717840c8f57fe6e7079e1030f2..445dba8ed210407664904b707c36c78a
                  }
              });
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index f666b281926876636672e76a7a5e6386a9701b6a..74aef9741cc3ebf36749dc510bc4ef9d8f5580b0 100644
+index 850325555d4c1753734d091e8b20ceb7fa91f954..418bfc9a81fa86faeeb9b85830aaadce44a9711c 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -298,6 +298,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -297,6 +297,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
      // Paper end
  
@@ -961,7 +961,7 @@ index f666b281926876636672e76a7a5e6386a9701b6a..74aef9741cc3ebf36749dc510bc4ef9d
      // Add env and gen to constructor, WorldData -> WorldDataServer
      public WorldServer(MinecraftServer minecraftserver, Executor executor, Convertable.ConversionSession convertable_conversionsession, IWorldDataServer iworlddataserver, ResourceKey<World> resourcekey, DimensionManager dimensionmanager, WorldLoadListener worldloadlistener, ChunkGenerator chunkgenerator, boolean flag, long i, List<MobSpawner> list, boolean flag1, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
          super(iworlddataserver, resourcekey, dimensionmanager, minecraftserver::getMethodProfiler, false, flag, i, gen, env, executor); // Paper pass executor
-@@ -305,12 +314,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -304,12 +313,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          convertable = convertable_conversionsession;
          uuid = WorldUUID.getUUID(convertable_conversionsession.folder.toFile());
          // CraftBukkit end
@@ -989,7 +989,7 @@ index f666b281926876636672e76a7a5e6386a9701b6a..74aef9741cc3ebf36749dc510bc4ef9d
          this.navigators = Sets.newHashSet();
          this.L = new ObjectLinkedOpenHashSet();
          this.Q = flag1;
-@@ -643,7 +661,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -642,7 +660,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          if (this.Q) {
              long i = this.worldData.getTime() + 1L;
  

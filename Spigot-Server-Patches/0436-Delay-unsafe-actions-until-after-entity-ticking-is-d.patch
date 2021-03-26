@@ -6,10 +6,10 @@ Subject: [PATCH] Delay unsafe actions until after entity ticking is done
 This will help prevent many cases of unregistering entities during entity ticking
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 3ad428dd85ec0cbf37a24711004f9a54052c5c93..c69eef0d523fc75dce2c2606f3e447591c7cf6dc 100644
+index e6fbc1060e01ad6eceb0e4853770f585b9b0a27d..2fdac1276718678d6b6688864d13bcd04d58c49c 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -178,6 +178,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -177,6 +177,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      public final List<EntityPlayer> players = Lists.newArrayList(); // Paper - private -> public
      public final ChunkProviderServer chunkProvider; // Paper - public
      boolean tickingEntities;
@@ -26,7 +26,7 @@ index 3ad428dd85ec0cbf37a24711004f9a54052c5c93..c69eef0d523fc75dce2c2606f3e44759
      private final MinecraftServer server;
      public final WorldDataServer worldDataServer; // CraftBukkit - type
      public boolean savingDisabled;
-@@ -645,6 +655,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -644,6 +654,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              timings.entityTick.stopTiming(); // Spigot
  
              this.tickingEntities = false;

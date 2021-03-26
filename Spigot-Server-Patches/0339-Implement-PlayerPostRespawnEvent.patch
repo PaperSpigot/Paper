@@ -5,10 +5,10 @@ Subject: [PATCH] Implement PlayerPostRespawnEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index ea6c5c9305994e64831c5444666c22a96f9d36da..ae0aaaf129c44901ac72c67e50c663333ab57f9d 100644
+index d9348a67df8a8d5d8ca3fbd643295ad30c71ea6a..d6d3468d67e009d599a3d3f7a15be18093c2820e 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -741,9 +741,14 @@ public abstract class PlayerList {
+@@ -739,9 +739,14 @@ public abstract class PlayerList {
          // this.a(entityplayer1, entityplayer, worldserver1); // CraftBukkit - removed
          boolean flag2 = false;
  
@@ -24,7 +24,7 @@ index ea6c5c9305994e64831c5444666c22a96f9d36da..ae0aaaf129c44901ac72c67e50c66333
              WorldServer worldserver1 = this.server.getWorldServer(entityplayer.getSpawnDimension());
              if (worldserver1 != null) {
                  Optional optional;
-@@ -794,6 +799,7 @@ public abstract class PlayerList {
+@@ -792,6 +797,7 @@ public abstract class PlayerList {
  
              location = respawnEvent.getRespawnLocation();
              if (!flag) entityplayer.reset(); // SPIGOT-4785
@@ -32,7 +32,7 @@ index ea6c5c9305994e64831c5444666c22a96f9d36da..ae0aaaf129c44901ac72c67e50c66333
          } else {
              location.setWorld(worldserver.getWorld());
          }
-@@ -851,6 +857,13 @@ public abstract class PlayerList {
+@@ -849,6 +855,13 @@ public abstract class PlayerList {
          if (entityplayer.playerConnection.isDisconnected()) {
              this.savePlayerFile(entityplayer);
          }

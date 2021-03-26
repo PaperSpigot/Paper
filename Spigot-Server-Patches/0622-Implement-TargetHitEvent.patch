@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Wed, 25 Nov 2020 23:20:44 -0800
+Subject: [PATCH] Implement TargetHitEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockTarget.java b/src/main/java/net/minecraft/world/level/block/BlockTarget.java
+index c336490815dc17991d3d84d8c6f0fc58571a3e3a..529ee7130c1ba2615b8da3f3dc6214c0f9b0971c 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockTarget.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockTarget.java
+@@ -34,6 +34,10 @@ public class BlockTarget extends Block {
+     @Override
+     public void a(World world, IBlockData iblockdata, MovingObjectPositionBlock movingobjectpositionblock, IProjectile iprojectile) {
+         int i = a((GeneratorAccess) world, iblockdata, movingobjectpositionblock, (Entity) iprojectile);
++        // Paper start
++    }
++    private static void awardTargetHitCriteria(IProjectile iprojectile, MovingObjectPositionBlock movingobjectpositionblock, int i) {
++        // Paper end
+         Entity entity = iprojectile.getShooter();
+ 
+         if (entity instanceof EntityPlayer) {
+@@ -49,6 +53,20 @@ public class BlockTarget extends Block {
+         int i = a(movingobjectpositionblock, movingobjectpositionblock.getPos());
+         int j = entity instanceof EntityArrow ? 20 : 8;
+ 
++        // Paper start
++        if (entity instanceof IProjectile) {
++            final IProjectile projectile = (IProjectile) entity;
++            final org.bukkit.craftbukkit.block.CraftBlock craftBlock = org.bukkit.craftbukkit.block.CraftBlock.at(generatoraccess, movingobjectpositionblock.getBlockPosition());
++            final org.bukkit.block.BlockFace blockFace = org.bukkit.craftbukkit.block.CraftBlock.notchToBlockFace(movingobjectpositionblock.getDirection());
++            final io.papermc.paper.event.block.TargetHitEvent targetHitEvent = new io.papermc.paper.event.block.TargetHitEvent((org.bukkit.entity.Projectile) projectile.getBukkitEntity(), craftBlock, blockFace, i);
++            if (targetHitEvent.callEvent()) {
++                i = targetHitEvent.getSignalStrength();
++                awardTargetHitCriteria(projectile, movingobjectpositionblock, i);
++            } else {
++                return i;
++            }
++        }
++        // Paper end
+         if (!generatoraccess.getBlockTickList().a(movingobjectpositionblock.getBlockPosition(), iblockdata.getBlock())) {
+             a(generatoraccess, iblockdata, i, movingobjectpositionblock.getBlockPosition(), j);
+         }

@@ -25,10 +25,10 @@ This successfully fixed a reoccurring and highly reproduceable crash
 for heightmaps.
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index ff93fd88b1d30ac70ebd1130981e4aa042358f30..612a05f493981f9fb22522da4f3a5379bce4b786 100644
+index 6a353e0250c1ed1ce1c87694d9c9669801c879e8..3b932ea24f27ec63c70496e6fbd85fe5a97edbff 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -1019,6 +1019,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -1018,6 +1018,7 @@ public class ChunkProviderServer extends IChunkProvider {
                  return super.executeNext() || execChunkTask; // Paper
              }
          } finally {
@@ -37,10 +37,10 @@ index ff93fd88b1d30ac70ebd1130981e4aa042358f30..612a05f493981f9fb22522da4f3a5379
          }
          // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index bb9c6e9aeb1f30af01338476ba1dd618b14124d5..80c7ff059b78f55ec9c390bd728186a94074e603 100644
+index ae24bd1450ac2094218770cb78a360ff097980f0..1795fc4747752847c80397d0ca3653310f913d82 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -183,6 +183,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -182,6 +182,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      };
      // CraftBukkit end
  
@@ -49,7 +49,7 @@ index bb9c6e9aeb1f30af01338476ba1dd618b14124d5..80c7ff059b78f55ec9c390bd728186a9
      // Paper start - distance maps
      private final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<EntityPlayer> pooledLinkedPlayerHashSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
  
-@@ -1048,7 +1050,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1047,7 +1049,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  return Either.left(chunk);
              });
          }, (runnable) -> {

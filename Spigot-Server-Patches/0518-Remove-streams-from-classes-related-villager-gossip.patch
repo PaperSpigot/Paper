@@ -5,24 +5,16 @@ Subject: [PATCH] Remove streams from classes related villager gossip
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java b/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
-index 9cc3a18636a356977577076e96cb7be706c61abf..7d34d1157786227ac210edc1595a024ccb61a3e9 100644
+index 9cc3a18636a356977577076e96cb7be706c61abf..0228d882737d793a1179c56a8722e70fa40d8b80 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/gossip/Reputation.java
-@@ -9,6 +9,7 @@ import com.mojang.serialization.DynamicOps;
- import it.unimi.dsi.fastutil.objects.Object2IntMap;
- import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
- import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-+import it.unimi.dsi.fastutil.objects.ObjectArrayList; // Paper
- import it.unimi.dsi.fastutil.objects.ObjectIterator;
- import java.util.Arrays;
- import java.util.Collection;
-@@ -51,8 +52,21 @@ public class Reputation {
+@@ -51,8 +51,21 @@ public class Reputation {
          });
      }
  
 +    // Paper start - Remove streams from reputation
 +    private List<Reputation.b> decompress() {
-+        List<Reputation.b> list = new ObjectArrayList<>();
++        List<Reputation.b> list = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +        for (Map.Entry<UUID, Reputation.a> entry : getReputations().entrySet()) {
 +            for (Reputation.b cur : entry.getValue().decompress(entry.getKey())) {
 +                if (cur.a() != 0)
@@ -39,7 +31,7 @@ index 9cc3a18636a356977577076e96cb7be706c61abf..7d34d1157786227ac210edc1595a024c
  
          if (list.isEmpty()) {
              return Collections.emptyList();
-@@ -119,7 +133,7 @@ public class Reputation {
+@@ -119,7 +132,7 @@ public class Reputation {
      }
  
      public <T> Dynamic<T> a(DynamicOps<T> dynamicops) {
@@ -48,7 +40,7 @@ index 9cc3a18636a356977577076e96cb7be706c61abf..7d34d1157786227ac210edc1595a024c
              return reputation_b.a(dynamicops);
          }).map(Dynamic::getValue)));
      }
-@@ -144,18 +158,30 @@ public class Reputation {
+@@ -144,18 +157,30 @@ public class Reputation {
  
      public static class a { // Paper - make public
  
@@ -76,7 +68,7 @@ index 9cc3a18636a356977577076e96cb7be706c61abf..7d34d1157786227ac210edc1595a024c
 +        }
 +
 +        public List<Reputation.b> decompress(UUID uuid) {
-+            List<Reputation.b> list = new ObjectArrayList<>();
++            List<Reputation.b> list = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
 +            for (Object2IntMap.Entry<ReputationType> entry : getEntries().object2IntEntrySet()) {
 +                list.add(new Reputation.b(uuid, entry.getKey(), entry.getIntValue()));
 +            }

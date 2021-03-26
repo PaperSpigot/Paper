@@ -71,10 +71,10 @@ index 90eb5d8ed7698b5e19d38cec647c1bcbc15532f4..78fc9046c64f612dfc56431ce6ea0e1c
          this.methodProfiler.enter("snooper");
          if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && !this.snooper.d() && this.ticks > 100) { // Spigot
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index f2d48659fdb9f030dbeec12ed820062d4d066e48..5122afbd51c87c27efa82d7d9393f252efa848d4 100644
+index b273ecec17f1ed37abb168dbc4d10577a3004f8b..b79b8a4127301118fa1271610986b3662f675c06 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -557,6 +557,15 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -556,6 +556,15 @@ public class ChunkProviderServer extends IChunkProvider {
          } // Paper - Timings
      }
  
@@ -158,23 +158,15 @@ index 6bced8533df49d7bfdb32dfa0caad9d788ffc2c8..75d4a8fc394449ccc006fe67a8842edc
      public void a(ProtoChunkExtension protochunkextension) {
          for (int i = 0; i < this.statusFutures.length(); ++i) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index ccfde274edfe1b611ccf8c583c92b16d52e4518d..1f32ab230d650bb5f652efbacdd5e4b90dc4de89 100644
+index ccfde274edfe1b611ccf8c583c92b16d52e4518d..40adc26642d925a179bd94ffa90748e1e45ff98d 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -93,6 +93,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStruct
- import net.minecraft.world.level.storage.Convertable;
- import net.minecraft.world.level.storage.WorldPersistentData;
- import net.minecraft.world.phys.Vec3D;
-+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet; // Paper
- import org.apache.commons.lang3.mutable.MutableBoolean;
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
-@@ -380,6 +381,64 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -380,6 +380,64 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      }
  
 +    // Paper start - incremental autosave
-+    final ObjectRBTreeSet<PlayerChunk> autoSaveQueue = new ObjectRBTreeSet<>((playerchunk1, playerchunk2) -> {
++    final it.unimi.dsi.fastutil.objects.ObjectRBTreeSet<PlayerChunk> autoSaveQueue = new it.unimi.dsi.fastutil.objects.ObjectRBTreeSet<>((playerchunk1, playerchunk2) -> {
 +        int timeCompare =  Long.compare(playerchunk1.lastAutoSaveTime, playerchunk2.lastAutoSaveTime);
 +        if (timeCompare != 0) {
 +            return timeCompare;
@@ -234,7 +226,7 @@ index ccfde274edfe1b611ccf8c583c92b16d52e4518d..1f32ab230d650bb5f652efbacdd5e4b9
      protected void save(boolean flag) {
          if (flag) {
              List<PlayerChunk> list = (List) this.visibleChunks.values().stream().filter(PlayerChunk::hasBeenLoaded).peek(PlayerChunk::m).collect(Collectors.toList());
-@@ -490,6 +549,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -490,6 +548,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
                          this.world.unloadChunk(chunk);
                      }
@@ -242,7 +234,7 @@ index ccfde274edfe1b611ccf8c583c92b16d52e4518d..1f32ab230d650bb5f652efbacdd5e4b9
  
                      this.lightEngine.a(ichunkaccess.getPos());
                      this.lightEngine.queueUpdate();
-@@ -682,6 +742,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -682,6 +741,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                      playerchunk.a(new ProtoChunkExtension(chunk));
                  }
  
@@ -252,10 +244,10 @@ index ccfde274edfe1b611ccf8c583c92b16d52e4518d..1f32ab230d650bb5f652efbacdd5e4b9
                      return PlayerChunk.getChunkState(playerchunk.getTicketLevel());
                  });
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 16441006736abdea0120570557348be4919c82ad..5da94d3c2498c84da81f41c37249159d1c3a9ca2 100644
+index f389f0c2dc3c81fcaa3363948c583dd9306b58a7..e88684a34e166c14d5004e17ebffb508749b836a 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -886,11 +886,43 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -885,11 +885,43 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          return !this.server.a(this, blockposition, entityhuman) && this.getWorldBorder().a(blockposition);
      }
  
@@ -300,7 +292,7 @@ index 16441006736abdea0120570557348be4919c82ad..5da94d3c2498c84da81f41c37249159d
              try (co.aikar.timings.Timing ignored = timings.worldSave.startTiming()) { // Paper
              if (iprogressupdate != null) {
                  iprogressupdate.a(new ChatMessage("menu.savingLevel"));
-@@ -916,6 +948,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -915,6 +947,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          // CraftBukkit end
      }
  

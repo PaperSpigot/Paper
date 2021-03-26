@@ -6,10 +6,10 @@ Subject: [PATCH] Add Raw Byte ItemStack Serialization
 Serializes using NBT which is safer for server data migrations than bukkits format.
 
 diff --git a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
-index 9da608c9dde183ad813fa5b7643314ce05c85aa5..a6e4bc57ed057f3cbb54817b991d0cef3f0c74fe 100644
+index 4d8158f376db14145cbd96c0ae77207afe158d7b..16e041aa969818af78dad6e57d9c020327049a62 100644
 --- a/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
 +++ b/src/main/java/net/minecraft/nbt/NBTCompressedStreamTools.java
-@@ -50,6 +50,7 @@ public class NBTCompressedStreamTools {
+@@ -49,6 +49,7 @@ public class NBTCompressedStreamTools {
          return nbttagcompound;
      }
  
@@ -17,7 +17,7 @@ index 9da608c9dde183ad813fa5b7643314ce05c85aa5..a6e4bc57ed057f3cbb54817b991d0cef
      public static NBTTagCompound a(InputStream inputstream) throws IOException {
          DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
          Throwable throwable = null;
-@@ -105,6 +106,7 @@ public class NBTCompressedStreamTools {
+@@ -104,6 +105,7 @@ public class NBTCompressedStreamTools {
  
      }
  
@@ -38,7 +38,7 @@ index 6527509e6aed7187667c681af682e9a02937a224..28e36ee76da533f8aa0a09cfc4f1fc0f
          return DataConverterRegistry.c;
      }
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index 8a2ff2ef17aba806a63be3aaebfa779dac96831d..3d5a4d662ae4880fa27bd681127ddf7d1f70b51c 100644
+index 661f400ae4f5cebef5d1743819529ecf647b6681..0468f80b7f52ee45fc9364470b23f80f7cd0cb57 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
 @@ -198,6 +198,7 @@ public final class ItemStack {

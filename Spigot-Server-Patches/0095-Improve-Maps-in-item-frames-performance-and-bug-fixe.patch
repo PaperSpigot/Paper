@@ -13,10 +13,10 @@ custom renderers are in use, defaulting to the much simpler Vanilla system.
 Additionally, numerous issues to player position tracking on maps has been fixed.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 5ac96a25a9010ab3ddbd4a2b30cef0bba2a02054..de95ff06f2eedd8f812d7e2a83955642c1f9bba9 100644
+index 61d8854fd38f877e07b16388f94528bd55231025..338dff1f0d71bb8d8fdc7bbdee7035a1bf55f474 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1168,6 +1168,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1167,6 +1167,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                          {
                              if ( iter.next().trackee == entity )
                              {
@@ -58,10 +58,10 @@ index f42e16589476c1bd10b13214dda5ac7bb3e52131..e3e3426a00128b56d523bb43a59b814b
              return entityitem;
          }
 diff --git a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
-index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552e186a6bb 100644
+index eccecae231d4babc853e0bb93f44eee0aa60b21a..eaa97669cf7f8ac00d6f6dbaaa8312672e71a2c8 100644
 --- a/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
 +++ b/src/main/java/net/minecraft/world/level/saveddata/maps/WorldMap.java
-@@ -57,6 +57,7 @@ public class WorldMap extends PersistentBase {
+@@ -56,6 +56,7 @@ public class WorldMap extends PersistentBase {
      private final Map<String, MapIconBanner> m = Maps.newHashMap();
      public final Map<String, MapIcon> decorations = Maps.newLinkedHashMap();
      private final Map<String, WorldMapFrame> n = Maps.newHashMap();
@@ -69,7 +69,7 @@ index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552
  
      // CraftBukkit start
      public final CraftMapView mapView;
-@@ -69,6 +70,7 @@ public class WorldMap extends PersistentBase {
+@@ -68,6 +69,7 @@ public class WorldMap extends PersistentBase {
          // CraftBukkit start
          mapView = new CraftMapView(this);
          server = (CraftServer) org.bukkit.Bukkit.getServer();
@@ -77,7 +77,7 @@ index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552
          // CraftBukkit end
      }
  
-@@ -136,6 +138,7 @@ public class WorldMap extends PersistentBase {
+@@ -135,6 +137,7 @@ public class WorldMap extends PersistentBase {
              this.m.put(mapiconbanner.f(), mapiconbanner);
              this.a(mapiconbanner.c(), (GeneratorAccess) null, mapiconbanner.f(), (double) mapiconbanner.a().getX(), (double) mapiconbanner.a().getZ(), 180.0D, mapiconbanner.d());
          }
@@ -85,7 +85,7 @@ index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552
  
          NBTTagList nbttaglist1 = nbttagcompound.getList("frames", 10);
  
-@@ -216,6 +219,7 @@ public class WorldMap extends PersistentBase {
+@@ -215,6 +218,7 @@ public class WorldMap extends PersistentBase {
          this.b();
      }
  
@@ -93,7 +93,7 @@ index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552
      public void a(EntityHuman entityhuman, ItemStack itemstack) {
          if (!this.humans.containsKey(entityhuman)) {
              WorldMap.WorldMapHumanTracker worldmap_worldmaphumantracker = new WorldMap.WorldMapHumanTracker(entityhuman);
-@@ -451,6 +455,21 @@ public class WorldMap extends PersistentBase {
+@@ -450,6 +454,21 @@ public class WorldMap extends PersistentBase {
  
      public class WorldMapHumanTracker {
  
@@ -115,7 +115,7 @@ index 3f057f0bd23bc1c693c8f04ee8acd6626c620008..d470af1814af332595c1c0beb1cdc552
          public final EntityHuman trackee;
          private boolean d = true;
          private int e;
-@@ -467,9 +486,12 @@ public class WorldMap extends PersistentBase {
+@@ -466,9 +485,12 @@ public class WorldMap extends PersistentBase {
          @Nullable
          public Packet<?> a(ItemStack itemstack) {
              // CraftBukkit start

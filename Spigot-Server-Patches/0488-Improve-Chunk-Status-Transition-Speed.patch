@@ -36,10 +36,10 @@ scenario / path:
 Previously would have hopped to SERVER around 12+ times there extra.
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunk.java b/src/main/java/net/minecraft/server/level/PlayerChunk.java
-index fc79a73c884ceb7e0ce56443c36b135c4e525193..88022e3ccd04f9c041ced68be66a95247c1017e9 100644
+index ed507f695b0c15922c8d416a3367c59354462966..13b5506452bab44dbda2fee404e078bc67f3ec45 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunk.java
-@@ -84,6 +84,13 @@ public class PlayerChunk {
+@@ -83,6 +83,13 @@ public class PlayerChunk {
          this.playersInChunkTickRange = this.chunkMap.playerChunkTickRangeMap.getObjectsInRange(key);
      }
      // Paper end - optimise isOutsideOfRange
@@ -54,10 +54,10 @@ index fc79a73c884ceb7e0ce56443c36b135c4e525193..88022e3ccd04f9c041ced68be66a9524
      // Paper start - no-tick view distance
      public final Chunk getSendingChunk() {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 01cce21eeed25b2bb36a0f32b9708afb83690f90..7318103feafd12ed631f907a450c9dc3d665a9a3 100644
+index 8d8564cf1dab1b9dbe33917f74b0f693f9c8078b..ba23664b9774660bb6cdc7ae7f747f5931e9914e 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -795,7 +795,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -793,7 +793,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              return either.mapLeft((list) -> {
                  return (Chunk) list.get(list.size() / 2);
              });
@@ -66,7 +66,7 @@ index 01cce21eeed25b2bb36a0f32b9708afb83690f90..7318103feafd12ed631f907a450c9dc3
      }
  
      @Nullable
-@@ -1145,7 +1145,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1143,7 +1143,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                      IChunkAccess ichunkaccess = (IChunkAccess) optional.get();
  
                      if (ichunkaccess.getChunkStatus().b(chunkstatus)) {
@@ -75,7 +75,7 @@ index 01cce21eeed25b2bb36a0f32b9708afb83690f90..7318103feafd12ed631f907a450c9dc3
  
                          if (chunkstatus == ChunkStatus.LIGHT) {
                              completablefuture1 = this.b(playerchunk, chunkstatus);
-@@ -1161,7 +1161,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1159,7 +1159,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                          return this.b(playerchunk, chunkstatus);
                      }
                  }
@@ -84,7 +84,7 @@ index 01cce21eeed25b2bb36a0f32b9708afb83690f90..7318103feafd12ed631f907a450c9dc3
          }
      }
  
-@@ -1282,6 +1282,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1280,6 +1280,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  return CompletableFuture.completedFuture(Either.right(playerchunk_failure));
              });
          }, (runnable) -> {

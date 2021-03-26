@@ -73,10 +73,10 @@ index 335666db1854e8aa4b2ba71d5bdc2658305cb70a..2bbdcedf4856080ea9232effdf3bdae9
                  if (flag1) {
                      ChunkMapDistance.this.j.a(ChunkTaskQueueSorter.a(() -> {
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index d50b53ae3b8f463eb1caa93b1c21f5c6a5a6484c..d4f0cb8d18a185e58892a42fb7151cf1065fc362 100644
+index cabb331d5e4c3f65c838455b12a3b99b270a5a4d..95eb089a0bfd95d28a05c6b636eb05ec13670240 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -251,6 +251,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -250,6 +250,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      double lastEntitySpawnRadiusSquared; // Paper - optimise isOutsideRange, this field is in blocks
  
@@ -179,7 +179,7 @@ index 25484cac9c62e49de39fbbf506fcb3edc4ba6e65..1f6333c2c26ad04e23d2881235ed1dcf
  
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> a(ChunkStatus chunkstatus, PlayerChunkMap playerchunkmap) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a950845eaf 100644
+index b21a466b21c1c5c9f840eaea8ab0d715b769feae..3c38500b06e3bab75482c95e5d8b1c61b750e04a 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 @@ -60,9 +60,11 @@ import net.minecraft.network.protocol.game.PacketPlayOutLightUpdate;
@@ -194,7 +194,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  import net.minecraft.util.CSVWriter;
  import net.minecraft.util.EntitySlice;
  import net.minecraft.util.MathHelper;
-@@ -146,7 +148,13 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -145,7 +147,13 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      private boolean updatingChunksModified;
      private final ChunkTaskQueueSorter p;
      private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> mailboxWorldGen;
@@ -209,7 +209,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      public final WorldLoadListener worldLoadListener;
      public final PlayerChunkMap.a chunkDistanceManager; public final ChunkMapDistance getChunkDistanceManager() { return this.chunkDistanceManager; } // Paper - OBFHELPER
      private final AtomicInteger u;
-@@ -221,6 +229,22 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -220,6 +228,22 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerMobSpawnMap; // this map is absent from updateMaps since it's controlled at the start of the chunkproviderserver tick
      public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerChunkTickRangeMap;
      // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -232,7 +232,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
      void addPlayerToDistanceMaps(EntityPlayer player) {
          int chunkX = MCUtil.getChunkCoordinate(player.locX());
-@@ -237,6 +261,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -236,6 +260,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          // Paper start - optimise PlayerChunkMap#isOutsideRange
          this.playerChunkTickRangeMap.add(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -252,7 +252,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
  
      void removePlayerFromDistanceMaps(EntityPlayer player) {
-@@ -249,6 +286,11 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -248,6 +285,11 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          this.playerMobSpawnMap.remove(player);
          this.playerChunkTickRangeMap.remove(player);
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -264,7 +264,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
  
      void updateMaps(EntityPlayer player) {
-@@ -266,6 +308,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -265,6 +307,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          // Paper start - optimise PlayerChunkMap#isOutsideRange
          this.playerChunkTickRangeMap.update(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -284,7 +284,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
      // Paper end
  
-@@ -373,6 +428,45 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -372,6 +427,45 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  }
              });
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -330,7 +330,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
  
      public void updatePlayerMobTypeMap(Entity entity) {
-@@ -1193,15 +1287,11 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1192,15 +1286,11 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          completablefuture1.thenAcceptAsync((either) -> {
              either.mapLeft((chunk) -> {
                  this.u.getAndIncrement();
@@ -348,7 +348,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
          });
          return completablefuture1;
      }
-@@ -1296,32 +1386,38 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1295,32 +1385,38 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          }
      }
  
@@ -402,7 +402,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
      protected void sendChunk(EntityPlayer entityplayer, ChunkCoordIntPair chunkcoordintpair, Packet<?>[] apacket, boolean flag, boolean flag1) {
          if (entityplayer.world == this.world) {
-@@ -1329,7 +1425,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1328,7 +1424,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  PlayerChunk playerchunk = this.getVisibleChunk(chunkcoordintpair.pair());
  
                  if (playerchunk != null) {
@@ -411,7 +411,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
                      if (chunk != null) {
                          this.a(entityplayer, apacket, chunk);
-@@ -1590,6 +1686,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1589,6 +1685,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      }
      // Paper end - optimise isOutsideOfRange
  
@@ -419,7 +419,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      private boolean b(EntityPlayer entityplayer) {
          return entityplayer.isSpectator() && !this.world.getGameRules().getBoolean(GameRules.SPECTATORS_GENERATE_CHUNKS);
      }
-@@ -1617,13 +1714,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1616,13 +1713,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              this.removePlayerFromDistanceMaps(entityplayer); // Paper - distance maps
          }
  
@@ -434,7 +434,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
      }
  
-@@ -1631,7 +1722,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1630,7 +1721,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          SectionPosition sectionposition = SectionPosition.a((Entity) entityplayer);
  
          entityplayer.a(sectionposition);
@@ -443,7 +443,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
          return sectionposition;
      }
  
-@@ -1676,6 +1767,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1675,6 +1766,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          int k1;
          int l1;
  
@@ -451,7 +451,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
          if (Math.abs(i1 - i) <= this.viewDistance * 2 && Math.abs(j1 - j) <= this.viewDistance * 2) {
              k1 = Math.min(i, i1) - this.viewDistance;
              l1 = Math.min(j, j1) - this.viewDistance;
-@@ -1713,7 +1805,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1712,7 +1804,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                      this.sendChunk(entityplayer, chunkcoordintpair1, new Packet[2], false, true);
                  }
              }
@@ -460,7 +460,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
          this.updateMaps(entityplayer); // Paper - distance maps
  
-@@ -1721,11 +1813,46 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1720,11 +1812,46 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      @Override
      public Stream<EntityPlayer> a(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
@@ -511,7 +511,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
  
      public void addEntity(Entity entity) { // Paper - protected -> public
-@@ -1883,7 +2010,48 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1882,7 +2009,48 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      }
  
@@ -561,7 +561,7 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      private void a(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) {
          if (apacket[0] == null) {
              apacket[0] = new PacketPlayOutMapChunk(chunk, 65535, chunk.world.chunkPacketBlockController.shouldModify(entityplayer, chunk, 65535)); // Paper - Anti-Xray - Bypass
-@@ -2069,7 +2237,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -2068,7 +2236,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                          ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(this.tracker.chunkX, this.tracker.chunkZ);
                          PlayerChunk playerchunk = PlayerChunkMap.this.getVisibleChunk(chunkcoordintpair.pair());
  
@@ -571,10 +571,10 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
                          }
                      }
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 70b3a7c8c4bd817be9c4dfaee71ec22a42620e11..ee6de0186f6a112d02e1dd4cc73fdaa92ab4d0d9 100644
+index 3c16cc801fbe073228a54a93b9b298d5913e245f..c04135f58e1b7f487e777cf373d9d5b1e62a23d1 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -254,7 +254,7 @@ public abstract class PlayerList {
+@@ -252,7 +252,7 @@ public abstract class PlayerList {
          boolean flag1 = gamerules.getBoolean(GameRules.REDUCED_DEBUG_INFO);
  
          // Spigot - view distance
@@ -583,7 +583,7 @@ index 70b3a7c8c4bd817be9c4dfaee71ec22a42620e11..ee6de0186f6a112d02e1dd4cc73fdaa9
          entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
          playerconnection.sendPacket(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.a, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
          playerconnection.sendPacket(new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
-@@ -908,7 +908,7 @@ public abstract class PlayerList {
+@@ -906,7 +906,7 @@ public abstract class PlayerList {
          // CraftBukkit start
          WorldData worlddata = worldserver1.getWorldData();
          entityplayer1.playerConnection.sendPacket(new PacketPlayOutRespawn(worldserver1.getDimensionManager(), worldserver1.getDimensionKey(), BiomeManager.a(worldserver1.getSeed()), entityplayer1.playerInteractManager.getGameMode(), entityplayer1.playerInteractManager.c(), worldserver1.isDebugWorld(), worldserver1.isFlatWorld(), flag));
@@ -592,7 +592,7 @@ index 70b3a7c8c4bd817be9c4dfaee71ec22a42620e11..ee6de0186f6a112d02e1dd4cc73fdaa9
          entityplayer1.spawnIn(worldserver1);
          entityplayer1.dead = false;
          entityplayer1.playerConnection.teleport(new Location(worldserver1.getWorld(), entityplayer1.locX(), entityplayer1.locY(), entityplayer1.locZ(), entityplayer1.yaw, entityplayer1.pitch));
-@@ -1376,7 +1376,7 @@ public abstract class PlayerList {
+@@ -1374,7 +1374,7 @@ public abstract class PlayerList {
  
      public void a(int i) {
          this.viewDistance = i;

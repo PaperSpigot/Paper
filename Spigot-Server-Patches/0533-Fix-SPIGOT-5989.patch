@@ -10,10 +10,10 @@ This fixes that by checking if the modified spawn location is
 still at a respawn anchor.
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index b33e610fee244e4791f6a88e8699c999913cb2d3..1b78f53d09cc26fe881933df8aa1a7e77337acf1 100644
+index 057a4ce0bd647b42e2a29efe575f8d9a01e64c3b..d184f6077593ff602f4efae16312eacc1a15cd44 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -83,6 +83,7 @@ import net.minecraft.world.level.EnumGamemode;
+@@ -82,6 +82,7 @@ import net.minecraft.world.level.EnumGamemode;
  import net.minecraft.world.level.GameRules;
  import net.minecraft.world.level.World;
  import net.minecraft.world.level.biome.BiomeManager;
@@ -21,7 +21,7 @@ index b33e610fee244e4791f6a88e8699c999913cb2d3..1b78f53d09cc26fe881933df8aa1a7e7
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.level.border.IWorldBorderListener;
-@@ -850,6 +851,7 @@ public abstract class PlayerList {
+@@ -848,6 +849,7 @@ public abstract class PlayerList {
          // Paper start
          boolean isBedSpawn = false;
          boolean isRespawn = false;
@@ -29,7 +29,7 @@ index b33e610fee244e4791f6a88e8699c999913cb2d3..1b78f53d09cc26fe881933df8aa1a7e7
          // Paper end
  
          // CraftBukkit start - fire PlayerRespawnEvent
-@@ -860,7 +862,7 @@ public abstract class PlayerList {
+@@ -858,7 +860,7 @@ public abstract class PlayerList {
                  Optional optional;
  
                  if (blockposition != null) {
@@ -38,7 +38,7 @@ index b33e610fee244e4791f6a88e8699c999913cb2d3..1b78f53d09cc26fe881933df8aa1a7e7
                  } else {
                      optional = Optional.empty();
                  }
-@@ -903,7 +905,12 @@ public abstract class PlayerList {
+@@ -901,7 +903,12 @@ public abstract class PlayerList {
              }
              // Spigot End
  
@@ -52,7 +52,7 @@ index b33e610fee244e4791f6a88e8699c999913cb2d3..1b78f53d09cc26fe881933df8aa1a7e7
              if (!flag) entityplayer.reset(); // SPIGOT-4785
              isRespawn = true; // Paper
          } else {
-@@ -941,8 +948,12 @@ public abstract class PlayerList {
+@@ -939,8 +946,12 @@ public abstract class PlayerList {
          }
          // entityplayer1.syncInventory();
          entityplayer1.setHealth(entityplayer1.getHealth());

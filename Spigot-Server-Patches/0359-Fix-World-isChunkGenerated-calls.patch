@@ -8,10 +8,10 @@ This patch also adds a chunk status cache on region files (note that
 its only purpose is to cache the status on DISK)
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 94af98e250fe7ef37c16d432c05c6f2b68625fe1..f2d48659fdb9f030dbeec12ed820062d4d066e48 100644
+index 62e1250407ed53e0ac24ea8ee384c19053757f17..b273ecec17f1ed37abb168dbc4d10577a3004f8b 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -52,7 +52,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -51,7 +51,7 @@ public class ChunkProviderServer extends IChunkProvider {
      private final WorldServer world;
      public final Thread serverThread; // Paper - private -> public
      private final LightEngineThreaded lightEngine;
@@ -20,7 +20,7 @@ index 94af98e250fe7ef37c16d432c05c6f2b68625fe1..f2d48659fdb9f030dbeec12ed820062d
      public final PlayerChunkMap playerChunkMap;
      private final WorldPersistentData worldPersistentData;
      private long lastTickTime;
-@@ -317,6 +317,21 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -316,6 +316,21 @@ public class ChunkProviderServer extends IChunkProvider {
  
          return ret;
      }
@@ -42,7 +42,7 @@ index 94af98e250fe7ef37c16d432c05c6f2b68625fe1..f2d48659fdb9f030dbeec12ed820062d
      // Paper end
  
      @Nullable
-@@ -768,7 +783,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -767,7 +782,7 @@ public class ChunkProviderServer extends IChunkProvider {
          return this.p;
      }
  

@@ -8,10 +8,10 @@ Exposes a mutable array on items a player should keep on death
 Example Usage: https://gist.github.com/aikar/5bb202de6057a051a950ce1f29feb0b4
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 920e0d7a3339197ad10747266af737753b025ba4..689063b7f1e57d691f130ddb399177566edcad2e 100644
+index c816a5fe9cc1ab73c33dcf46dd3fa41737a7c4e9..23f57d357b2915ba81498fe792688acd6090a34b 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -694,6 +694,46 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -693,6 +693,46 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          });
      }
  
@@ -58,7 +58,7 @@ index 920e0d7a3339197ad10747266af737753b025ba4..689063b7f1e57d691f130ddb39917756
      @Override
      public void die(DamageSource damagesource) {
          boolean flag = this.world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES);
-@@ -777,7 +817,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -776,7 +816,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.dropExperience();
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {

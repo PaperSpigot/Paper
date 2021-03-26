@@ -69,10 +69,10 @@ index eb2c9d2248a8647beee9960c5016a83f35aa1247..b5ee789c8dfb7f413ab60902ff3d2ef0
      public boolean hasPermission(int i) {
          // CraftBukkit start
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 6a0e3bd8641c895decd83b80e3a715ea31a5cce7..839eb6a294a696c5abd0d5e005b70d9bdbf25f9b 100644
+index 60f52ffe4335b254e707fc72ac3b668431ce2696..78cb5d097187fe1e61c401f8c92a610982f2caa1 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -768,8 +768,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -766,8 +766,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
                      ParseResults<CommandListenerWrapper> parseresults = this.minecraftServer.getCommandDispatcher().a().parse(stringreader, this.player.getCommandListener());
  
                      this.minecraftServer.getCommandDispatcher().a().getCompletionSuggestions(parseresults).thenAccept((suggestions) -> {
@@ -87,7 +87,7 @@ index 6a0e3bd8641c895decd83b80e3a715ea31a5cce7..839eb6a294a696c5abd0d5e005b70d9b
                      });
                  });
              }
-@@ -778,7 +782,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -776,7 +780,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
              builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);
              completions.forEach(builder::suggest);

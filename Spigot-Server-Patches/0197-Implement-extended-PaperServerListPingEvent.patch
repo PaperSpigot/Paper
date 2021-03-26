@@ -175,24 +175,16 @@ index 0000000000000000000000000000000000000000..174326871df9b61beec51ef6a1e5f269
 +
 +}
 diff --git a/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
-index 0ebeacaaeb265d202f52c758566a5160c42e8a55..cb37805c8cc5a064391f338c6359df518f6db39a 100644
+index 0ebeacaaeb265d202f52c758566a5160c42e8a55..be4ce01ade4c22adc3c7a6da7144a59409666f09 100644
 --- a/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
 +++ b/src/main/java/net/minecraft/network/protocol/status/PacketStatusOutServerInfo.java
-@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.status;
- 
- import com.google.gson.Gson;
- import com.google.gson.GsonBuilder;
-+import io.papermc.paper.adventure.AdventureComponent; // Paper
- import java.io.IOException;
- import net.minecraft.network.PacketDataSerializer;
- import net.minecraft.network.chat.ChatModifier;
-@@ -12,7 +13,9 @@ import net.minecraft.util.ChatTypeAdapterFactory;
+@@ -12,7 +12,9 @@ import net.minecraft.util.ChatTypeAdapterFactory;
  
  public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener> {
  
 -    private static final Gson a = (new GsonBuilder()).registerTypeAdapter(ServerPing.ServerData.class, new ServerPing.ServerData.Serializer()).registerTypeAdapter(ServerPing.ServerPingPlayerSample.class, new ServerPing.ServerPingPlayerSample.Serializer()).registerTypeAdapter(ServerPing.class, new ServerPing.Serializer()).registerTypeHierarchyAdapter(IChatBaseComponent.class, new IChatBaseComponent.ChatSerializer()).registerTypeHierarchyAdapter(ChatModifier.class, new ChatModifier.ChatModifierSerializer()).registerTypeAdapterFactory(new ChatTypeAdapterFactory()).create();
 +    private static final Gson a = (new GsonBuilder()).registerTypeAdapter(ServerPing.ServerData.class, new ServerPing.ServerData.Serializer()).registerTypeAdapter(ServerPing.ServerPingPlayerSample.class, new ServerPing.ServerPingPlayerSample.Serializer()).registerTypeAdapter(ServerPing.class, new ServerPing.Serializer()).registerTypeHierarchyAdapter(IChatBaseComponent.class, new IChatBaseComponent.ChatSerializer()).registerTypeHierarchyAdapter(ChatModifier.class, new ChatModifier.ChatModifierSerializer()).registerTypeAdapterFactory(new ChatTypeAdapterFactory())
-+        .registerTypeAdapter(AdventureComponent.class, new AdventureComponent.Serializer())
++        .registerTypeAdapter(io.papermc.paper.adventure.AdventureComponent.class, new io.papermc.paper.adventure.AdventureComponent.Serializer())
 +        .create();
      private ServerPing b;
  

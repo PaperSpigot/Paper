@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ysl3000 <yannicklamprecht@live.de>
+Date: Mon, 5 Oct 2020 21:25:16 +0200
+Subject: [PATCH] Player Chunk Load/Unload Events
+
+
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index ecae3c8326a40c208c5fdb27ffc70e539a39fcff..30b890430b00a105f34b8a54fbfaf864e0b997ae 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -2087,11 +2087,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public void a(ChunkCoordIntPair chunkcoordintpair, Packet<?> packet, Packet<?> packet1) {
+         this.playerConnection.sendPacket(packet1);
+         this.playerConnection.sendPacket(packet);
++        // Paper start
++        if(io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0){
++            new io.papermc.paper.event.packet.PlayerChunkLoadEvent(this.getBukkitEntity().getWorld().getChunkAt(chunkcoordintpair.longKey), this.getBukkitEntity()).callEvent();
++        }
++        // Paper end
+     }
+ 
+     public void a(ChunkCoordIntPair chunkcoordintpair) {
+         if (this.isAlive()) {
+             this.playerConnection.sendPacket(new PacketPlayOutUnloadChunk(chunkcoordintpair.x, chunkcoordintpair.z));
++            // Paper start
++            if(io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0){
++                new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(this.getBukkitEntity().getWorld().getChunkAt(chunkcoordintpair.longKey), this.getBukkitEntity()).callEvent();
++            }
++            // Paper end
+         }
+ 
+     }

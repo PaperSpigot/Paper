@@ -7,10 +7,10 @@ The problem was we were checking isExpired() on the entry, but if it
 was expired at that point, then it would be null.
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index ae0aaaf129c44901ac72c67e50c663333ab57f9d..f1dd51f30a40613a1fa1e00be43d21684ea9c274 100644
+index d6d3468d67e009d599a3d3f7a15be18093c2820e..8ee19fc86f1637325a207048a62d4c89b8dfd27c 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -607,8 +607,10 @@ public abstract class PlayerList {
+@@ -605,8 +605,10 @@ public abstract class PlayerList {
          Player player = entity.getBukkitEntity();
          PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
  

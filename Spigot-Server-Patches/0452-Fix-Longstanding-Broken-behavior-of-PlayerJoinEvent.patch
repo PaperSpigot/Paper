@@ -28,10 +28,10 @@ receives a deterministic result, and should no longer require 1 tick
 delays anymore.
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 5b9778c0a7a52ddb05ca7a6864e3b8852cec03e4..eaeac60b2d54d8e7d298ea412d888471a7ea9e79 100644
+index bda4bdf38bed54c9a8db94c3a91d8782364a7542..7b4192b00e5f60149a95652688d0ed09052945d4 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -239,6 +239,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -238,6 +238,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public double maxHealthCache;
      public boolean joining = true;
      public boolean sentListPacket = false;
@@ -40,10 +40,10 @@ index 5b9778c0a7a52ddb05ca7a6864e3b8852cec03e4..eaeac60b2d54d8e7d298ea412d888471
      // CraftBukkit end
      public PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 80c7ff059b78f55ec9c390bd728186a94074e603..94860c06717e8dcf969277562e88687e9a99aaa4 100644
+index 1795fc4747752847c80397d0ca3653310f913d82..237c7fd0f73005863a93941f8838310fb7e78f1e 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -1578,7 +1578,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1577,7 +1577,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          });
      }
  
@@ -52,7 +52,7 @@ index 80c7ff059b78f55ec9c390bd728186a94074e603..94860c06717e8dcf969277562e88687e
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
          // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
          if (!entity.valid || entity.world != this.world || this.trackedEntities.containsKey(entity.getId())) {
-@@ -1587,6 +1587,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1586,6 +1586,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  .printStackTrace();
              return;
          }
@@ -61,10 +61,10 @@ index 80c7ff059b78f55ec9c390bd728186a94074e603..94860c06717e8dcf969277562e88687e
          if (!(entity instanceof EntityComplexPart)) {
              EntityTypes<?> entitytypes = entity.getEntityType();
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index b5600711c29b00f2d7863c0493a21f5080127e9c..c9a8e5c04a10c28ce79368a783dfe3c8e3709583 100644
+index 018d7150ed75a4d7435409b2ef9803f27ec7dba6..6fb6375ce6dde343819cdd85f9b686327a28e3be 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -276,6 +276,12 @@ public abstract class PlayerList {
+@@ -274,6 +274,12 @@ public abstract class PlayerList {
          this.j.put(entityplayer.getUniqueID(), entityplayer);
          // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[]{entityplayer})); // CraftBukkit - replaced with loop below
  
@@ -75,9 +75,9 @@ index b5600711c29b00f2d7863c0493a21f5080127e9c..c9a8e5c04a10c28ce79368a783dfe3c8
 +        mountSavedVehicle(entityplayer, worldserver1, nbttagcompound);
 +        // Paper end
          // CraftBukkit start
-         PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(cserver.getPlayer(entityplayer), PaperAdventure.asAdventure(chatmessage)); // Paper - Adventure
+         PlayerJoinEvent playerJoinEvent = new org.bukkit.event.player.PlayerJoinEvent(cserver.getPlayer(entityplayer), io.papermc.paper.adventure.PaperAdventure.asAdventure(chatmessage)); // Paper - Adventure
          cserver.getPluginManager().callEvent(playerJoinEvent);
-@@ -311,6 +317,8 @@ public abstract class PlayerList {
+@@ -309,6 +315,8 @@ public abstract class PlayerList {
              entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer1}));
          }
          entityplayer.sentListPacket = true;
@@ -86,7 +86,7 @@ index b5600711c29b00f2d7863c0493a21f5080127e9c..c9a8e5c04a10c28ce79368a783dfe3c8
          // CraftBukkit end
  
          entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(entityplayer.getId(), entityplayer.getDataWatcher(), true)); // CraftBukkit - BungeeCord#2321, send complete data to self on spawn
-@@ -336,6 +344,11 @@ public abstract class PlayerList {
+@@ -334,6 +342,11 @@ public abstract class PlayerList {
              playerconnection.sendPacket(new PacketPlayOutEntityEffect(entityplayer.getId(), mobeffect));
          }
  
@@ -98,7 +98,7 @@ index b5600711c29b00f2d7863c0493a21f5080127e9c..c9a8e5c04a10c28ce79368a783dfe3c8
          if (nbttagcompound != null && nbttagcompound.hasKeyOfType("RootVehicle", 10)) {
              NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("RootVehicle");
              // CraftBukkit start
-@@ -384,6 +397,10 @@ public abstract class PlayerList {
+@@ -382,6 +395,10 @@ public abstract class PlayerList {
              }
          }
  

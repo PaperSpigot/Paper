@@ -14,10 +14,10 @@ Adds flying monsters to control ghast and phantoms
 Adds villagers as separate config
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817cd4fb298 100644
+index e29664835e5dff00915d255af20ec9bb7bd7e656..c864f5904651a8f3a786dd5ccb9dab2f9a0369eb 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -859,17 +859,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -858,17 +858,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              ++TimingHistory.entityTicks; // Paper - timings
              // Spigot start
              co.aikar.timings.Timing timer; // Paper
@@ -39,7 +39,7 @@ index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817
              try {
              // Paper end - timings
              entity.g(entity.locX(), entity.locY(), entity.locZ());
-@@ -883,12 +883,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -882,12 +882,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                      return IRegistry.ENTITY_TYPE.getKey(entity.getEntityType()).toString();
                  });
                  gameprofilerfiller.c("tickNonPassenger");
@@ -56,7 +56,7 @@ index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817
              if (entity.inChunk) {
                  Iterator iterator = entity.getPassengers().iterator();
  
-@@ -898,7 +902,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -897,7 +901,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                      this.a(entity, entity1);
                  }
              }
@@ -65,7 +65,7 @@ index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817
  
          }
      }
-@@ -906,6 +910,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -905,6 +909,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      public void a(Entity entity, Entity entity1) {
          if (!entity1.dead && entity1.getVehicle() == entity) {
              if (entity1 instanceof EntityHuman || this.getChunkProvider().a(entity1)) {
@@ -77,7 +77,7 @@ index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817
                  entity1.g(entity1.locX(), entity1.locY(), entity1.locZ());
                  entity1.lastYaw = entity1.yaw;
                  entity1.lastPitch = entity1.pitch;
-@@ -917,8 +926,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -916,8 +925,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                          return IRegistry.ENTITY_TYPE.getKey(entity1.getEntityType()).toString();
                      });
                      gameprofilerfiller.c("tickPassenger");
@@ -95,7 +95,7 @@ index f11617dc37771f65d574cd14ae9cea09103d11e1..c4adf5d3c2389d3344e179562eee6817
                      gameprofilerfiller.exit();
                  }
  
-@@ -931,7 +949,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -930,7 +948,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
                          this.a(entity1, entity2);
                      }

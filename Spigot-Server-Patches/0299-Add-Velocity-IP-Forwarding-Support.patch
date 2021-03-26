@@ -127,10 +127,10 @@ index 0000000000000000000000000000000000000000..e6afaa41df086b1eb3950ce870c91dd5
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/network/PacketDataSerializer.java b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-index 5a1187b001004afe22d208bc5d7c288e796e16a6..579eb1260c7266cd41025cff177de4fb00ac0cec 100644
+index 6a7f192158f276f06e7e78fb70c7ab94e6266c2c..f887f91f1dfa12ccc4dc9e24c750aa1ec5cd5c8d 100644
 --- a/src/main/java/net/minecraft/network/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-@@ -192,6 +192,7 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -191,6 +191,7 @@ public class PacketDataSerializer extends ByteBuf {
          return this.d(oenum.ordinal());
      }
  
@@ -138,7 +138,7 @@ index 5a1187b001004afe22d208bc5d7c288e796e16a6..579eb1260c7266cd41025cff177de4fb
      public int i() {
          int i = 0;
          int j = 0;
-@@ -232,6 +233,7 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -231,6 +232,7 @@ public class PacketDataSerializer extends ByteBuf {
          return this;
      }
  
@@ -146,7 +146,7 @@ index 5a1187b001004afe22d208bc5d7c288e796e16a6..579eb1260c7266cd41025cff177de4fb
      public UUID k() {
          return new UUID(this.readLong(), this.readLong());
      }
-@@ -359,6 +361,7 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -358,6 +360,7 @@ public class PacketDataSerializer extends ByteBuf {
          }
      }
  
@@ -189,7 +189,7 @@ index eb970c1e954cb0aa83aa12e83c471778809e69b2..2d8c917509f10a96fc82404908b452cb
      public void a(PacketDataSerializer packetdataserializer) throws IOException {
          this.a = packetdataserializer.i();
 diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
-index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f6d519608 100644
+index 032ae8c8504b9a662afff0ddb2066b762b964acb..5eeed31c55a7684d478dfc2d0045061586b3bed2 100644
 --- a/src/main/java/net/minecraft/server/network/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/network/LoginListener.java
 @@ -18,12 +18,14 @@ import javax.crypto.Cipher;
@@ -207,15 +207,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
  import net.minecraft.network.protocol.login.PacketLoginOutDisconnect;
  import net.minecraft.network.protocol.login.PacketLoginOutEncryptionBegin;
  import net.minecraft.network.protocol.login.PacketLoginOutSetCompression;
-@@ -45,6 +47,7 @@ import org.bukkit.craftbukkit.util.Waitable;
- import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
- import org.bukkit.event.player.PlayerPreLoginEvent;
- // CraftBukkit end
-+import io.netty.buffer.Unpooled; // Paper
- 
- public class LoginListener implements PacketLoginInListener {
- 
-@@ -61,6 +64,7 @@ public class LoginListener implements PacketLoginInListener {
+@@ -60,6 +62,7 @@ public class LoginListener implements PacketLoginInListener {
      private SecretKey loginKey;
      private EntityPlayer l;
      public String hostname = ""; // CraftBukkit - add field
@@ -223,14 +215,14 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
  
      public LoginListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
          this.g = LoginListener.EnumProtocolState.HELLO;
-@@ -212,6 +216,14 @@ public class LoginListener implements PacketLoginInListener {
+@@ -211,6 +214,14 @@ public class LoginListener implements PacketLoginInListener {
              this.g = LoginListener.EnumProtocolState.KEY;
              this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic().getEncoded(), this.e));
          } else {
 +            // Paper start - Velocity support
 +            if (com.destroystokyo.paper.PaperConfig.velocitySupport) {
 +                this.velocityLoginMessageId = java.util.concurrent.ThreadLocalRandom.current().nextInt();
-+                PacketLoginOutCustomPayload packet = new PacketLoginOutCustomPayload(this.velocityLoginMessageId, com.destroystokyo.paper.proxy.VelocityProxy.PLAYER_INFO_CHANNEL, new PacketDataSerializer(Unpooled.EMPTY_BUFFER));
++                PacketLoginOutCustomPayload packet = new PacketLoginOutCustomPayload(this.velocityLoginMessageId, com.destroystokyo.paper.proxy.VelocityProxy.PLAYER_INFO_CHANNEL, new PacketDataSerializer(io.netty.buffer.Unpooled.EMPTY_BUFFER));
 +                this.networkManager.sendPacket(packet);
 +                return;
 +            }
@@ -238,7 +230,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
              // Spigot start
              // Paper start - Cache authenticator threads
              authenticatorPool.execute(new Runnable() {
-@@ -313,6 +325,12 @@ public class LoginListener implements PacketLoginInListener {
+@@ -312,6 +323,12 @@ public class LoginListener implements PacketLoginInListener {
      public class LoginHandler {
  
          public void fireEvents() throws Exception {
@@ -251,7 +243,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
                          String playerName = i.getName();
                          java.net.InetAddress address = ((java.net.InetSocketAddress) networkManager.getSocketAddress()).getAddress();
                          java.util.UUID uniqueId = i.getId();
-@@ -360,6 +378,35 @@ public class LoginListener implements PacketLoginInListener {
+@@ -359,6 +376,35 @@ public class LoginListener implements PacketLoginInListener {
      // Spigot end
  
      public void a(PacketLoginInCustomPayload packetloginincustompayload) {

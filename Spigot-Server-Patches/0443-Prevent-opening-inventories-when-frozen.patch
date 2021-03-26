@@ -5,10 +5,10 @@ Subject: [PATCH] Prevent opening inventories when frozen
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 8371d5ac694f469804ad55669fdedb8b3fc627bd..320be04d9e3284d728adb2df9da7edb63e5f71d1 100644
+index f3f70ae48699846f44ca4823cc908b56d3723d90..0a57a0a40b107ced0f23a72bf0444053cd7c3af8 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -559,7 +559,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -558,7 +558,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              containerUpdateDelay = world.paperConfig.containerUpdateTickRate;
          }
          // Paper end
@@ -17,7 +17,7 @@ index 8371d5ac694f469804ad55669fdedb8b3fc627bd..320be04d9e3284d728adb2df9da7edb6
              this.closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.CANT_USE); // Paper
              this.activeContainer = this.defaultContainer;
          }
-@@ -1398,7 +1398,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -1397,7 +1397,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              } else {
                  // CraftBukkit start
                  this.activeContainer = container;
@@ -26,7 +26,7 @@ index 8371d5ac694f469804ad55669fdedb8b3fc627bd..320be04d9e3284d728adb2df9da7edb6
                  // CraftBukkit end
                  container.addSlotListener(this);
                  return OptionalInt.of(this.containerCounter);
-@@ -2199,7 +2199,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2198,7 +2198,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      }
  
      @Override

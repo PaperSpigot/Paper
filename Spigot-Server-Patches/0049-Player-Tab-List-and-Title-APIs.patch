@@ -5,12 +5,12 @@ Subject: [PATCH] Player Tab List and Title APIs
 
 
 diff --git a/src/main/java/net/minecraft/network/PacketDataSerializer.java b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-index 5f1c5dd7902f6cff5acae05e8c6bf58a1ba5bdf1..df459918c14589155a574730205cb35d463b8079 100644
+index 01f8ba1746f37b605bc3f3b25331500be1c9c6b7..860e2e4afb1fd3811f9e10cd744aeb0c4f8f69a0 100644
 --- a/src/main/java/net/minecraft/network/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-@@ -171,6 +171,11 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -170,6 +170,11 @@ public class PacketDataSerializer extends ByteBuf {
      public PacketDataSerializer writeComponent(final net.kyori.adventure.text.Component component) {
-         return this.writeUtf(PaperAdventure.asJsonString(component, this.adventure$locale), 262144);
+         return this.writeUtf(io.papermc.paper.adventure.PaperAdventure.asJsonString(component, this.adventure$locale), 262144);
      }
 +
 +    @Deprecated
@@ -21,10 +21,10 @@ index 5f1c5dd7902f6cff5acae05e8c6bf58a1ba5bdf1..df459918c14589155a574730205cb35d
  
      public PacketDataSerializer a(IChatBaseComponent ichatbasecomponent) {
 diff --git a/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java b/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
-index c7c191b0a9889450fdf495f5aa45d59f159f1401..e0fe2ba95bd3cb6afcf9c804007438a513c095b7 100644
+index 2b94316f395c195f1d2b69e60daf394f12eec97d..3bf9471203b281e22c3e17ecf2c49b595ca23dae 100644
 --- a/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
 +++ b/src/main/java/net/minecraft/network/chat/IChatBaseComponent.java
-@@ -363,6 +363,7 @@ public interface IChatBaseComponent extends Message, IChatFormatted, Iterable<IC
+@@ -362,6 +362,7 @@ public interface IChatBaseComponent extends Message, IChatFormatted, Iterable<IC
              return IChatBaseComponent.ChatSerializer.a.toJsonTree(ichatbasecomponent);
          }
  

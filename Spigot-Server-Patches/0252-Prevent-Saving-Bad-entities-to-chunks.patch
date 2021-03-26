@@ -18,10 +18,10 @@ an invalid entity.
 This should reduce log occurrences of dupe uuid messages.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 04b708e776f277985340f329dc8cb3c16a6100a7..c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd 100644
+index 3219710f6268fe0396bd8d7b0065eff4943c714f..14c2d5984ca5604e19ab75470c35b987d1e3b8f5 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1155,6 +1155,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1154,6 +1154,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          List[] aentityslice = chunk.getEntitySlices(); // Spigot
          int i = aentityslice.length;
  
@@ -29,7 +29,7 @@ index 04b708e776f277985340f329dc8cb3c16a6100a7..c59bcb6e19b712e007c7bf66bf70a4ff
          for (int j = 0; j < i; ++j) {
              List<Entity> entityslice = aentityslice[j]; // Spigot
              Iterator iterator = entityslice.iterator();
-@@ -1167,11 +1168,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1166,11 +1167,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                          throw (IllegalStateException) SystemUtils.c((Throwable) (new IllegalStateException("Removing entity while ticking!")));
                      }
  

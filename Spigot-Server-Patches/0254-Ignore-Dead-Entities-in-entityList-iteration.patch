@@ -23,10 +23,10 @@ index 6943524c2dd8b12691b8ac5b08daee823ce50c3d..b67bd98cca4a06bc0ebaed577195dffc
                      MutablePair<Integer, Map<ChunkCoordIntPair, Integer>> info = list.computeIfAbsent(key, k -> MutablePair.of(0, Maps.newHashMap()));
                      ChunkCoordIntPair chunk = new ChunkCoordIntPair(e.chunkX, e.chunkZ);
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd..8452b4f62689b231d38f4608c2d72b41164078b3 100644
+index 14c2d5984ca5604e19ab75470c35b987d1e3b8f5..d5cdf8cfdca41cfe6474501bd6ae809aaa2cee35 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1307,6 +1307,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1306,6 +1306,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  entity.origin = entity.getBukkitEntity().getLocation();
              }
              // Paper end
@@ -34,7 +34,7 @@ index c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd..8452b4f62689b231d38f4608c2d72b41
              new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
          }
  
-@@ -1319,6 +1320,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1318,6 +1319,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              this.removeEntityFromChunk(entity);
              this.entitiesById.remove(entity.getId());
              this.unregisterEntity(entity);

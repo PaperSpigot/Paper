@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: dfsek <dfsek@protonmail.com>
+Date: Wed, 16 Sep 2020 01:12:29 -0700
+Subject: [PATCH] Add StructureLocateEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+index b1f2c424ef358f79c7fced88a61560d3ce32a2b6..67bd89a288cc352b148a8fa22ad336885efae407 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkGenerator.java
+@@ -160,6 +160,22 @@ public abstract class ChunkGenerator {
+ 
+     @Nullable
+     public BlockPosition findNearestMapFeature(WorldServer worldserver, StructureGenerator<?> structuregenerator, BlockPosition blockposition, int i, boolean flag) {
++        // Paper start
++        org.bukkit.World world = worldserver.getWorld();
++        org.bukkit.Location originLocation = new org.bukkit.Location(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++        io.papermc.paper.event.world.StructureLocateEvent event = new io.papermc.paper.event.world.StructureLocateEvent(world, originLocation, org.bukkit.StructureType.getStructureTypes().get(structuregenerator.i()), i, flag);
++        if(!event.callEvent()) return null;
++        // If event call set a final location, skip structure finding and just return set result.
++        if(event.getResult() != null) return new BlockPosition(event.getResult().getBlockX(), event.getResult().getBlockY(), event.getResult().getBlockZ());
++        // Get origin location (re)defined by event call.
++        blockposition = new BlockPosition(event.getOrigin().getBlockX(), event.getOrigin().getBlockY(), event.getOrigin().getBlockZ());
++        // Get world (re)defined by event call.
++        worldserver = ((org.bukkit.craftbukkit.CraftWorld) event.getOrigin().getWorld()).getHandle();
++        // Get radius and whether to find unexplored structures (re)defined by event call.
++        i = event.getRadius();
++        flag = event.shouldFindUnexplored();
++        structuregenerator = StructureGenerator.a.get(event.getType().getName());
++        // Paper end
+         if (!this.b.a(structuregenerator)) {
+             return null;
+         } else if (structuregenerator == StructureGenerator.STRONGHOLD) {

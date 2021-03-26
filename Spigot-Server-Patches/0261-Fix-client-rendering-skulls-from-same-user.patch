@@ -12,10 +12,10 @@ This allows the client to render multiple skull textures from the same user,
 for when different skins were used when skull was made.
 
 diff --git a/src/main/java/net/minecraft/network/PacketDataSerializer.java b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-index df459918c14589155a574730205cb35d463b8079..5a1187b001004afe22d208bc5d7c288e796e16a6 100644
+index 860e2e4afb1fd3811f9e10cd744aeb0c4f8f69a0..6a7f192158f276f06e7e78fb70c7ab94e6266c2c 100644
 --- a/src/main/java/net/minecraft/network/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/network/PacketDataSerializer.java
-@@ -37,6 +37,7 @@ import net.minecraft.network.chat.IChatBaseComponent;
+@@ -36,6 +36,7 @@ import net.minecraft.network.chat.IChatBaseComponent;
  import net.minecraft.resources.MinecraftKey;
  import net.minecraft.world.item.Item;
  import net.minecraft.world.item.ItemStack;
@@ -23,7 +23,7 @@ index df459918c14589155a574730205cb35d463b8079..5a1187b001004afe22d208bc5d7c288e
  import net.minecraft.world.phys.MovingObjectPositionBlock;
  import net.minecraft.world.phys.Vec3D;
  
-@@ -311,9 +312,18 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -310,9 +311,18 @@ public class PacketDataSerializer extends ByteBuf {
              if (item.usesDurability() || item.n()) {
                  // Spigot start - filter
                  itemstack = itemstack.cloneItemStack();
@@ -43,7 +43,7 @@ index df459918c14589155a574730205cb35d463b8079..5a1187b001004afe22d208bc5d7c288e
              }
  
              this.a(nbttagcompound);
-@@ -333,7 +343,16 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -332,7 +342,16 @@ public class PacketDataSerializer extends ByteBuf {
              itemstack.setTag(this.l());
              // CraftBukkit start
              if (itemstack.getTag() != null) {

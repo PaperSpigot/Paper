@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: KennyTV <jahnke.nassim@gmail.com>
+Date: Tue, 25 Aug 2020 13:48:33 +0200
+Subject: [PATCH] Add PlayerItemCooldownEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/item/ItemCooldownPlayer.java b/src/main/java/net/minecraft/world/item/ItemCooldownPlayer.java
+index 5f70e39f4da2880a6f734a225be83061b00847c8..c7c7b8036d7ac2e0c535e5d70ba332c4233a3ab0 100644
+--- a/src/main/java/net/minecraft/world/item/ItemCooldownPlayer.java
++++ b/src/main/java/net/minecraft/world/item/ItemCooldownPlayer.java
+@@ -5,12 +5,22 @@ import net.minecraft.server.level.EntityPlayer;
+ 
+ public class ItemCooldownPlayer extends ItemCooldown {
+ 
+-    private final EntityPlayer a;
++    private final EntityPlayer a; public EntityPlayer getEntityPlayer() { return a; } // Paper - OBFHELPER
+ 
+     public ItemCooldownPlayer(EntityPlayer entityplayer) {
+         this.a = entityplayer;
+     }
+ 
++    // Paper start
++    @Override
++    public void setCooldown(Item item, int ticks) {
++        io.papermc.paper.event.player.PlayerItemCooldownEvent event = new io.papermc.paper.event.player.PlayerItemCooldownEvent(getEntityPlayer().getBukkitEntity(), org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(item), ticks);
++        if (event.callEvent()) {
++            super.setCooldown(item, event.getCooldown());
++        }
++    }
++    // Paper end
++
+     @Override
+     protected void b(Item item, int i) {
+         super.b(item, i);

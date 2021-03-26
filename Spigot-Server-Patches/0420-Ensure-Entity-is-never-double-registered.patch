@@ -11,10 +11,10 @@ Vs behavior of non ticking of just overwriting state.
 We will now simply log a warning when this happens instead of crashing the server.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 74aef9741cc3ebf36749dc510bc4ef9d8f5580b0..ae4db654658675f05b678a3d2d6c4a6be503761e 100644
+index 418bfc9a81fa86faeeb9b85830aaadce44a9711c..407d228bd0b83cbb58ac0e060e2c2210a48bacc3 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -647,6 +647,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -646,6 +646,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              Entity entity2;
  
              while ((entity2 = (Entity) this.entitiesToAdd.poll()) != null) {
@@ -22,7 +22,7 @@ index 74aef9741cc3ebf36749dc510bc4ef9d8f5580b0..ae4db654658675f05b678a3d2d6c4a6b
                  this.registerEntity(entity2);
              }
  
-@@ -1404,6 +1405,19 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1403,6 +1404,19 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
      public void unregisterEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity unregister"); // Spigot
@@ -42,7 +42,7 @@ index 74aef9741cc3ebf36749dc510bc4ef9d8f5580b0..ae4db654658675f05b678a3d2d6c4a6b
          // Spigot start
          if ( entity instanceof EntityHuman )
          {
-@@ -1470,9 +1484,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1469,9 +1483,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
      private void registerEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity register"); // Spigot
@@ -66,7 +66,7 @@ index 74aef9741cc3ebf36749dc510bc4ef9d8f5580b0..ae4db654658675f05b678a3d2d6c4a6b
              if (entity instanceof EntityEnderDragon) {
                  EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).eJ();
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 19322c00422ac53de9903b3492994ce6e3c3bef4..44886357da22f0e7f74b1739028ae0c7a81dd525 100644
+index 68fdb01c3f11c3b060d3d621099d67f6b29431d6..f95aa9b4cc53c1e3258b7b32249ec1c3ef4ae2f1 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -148,6 +148,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne

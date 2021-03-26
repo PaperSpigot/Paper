@@ -5,10 +5,10 @@ Subject: [PATCH] Load Chunks for Login Asynchronously
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 6e5d21af43261dc2f12ceec7b7e3269be635cf7a..ecf4cd6dfea777ab9daea0b40724d247df7ddb53 100644
+index 3b932ea24f27ec63c70496e6fbd85fe5a97edbff..f6edfb2d437634f38d65de7e9723e82c80dc3aaa 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-@@ -629,7 +629,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -628,7 +628,7 @@ public class ChunkProviderServer extends IChunkProvider {
          return this.serverThreadQueue.executeNext();
      }
  
@@ -18,7 +18,7 @@ index 6e5d21af43261dc2f12ceec7b7e3269be635cf7a..ecf4cd6dfea777ab9daea0b40724d247
          boolean flag1 = this.playerChunkMap.b();
  
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..36b4792687a5c6316bf95995e761bf4aa49779f6 100644
+index 7b4192b00e5f60149a95652688d0ed09052945d4..af35c4fda81a271a78f5a6c05998ec5e5763fbd9 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -31,6 +31,7 @@ import net.minecraft.core.NonNullList;
@@ -29,7 +29,7 @@ index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..36b4792687a5c6316bf95995e761bf4a
  import net.minecraft.network.chat.ChatComponentText;
  import net.minecraft.network.chat.ChatHoverable;
  import net.minecraft.network.chat.ChatMessage;
-@@ -174,6 +175,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -173,6 +174,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      private static final Logger LOGGER = LogManager.getLogger();
      public PlayerConnection playerConnection;
@@ -37,7 +37,7 @@ index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..36b4792687a5c6316bf95995e761bf4a
      public final MinecraftServer server;
      public final PlayerInteractManager playerInteractManager;
      public final Deque<Integer> removeQueue = new ArrayDeque<>(); // Paper
-@@ -240,6 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -239,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean joining = true;
      public boolean sentListPacket = false;
      public boolean supressTrackerForLogin = false; // Paper
@@ -46,10 +46,10 @@ index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..36b4792687a5c6316bf95995e761bf4a
      // CraftBukkit end
      public PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 94860c06717e8dcf969277562e88687e9a99aaa4..e5d94dedc88e8bbcf8d9517dfb5c6ec6f62de5aa 100644
+index 237c7fd0f73005863a93941f8838310fb7e78f1e..66643a43a2804ed36bd062539fafde8b481314ec 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -147,7 +147,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -146,7 +146,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> mailboxWorldGen;
      private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> mailboxMain;
      public final WorldLoadListener worldLoadListener;
@@ -71,10 +71,10 @@ index 218dc900e125a11548485887b1918742072c7a77..2c932d36f982e7f8713aabff9a6c6310
      public static final TicketType<ChunkCoordIntPair> UNKNOWN = a("unknown", Comparator.comparingLong(ChunkCoordIntPair::pair), 1);
      public static final TicketType<Unit> PLUGIN = a("plugin", (a, b) -> 0); // CraftBukkit
 diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
-index 4dd2f7fb32b8618d752e0988acadcb41223c0e4c..78a8eb89e9113a1002ba6177f96d5734a10e8d7d 100644
+index 06c87da4c6f98e059b90576da7234cdd05d7dc17..bd5d1345f6d1061d1c097ba7d972217acab81778 100644
 --- a/src/main/java/net/minecraft/server/network/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/network/LoginListener.java
-@@ -88,7 +88,7 @@ public class LoginListener implements PacketLoginInListener {
+@@ -86,7 +86,7 @@ public class LoginListener implements PacketLoginInListener {
              }
              // Paper end
          } else if (this.g == LoginListener.EnumProtocolState.DELAY_ACCEPT) {
@@ -83,7 +83,7 @@ index 4dd2f7fb32b8618d752e0988acadcb41223c0e4c..78a8eb89e9113a1002ba6177f96d5734
  
              if (entityplayer == null) {
                  this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
-@@ -187,7 +187,7 @@ public class LoginListener implements PacketLoginInListener {
+@@ -185,7 +185,7 @@ public class LoginListener implements PacketLoginInListener {
              }
  
              this.networkManager.sendPacket(new PacketLoginOutSuccess(this.i));
@@ -93,10 +93,10 @@ index 4dd2f7fb32b8618d752e0988acadcb41223c0e4c..78a8eb89e9113a1002ba6177f96d5734
              if (entityplayer != null) {
                  this.g = LoginListener.EnumProtocolState.DELAY_ACCEPT;
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 3285a4248a7c5352454a64c6a84658f585932548..6a0e3bd8641c895decd83b80e3a715ea31a5cce7 100644
+index 488be577c5ee58b35fb14d413883d872cd0a7ef7..60f52ffe4335b254e707fc72ac3b668431ce2696 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -220,6 +220,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -218,6 +218,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private static final Logger LOGGER = LogManager.getLogger();
      public final NetworkManager networkManager;
      private final MinecraftServer minecraftServer;
@@ -104,7 +104,7 @@ index 3285a4248a7c5352454a64c6a84658f585932548..6a0e3bd8641c895decd83b80e3a715ea
      public EntityPlayer player;
      private int e;
      private long lastKeepAlive = SystemUtils.getMonotonicMillis(); private void setLastPing(long lastPing) { this.lastKeepAlive = lastPing;}; private long getLastPing() { return this.lastKeepAlive;}; // Paper - OBFHELPER
-@@ -298,6 +299,15 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -296,6 +297,15 @@ public class PlayerConnection implements PacketListenerPlayIn {
      // CraftBukkit end
  
      public void tick() {
@@ -120,7 +120,7 @@ index 3285a4248a7c5352454a64c6a84658f585932548..6a0e3bd8641c895decd83b80e3a715ea
          this.syncPosition();
          this.player.lastX = this.player.locX();
          this.player.lastY = this.player.locY();
-@@ -339,7 +349,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -337,7 +347,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
              this.r = null;
              this.D = false;
              this.E = 0;
@@ -130,10 +130,10 @@ index 3285a4248a7c5352454a64c6a84658f585932548..6a0e3bd8641c895decd83b80e3a715ea
          this.minecraftServer.getMethodProfiler().enter("keepAlive");
          // Paper Start - give clients a longer time to respond to pings as per pre 1.12.2 timings
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a42620e11 100644
+index 6fb6375ce6dde343819cdd85f9b686327a28e3be..3c16cc801fbe073228a54a93b9b298d5913e245f 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -41,6 +41,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityStatus;
+@@ -40,6 +40,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityStatus;
  import net.minecraft.network.protocol.game.PacketPlayOutExperience;
  import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
  import net.minecraft.network.protocol.game.PacketPlayOutHeldItemSlot;
@@ -141,7 +141,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
  import net.minecraft.network.protocol.game.PacketPlayOutLogin;
  import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
  import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
-@@ -60,6 +61,8 @@ import net.minecraft.server.MinecraftServer;
+@@ -59,6 +60,8 @@ import net.minecraft.server.MinecraftServer;
  import net.minecraft.server.ScoreboardServer;
  import net.minecraft.server.level.DemoPlayerInteractManager;
  import net.minecraft.server.level.EntityPlayer;
@@ -150,7 +150,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
  import net.minecraft.server.level.PlayerInteractManager;
  import net.minecraft.server.level.TicketType;
  import net.minecraft.server.level.WorldServer;
-@@ -128,11 +131,12 @@ public abstract class PlayerList {
+@@ -126,11 +129,12 @@ public abstract class PlayerList {
      private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
      private final MinecraftServer server;
      public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
@@ -164,7 +164,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
      // CraftBukkit start
      // private final Map<UUID, ServerStatisticManager> o;
      // private final Map<UUID, AdvancementDataPlayer> p;
-@@ -171,6 +175,11 @@ public abstract class PlayerList {
+@@ -169,6 +173,11 @@ public abstract class PlayerList {
      }
  
      public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
@@ -176,7 +176,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
          entityplayer.loginTime = System.currentTimeMillis(); // Paper
          GameProfile gameprofile = entityplayer.getProfile();
          UserCache usercache = this.server.getUserCache();
-@@ -184,7 +193,7 @@ public abstract class PlayerList {
+@@ -182,7 +191,7 @@ public abstract class PlayerList {
          if (nbttagcompound != null && nbttagcompound.hasKey("bukkit")) {
              NBTTagCompound bukkit = nbttagcompound.getCompound("bukkit");
              s = bukkit.hasKeyOfType("lastKnownName", 8) ? bukkit.getString("lastKnownName") : s;
@@ -185,7 +185,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
          // CraftBukkit end
  
          if (nbttagcompound != null) {
-@@ -259,6 +268,51 @@ public abstract class PlayerList {
+@@ -257,6 +266,51 @@ public abstract class PlayerList {
          entityplayer.getRecipeBook().a(entityplayer);
          this.sendScoreboard(worldserver1.getScoreboard(), entityplayer);
          this.server.invalidatePingSample();
@@ -237,7 +237,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
          ChatMessage chatmessage;
  
          if (entityplayer.getProfile().getName().equalsIgnoreCase(s)) {
-@@ -496,6 +550,7 @@ public abstract class PlayerList {
+@@ -494,6 +548,7 @@ public abstract class PlayerList {
  
      protected void savePlayerFile(EntityPlayer entityplayer) {
          if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
@@ -245,7 +245,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
          this.playerFileData.save(entityplayer);
          ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
  
-@@ -523,7 +578,7 @@ public abstract class PlayerList {
+@@ -521,7 +576,7 @@ public abstract class PlayerList {
          }
  
          PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, com.destroystokyo.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getName())));
@@ -254,7 +254,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
  
          if (server.isMainThread()) entityplayer.playerTick(); // SPIGOT-924 // Paper - don't tick during emergency shutdowns (Watchdog)
-@@ -576,6 +631,13 @@ public abstract class PlayerList {
+@@ -574,6 +629,13 @@ public abstract class PlayerList {
              // this.p.remove(uuid);
              // CraftBukkit end
          }
@@ -268,7 +268,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
  
          // CraftBukkit start
          // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, new EntityPlayer[]{entityplayer}));
-@@ -593,7 +655,7 @@ public abstract class PlayerList {
+@@ -591,7 +653,7 @@ public abstract class PlayerList {
          cserver.getScoreboardManager().removePlayer(entityplayer.getBukkitEntity());
          // CraftBukkit end
  
@@ -277,7 +277,7 @@ index 7305bba223229d9aa5315a8dff5fdc5af8faba6a..70b3a7c8c4bd817be9c4dfaee71ec22a
      }
  
      // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
-@@ -612,6 +674,13 @@ public abstract class PlayerList {
+@@ -610,6 +672,13 @@ public abstract class PlayerList {
                  list.add(entityplayer);
              }
          }

@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: BillyGalbreath <blake.galbreath@gmail.com>
+Date: Wed, 20 Jan 2021 14:23:37 -0600
+Subject: [PATCH] Allow adding items to BlockDropItemEvent
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 4ec9d17d2ad12a4114b11ff4c7b0a3b74e92acc0..2319682bb0dbfaf4e46de257f3b3a2f00b710b5c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -381,13 +381,30 @@ public class CraftEventFactory {
+     }
+ 
+     public static void handleBlockDropItemEvent(Block block, BlockState state, EntityPlayer player, List<EntityItem> items) {
+-        BlockDropItemEvent event = new BlockDropItemEvent(block, state, player.getBukkitEntity(), Lists.transform(items, (item) -> (org.bukkit.entity.Item) item.getBukkitEntity()));
++        // Paper start
++        List<Item> list = new ArrayList<>();
++        for (EntityItem item : items) {
++            list.add((Item) item.getBukkitEntity());
++        }
++        BlockDropItemEvent event = new BlockDropItemEvent(block, state, player.getBukkitEntity(), list);
++        // Paper end
+         Bukkit.getPluginManager().callEvent(event);
+ 
+         if (!event.isCancelled()) {
+-            for (EntityItem item : items) {
+-                item.world.addEntity(item);
++            // Paper start
++            for (Item bukkit : list) {
++                if (!bukkit.isValid()) {
++                    Entity item = ((org.bukkit.craftbukkit.entity.CraftItem) bukkit).getHandle();
++                    item.world.addEntity(item);
++                }
++            }
++        } else {
++            for (Item bukkit : list) {
++                if (bukkit.isValid()) {
++                    bukkit.remove();
++                }
+             }
++            // Paper end
+         }
+     }
+ 

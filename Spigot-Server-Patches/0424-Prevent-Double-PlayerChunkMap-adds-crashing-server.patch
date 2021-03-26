@@ -7,10 +7,10 @@ Suspected case would be around the technique used in .stopRiding
 Stack will identify any causer of this and warn instead of crashing.
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 4be5f3be285b1944eee66684c1a565ac1eceb024..12cfe9f3c89316557e94c8b944b4f82277fb8877 100644
+index 80b8258d5286a8c5bf4a628ef85a010014cdaa7f..1c669c6fc437c645804e4d736abc84af0046583d 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -1495,6 +1495,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1494,6 +1494,14 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
  
      protected void addEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
@@ -26,10 +26,10 @@ index 4be5f3be285b1944eee66684c1a565ac1eceb024..12cfe9f3c89316557e94c8b944b4f822
              EntityTypes<?> entitytypes = entity.getEntityType();
              int i = entitytypes.getChunkRange() * 16;
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 928d884dcdf1ff6aa1aa4a0e7f6d68f7ae5bce13..ddc0057e0bd77bf7187df45b9bac9ac025f297b1 100644
+index 9083dc99a60428017be59f03ef6b2db6e4cf05d8..4574b4156be3ea8e76c9464000847af28e806697 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1529,7 +1529,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1528,7 +1528,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  }
              }
  
@@ -38,7 +38,7 @@ index 928d884dcdf1ff6aa1aa4a0e7f6d68f7ae5bce13..ddc0057e0bd77bf7187df45b9bac9ac0
              // CraftBukkit start - SPIGOT-5278
              if (entity instanceof EntityDrowned) {
                  this.navigators.add(((EntityDrowned) entity).navigationWater);
-@@ -1540,6 +1540,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1539,6 +1539,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  this.navigators.add(((EntityInsentient) entity).getNavigation());
              }
              entity.valid = true; // CraftBukkit

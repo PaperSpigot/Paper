@@ -10,10 +10,10 @@ larger than the keep loaded range.
 By skipping this, we avoid potential for a large spike on server start.
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index da16b5773e182a10dca8c91b53b9aba7e924d22b..8371d5ac694f469804ad55669fdedb8b3fc627bd 100644
+index 9fae1642217d105053c5dd1a281d3fdab117a835..f3f70ae48699846f44ca4823cc908b56d3723d90 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -253,7 +253,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -252,7 +252,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.serverStatisticManager = minecraftserver.getPlayerList().getStatisticManager(this);
          this.advancementDataPlayer = minecraftserver.getPlayerList().f(this);
          this.G = 1.0F;
@@ -22,7 +22,7 @@ index da16b5773e182a10dca8c91b53b9aba7e924d22b..8371d5ac694f469804ad55669fdedb8b
          this.co = minecraftserver.a(this);
  
          this.cachedSingleHashSet = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
-@@ -305,6 +305,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -304,6 +304,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      }
      // CraftBukkit end
  
@@ -30,7 +30,7 @@ index da16b5773e182a10dca8c91b53b9aba7e924d22b..8371d5ac694f469804ad55669fdedb8b
      private void c(WorldServer worldserver) {
          BlockPosition blockposition = worldserver.getSpawn();
  
-@@ -482,7 +483,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -481,7 +482,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  position = Vec3D.a(((WorldServer) world).getSpawn());
              }
              this.world = world;
@@ -40,10 +40,10 @@ index da16b5773e182a10dca8c91b53b9aba7e924d22b..8371d5ac694f469804ad55669fdedb8b
          this.playerInteractManager.a((WorldServer) world);
      }
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index f7a44104c09e4b2ebd5e1a3d7a08267c865c405d..d6a6321e936ce803a3e52e7420ba2bcd096f4649 100644
+index c15b1bb15a8bc29012bacf3bbff5274c0bc30878..69b5c364dba316186aad1514a7dbc4bc4c817c61 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -208,6 +208,8 @@ public abstract class PlayerList {
+@@ -206,6 +206,8 @@ public abstract class PlayerList {
              worldserver1 = worldserver;
          }
  
