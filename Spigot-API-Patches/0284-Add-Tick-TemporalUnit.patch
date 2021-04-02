@@ -1,0 +1,130 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kieran Wallbanks <kieran.wallbanks@gmail.com>
+Date: Fri, 2 Apr 2021 17:28:58 +0100
+Subject: [PATCH] Add Tick TemporalUnit
+
+
+diff --git a/src/main/java/io/papermc/paper/util/Tick.java b/src/main/java/io/papermc/paper/util/Tick.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a5621e8d00c9f6bf5a416ab6f4e1ba19cef3ee23
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/util/Tick.java
+@@ -0,0 +1,87 @@
++package io.papermc.paper.util;
++
++import java.time.Duration;
++import java.time.temporal.Temporal;
++import java.time.temporal.TemporalUnit;
++
++/**
++ * A TemporalUnit that represents one server tick.
++ * @see #tick()
++ */
++public final class Tick implements TemporalUnit {
++    private static final Tick INSTANCE = new Tick(50L);
++
++    private final long milliseconds;
++
++    /**
++     * Gets the instance of the tick temporal unit.
++     * @return the tick instance
++     */
++    public static Tick tick() {
++        return INSTANCE;
++    }
++
++    /**
++     * Creates a new tick.
++     * @param length the length of the tick in milliseconds
++     * @see #tick()
++     */
++    private Tick(long length) {
++        this.milliseconds = length;
++    }
++
++    /**
++     * Creates a duration from an amount of ticks. This is shorthand for
++     * {@link Duration#of(long, TemporalUnit)} called with the amount of ticks and
++     * {@link #tick()}.
++     *
++     * @param ticks the amount of ticks
++     * @return the duration
++     */
++    public static Duration of(long ticks) {
++        return Duration.of(ticks, INSTANCE);
++    }
++
++    /**
++     * Gets the number of whole ticks that occur in the provided duration. Note that this
++     * method returns an {@code int} as this is the unit that Minecraft stores ticks in.
++     *
++     * @param duration the duration
++     * @return the number of whole ticks in this duration
++     * @throws ArithmeticException if the duration is zero or an overflow occurs
++     */
++    public int fromDuration(Duration duration) {
++        return Math.toIntExact(Math.floorDiv(duration.toMillis(), INSTANCE.milliseconds));
++    }
++
++    @Override
++    public Duration getDuration() {
++        return Duration.ofMillis(this.milliseconds);
++    }
++
++    @Override
++    public boolean isDurationEstimated() {
++        return false;
++    }
++
++    @Override
++    public boolean isDateBased() {
++        return false;
++    }
++
++    @Override
++    public boolean isTimeBased() {
++        return true;
++    }
++
++    @SuppressWarnings("unchecked") // following ChronoUnit#addTo
++    @Override
++    public <R extends Temporal> R addTo(R temporal, long amount) {
++        return (R) temporal.plus(amount, this);
++    }
++
++    @Override
++    public long between(Temporal start, Temporal end) {
++        return start.until(end, this);
++    }
++}
+diff --git a/src/test/java/io/papermc/paper/TickTest.java b/src/test/java/io/papermc/paper/TickTest.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4f41afbdccdae4c6b1558ebdebf6cdfc489e3d1f
+--- /dev/null
++++ b/src/test/java/io/papermc/paper/TickTest.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper;
++
++import io.papermc.paper.util.Tick;
++import org.junit.Test;
++
++import java.time.Duration;
++
++import static org.junit.Assert.assertEquals;
++
++public class TickTest {
++
++    @Test
++    public void testTickLength() {
++        assertEquals(50, Duration.of(1, Tick.tick()).toMillis());
++        assertEquals(100, Duration.of(2, Tick.tick()).toMillis());
++    }
++
++    @Test
++    public void testTickFromDuration() {
++        assertEquals(0, Tick.tick().fromDuration(Duration.ofMillis(0)));
++        assertEquals(0, Tick.tick().fromDuration(Duration.ofMillis(10)));
++        assertEquals(1, Tick.tick().fromDuration(Duration.ofMillis(60)));
++        assertEquals(2, Tick.tick().fromDuration(Duration.ofMillis(100)));
++    }
++}
