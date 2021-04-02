@@ -6,15 +6,18 @@ Subject: [PATCH] Add Tick TemporalUnit
 
 diff --git a/src/main/java/io/papermc/paper/util/Tick.java b/src/main/java/io/papermc/paper/util/Tick.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a5621e8d00c9f6bf5a416ab6f4e1ba19cef3ee23
+index 0000000000000000000000000000000000000000..05d26bfe37258ab398d386ae80fa252cdbcd0c8a
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/util/Tick.java
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,94 @@
 +package io.papermc.paper.util;
++
++import org.jetbrains.annotations.NotNull;
 +
 +import java.time.Duration;
 +import java.time.temporal.Temporal;
 +import java.time.temporal.TemporalUnit;
++import java.util.Objects;
 +
 +/**
 + * A TemporalUnit that represents one server tick.
@@ -29,7 +32,7 @@ index 0000000000000000000000000000000000000000..a5621e8d00c9f6bf5a416ab6f4e1ba19
 +     * Gets the instance of the tick temporal unit.
 +     * @return the tick instance
 +     */
-+    public static Tick tick() {
++    public static @NotNull Tick tick() {
 +        return INSTANCE;
 +    }
 +
@@ -46,34 +49,38 @@ index 0000000000000000000000000000000000000000..a5621e8d00c9f6bf5a416ab6f4e1ba19
 +     * Creates a duration from an amount of ticks. This is shorthand for
 +     * {@link Duration#of(long, TemporalUnit)} called with the amount of ticks and
 +     * {@link #tick()}.
-+     *
 +     * @param ticks the amount of ticks
 +     * @return the duration
 +     */
-+    public static Duration of(long ticks) {
++    public static @NotNull Duration of(long ticks) {
 +        return Duration.of(ticks, INSTANCE);
 +    }
 +
 +    /**
 +     * Gets the number of whole ticks that occur in the provided duration. Note that this
 +     * method returns an {@code int} as this is the unit that Minecraft stores ticks in.
-+     *
 +     * @param duration the duration
 +     * @return the number of whole ticks in this duration
 +     * @throws ArithmeticException if the duration is zero or an overflow occurs
 +     */
-+    public int fromDuration(Duration duration) {
++    public int fromDuration(@NotNull Duration duration) {
++        Objects.requireNonNull(duration, "duration cannot be null");
 +        return Math.toIntExact(Math.floorDiv(duration.toMillis(), INSTANCE.milliseconds));
 +    }
 +
 +    @Override
-+    public Duration getDuration() {
++    public @NotNull Duration getDuration() {
 +        return Duration.ofMillis(this.milliseconds);
 +    }
 +
++    /**
++     * As the actual length of a tick can differ from the expected length of a tick, this
++     * method returns {@code true}.
++     * @return {@code true}
++     */
 +    @Override
 +    public boolean isDurationEstimated() {
-+        return false;
++        return true;
 +    }
 +
 +    @Override
@@ -88,12 +95,12 @@ index 0000000000000000000000000000000000000000..a5621e8d00c9f6bf5a416ab6f4e1ba19
 +
 +    @SuppressWarnings("unchecked") // following ChronoUnit#addTo
 +    @Override
-+    public <R extends Temporal> R addTo(R temporal, long amount) {
++    public <R extends Temporal> @NotNull R addTo(@NotNull R temporal, long amount) {
 +        return (R) temporal.plus(amount, this);
 +    }
 +
 +    @Override
-+    public long between(Temporal start, Temporal end) {
++    public long between(@NotNull Temporal start, @NotNull Temporal end) {
 +        return start.until(end, this);
 +    }
 +}
