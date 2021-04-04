@@ -121,6 +121,6 @@ importLibrary com.mojang datafixerupper com/mojang/serialization Dynamic.java
 set -e
 cd "$workdir/Spigot/Spigot-Server/"
 rm -rf nms-patches applyPatches.sh makePatches.sh >/dev/null 2>&1
-$gitcmd add . -A >/dev/null 2>&1
+$gitcmd add . --force -A >/dev/null 2>&1
 echo -e "mc-dev Imports\n\n$MODLOG" | $gitcmd commit . -F -
 )

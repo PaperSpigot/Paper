@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Mon, 29 Mar 2021 09:07:25 +0200
+Subject: [PATCH] Make sure to remove correct TE during TE tick
+
+This looks like it can cause premature TE removal.
+
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index 78dcba08d6d796d5d97c8304bf1f1e7d1e650d5d..6581fe0d93a5c2e7b444a44c01726e02d4a28e63 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -895,7 +895,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+                 //this.tileEntityList.remove(tileentity); // Paper - remove unused list
+                 // Paper - prevent double chunk lookups
+                 Chunk chunk; if ((chunk = this.getChunkIfLoaded(tileentity.getPosition())) != null) { // inlined contents of this.isLoaded(BlockPosition). Reuse the returned chunk instead of looking it up again
+-                    chunk.removeTileEntity(tileentity.getPosition());
++                    chunk.removeTileEntity(tileentity.getPosition(), tileentity); // Paper - remove correct TE
+                 }
+                 // Paper end
+             }
+diff --git a/src/main/java/net/minecraft/world/level/chunk/Chunk.java b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+index 34a9f7b2f998f77b1279516cd09397ab6c2ac1cc..0727b12b5ff146b4efa9204bf4f495f2f1aa20b9 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/Chunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/Chunk.java
+@@ -819,10 +819,18 @@ public class Chunk implements IChunkAccess {
+ 
+     @Override
+     public void removeTileEntity(BlockPosition blockposition) {
++        // Paper start - remove correct TE
++        removeTileEntity(blockposition, null);
++    }
++    public void removeTileEntity(BlockPosition blockposition, TileEntity match) {
++        // Paper end
+         if (this.loaded || this.world.s_()) {
+-            TileEntity tileentity = (TileEntity) this.tileEntities.remove(blockposition);
++            // Paper start
++            TileEntity tileentity = (TileEntity) this.tileEntities.get(blockposition);
+ 
+-            if (tileentity != null) {
++            if (tileentity != null && (match == null || match == tileentity)) {
++                this.tileEntities.remove(blockposition);
++                // Paper end
+                 tileentity.al_();
+             }
+         }

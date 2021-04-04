@@ -19,7 +19,7 @@ index 3e6132211912d29e34c94042b0819f11a3bd123e..921253a06daa414aed7dc6824effc65d
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 60b72fc3cf859fab80aba310882b0309fd68ff37..a15230235ba0244c42346f51cabb470cb362a455 100644
+index 60b72fc3cf859fab80aba310882b0309fd68ff37..4a3f6f26da0d99ee2ff6942c2ff7d0595b53b684 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -143,6 +143,7 @@ import net.minecraft.world.level.GameRules;
@@ -35,7 +35,7 @@ index 60b72fc3cf859fab80aba310882b0309fd68ff37..a15230235ba0244c42346f51cabb470c
          this.player.resetIdleTimer();
          if (blockposition.getY() < this.minecraftServer.getMaxBuildHeight()) {
 -            if (this.teleportPos == null && this.player.h((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D) < 64.0D && worldserver.a((EntityHuman) this.player, blockposition)) {
-+            if (this.teleportPos == null && this.player.h((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D) < 64.0D && (worldserver.a((EntityHuman) this.player, blockposition) || (worldserver.getType(blockposition).getBlock() instanceof BlockSign && worldserver.paperConfig.allowUsingSignsInsideSpawnProtection))) { // Paper
++            if (this.teleportPos == null && this.player.h((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D) < 64.0D && (worldserver.a((EntityHuman) this.player, blockposition) || (worldserver.paperConfig.allowUsingSignsInsideSpawnProtection && worldserver.getType(blockposition).getBlock() instanceof BlockSign))) { // Paper
                  // CraftBukkit start - Check if we can actually do something over this large a distance
                  // Paper - move check up
                  this.player.clearActiveItem(); // SPIGOT-4706

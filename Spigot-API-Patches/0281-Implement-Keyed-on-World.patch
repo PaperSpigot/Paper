@@ -79,7 +79,7 @@ index 3c50a10fda033c139993ed5465a92f95d5b10c17..064497506e6a5ab89ca43b99968ca79d
  
      /**
 diff --git a/src/main/java/org/bukkit/WorldCreator.java b/src/main/java/org/bukkit/WorldCreator.java
-index 6e6945dd4c770be04ec09da3958fae751717527a..1d93a6c42d6c93ffd50c6054e74f3ff75d745b58 100644
+index 6e6945dd4c770be04ec09da3958fae751717527a..e6a83252f42da31ad38f8dc1beccc7aa2c3f54b8 100644
 --- a/src/main/java/org/bukkit/WorldCreator.java
 +++ b/src/main/java/org/bukkit/WorldCreator.java
 @@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
@@ -98,7 +98,7 @@ index 6e6945dd4c770be04ec09da3958fae751717527a..1d93a6c42d6c93ffd50c6054e74f3ff7
 -            throw new IllegalArgumentException("World name cannot be null");
 -        }
 +        // Paper start
-+        this(name, NamespacedKey.minecraft(name.toLowerCase(java.util.Locale.ENGLISH)));
++        this(name, NamespacedKey.minecraft(name.toLowerCase(java.util.Locale.ENGLISH).replace(" ", "_")));
 +    }
  
 -        this.name = name;

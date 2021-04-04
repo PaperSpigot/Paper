@@ -7,7 +7,7 @@ Co-authored-by: zml <zml@stellardrift.ca>
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
 
 diff --git a/pom.xml b/pom.xml
-index 12306d830c6889c2c9b12699abebe0411262aef6..9e9aa8efe9f2d74f32c22dbd3cc5ed6dedf2ad1a 100644
+index e3744ee042e0426a513c4fdf4abedafe85e31cd2..75b2830340051deb0fa39149e80872d2b88ed6f0 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -31,7 +31,39 @@
@@ -94,11 +94,11 @@ index ef58a6c00f444bd498a2d8fc4e457236f393954f..ecd149157d4fb80444f34bf5633d74bc
 +    }
 +    // Paper end
  }
-diff --git a/src/main/java/io/papermc/paper/chat/ChatFormatter.java b/src/main/java/io/papermc/paper/chat/ChatFormatter.java
+diff --git a/src/main/java/io/papermc/paper/chat/ChatComposer.java b/src/main/java/io/papermc/paper/chat/ChatComposer.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9873a97d472e000d2d996fc2b6a46db25cdd397b
+index 0000000000000000000000000000000000000000..1f03ce9ff40ed12a1825c8e24dabddbbef44d6af
 --- /dev/null
-+++ b/src/main/java/io/papermc/paper/chat/ChatFormatter.java
++++ b/src/main/java/io/papermc/paper/chat/ChatComposer.java
 @@ -0,0 +1,24 @@
 +package io.papermc.paper.chat;
 +
@@ -107,11 +107,44 @@ index 0000000000000000000000000000000000000000..9873a97d472e000d2d996fc2b6a46db2
 +import org.jetbrains.annotations.NotNull;
 +
 +/**
-+ * A chat formatter is responsible for the formatting of chat messages sent by {@link Player}s to the server.
++ * A chat composer is responsible for composing chat messages sent by {@link Player}s to the server.
 + */
 +@FunctionalInterface
++public interface ChatComposer {
++    ChatComposer DEFAULT = (player, displayName, message) -> Component.translatable("chat.type.text", displayName, message);
++
++    /**
++     * Composes a chat message.
++     *
++     * @param source the message source
++     * @param displayName the display name of the {@link Player} sending the message
++     * @param message the chat message
++     * @return a composed chat message
++     */
++    @NotNull
++    Component composeChat(final @NotNull Player source, final @NotNull Component displayName, final @NotNull Component message);
++}
+diff --git a/src/main/java/io/papermc/paper/chat/ChatFormatter.java b/src/main/java/io/papermc/paper/chat/ChatFormatter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ae811175089009be6b1db6941e9c5a24b2b1f027
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/chat/ChatFormatter.java
+@@ -0,0 +1,28 @@
++package io.papermc.paper.chat;
++
++import net.kyori.adventure.text.Component;
++import org.bukkit.entity.Player;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * A chat formatter is responsible for the formatting of chat messages sent by {@link Player}s to the server.
++ *
++ * @deprecated in favour of {@link ChatComposer}
++ */
++@Deprecated
++@FunctionalInterface
 +public interface ChatFormatter {
-+    // This format might be different than the CraftBukkit one?
++    @Deprecated
 +    ChatFormatter DEFAULT = (displayName, message) -> Component.translatable("chat.type.text", displayName, message);
 +
 +    /**
@@ -121,25 +154,29 @@ index 0000000000000000000000000000000000000000..9873a97d472e000d2d996fc2b6a46db2
 +     * @param message the chat message
 +     * @return a formatted chat message
 +     */
++    @Deprecated
 +    @NotNull
 +    Component chat(final @NotNull Component displayName, final @NotNull Component message);
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java b/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeba3055be7
+index 0000000000000000000000000000000000000000..f77597786f201b57ac18e14099f7b84f1e4e4cf3
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AbstractChatEvent.java
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,140 @@
 +package io.papermc.paper.event.player;
 +
++import io.papermc.paper.chat.ChatComposer;
 +import io.papermc.paper.chat.ChatFormatter;
-+import java.util.Objects;
 +import java.util.Set;
 +import net.kyori.adventure.text.Component;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.Cancellable;
 +import org.bukkit.event.player.PlayerEvent;
++import org.checkerframework.checker.nullness.qual.Nullable;
 +import org.jetbrains.annotations.NotNull;
++
++import static java.util.Objects.requireNonNull;
 +
 +/**
 + * An abstract implementation of a chat event, handling shared logic.
@@ -147,9 +184,18 @@ index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeb
 +public abstract class AbstractChatEvent extends PlayerEvent implements Cancellable {
 +    private final Set<Player> recipients;
 +    private boolean cancelled = false;
-+    private ChatFormatter formatter;
++    private ChatComposer composer;
++    @Deprecated private @Nullable ChatFormatter formatter;
 +    private Component message;
 +
++    AbstractChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatComposer composer, final @NotNull Component message) {
++        super(player, async);
++        this.recipients = recipients;
++        this.composer = composer;
++        this.message = message;
++    }
++
++    @Deprecated
 +    AbstractChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatFormatter formatter, final @NotNull Component message) {
 +        super(player, async);
 +        this.recipients = recipients;
@@ -176,12 +222,42 @@ index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeb
 +    }
 +
 +    /**
++     * Gets the chat composer.
++     *
++     * @return the chat composer
++     */
++    @NotNull
++    public final ChatComposer composer() {
++        if(this.composer == null) {
++            requireNonNull(this.formatter, "composer and formatter");
++            this.composer = (source, displayName, message) -> this.formatter.chat(displayName, message);
++        }
++        return this.composer;
++    }
++
++    /**
++     * Sets the chat composer.
++     *
++     * @param composer the chat composer
++     * @throws NullPointerException if {@code composer} is {@code null}
++     */
++    public final void composer(final @NotNull ChatComposer composer) {
++        this.composer = requireNonNull(composer, "composer");
++        this.formatter = null;
++    }
++
++    /**
 +     * Gets the chat formatter.
 +     *
 +     * @return the chat formatter
++     * @deprecated in favour of {@link #composer()}
 +     */
++    @Deprecated
 +    @NotNull
 +    public final ChatFormatter formatter() {
++        if(this.formatter == null) {
++            this.formatter = (displayName, message) -> this.composer.composeChat(this.player, displayName, message);
++        }
 +        return this.formatter;
 +    }
 +
@@ -190,9 +266,12 @@ index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeb
 +     *
 +     * @param formatter the chat formatter
 +     * @throws NullPointerException if {@code formatter} is {@code null}
++     * @deprecated in favour of {@link #composer(ChatComposer)}
 +     */
++    @Deprecated
 +    public final void formatter(final @NotNull ChatFormatter formatter) {
-+        this.formatter = Objects.requireNonNull(formatter, "formatter");
++        this.formatter = requireNonNull(formatter, "formatter");
++        this.composer = (source, displayName, message) -> formatter.chat(displayName, message);
 +    }
 +
 +    /**
@@ -212,7 +291,7 @@ index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeb
 +     * @throws NullPointerException if {@code message} is {@code null}
 +     */
 +    public final void message(final @NotNull Component message) {
-+        this.message = Objects.requireNonNull(message, "message");
++        this.message = requireNonNull(message, "message");
 +    }
 +
 +    @Override
@@ -227,12 +306,13 @@ index 0000000000000000000000000000000000000000..9cac60a004a71963221dc4e5fc595eeb
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java b/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..baaa0451fec6b2d9a601f355984adce6c74d11f6
+index 0000000000000000000000000000000000000000..a0f748957f4472103dd27fc95a711a42de7fae89
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/AsyncChatEvent.java
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,39 @@
 +package io.papermc.paper.event.player;
 +
++import io.papermc.paper.chat.ChatComposer;
 +import io.papermc.paper.chat.ChatFormatter;
 +import java.util.Set;
 +import net.kyori.adventure.text.Component;
@@ -246,6 +326,14 @@ index 0000000000000000000000000000000000000000..baaa0451fec6b2d9a601f355984adce6
 +public final class AsyncChatEvent extends AbstractChatEvent {
 +    private static final HandlerList HANDLERS = new HandlerList();
 +
++    public AsyncChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatComposer composer, final @NotNull Component message) {
++        super(async, player, recipients, composer, message);
++    }
++
++    /**
++     * @deprecated use {@link #AsyncChatEvent(boolean, Player, Set, ChatComposer, Component)}
++     */
++    @Deprecated
 +    public AsyncChatEvent(final boolean async, final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatFormatter formatter, final @NotNull Component message) {
 +        super(async, player, recipients, formatter, message);
 +    }
@@ -263,12 +351,13 @@ index 0000000000000000000000000000000000000000..baaa0451fec6b2d9a601f355984adce6
 +}
 diff --git a/src/main/java/io/papermc/paper/event/player/ChatEvent.java b/src/main/java/io/papermc/paper/event/player/ChatEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..04ee20906e104e15d730899477ae983d3255cb18
+index 0000000000000000000000000000000000000000..13c5df5fb8ce1d0203d99e88dd691019146a8f52
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/event/player/ChatEvent.java
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,44 @@
 +package io.papermc.paper.event.player;
 +
++import io.papermc.paper.chat.ChatComposer;
 +import io.papermc.paper.chat.ChatFormatter;
 +import java.util.Set;
 +import net.kyori.adventure.text.Component;
@@ -287,6 +376,14 @@ index 0000000000000000000000000000000000000000..04ee20906e104e15d730899477ae983d
 +public final class ChatEvent extends AbstractChatEvent {
 +    private static final HandlerList HANDLERS = new HandlerList();
 +
++    public ChatEvent(final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatComposer composer, final @NotNull Component message) {
++        super(false, player, recipients, composer, message);
++    }
++
++    /**
++     * @deprecated use {@link #ChatEvent(Player, Set, ChatComposer, Component)}
++     */
++    @Deprecated
 +    public ChatEvent(final @NotNull Player player, final @NotNull Set<Player> recipients, final @NotNull ChatFormatter formatter, final @NotNull Component message) {
 +        super(false, player, recipients, formatter, message);
 +    }
@@ -3500,3 +3597,38 @@ index da01d2926cc8a2485a3349ac1ebb32cad20e287c..f0af10a5b9ad048be197ed5ec6c8ed26
      void setColor(@NotNull ChatColor color);
  
      /**
+diff --git a/src/test/java/org/bukkit/AnnotationTest.java b/src/test/java/org/bukkit/AnnotationTest.java
+index 0c7377247ad9251c9e498039511e7220370aba2d..c62919f18f318fec15a6c364d8b6d562c2b04762 100644
+--- a/src/test/java/org/bukkit/AnnotationTest.java
++++ b/src/test/java/org/bukkit/AnnotationTest.java
+@@ -26,6 +26,12 @@ import org.objectweb.asm.tree.ParameterNode;
+ public class AnnotationTest {
+ 
+     private static final String[] ACCEPTED_ANNOTATIONS = {
++        // Paper start
++        "Lorg/checkerframework/checker/nullness/qual/Nullable;",
++        "Lorg/checkerframework/checker/nullness/qual/NonNull;",
++        "Lorg/checkerframework/checker/nullness/qual/PolyNull;",
++        "Lorg/checkerframework/checker/nullness/qual/MonotonicNonNull;",
++        // Paper end
+         "Lorg/jetbrains/annotations/Nullable;",
+         "Lorg/jetbrains/annotations/NotNull;",
+         "Lorg/jetbrains/annotations/Contract;",
+@@ -66,7 +72,7 @@ public class AnnotationTest {
+                     continue;
+                 }
+ 
+-                if (mustBeAnnotated(Type.getReturnType(method.desc)) && !isWellAnnotated(method.invisibleAnnotations)) {
++                if (mustBeAnnotated(Type.getReturnType(method.desc)) && !isWellAnnotated(method.invisibleAnnotations) && !isWellAnnotated(method.visibleTypeAnnotations)) { // Paper - also check visible type annotations
+                     warn(errors, clazz, method, "return value");
+                 }
+ 
+@@ -174,7 +180,7 @@ public class AnnotationTest {
+         return true;
+     }
+ 
+-    private static boolean isWellAnnotated(@Nullable List<AnnotationNode> annotations) {
++    private static boolean isWellAnnotated(@Nullable List<? extends AnnotationNode> annotations) { // Paper - allow children of AnnotationNode
+         if (annotations == null) {
+             return false;
+         }

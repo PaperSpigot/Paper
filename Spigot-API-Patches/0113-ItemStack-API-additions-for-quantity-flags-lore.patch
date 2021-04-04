@@ -5,7 +5,7 @@ Subject: [PATCH] ItemStack API additions for quantity/flags/lore
 
 
 diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
-index cc065602db56c51b87d273a52d9ef82439fcaa7a..db701a709d5fa2d5a6a96846e0ce2342350fb897 100644
+index cc065602db56c51b87d273a52d9ef82439fcaa7a..c6eca5a69cb8f5b161ff99ecad9475be64dcfed5 100644
 --- a/src/main/java/org/bukkit/inventory/ItemStack.java
 +++ b/src/main/java/org/bukkit/inventory/ItemStack.java
 @@ -2,7 +2,9 @@ package org.bukkit.inventory;
@@ -18,7 +18,7 @@ index cc065602db56c51b87d273a52d9ef82439fcaa7a..db701a709d5fa2d5a6a96846e0ce2342
  import org.apache.commons.lang.Validate;
  import org.bukkit.Bukkit;
  import org.bukkit.Material;
-@@ -635,5 +637,152 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, net.kyor
+@@ -635,5 +637,185 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, net.kyor
          // Requires access to NMS
          return ensureServerConversions().getMaxItemUseDuration();
      }
@@ -89,9 +89,10 @@ index cc065602db56c51b87d273a52d9ef82439fcaa7a..db701a709d5fa2d5a6a96846e0ce2342
 +    /**
 +     * If the item has lore, returns it, else it will return null
 +     * @return The lore, or null
++     * @deprecated in favor of {@link #lore()}
 +     */
-+    @Nullable
-+    public List<String> getLore() {
++    @Deprecated
++    public @Nullable List<String> getLore() {
 +        if (!hasItemMeta()) {
 +            return null;
 +        }
@@ -103,11 +104,28 @@ index cc065602db56c51b87d273a52d9ef82439fcaa7a..db701a709d5fa2d5a6a96846e0ce2342
 +    }
 +
 +    /**
++     * If the item has lore, returns it, else it will return null
++     * @return The lore, or null
++     */
++    public @Nullable List<net.kyori.adventure.text.Component> lore() {
++        if (!this.hasItemMeta()) {
++            return null;
++        }
++        final ItemMeta itemMeta = getItemMeta();
++        if (!itemMeta.hasLore()) {
++            return null;
++        }
++        return itemMeta.lore();
++    }
++
++    /**
 +     * Sets the lore for this item.
 +     * Removes lore when given null.
 +     *
 +     * @param lore the lore that will be set
++     * @deprecated in favour of {@link #lore(List)}
 +     */
++    @Deprecated
 +    public void setLore(@Nullable List<String> lore) {
 +        ItemMeta itemMeta = getItemMeta();
 +        if (itemMeta == null) {
@@ -115,6 +133,21 @@ index cc065602db56c51b87d273a52d9ef82439fcaa7a..db701a709d5fa2d5a6a96846e0ce2342
 +        }
 +        itemMeta.setLore(lore);
 +        setItemMeta(itemMeta);
++    }
++
++    /**
++     * Sets the lore for this item.
++     * Removes lore when given null.
++     *
++     * @param lore the lore that will be set
++     */
++    public void lore(@Nullable List<net.kyori.adventure.text.Component> lore) {
++        ItemMeta itemMeta = getItemMeta();
++        if (itemMeta == null) {
++            throw new IllegalStateException("Cannot set lore on " + getType());
++        }
++        itemMeta.lore(lore);
++        this.setItemMeta(itemMeta);
 +    }
 +
 +    /**

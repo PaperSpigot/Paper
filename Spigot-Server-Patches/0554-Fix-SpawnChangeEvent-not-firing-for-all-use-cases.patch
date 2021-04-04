@@ -5,10 +5,10 @@ Subject: [PATCH] Fix SpawnChangeEvent not firing for all use-cases
 
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 0e738ace7d37011547378954aae91f79c7ebd544..7f5d3bcf8be30a6bcdd077bfbc416079e3d969c1 100644
+index e7cebe1277cb8fc54a080b93b34a66a2e962119b..ea6f7397add28e87d60834495420e52920d6e95c 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1987,12 +1987,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1986,12 +1986,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
      // Paper end
  
@@ -24,7 +24,7 @@ index 0e738ace7d37011547378954aae91f79c7ebd544..7f5d3bcf8be30a6bcdd077bfbc416079
              // if this keepSpawnInMemory is false a plugin has already removed our tickets, do not re-add
              this.removeTicketsForSpawn(this.paperConfig.keepLoadedRange, prevSpawn);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 54625156dd21607f27eb97f95dead60b806f19e1..1d1b150215c1e226fa2583829f0260cba4133f23 100644
+index 4a5027d6fbd6c68d0e3b43f74afdd49ffa22188c..0d22a15f91b1613f5f289ed570af3410d987f0dd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -389,11 +389,13 @@ public class CraftWorld implements World {

@@ -18,10 +18,18 @@ index 6e5d21af43261dc2f12ceec7b7e3269be635cf7a..ecf4cd6dfea777ab9daea0b40724d247
          boolean flag1 = this.playerChunkMap.b();
  
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..2ca9335129465ffb67617b42534db530c1d78923 100644
+index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..36b4792687a5c6316bf95995e761bf4aa49779f6 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -174,6 +174,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -31,6 +31,7 @@ import net.minecraft.core.NonNullList;
+ import net.minecraft.core.SectionPosition;
+ import net.minecraft.nbt.DynamicOpsNBT;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.network.NetworkManager;
+ import net.minecraft.network.chat.ChatComponentText;
+ import net.minecraft.network.chat.ChatHoverable;
+ import net.minecraft.network.chat.ChatMessage;
+@@ -174,6 +175,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      private static final Logger LOGGER = LogManager.getLogger();
      public PlayerConnection playerConnection;
@@ -29,7 +37,7 @@ index eaeac60b2d54d8e7d298ea412d888471a7ea9e79..2ca9335129465ffb67617b42534db530
      public final MinecraftServer server;
      public final PlayerInteractManager playerInteractManager;
      public final Deque<Integer> removeQueue = new ArrayDeque<>(); // Paper
-@@ -240,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -240,6 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean joining = true;
      public boolean sentListPacket = false;
      public boolean supressTrackerForLogin = false; // Paper

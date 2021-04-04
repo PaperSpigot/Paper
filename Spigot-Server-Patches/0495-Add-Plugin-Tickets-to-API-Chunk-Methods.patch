@@ -44,7 +44,7 @@ index 32e68e403950be62bd0330b268738225c2e70edd..d0c951878600a4227e558bc68d68098c
          printSaveWarning = false;
          console.autosavePeriod = configuration.getInt("ticks-per.autosave");
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index e463dd48593becd701d8e087b8a058b8a4a50ee5..c538e075904382de72a74f518223c6b9daaf0625 100644
+index aa78cbbf909e366a9a23902711453a9b2e1a32c7..611f53f52b4f2d831920df40d48b8bbc61326f1b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -30,6 +30,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutCustomSoundEffect;
@@ -119,7 +119,7 @@ index e463dd48593becd701d8e087b8a058b8a4a50ee5..c538e075904382de72a74f518223c6b9
          world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, true);
          return true;
          // Paper end
-@@ -2548,6 +2565,7 @@ public class CraftWorld implements World {
+@@ -2553,6 +2570,7 @@ public class CraftWorld implements World {
          }
          return this.world.getChunkProvider().getChunkAtAsynchronously(x, z, gen, urgent).thenComposeAsync((either) -> {
              net.minecraft.world.level.chunk.Chunk chunk = (net.minecraft.world.level.chunk.Chunk) either.left().orElse(null);

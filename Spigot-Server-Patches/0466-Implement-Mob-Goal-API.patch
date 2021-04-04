@@ -5,7 +5,7 @@ Subject: [PATCH] Implement Mob Goal API
 
 
 diff --git a/pom.xml b/pom.xml
-index d6e313021d268c5d865394859b3d748edf1b061c..70c0fb4621b16c33d7cdf7d920c17bfe1ff8d831 100644
+index 14e66414d043ce720b8fd7bfa2c476d8369c757b..25ec9c4f8c08551fd80a597a1b39854e70e4f895 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -142,6 +142,13 @@
@@ -1060,10 +1060,10 @@ index 96652862531301c08aefa0baa79b1258b5b307ec..3014a5d71de98009bdc121ba690c3653
  }
 diff --git a/src/test/java/com/destroystokyo/paper/entity/ai/VanillaMobGoalTest.java b/src/test/java/com/destroystokyo/paper/entity/ai/VanillaMobGoalTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..abc99e48f7d55e8faf1f317083146c76619e5f96
+index 0000000000000000000000000000000000000000..c0525216a8469613c3e0d4b5774a82f69e70fb16
 --- /dev/null
 +++ b/src/test/java/com/destroystokyo/paper/entity/ai/VanillaMobGoalTest.java
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,104 @@
 +package com.destroystokyo.paper.entity.ai;
 +
 +import net.minecraft.world.entity.EntityInsentient;
@@ -1074,6 +1074,7 @@ index 0000000000000000000000000000000000000000..abc99e48f7d55e8faf1f317083146c76
 +import java.lang.reflect.Field;
 +import java.lang.reflect.Modifier;
 +import java.util.ArrayList;
++import java.util.Collections;
 +import java.util.List;
 +import java.util.stream.Collectors;
 +
@@ -1150,9 +1151,10 @@ index 0000000000000000000000000000000000000000..abc99e48f7d55e8faf1f317083146c76
 +    @Test
 +    public void testBukkitMap() {
 +        List<Class<?>> classes;
-+        try (ScanResult scanResult = new ClassGraph().enableAllInfo().whitelistPackages("net.minecraft.server").scan()) {
-+            classes = scanResult.getSubclasses("net.minecraft.server.EntityInsentient").loadClasses();
++        try (ScanResult scanResult = new ClassGraph().enableAllInfo().whitelistPackages("net.minecraft.world.entity").scan()) {
++            classes = scanResult.getSubclasses("net.minecraft.world.entity.EntityInsentient").loadClasses();
 +        }
++        Assert.assertNotEquals("There are supposed to be more than 0 entity types!", Collections.emptyList(), classes);
 +
 +        boolean shouldFail = false;
 +        for (Class<?> nmsClass : classes) {

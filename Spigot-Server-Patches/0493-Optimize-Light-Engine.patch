@@ -25,7 +25,7 @@ Massive update to light to improve performance and chunk loading/generation.
 8) Fix NPE risk that crashes server in getting nibble data
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 19e02d12bb0c5a73066f7c57da40277918276210..f46f3ca87badefd668e70d792de5b3d3c0172a68 100644
+index 19e02d12bb0c5a73066f7c57da40277918276210..326c52f9f2cc729fd52162aeae18ec9dae3a4eaf 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 @@ -1070,7 +1070,7 @@ public class ChunkProviderServer extends IChunkProvider {
@@ -33,7 +33,7 @@ index 19e02d12bb0c5a73066f7c57da40277918276210..f46f3ca87badefd668e70d792de5b3d3
                  return true;
              } else {
 -                ChunkProviderServer.this.lightEngine.queueUpdate();
-+                //ChunkProviderServer.this.lightEngine.queueUpdate(); // Paper - not needed
++                ChunkProviderServer.this.lightEngine.queueUpdate(); // Paper - not needed
                  return super.executeNext() || execChunkTask; // Paper
              }
          } finally {
@@ -439,18 +439,6 @@ index 7318103feafd12ed631f907a450c9dc3d665a9a3..b47cd2a8fb4920531d80acfcfe40f821
              this.p.close();
              this.world.asyncChunkTaskManager.close(true); // Paper - Required since we're closing regionfiles in the next line
              this.m.close();
-diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index e7cebe1277cb8fc54a080b93b34a66a2e962119b..0e738ace7d37011547378954aae91f79c7ebd544 100644
---- a/src/main/java/net/minecraft/server/level/WorldServer.java
-+++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -826,6 +826,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
-             }
-             gameprofilerfiller.exit();
-             timings.chunkTicksBlocks.stopTiming(); // Paper
-+            getChunkProvider().getLightEngine().queueUpdate(); // Paper
-             // Paper end
-         }
-     }
 diff --git a/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java b/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java
 index 2efca1fe92b2e93dcbf5337eea8855b1b2b9a564..72bfda620f073fd3c3e4c43d78583386dadf95e6 100644
 --- a/src/main/java/net/minecraft/util/thread/ThreadedMailbox.java

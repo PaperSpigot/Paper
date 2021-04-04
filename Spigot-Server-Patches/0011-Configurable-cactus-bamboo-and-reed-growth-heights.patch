@@ -29,7 +29,7 @@ index b31109d2dadd29e8852468c19265066b773d2be0..3618cc017feb60e257a28f67cbddca3f
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/level/block/BlockBamboo.java b/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
-index 00bae3689c4d53ef8e6055c16995e6069acba049..21be9869bf995e6235c874ebb269f3918382e18c 100644
+index 6d10a7cb48627f37dc91b73064edc5f18c2b5ce9..cd132eff3f82349518555d1d5a16778ca08a521b 100644
 --- a/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
 +++ b/src/main/java/net/minecraft/world/level/block/BlockBamboo.java
 @@ -124,7 +124,7 @@ public class BlockBamboo extends Block implements IBlockFragilePlantElement {
@@ -54,8 +54,8 @@ index 00bae3689c4d53ef8e6055c16995e6069acba049..21be9869bf995e6235c874ebb269f391
              BlockPosition blockposition1 = blockposition.up(i);
              IBlockData iblockdata1 = worldserver.getType(blockposition1);
  
--            if (k >= 16 || (Integer) iblockdata1.get(BlockBamboo.f) == 1 || !worldserver.isEmpty(blockposition1.up())) {
-+            if (k >= worldserver.paperConfig.bambooMaxHeight || (Integer) iblockdata1.get(BlockBamboo.f) == 1 || !worldserver.isEmpty(blockposition1.up())) { // Paper
+-            if (k >= 16 || !iblockdata1.a(Blocks.BAMBOO) || (Integer) iblockdata1.get(BlockBamboo.f) == 1 || !worldserver.isEmpty(blockposition1.up())) { // CraftBukkit - If the BlockSpreadEvent was cancelled, we have no bamboo here
++            if (k >= worldserver.paperConfig.bambooMaxHeight || !iblockdata1.a(Blocks.BAMBOO) || (Integer) iblockdata1.get(BlockBamboo.f) == 1 || !worldserver.isEmpty(blockposition1.up())) { // CraftBukkit - If the BlockSpreadEvent was cancelled, we have no bamboo here // Paper - Configurable cactus bamboo and reed growth heights
                  return;
              }
  

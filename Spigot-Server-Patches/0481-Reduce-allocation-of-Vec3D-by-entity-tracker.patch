@@ -5,10 +5,10 @@ Subject: [PATCH] Reduce allocation of Vec3D by entity tracker
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
-index 4c82266656d0a60a166faa082a9aaaaed7f062d3..aa5ba862f18ff706f11b0b26cea55a904a5a9473 100644
+index b64aa6c9ce906b08e43891f8c465fa4e8b2a8906..58dd349adf2bc9bac6569464ef7a7aec81729e79 100644
 --- a/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
 +++ b/src/main/java/net/minecraft/server/level/EntityTrackerEntry.java
-@@ -156,8 +156,12 @@ public class EntityTrackerEntry {
+@@ -155,8 +155,12 @@ public class EntityTrackerEntry {
                  ++this.o;
                  i = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
                  j = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
@@ -23,7 +23,7 @@ index 4c82266656d0a60a166faa082a9aaaaed7f062d3..aa5ba862f18ff706f11b0b26cea55a90
                  Packet<?> packet1 = null;
                  boolean flag2 = flag1 || this.tickCounter % 60 == 0;
                  boolean flag3 = Math.abs(i - this.yRot) >= 1 || Math.abs(j - this.xRot) >= 1;
-@@ -174,9 +178,11 @@ public class EntityTrackerEntry {
+@@ -173,9 +177,11 @@ public class EntityTrackerEntry {
                  // CraftBukkit end
  
                  if (this.tickCounter > 0 || this.tracker instanceof EntityArrow) {
