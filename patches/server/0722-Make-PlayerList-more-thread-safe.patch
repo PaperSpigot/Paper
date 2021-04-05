@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Markus Steiner <markus.st96@gmail.com>
+Date: Mon, 5 Apr 2021 02:30:01 +0200
+Subject: [PATCH] Make PlayerList more thread safe
+
+
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index a6ecbb7eb1df7923d58366327e0f00512a3a1677..a6cb0652db192d0beaf9d95b9fb446981dee3e16 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -130,7 +130,7 @@ public abstract class PlayerList {
+     private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+     private final MinecraftServer server;
+     public final List<ServerPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
+-    private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
++    private final Map<UUID, ServerPlayer> playersByUUID = Maps.newConcurrentMap(); // Paper - newHashMap -> newConcurrentMap
+     private final UserBanList bans;
+     private final IpBanList ipBans;
+     private final ServerOpList ops;
+@@ -151,7 +151,7 @@ public abstract class PlayerList {
+ 
+     // CraftBukkit start
+     private CraftServer cserver;
+-    private final Map<String,ServerPlayer> playersByName = new java.util.HashMap<>();
++    private final Map<String,ServerPlayer> playersByName = new java.util.concurrent.ConcurrentHashMap<>(); // Paper - HashMap -> ConcurrentHashMap
+     public @Nullable String collideRuleTeamName; // Paper - Team name used for collideRule
+ 
+     public PlayerList(MinecraftServer server, RegistryAccess.RegistryHolder registryManager, PlayerDataStorage saveHandler, int maxPlayers) {
