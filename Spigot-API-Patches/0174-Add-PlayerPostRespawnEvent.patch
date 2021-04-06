@@ -6,10 +6,10 @@ Subject: [PATCH] Add PlayerPostRespawnEvent
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerPostRespawnEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerPostRespawnEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..31f34b54801f6699ce43355fa2a0a51f1ad0c997
+index 0000000000000000000000000000000000000000..0c2111be9d95ab31b04fb5c755ee9e86eccda008
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerPostRespawnEvent.java
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,68 @@
 +package com.destroystokyo.paper.event.player;
 +
 +import org.bukkit.Location;
@@ -25,11 +25,18 @@ index 0000000000000000000000000000000000000000..31f34b54801f6699ce43355fa2a0a51f
 +    private final static HandlerList handlers = new HandlerList();
 +    private final Location respawnedLocation;
 +    private final boolean isBedSpawn;
++    private final boolean isAnchorSpawn;
 +
++    @Deprecated
 +    public PlayerPostRespawnEvent(@NotNull final Player respawnPlayer, @NotNull final Location respawnedLocation, final boolean isBedSpawn) {
++        this(respawnPlayer, respawnedLocation, isBedSpawn, false);
++    }
++
++    public PlayerPostRespawnEvent(@NotNull final Player respawnPlayer, @NotNull final Location respawnedLocation, final boolean isBedSpawn, final boolean isAnchorSpawn) {
 +        super(respawnPlayer);
 +        this.respawnedLocation = respawnedLocation;
 +        this.isBedSpawn = isBedSpawn;
++        this.isAnchorSpawn = isAnchorSpawn;
 +    }
 +
 +    /**
@@ -49,6 +56,15 @@ index 0000000000000000000000000000000000000000..31f34b54801f6699ce43355fa2a0a51f
 +     */
 +    public boolean isBedSpawn() {
 +        return isBedSpawn;
++    }
++
++    /**
++     * Gets whether the respawn location is the player's respawn anchor
++     *
++     * @return true if the respawn location is the player's respawn anchor
++     */
++    public boolean isAnchorSpawn() {
++        return isAnchorSpawn;
 +    }
 +
 +    @Override
