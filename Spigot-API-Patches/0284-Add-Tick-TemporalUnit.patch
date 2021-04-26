@@ -6,10 +6,10 @@ Subject: [PATCH] Add Tick TemporalUnit
 
 diff --git a/src/main/java/io/papermc/paper/util/Tick.java b/src/main/java/io/papermc/paper/util/Tick.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..05d26bfe37258ab398d386ae80fa252cdbcd0c8a
+index 0000000000000000000000000000000000000000..42021c8708dc9c932cb497ca31ea4a3e2add22dd
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/util/Tick.java
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,91 @@
 +package io.papermc.paper.util;
 +
 +import org.jetbrains.annotations.NotNull;
@@ -20,7 +20,9 @@ index 0000000000000000000000000000000000000000..05d26bfe37258ab398d386ae80fa252c
 +import java.util.Objects;
 +
 +/**
-+ * A TemporalUnit that represents one server tick.
++ * A TemporalUnit that represents the target length of one server tick. This is defined
++ * as 50 milliseconds. Note that this class is not for measuring the length that a tick
++ * took, rather it is used for simple conversion between times and ticks.
 + * @see #tick()
 + */
 +public final class Tick implements TemporalUnit {
@@ -73,14 +75,9 @@ index 0000000000000000000000000000000000000000..05d26bfe37258ab398d386ae80fa252c
 +        return Duration.ofMillis(this.milliseconds);
 +    }
 +
-+    /**
-+     * As the actual length of a tick can differ from the expected length of a tick, this
-+     * method returns {@code true}.
-+     * @return {@code true}
-+     */
 +    @Override
 +    public boolean isDurationEstimated() {
-+        return true;
++        return false;
 +    }
 +
 +    @Override
@@ -104,18 +101,16 @@ index 0000000000000000000000000000000000000000..05d26bfe37258ab398d386ae80fa252c
 +        return start.until(end, this);
 +    }
 +}
-diff --git a/src/test/java/io/papermc/paper/TickTest.java b/src/test/java/io/papermc/paper/TickTest.java
+diff --git a/src/test/java/io/papermc/paper/util/TickTest.java b/src/test/java/io/papermc/paper/util/TickTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4f41afbdccdae4c6b1558ebdebf6cdfc489e3d1f
+index 0000000000000000000000000000000000000000..9a48f7a82636d4047a3f5fefe69bb88c2f5aaaef
 --- /dev/null
-+++ b/src/test/java/io/papermc/paper/TickTest.java
-@@ -0,0 +1,25 @@
-+package io.papermc.paper;
-+
-+import io.papermc.paper.util.Tick;
-+import org.junit.Test;
++++ b/src/test/java/io/papermc/paper/util/TickTest.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.util;
 +
 +import java.time.Duration;
++import org.junit.Test;
 +
 +import static org.junit.Assert.assertEquals;
 +
