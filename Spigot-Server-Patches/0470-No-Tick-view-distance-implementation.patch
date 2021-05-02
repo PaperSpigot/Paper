@@ -179,7 +179,7 @@ index 25484cac9c62e49de39fbbf506fcb3edc4ba6e65..1f6333c2c26ad04e23d2881235ed1dcf
  
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> a(ChunkStatus chunkstatus, PlayerChunkMap playerchunkmap) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a950845eaf 100644
+index 3c49ca30959204840a656c1a44de50a60ea1c7df..ce42eaa2e6ac7992c435a97af52410127f6eeec6 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 @@ -60,9 +60,11 @@ import net.minecraft.network.protocol.game.PacketPlayOutLightUpdate;
@@ -232,7 +232,14 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
  
      void addPlayerToDistanceMaps(EntityPlayer player) {
          int chunkX = MCUtil.getChunkCoordinate(player.locX());
-@@ -237,6 +261,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -231,12 +255,25 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             com.destroystokyo.paper.util.misc.PlayerAreaMap trackMap = this.playerEntityTrackerTrackMaps[i];
+             int trackRange = this.entityTrackerTrackRanges[i];
+ 
+-            trackMap.add(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveViewDistance()));
++            trackMap.add(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveNoTickViewDistance()));
+         }
+         // Paper end - use distance map to optimise entity tracker
          // Paper start - optimise PlayerChunkMap#isOutsideRange
          this.playerChunkTickRangeMap.add(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -264,7 +271,14 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      }
  
      void updateMaps(EntityPlayer player) {
-@@ -266,6 +308,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -260,12 +302,25 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             com.destroystokyo.paper.util.misc.PlayerAreaMap trackMap = this.playerEntityTrackerTrackMaps[i];
+             int trackRange = this.entityTrackerTrackRanges[i];
+ 
+-            trackMap.update(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveViewDistance()));
++            trackMap.update(player, chunkX, chunkZ, Math.min(trackRange, this.getEffectiveNoTickViewDistance()));
+         }
+         // Paper end - use distance map to optimise entity tracker
          // Paper start - optimise PlayerChunkMap#isOutsideRange
          this.playerChunkTickRangeMap.update(player, chunkX, chunkZ, ChunkMapDistance.MOB_SPAWN_RANGE);
          // Paper end - optimise PlayerChunkMap#isOutsideRange
@@ -561,15 +575,26 @@ index 3c49ca30959204840a656c1a44de50a60ea1c7df..762598b1dc8c6fb4beaad01e5777d0a9
      private void a(EntityPlayer entityplayer, Packet<?>[] apacket, Chunk chunk) {
          if (apacket[0] == null) {
              apacket[0] = new PacketPlayOutMapChunk(chunk, 65535, chunk.world.chunkPacketBlockController.shouldModify(entityplayer, chunk, 65535)); // Paper - Anti-Xray - Bypass
-@@ -2069,7 +2237,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -2059,7 +2227,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+             org.spigotmc.AsyncCatcher.catchOp("player tracker update"); // Spigot
+             if (entityplayer != this.tracker) {
+                 Vec3D vec3d = entityplayer.getPositionVector().d(this.tracker.getPositionVector()); // MC-155077, SPIGOT-5113
+-                int i = Math.min(this.b(), (PlayerChunkMap.this.viewDistance - 1) * 16);
++                int i = Math.min(this.b(), (PlayerChunkMap.this.noTickViewDistance - 1) * 16); // Paper - no-tick view distance
+                 boolean flag = vec3d.x >= (double) (-i) && vec3d.x <= (double) i && vec3d.z >= (double) (-i) && vec3d.z <= (double) i && this.tracker.a(entityplayer);
+ 
+                 if (flag) {
+@@ -2069,8 +2237,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                          ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(this.tracker.chunkX, this.tracker.chunkZ);
                          PlayerChunk playerchunk = PlayerChunkMap.this.getVisibleChunk(chunkcoordintpair.pair());
  
 -                        if (playerchunk != null && playerchunk.getChunk() != null) {
+-                            flag1 = PlayerChunkMap.b(chunkcoordintpair, entityplayer, false) <= PlayerChunkMap.this.viewDistance;
 +                        if (playerchunk != null && playerchunk.getSendingChunk() != null) { // Paper - no-tick view distance
-                             flag1 = PlayerChunkMap.b(chunkcoordintpair, entityplayer, false) <= PlayerChunkMap.this.viewDistance;
++                            flag1 = PlayerChunkMap.b(chunkcoordintpair, entityplayer, false) <= Math.max(PlayerChunkMap.this.viewDistance, PlayerChunkMap.this.noTickViewDistance);
                          }
                      }
+ 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
 index 70b3a7c8c4bd817be9c4dfaee71ec22a42620e11..ee6de0186f6a112d02e1dd4cc73fdaa92ab4d0d9 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java

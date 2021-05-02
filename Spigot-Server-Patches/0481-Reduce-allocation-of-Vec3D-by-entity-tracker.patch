@@ -39,7 +39,7 @@ index b64aa6c9ce906b08e43891f8c465fa4e8b2a8906..58dd349adf2bc9bac6569464ef7a7aec
  
                      if (!flag4 && this.o <= 400 && !this.q && this.r == this.tracker.isOnGround()) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 5538d97e237e448a7d3eb76a57609980c3a6bddb..ede47aaaace80280756fe4463def1ea26792c9e4 100644
+index 4195ddc976e3dc17cc714c8e172d427c1695dc91..6850b2f9917b4253baff1973d82d28c0ab7ecf74 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 @@ -2227,9 +2227,14 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
@@ -53,7 +53,7 @@ index 5538d97e237e448a7d3eb76a57609980c3a6bddb..ede47aaaace80280756fe4463def1ea2
 +                double vec3d_dy = entityplayer.locY() - this.tracker.locY();
 +                double vec3d_dz = entityplayer.locZ() - this.tracker.locZ();
 +                // Paper end - remove allocation of Vec3D here
-                 int i = Math.min(this.b(), (PlayerChunkMap.this.viewDistance - 1) * 16);
+                 int i = Math.min(this.b(), (PlayerChunkMap.this.noTickViewDistance - 1) * 16); // Paper - no-tick view distance
 -                boolean flag = vec3d.x >= (double) (-i) && vec3d.x <= (double) i && vec3d.z >= (double) (-i) && vec3d.z <= (double) i && this.tracker.a(entityplayer);
 +                boolean flag = vec3d_dx >= (double) (-i) && vec3d_dx <= (double) i && vec3d_dz >= (double) (-i) && vec3d_dz <= (double) i && this.tracker.a(entityplayer); // Paper - remove allocation of Vec3D here
  
