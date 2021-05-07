@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rodney_Mc_Kay <herr-fant@web.de>
+Date: Fri, 7 May 2021 21:46:28 +0200
+Subject: [PATCH] Add PlayerPickItemEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 9455cb9bc849a330e57fdc466fb51902631e22d8..1b39dcb369b8a0169dee4bd84b4800c9f1708817 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -904,7 +904,18 @@ public class PlayerConnection implements PacketListenerPlayIn {
+             this.disconnect("Invalid hotbar selection (Hacking?)");
+             return;
+         }
+-        this.player.inventory.c(packetplayinpickitem.b()); // Paper - Diff above if changed
++        // Paper end
++        // Paper start - PlayerPickItemEvent
++        Player bukkitPlayer = player.getBukkitEntity();
++        int targetSlot = this.player.inventory.getPickItemTargetSlot();
++        int sourceSlot = packetplayinpickitem.b();
++
++        com.destroystokyo.paper.event.player.PlayerPickItemEvent event = new com.destroystokyo.paper.event.player.PlayerPickItemEvent(bukkitPlayer, targetSlot, sourceSlot);
++        server.getPluginManager().callEvent(event);
++
++        if (event.isCancelled()) return;
++
++        this.player.inventory.pickItem(event.getTargetSlot(), event.getSourceSlot());
+         // Paper end
+         this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-2, this.player.inventory.itemInHandIndex, this.player.inventory.getItem(this.player.inventory.itemInHandIndex)));
+         this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-2, packetplayinpickitem.b(), this.player.inventory.getItem(packetplayinpickitem.b())));
+diff --git a/src/main/java/net/minecraft/world/entity/player/PlayerInventory.java b/src/main/java/net/minecraft/world/entity/player/PlayerInventory.java
+index 2df3ae0b72ccb5f816d55fed15396ba5a1affb7f..bfea5311bee338a74a3e718f21fbf1b32043ba49 100644
+--- a/src/main/java/net/minecraft/world/entity/player/PlayerInventory.java
++++ b/src/main/java/net/minecraft/world/entity/player/PlayerInventory.java
+@@ -150,7 +150,12 @@ public class PlayerInventory implements IInventory, INamableTileEntity {
+     }
+ 
+     public void c(int i) {
+-        this.itemInHandIndex = this.i();
++        // Paper start - PlayerPickItemEvent
++        pickItem(getPickItemTargetSlot(), i);
++    }
++    public void pickItem(int targetSlot, int i) {
++        this.itemInHandIndex = targetSlot;
++        // Paper end
+         ItemStack itemstack = (ItemStack) this.items.get(this.itemInHandIndex);
+ 
+         this.items.set(this.itemInHandIndex, this.items.get(i));
+@@ -173,6 +178,7 @@ public class PlayerInventory implements IInventory, INamableTileEntity {
+         return -1;
+     }
+ 
++    public final int getPickItemTargetSlot() { return this.i(); } // Paper - OBFHELPER
+     public int i() {
+         int i;
+         int j;

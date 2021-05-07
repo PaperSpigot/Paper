@@ -1,0 +1,112 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rodney_Mc_Kay <herr-fant@web.de>
+Date: Fri, 7 May 2021 21:46:54 +0200
+Subject: [PATCH] Add PlayerPickItemEvent
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerPickItemEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerPickItemEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fc6195cfdae108654b7857e4ab9c44e72543959d
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerPickItemEvent.java
+@@ -0,0 +1,100 @@
++package com.destroystokyo.paper.event.player;
++
++import org.apache.commons.lang.Validate;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Event that is fired when a player uses the pick item functionality (middle clicking a block to get the appropriate
++ * item). However, note that this event will only trigger if an item has to be moved from the inventory to the hotbar.
++ * After the handling of this event the contents of the source and the target slot will be swapped and the currently
++ * selected hotbar slot of the player will be set to the target slot.
++ */
++public class PlayerPickItemEvent extends PlayerEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++    private int targetSlot;
++    private int sourceSlot;
++
++    private boolean cancelled;
++
++    public PlayerPickItemEvent(@NotNull Player player, int targetSlot, int sourceSlot) {
++        super(player);
++        this.targetSlot = targetSlot;
++        this.sourceSlot = sourceSlot;
++    }
++
++    /**
++     * Returns the slot the item that is being picked goes into.
++     *
++     * @return hotbar slot (0-8 inclusive)
++     */
++    public int getTargetSlot() {
++        return this.targetSlot;
++    }
++
++    /**
++     * Changes the slot the item that is being picked goes into. Note: This may be equal to the source slot.
++     *
++     * @param targetSlot hotbar slot (0-8 inclusive)
++     */
++    public void setTargetSlot(int targetSlot) {
++        Validate.isTrue(targetSlot >= 0 && targetSlot <= 9, "Target slot must be in range 0 - 9 (inclusive)");
++        this.targetSlot = targetSlot;
++    }
++
++    /**
++     * Returns the slot in which the item that will be put into the players hotbar is located.
++     *
++     * @return player inventory slot (0-35 inclusive)
++     */
++    public int getSourceSlot() {
++        return this.sourceSlot;
++    }
++
++    /**
++     * Change the source slot from which the item that will be put in the players hotbar will be taken.
++     *
++     * @param sourceSlot player inventory slot (0-35 inclusive)
++     */
++    public void setSourceSlot(int sourceSlot) {
++        Validate.isTrue(sourceSlot >= 0 && sourceSlot < getPlayer().getInventory().getSize(), "Source slot must be in range of the players inventorys slot ids");
++        this.sourceSlot = sourceSlot;
++    }
++
++    /**
++     * Returns the item that is currently located in the source slot. Note that the return value of this function will
++     * change if you change the contents of the source slots during the handling of this event.
++     *
++     * @return item in the source slot
++     */
++    @Nullable
++    public ItemStack getSourceItem() {
++        return getPlayer().getInventory().getItem(sourceSlot);
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return this.cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++}
