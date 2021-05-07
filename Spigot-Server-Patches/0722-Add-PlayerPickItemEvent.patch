@@ -5,7 +5,7 @@ Subject: [PATCH] Add PlayerPickItemEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 9455cb9bc849a330e57fdc466fb51902631e22d8..1b39dcb369b8a0169dee4bd84b4800c9f1708817 100644
+index 9455cb9bc849a330e57fdc466fb51902631e22d8..f209d2c23070e45c8d0158744062215f7b3776bc 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -904,7 +904,18 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -19,7 +19,7 @@ index 9455cb9bc849a330e57fdc466fb51902631e22d8..1b39dcb369b8a0169dee4bd84b4800c9
 +        int targetSlot = this.player.inventory.getPickItemTargetSlot();
 +        int sourceSlot = packetplayinpickitem.b();
 +
-+        com.destroystokyo.paper.event.player.PlayerPickItemEvent event = new com.destroystokyo.paper.event.player.PlayerPickItemEvent(bukkitPlayer, targetSlot, sourceSlot);
++        io.papermc.paper.event.player.PlayerPickItemEvent event = new io.papermc.paper.event.player.PlayerPickItemEvent(bukkitPlayer, targetSlot, sourceSlot);
 +        server.getPluginManager().callEvent(event);
 +
 +        if (event.isCancelled()) return;
