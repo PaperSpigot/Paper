@@ -2496,10 +2496,10 @@ index 820ba7c59e7bc7b6f3311f1a4ec3d724e265a2af..b6b55d5baa5e8a6b69a3e4865c06bc8a
          ChunkSection[] achunksection = chunk.getSections();
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..18b56b59fd6efd618e6ff6f9cf3a02f57588d244
+index 0000000000000000000000000000000000000000..2290faee3620d0e1772dc1836732a72a42beffec
 --- /dev/null
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -0,0 +1,510 @@
+@@ -0,0 +1,524 @@
 +package net.minecraft.server;
 +
 +import com.destroystokyo.paper.block.TargetBlockInfo;
@@ -2507,14 +2507,17 @@ index 0000000000000000000000000000000000000000..18b56b59fd6efd618e6ff6f9cf3a02f5
 +import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 +import net.minecraft.core.BlockPosition;
 +import net.minecraft.core.EnumDirection;
++import net.minecraft.core.GlobalPos;
 +import net.minecraft.server.level.WorldServer;
 +import net.minecraft.world.entity.Entity;
 +import net.minecraft.world.level.ChunkCoordIntPair;
 +import net.minecraft.world.level.RayTrace;
 +import net.minecraft.world.level.World;
 +import org.apache.commons.lang.exception.ExceptionUtils;
++import org.bukkit.Bukkit;
 +import org.bukkit.Location;
 +import org.bukkit.block.BlockFace;
++import org.bukkit.craftbukkit.CraftServer;
 +import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.util.Waitable;
 +import org.spigotmc.AsyncCatcher;
@@ -2947,12 +2950,23 @@ index 0000000000000000000000000000000000000000..18b56b59fd6efd618e6ff6f9cf3a02f5
 +        return new Location(entity.getWorld().getWorld(), entity.locX(), entity.locY(), entity.locZ());
 +    }
 +
++    public static Location toLocation(GlobalPos globalPos) {
++        return MCUtil.toLocation(((CraftServer) Bukkit.getServer()).getServer().getWorldServer(globalPos.getDimensionManager()), globalPos.getBlockPosition());
++    }
++
 +    public static org.bukkit.block.Block toBukkitBlock(World world, BlockPosition pos) {
 +        return world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 +    }
 +
 +    public static BlockPosition toBlockPosition(Location loc) {
 +        return new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
++    }
++
++    public static GlobalPos toGlobalPos(Location location) {
++        if (location.getWorld() == null) {
++            throw new IllegalArgumentException("Cannot construct a GlobalPos with a null world");
++        }
++        return GlobalPos.create(((CraftWorld) location.getWorld()).getHandle().getDimensionKey(), toBlockPosition(location));
 +    }
 +
 +    public static boolean isEdgeOfChunk(BlockPosition pos) {

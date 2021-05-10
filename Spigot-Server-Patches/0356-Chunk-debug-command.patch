@@ -208,11 +208,11 @@ index b67bd98cca4a06bc0ebaed577195dffc3b3251ec..a7a02072e5c7ce62cbecbb638fcc74ab
       * Ported from MinecraftForge - author: LexManos <LexManos@gmail.com> - License: LGPLv2.1
       */
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 35d1444c5b75d9a3a6cface5dd70aea0a08ac89d..fbd33aef21b4539d249c367609a36491530fb7ca 100644
+index 02733e41fe29be9d7bb1759870ad1192904958e0..6b5ea57419a234c32e0d0438e5f622366ef73036 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
-@@ -9,13 +9,27 @@ import net.minecraft.core.BlockPosition;
- import net.minecraft.core.EnumDirection;
+@@ -10,14 +10,28 @@ import net.minecraft.core.EnumDirection;
+ import net.minecraft.core.GlobalPos;
  import net.minecraft.nbt.NBTTagCompound;
  import net.minecraft.network.chat.IChatBaseComponent;
 +import net.minecraft.server.level.ChunkMapDistance;
@@ -229,6 +229,7 @@ index 35d1444c5b75d9a3a6cface5dd70aea0a08ac89d..fbd33aef21b4539d249c367609a36491
 +import net.minecraft.world.level.chunk.ChunkStatus;
 +import net.minecraft.world.level.chunk.IChunkAccess;
  import org.apache.commons.lang.exception.ExceptionUtils;
+ import org.bukkit.Bukkit;
 +import com.google.gson.JsonArray;
 +import com.google.gson.JsonObject;
 +import com.google.gson.internal.Streams;
@@ -238,8 +239,8 @@ index 35d1444c5b75d9a3a6cface5dd70aea0a08ac89d..fbd33aef21b4539d249c367609a36491
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
  import org.bukkit.Location;
  import org.bukkit.block.BlockFace;
- import org.bukkit.craftbukkit.CraftWorld;
-@@ -24,8 +38,11 @@ import org.spigotmc.AsyncCatcher;
+ import org.bukkit.craftbukkit.CraftServer;
+@@ -27,8 +41,11 @@ import org.spigotmc.AsyncCatcher;
  
  import javax.annotation.Nonnull;
  import javax.annotation.Nullable;
@@ -251,7 +252,7 @@ index 35d1444c5b75d9a3a6cface5dd70aea0a08ac89d..fbd33aef21b4539d249c367609a36491
  import java.util.concurrent.CompletableFuture;
  import java.util.concurrent.ExecutionException;
  import java.util.concurrent.LinkedBlockingQueue;
-@@ -531,4 +548,170 @@ public final class MCUtil {
+@@ -545,4 +562,170 @@ public final class MCUtil {
  
          return null;
      }
