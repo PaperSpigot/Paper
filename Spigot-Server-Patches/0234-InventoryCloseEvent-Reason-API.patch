@@ -7,7 +7,7 @@ Allows you to determine why an inventory was closed, enabling plugin developers
 to "confirm" things based on if it was player triggered close or not.
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index 8b79d547a3296f056731cbb66508494d84809e94..b3c5a22bf2eb360399ebfbf90fc74843dcd78509 100644
+index 3d517ab98da5fd56101e97b5678f7180839269f8..7b07d17f8ae425418ff3cafdfd30d72a5bc0fe16 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -546,7 +546,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -61,10 +61,10 @@ index 8b79d547a3296f056731cbb66508494d84809e94..b3c5a22bf2eb360399ebfbf90fc74843
          this.o();
      }
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 32ad210daf61b6c43fc60f3140dc46529d14ec27..95cd4855cf577d9ceac8c3b45ac54705bea00ea9 100644
+index b73315df7dae243dd76e44d586dfc1d8f9017a56..eb19b6fc87bfd4e500ea7836c1010a80b36abab2 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1123,7 +1123,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1125,7 +1125,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          for (TileEntity tileentity : chunk.getTileEntities().values()) {
              if (tileentity instanceof net.minecraft.world.IInventory) {
                  for (org.bukkit.entity.HumanEntity h : Lists.newArrayList(((net.minecraft.world.IInventory) tileentity).getViewers())) {
@@ -73,7 +73,7 @@ index 32ad210daf61b6c43fc60f3140dc46529d14ec27..95cd4855cf577d9ceac8c3b45ac54705
                  }
              }
          }
-@@ -1181,7 +1181,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1183,7 +1183,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          // Spigot Start
          if (entity.getBukkitEntity() instanceof org.bukkit.inventory.InventoryHolder) {
              for (org.bukkit.entity.HumanEntity h : Lists.newArrayList(((org.bukkit.inventory.InventoryHolder) entity.getBukkitEntity()).getInventory().getViewers())) {
@@ -83,7 +83,7 @@ index 32ad210daf61b6c43fc60f3140dc46529d14ec27..95cd4855cf577d9ceac8c3b45ac54705
          }
          // Spigot End
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 415f34109019e68638f76fefa52bd8d40c449e12..c4f14fabc83a9cb13f8f82b651119e0ac7d8aa02 100644
+index d4862a3a7f523c13c452e7b67072261556162437..5c637fc653482e931fa6d0f5d0394d0b923b5ff8 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -190,6 +190,7 @@ import org.bukkit.event.inventory.ClickType;
@@ -93,8 +93,8 @@ index 415f34109019e68638f76fefa52bd8d40c449e12..c4f14fabc83a9cb13f8f82b651119e0a
 +import org.bukkit.event.inventory.InventoryCloseEvent; // Paper
  import org.bukkit.event.inventory.InventoryCreativeEvent;
  import org.bukkit.event.inventory.InventoryType.SlotType;
- import org.bukkit.event.player.AsyncPlayerChatEvent;
-@@ -2308,10 +2309,15 @@ public class PlayerConnection implements PacketListenerPlayIn {
+ import org.bukkit.event.inventory.SmithItemEvent;
+@@ -2310,10 +2311,15 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
      @Override
      public void a(PacketPlayInCloseWindow packetplayinclosewindow) {
@@ -193,10 +193,10 @@ index 871c0e0b0c6df68c0f8c87828a01fe006d0646fb..32228b4eddaadabbae46ebbc5eb3404a
  
          // Check if the fromWorld and toWorld are the same.
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 8f60cc5bf1583b48c6052f7598e99b4c63203852..681eb48c568029d6e3c5fa140a2c330a5f27df6f 100644
+index e068896b1b8aab8bba8acd641bf0479c89ad3321..69bcd6dcfc62ab7b5666b8e185efa07a9adbc179 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1166,7 +1166,7 @@ public class CraftEventFactory {
+@@ -1184,7 +1184,7 @@ public class CraftEventFactory {
  
      public static Container callInventoryOpenEvent(EntityPlayer player, Container container, boolean cancelled) {
          if (player.activeContainer != player.defaultContainer) { // fire INVENTORY_CLOSE if one already open
@@ -205,7 +205,7 @@ index 8f60cc5bf1583b48c6052f7598e99b4c63203852..681eb48c568029d6e3c5fa140a2c330a
          }
  
          CraftServer server = player.world.getServer();
-@@ -1331,8 +1331,18 @@ public class CraftEventFactory {
+@@ -1350,8 +1350,18 @@ public class CraftEventFactory {
          return event;
      }
  

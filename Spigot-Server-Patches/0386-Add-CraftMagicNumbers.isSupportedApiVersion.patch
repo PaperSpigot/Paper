@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: BlackHole <black-hole@live.com>
+Date: Sun, 15 Dec 2019 19:12:39 +0100
+Subject: [PATCH] Add CraftMagicNumbers.isSupportedApiVersion()
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 8aa9e7796ea39c09a965750d06c3d358250f33b8..7e4cceff7ce9ffaff00caf21088fd7bc59e66933 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -375,6 +375,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     public com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+         return new com.destroystokyo.paper.PaperVersionFetcher();
+     }
++
++    @Override
++    public boolean isSupportedApiVersion(String apiVersion) {
++        return apiVersion != null && SUPPORTED_API.contains(apiVersion);
++    }
+     // Paper end
+ 
+     /**

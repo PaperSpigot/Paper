@@ -7,10 +7,18 @@ Co-authored-by: zml <zml@stellardrift.ca>
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
 
 diff --git a/pom.xml b/pom.xml
-index e3744ee042e0426a513c4fdf4abedafe85e31cd2..75b2830340051deb0fa39149e80872d2b88ed6f0 100644
+index e3744ee042e0426a513c4fdf4abedafe85e31cd2..363c66f7ec247820bd8db7b05f861ed40c48f384 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -31,7 +31,39 @@
+@@ -22,6 +22,7 @@
+         <maven.compiler.source>1.8</maven.compiler.source>
+         <maven.compiler.target>1.8</maven.compiler.target>
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
++        <adventure.version>4.7.0</adventure.version> <!-- Paper - When updating this make sure to update the linked JavaDocs on the homepage as well! -->
+     </properties>
+ 
+     <repositories>
+@@ -31,7 +32,39 @@
          </repository>
      </repositories>
  
@@ -20,7 +28,7 @@ index e3744ee042e0426a513c4fdf4abedafe85e31cd2..75b2830340051deb0fa39149e80872d2
 +            <dependency>
 +                <groupId>net.kyori</groupId>
 +                <artifactId>adventure-bom</artifactId>
-+                <version>4.7.0</version> <!-- keep this version in synch with javadoc section below! -->
++                <version>${adventure.version}</version>
 +                <type>pom</type>
 +                <scope>import</scope>
 +            </dependency>
@@ -50,15 +58,15 @@ index e3744ee042e0426a513c4fdf4abedafe85e31cd2..75b2830340051deb0fa39149e80872d2
          <dependency>
              <groupId>it.unimi.dsi</groupId>
              <artifactId>fastutil</artifactId>
-@@ -197,6 +229,12 @@
+@@ -197,6 +230,12 @@
                          <link>https://javadoc.io/doc/org.yaml/snakeyaml/1.27/</link>
                          <link>https://javadoc.io/doc/org.jetbrains/annotations-java5/20.1.0/</link>
                          <link>https://javadoc.io/doc/net.md-5/bungeecord-chat/1.16-R0.4/</link>
 +                        <!-- Paper start -->
-+                        <link>https://jd.adventure.kyori.net/api/4.7.0/</link>
-+                        <link>https://jd.adventure.kyori.net/text-serializer-gson/4.7.0/</link>
-+                        <link>https://jd.adventure.kyori.net/text-serializer-legacy/4.7.0/</link>
-+                        <link>https://jd.adventure.kyori.net/text-serializer-plain/4.7.0/</link>
++                        <link>https://jd.adventure.kyori.net/api/${adventure.version}/</link>
++                        <link>https://jd.adventure.kyori.net/text-serializer-gson/${adventure.version}/</link>
++                        <link>https://jd.adventure.kyori.net/text-serializer-legacy/${adventure.version}/</link>
++                        <link>https://jd.adventure.kyori.net/text-serializer-plain/${adventure.version}/</link>
 +                        <!-- Paper end -->
                      </links>
                  </configuration>
@@ -397,6 +405,100 @@ index 0000000000000000000000000000000000000000..13c5df5fb8ce1d0203d99e88dd691019
 +    @NotNull
 +    public static HandlerList getHandlerList() {
 +        return HANDLERS;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/text/PaperComponents.java b/src/main/java/io/papermc/paper/text/PaperComponents.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9bbd30a4e
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/text/PaperComponents.java
+@@ -0,0 +1,88 @@
++package io.papermc.paper.text;
++
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.flattener.ComponentFlattener;
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
++import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
++import org.bukkit.Bukkit;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++/**
++ * Paper API-specific methods for working with {@link Component}s and related.
++ */
++public final class PaperComponents {
++    private PaperComponents() {
++        throw new RuntimeException("PaperComponents is not to be instantiated!");
++    }
++
++    /**
++     * Return a component flattener that can use game data to resolve extra information about components.
++     *
++     * @return a component flattener
++     */
++    public static @NonNull ComponentFlattener flattener() {
++        return Bukkit.getUnsafe().componentFlattener();
++    }
++
++    /**
++     * Get a serializer for {@link Component}s that will convert components to
++     * a plain-text string.
++     *
++     * <p>Implementations may provide a serializer capable of processing any
++     * information that requires access to implementation details.</p>
++     *
++     * @return a serializer to plain text
++     */
++    public static @NonNull PlainComponentSerializer plainSerializer() {
++        return Bukkit.getUnsafe().plainComponentSerializer();
++    }
++
++    /**
++     * Get a serializer for {@link Component}s that will convert to and from the
++     * standard JSON serialization format using Gson.
++     *
++     * <p>Implementations may provide a serializer capable of processing any
++     * information that requires implementation details, such as legacy
++     * (pre-1.16) hover events.</p>
++     *
++     * @return a json component serializer
++     */
++    public static @NonNull GsonComponentSerializer gsonSerializer() {
++        return Bukkit.getUnsafe().gsonComponentSerializer();
++    }
++
++    /**
++     * Get a serializer for {@link Component}s that will convert to and from the
++     * standard JSON serialization format using Gson, downsampling any RGB colors
++     * to their nearest {@link NamedTextColor} counterpart.
++     *
++     * <p>Implementations may provide a serializer capable of processing any
++     * information that requires implementation details, such as legacy
++     * (pre-1.16) hover events.</p>
++     *
++     * @return a json component serializer
++     */
++    public static @NonNull GsonComponentSerializer colorDownsamplingGsonSerializer() {
++        return Bukkit.getUnsafe().colorDownsamplingGsonComponentSerializer();
++    }
++
++    /**
++     * Get a serializer for {@link Component}s that will convert to and from the
++     * legacy component format used by Bukkit. This serializer uses the
++     * {@link LegacyComponentSerializer.Builder#useUnusualXRepeatedCharacterHexFormat()}
++     * option to match upstream behavior.
++     *
++     * <p>This legacy serializer uses the standard section symbol to mark
++     * formatting characters.</p>
++     *
++     * <p>Implementations may provide a serializer capable of processing any
++     * information that requires access to implementation details.</p>
++     *
++     * @return a section serializer
++     */
++    public static @NonNull LegacyComponentSerializer legacySectionSerializer() {
++        return Bukkit.getUnsafe().legacyComponentSerializer();
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
@@ -907,14 +1009,20 @@ index 768f35c19c4557236bded5f4a85f48a2b2b2a9e6..d0ce64412276512cde133937a85a3340
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 945b8b030d1b2a13afc0c4efad76997eb7bf00ba..dd0b80c268644ac714311501215f45166092b856 100644
+index 945b8b030d1b2a13afc0c4efad76997eb7bf00ba..207c656c0a11a3a630bc70491efcf433b2681e18 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
-@@ -17,6 +17,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
+@@ -17,6 +17,13 @@ import org.bukkit.plugin.PluginDescriptionFile;
   */
  @Deprecated
  public interface UnsafeValues {
-+    net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer(); // Paper
++    // Paper start
++    net.kyori.adventure.text.flattener.ComponentFlattener componentFlattener();
++    net.kyori.adventure.text.serializer.plain.PlainComponentSerializer plainComponentSerializer();
++    net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer();
++    net.kyori.adventure.text.serializer.gson.GsonComponentSerializer colorDownsamplingGsonComponentSerializer();
++    net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer();
++    // Paper end
  
      void reportTimings(); // Paper
      Material toLegacy(Material material);
@@ -931,7 +1039,7 @@ index efb97712cc9dc7c1e12a59f5b94e4f2ad7c6b7d8..3024468af4c073324e536c1cb26beffb
                  return warning == null || warning.value();
              }
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index fd2af5fded9335602e263a2098760da0e64a87a3..44f01a3d8a461acab187367fc8876e0b73c92386 100644
+index bc4417d8ffa92a78f690bfa5705d3e42cdc11fd2..d3519fa5b99e2888a194c6382415537785fbeef0 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -38,7 +38,7 @@ import org.jetbrains.annotations.Nullable;
@@ -1198,7 +1306,7 @@ index 9566e4306ada5e82dede0f002aa06da12c44996b..4d5f0837bd0e02a30c943d8969fb6b13
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 344c14a5ed86e9ebe401bfb5ba3aedc0c0ed0b04..41a1bc45cc5eb7f19374115ade7f5328c7fc1dae 100644
+index b71530e94569f8ade829e655e3a89ec70215ea39..b21fe6c631d5a6cd52f133786270c8f5ad0dafc4 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
 @@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
@@ -1224,7 +1332,7 @@ index 344c14a5ed86e9ebe401bfb5ba3aedc0c0ed0b04..41a1bc45cc5eb7f19374115ade7f5328
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bfac498cb2 100644
+index 586fd9ebd02039ebd2c071cbbbf60f24879f96b9..171e2663301f654258dbd772a57688b5a2f8469c 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -30,7 +30,28 @@ import org.jetbrains.annotations.Nullable;
@@ -1472,9 +1580,9 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
 +    @NotNull java.util.Locale locale();
 +    // Paper end
      /**
-      * Gets the player's current locale.
+      * Gets the player's estimated ping in milliseconds.
       *
-@@ -1230,8 +1359,10 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1245,8 +1374,10 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * they wish.
       *
       * @return the player's locale
@@ -1485,7 +1593,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
      public String getLocale();
  
      /**
-@@ -1249,6 +1380,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1264,6 +1395,14 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       */
      public void openBook(@NotNull ItemStack book);
  
@@ -1500,7 +1608,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
      // Spigot start
      public class Spigot extends Entity.Spigot {
  
-@@ -1303,11 +1442,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1318,11 +1457,13 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
              throw new UnsupportedOperationException("Not supported yet.");
          }
  
@@ -1514,7 +1622,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
          @Override
          public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
              throw new UnsupportedOperationException("Not supported yet.");
-@@ -1318,7 +1459,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1333,7 +1474,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           *
           * @param position the screen position
           * @param component the components to send
@@ -1524,7 +1632,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -1328,7 +1471,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1343,7 +1486,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           *
           * @param position the screen position
           * @param components the components to send
@@ -1534,7 +1642,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -1339,7 +1484,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1354,7 +1499,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           * @param position the screen position
           * @param sender the sender of the message
           * @param component the components to send
@@ -1544,7 +1652,7 @@ index 344aecc097c5e12476d2be53019145812b028914..c5e7e037493ffe1f1764c3ad5d3e12bf
          public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @Nullable UUID sender, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -1350,7 +1497,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1365,7 +1512,9 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
           * @param position the screen position
           * @param sender the sender of the message
           * @param components the components to send
@@ -2790,10 +2898,22 @@ index f70a6a22b85ff0da76e67e9b223ad4e0b020b5c4..4b20b557eaa958cf1ad1baf8d6cc17f3
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
-index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4a95f513c 100644
+index 94852d50e88d0594b84b581cd627174043629995..fdbd32c4bb6428f2dde484ecb53acdaaba2a0d18 100644
 --- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
-@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
+@@ -1,8 +1,11 @@
+ package org.bukkit.inventory.meta;
+ 
+ import java.util.List;
++
++import net.kyori.adventure.inventory.Book;
+ import net.md_5.bungee.api.chat.BaseComponent;
+ import org.bukkit.Material;
++import org.checkerframework.checker.nullness.qual.NonNull;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+@@ -10,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
   * Represents a book ({@link Material#WRITABLE_BOOK} or {@link
   * Material#WRITTEN_BOOK}) that can have a title, an author, and pages.
   */
@@ -2802,7 +2922,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
  
      /**
       * Represents the generation (or level of copying) of a written book
-@@ -119,6 +119,111 @@ public interface BookMeta extends ItemMeta {
+@@ -119,6 +122,116 @@ public interface BookMeta extends ItemMeta {
       */
      boolean hasPages();
  
@@ -2909,12 +3029,17 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
 +        @Override
 +        BookMeta build();
 +    }
++
++    @Override
++    @NonNull
++    BookMetaBuilder toBuilder();
++
 +    // Paper end
 +
      /**
       * Gets the specified page in the book. The given page must exist.
       * <p>
-@@ -126,8 +231,10 @@ public interface BookMeta extends ItemMeta {
+@@ -126,8 +239,10 @@ public interface BookMeta extends ItemMeta {
       *
       * @param page the page number to get, in range [1, getPageCount()]
       * @return the page from the book
@@ -2925,7 +3050,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
      String getPage(int page);
  
      /**
-@@ -141,15 +248,19 @@ public interface BookMeta extends ItemMeta {
+@@ -141,15 +256,19 @@ public interface BookMeta extends ItemMeta {
       *
       * @param page the page number to set, in range [1, getPageCount()]
       * @param data the data to set for that page
@@ -2945,7 +3070,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
      List<String> getPages();
  
      /**
-@@ -157,7 +268,9 @@ public interface BookMeta extends ItemMeta {
+@@ -157,7 +276,9 @@ public interface BookMeta extends ItemMeta {
       * pages. Maximum 100 pages with 256 characters per page.
       *
       * @param pages A list of pages to set the book to use
@@ -2955,7 +3080,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
      void setPages(@NotNull List<String> pages);
  
      /**
-@@ -165,7 +278,9 @@ public interface BookMeta extends ItemMeta {
+@@ -165,7 +286,9 @@ public interface BookMeta extends ItemMeta {
       * pages. Maximum 50 pages with 256 characters per page.
       *
       * @param pages A list of strings, each being a page
@@ -2965,7 +3090,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
      void setPages(@NotNull String... pages);
  
      /**
-@@ -173,7 +288,9 @@ public interface BookMeta extends ItemMeta {
+@@ -173,7 +296,9 @@ public interface BookMeta extends ItemMeta {
       * 256 characters per page.
       *
       * @param pages A list of strings, each being a page
@@ -2975,7 +3100,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
      void addPage(@NotNull String... pages);
  
      /**
-@@ -195,8 +312,10 @@ public interface BookMeta extends ItemMeta {
+@@ -195,8 +320,10 @@ public interface BookMeta extends ItemMeta {
           *
           * @param page the page number to get
           * @return the page from the book
@@ -2986,7 +3111,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
          public BaseComponent[] getPage(int page) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -210,7 +329,9 @@ public interface BookMeta extends ItemMeta {
+@@ -210,7 +337,9 @@ public interface BookMeta extends ItemMeta {
           *
           * @param page the page number to set
           * @param data the data to set for that page
@@ -2996,7 +3121,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
          public void setPage(int page, @Nullable BaseComponent... data) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -219,8 +340,10 @@ public interface BookMeta extends ItemMeta {
+@@ -219,8 +348,10 @@ public interface BookMeta extends ItemMeta {
           * Gets all the pages in the book.
           *
           * @return list of all the pages in the book
@@ -3007,7 +3132,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
          public List<BaseComponent[]> getPages() {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -230,7 +353,9 @@ public interface BookMeta extends ItemMeta {
+@@ -230,7 +361,9 @@ public interface BookMeta extends ItemMeta {
           * pages. Maximum 50 pages with 256 characters per page.
           *
           * @param pages A list of pages to set the book to use
@@ -3017,7 +3142,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
          public void setPages(@NotNull List<BaseComponent[]> pages) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -240,7 +365,9 @@ public interface BookMeta extends ItemMeta {
+@@ -240,7 +373,9 @@ public interface BookMeta extends ItemMeta {
           * pages. Maximum 50 pages with 256 characters per page.
           *
           * @param pages A list of component arrays, each being a page
@@ -3027,7 +3152,7 @@ index 94852d50e88d0594b84b581cd627174043629995..0cfd4b02cc2095da56b4dc8d4ea4e9b4
          public void setPages(@NotNull BaseComponent[]... pages) {
              throw new UnsupportedOperationException("Not supported yet.");
          }
-@@ -250,7 +377,9 @@ public interface BookMeta extends ItemMeta {
+@@ -250,7 +385,9 @@ public interface BookMeta extends ItemMeta {
           * with 256 characters per page.
           *
           * @param pages A list of component arrays, each being a page

@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Tue, 2 Mar 2021 15:24:58 -0800
+Subject: [PATCH] Cache the result of Material#isBlock
+
+
+diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
+index e453e5eb7245aad3ecbb19652ebb34abe030c0a9..112c3f035ec7e7a7cae939264e0af4c6f4450abd 100644
+--- a/src/main/java/org/bukkit/Material.java
++++ b/src/main/java/org/bukkit/Material.java
+@@ -3522,6 +3522,7 @@ public enum Material implements Keyed {
+     public final Class<?> data;
+     private final boolean legacy;
+     private final NamespacedKey key;
++    private boolean isBlock; // Paper
+ 
+     private Material(final int id) {
+         this(id, 64);
+@@ -3719,6 +3720,11 @@ public enum Material implements Keyed {
+      * @return true if this material is a block
+      */
+     public boolean isBlock() {
++    // Paper start - cache isBlock
++        return this.isBlock;
++    }
++    private boolean isBlock0() {
++    // Paper end
+         switch (this) {
+             //<editor-fold defaultstate="collapsed" desc="isBlock">
+             case ACACIA_BUTTON:
+@@ -4664,6 +4670,7 @@ public enum Material implements Keyed {
+     static {
+         for (Material material : values()) {
+             BY_NAME.put(material.name(), material);
++            material.isBlock = material.isBlock0(); // Paper
+         }
+     }
+ 

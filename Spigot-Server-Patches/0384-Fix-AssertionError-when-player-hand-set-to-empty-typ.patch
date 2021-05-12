@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Lukasz Derlatka <toranktto@gmail.com>
+Date: Mon, 11 Nov 2019 16:08:13 +0100
+Subject: [PATCH] Fix AssertionError when player hand set to empty type
+
+Fixes an AssertionError when setting the player's item in hand to null or a new ItemStack of Air in PlayerInteractEvent
+Fixes GH-2718
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index eee5b3e4645ae41f63aba8898c58f43402d31b73..cfdfa3ea95a525af25c7aa830f8e31d5afe56d65 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1707,6 +1707,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
+                 this.player.getBukkitEntity().updateInventory(); // SPIGOT-2524
+                 return;
+             }
++            // Paper start
++            itemstack = this.player.getItemInHand(enumhand);
++            if (itemstack.isEmpty()) return;
++            // Paper end
+             EnumInteractionResult enuminteractionresult = this.player.playerInteractManager.a(this.player, worldserver, itemstack, enumhand);
+ 
+             if (enuminteractionresult.b()) {
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 06119a87338d48128ddd71fe8396e10b6e83744a..ec31585099c8376f61496f02f9454cb600104918 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -2156,6 +2156,7 @@ public abstract class EntityLiving extends Entity {
+         return predicate.test(this.getItemInMainHand().getItem()) || predicate.test(this.getItemInOffHand().getItem());
+     }
+ 
++    public final ItemStack getItemInHand(EnumHand enumhand) { return this.b(enumhand); } // Paper - OBFHELPER
+     public ItemStack b(EnumHand enumhand) {
+         if (enumhand == EnumHand.MAIN_HAND) {
+             return this.getEquipment(EnumItemSlot.MAINHAND);

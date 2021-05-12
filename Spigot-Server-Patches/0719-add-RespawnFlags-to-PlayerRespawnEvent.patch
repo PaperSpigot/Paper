@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 17:17:47 -0700
+Subject: [PATCH] add RespawnFlags to PlayerRespawnEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index fd9f38f0bb723b3e78bd013ccb9538489a9ca43e..8c9e97bb093c0e6297397edc71d72deebbcfbed9 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2441,7 +2441,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+             case PERFORM_RESPAWN:
+                 if (this.player.viewingCredits) {
+                     this.player.viewingCredits = false;
+-                    this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, true);
++                    this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, this.minecraftServer.getWorldServer(this.player.getSpawnDimension()), true, null, true, org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag.END_PORTAL); // Paper - add isEndCreditsRespawn argument
+                     CriterionTriggers.v.a(this.player, World.THE_END, World.OVERWORLD);
+                 } else {
+                     if (this.player.getHealth() > 0.0F) {
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index f8f0212497ad4fbb1273820a06a4ae6721053b8e..aaa6f3aeaf1b47275a1c8fc22ee99475e62c32a0 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -820,7 +820,13 @@ public abstract class PlayerList {
+         return this.moveToWorld(entityplayer, this.server.getWorldServer(entityplayer.getSpawnDimension()), flag, null, true);
+     }
+ 
++    // Paper start
+     public EntityPlayer moveToWorld(EntityPlayer entityplayer, WorldServer worldserver, boolean flag, Location location, boolean avoidSuffocation) {
++        return moveToWorld(entityplayer, worldserver, flag, location, avoidSuffocation, new org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag[0]);
++    }
++
++    public EntityPlayer moveToWorld(EntityPlayer entityplayer, WorldServer worldserver, boolean flag, Location location, boolean avoidSuffocation, org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag...respawnFlags) {
++        // Paper end
+         entityplayer.stopRiding(); // CraftBukkit
+         this.players.remove(entityplayer);
+         this.playersByName.remove(entityplayer.getName().toLowerCase(java.util.Locale.ROOT)); // Spigot
+@@ -920,7 +926,7 @@ public abstract class PlayerList {
+             }
+ 
+             Player respawnPlayer = cserver.getPlayer(entityplayer1);
+-            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn && !isAnchorSpawn, isAnchorSpawn); // Paper - Fix anchor respawn acting as a bed respawn from the end portal
++            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn && !isAnchorSpawn, isAnchorSpawn, com.google.common.collect.ImmutableSet.<org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag>builder().add(respawnFlags)); // Paper - Fix anchor respawn acting as a bed respawn from the end portal
+             cserver.getPluginManager().callEvent(respawnEvent);
+             // Spigot Start
+             if (entityplayer.playerConnection.isDisconnected()) {

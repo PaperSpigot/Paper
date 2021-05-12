@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Sun, 17 May 2020 23:47:33 -0700
+Subject: [PATCH] Fix for large move vectors crashing server
+
+Check movement distance also based on current position.
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 68f8a7f227c4d683d4c13d634ccfbabe759e82b3..8ffc98faecca616005fc56031718a7a10de40102 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -518,19 +518,24 @@ public class PlayerConnection implements PacketListenerPlayIn {
+ 
+             if (entity != this.player && entity.getRidingPassenger() == this.player && entity == this.r) {
+                 WorldServer worldserver = this.player.getWorldServer();
+-                double d0 = entity.locX();
+-                double d1 = entity.locY();
+-                double d2 = entity.locZ();
+-                double d3 = packetplayinvehiclemove.getX();
+-                double d4 = packetplayinvehiclemove.getY();
+-                double d5 = packetplayinvehiclemove.getZ();
++                double d0 = entity.locX();double fromX = d0; // Paper - OBFHELPER
++                double d1 = entity.locY();double fromY = d1; // Paper - OBFHELPER
++                double d2 = entity.locZ();double fromZ = d2; // Paper - OBFHELPER
++                double d3 = packetplayinvehiclemove.getX();double toX = d3; // Paper - OBFHELPER
++                double d4 = packetplayinvehiclemove.getY();double toY = d4; // Paper - OBFHELPER
++                double d5 = packetplayinvehiclemove.getZ();double toZ = d5; // Paper - OBFHELPER
+                 float f = packetplayinvehiclemove.getYaw();
+                 float f1 = packetplayinvehiclemove.getPitch();
+                 double d6 = d3 - this.s;
+                 double d7 = d4 - this.t;
+                 double d8 = d5 - this.u;
+                 double d9 = entity.getMot().g();
+-                double d10 = d6 * d6 + d7 * d7 + d8 * d8;
++                // Paper start - fix large move vectors killing the server
++                double currDeltaX = toX - fromX;
++                double currDeltaY = toY - fromY;
++                double currDeltaZ = toZ - fromZ;
++                double d10 = Math.max(d6 * d6 + d7 * d7 + d8 * d8, (currDeltaX * currDeltaX + currDeltaY * currDeltaY + currDeltaZ * currDeltaZ) - 1);
++                // Paper end - fix large move vectors killing the server
+ 
+ 
+                 // CraftBukkit start - handle custom speeds and skipped ticks
+@@ -1232,7 +1237,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+                         double d2 = this.player.locZ();
+                         double d3 = this.player.locY();
+                         double d4 = packetplayinflying.a(this.player.locX());double toX = d4; // Paper - OBFHELPER
+-                        double d5 = packetplayinflying.b(this.player.locY());
++                        double d5 = packetplayinflying.b(this.player.locY());double toY = d5; // Paper - OBFHELPER
+                         double d6 = packetplayinflying.c(this.player.locZ());double toZ = d6; // Paper - OBFHELPER
+                         float f = packetplayinflying.a(this.player.yaw);
+                         float f1 = packetplayinflying.b(this.player.pitch);
+@@ -1240,7 +1245,12 @@ public class PlayerConnection implements PacketListenerPlayIn {
+                         double d8 = d5 - this.m;
+                         double d9 = d6 - this.n;
+                         double d10 = this.player.getMot().g();
+-                        double d11 = d7 * d7 + d8 * d8 + d9 * d9;
++                        // Paper start - fix large move vectors killing the server
++                        double currDeltaX = toX - prevX;
++                        double currDeltaY = toY - prevY;
++                        double currDeltaZ = toZ - prevZ;
++                        double d11 = Math.max(d7 * d7 + d8 * d8 + d9 * d9, (currDeltaX * currDeltaX + currDeltaY * currDeltaY + currDeltaZ * currDeltaZ) - 1);
++                        // Paper end - fix large move vectors killing the server
+ 
+                         if (this.player.isSleeping()) {
+                             if (d11 > 1.0D) {

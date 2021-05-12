@@ -1,0 +1,120 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Thu, 20 Aug 2020 11:20:12 -0700
+Subject: [PATCH] Add Wandering Trader spawn rate config options
+
+Adds config options for modifying the spawn rates of Wandering Traders.
+These values are all easy to understand and configure after a quick read of this
+page on the Minecraft wiki: https://minecraft.gamepedia.com/Wandering_Trader#Spawning
+Usages of the vanilla WanderingTraderSpawnDelay and WanderingTraderSpawnChance values
+in IWorldServerData are removed as they were only used in certain places, with hardcoded
+values used in other places.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index a98e25917193043633e2120beb4fe2d49d0e4500..b4d76494851601d61a69e2f060727a68f4461267 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -697,4 +697,17 @@ public class PaperWorldConfig {
+             log("The Ender Dragon will be removed if she already exists without a portal.");
+         }
+     }
++
++    public int wanderingTraderSpawnMinuteTicks = 1200;
++    public int wanderingTraderSpawnDayTicks = 24000;
++    public int wanderingTraderSpawnChanceFailureIncrement = 25;
++    public int wanderingTraderSpawnChanceMin = 25;
++    public int wanderingTraderSpawnChanceMax = 75;
++    private void wanderingTraderSettings() {
++        wanderingTraderSpawnMinuteTicks = getInt("wandering-trader.spawn-minute-length", wanderingTraderSpawnMinuteTicks);
++        wanderingTraderSpawnDayTicks = getInt("wandering-trader.spawn-day-length", wanderingTraderSpawnDayTicks);
++        wanderingTraderSpawnChanceFailureIncrement = getInt("wandering-trader.spawn-chance-failure-increment", wanderingTraderSpawnChanceFailureIncrement);
++        wanderingTraderSpawnChanceMin = getInt("wandering-trader.spawn-chance-min", wanderingTraderSpawnChanceMin);
++        wanderingTraderSpawnChanceMax = getInt("wandering-trader.spawn-chance-max", wanderingTraderSpawnChanceMax);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/npc/MobSpawnerTrader.java b/src/main/java/net/minecraft/world/entity/npc/MobSpawnerTrader.java
+index b74a262a62642f63fdbd17579d58d5eae68ed169..e57938b4591bb103b9dd0d0145a62b5a901f2c63 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/MobSpawnerTrader.java
++++ b/src/main/java/net/minecraft/world/entity/npc/MobSpawnerTrader.java
+@@ -30,49 +30,59 @@ public class MobSpawnerTrader implements MobSpawner {
+ 
+     private final Random a = new Random();
+     private final IWorldDataServer b;
+-    private int c;
+-    private int d;
+-    private int e;
++    private int c; public final int getMinuteTimer() { return this.c; } public final void setMinuteTimer(int x) { this.c = x; } // Paper - OBFHELPER
++    private int d; public final int getDayTimer() { return this.d; } public final void setDayTimer(int x) { this.d = x; } // Paper - OBFHELPER
++    private int e; public final int getSpawnChance() { return this.e; } public final void setSpawnChance(int x) { this.e = x; } // Paper - OBFHELPER
+ 
+     public MobSpawnerTrader(IWorldDataServer iworlddataserver) {
+         this.b = iworlddataserver;
+-        this.c = 1200;
+-        this.d = iworlddataserver.v();
+-        this.e = iworlddataserver.w();
+-        if (this.d == 0 && this.e == 0) {
+-            this.d = 24000;
+-            iworlddataserver.g(this.d);
+-            this.e = 25;
+-            iworlddataserver.h(this.e);
+-        }
++        // Paper start
++        this.setMinuteTimer(Integer.MIN_VALUE);
++        //this.d = iworlddataserver.v(); // Paper - This value is read from the world file only for the first spawn, after which vanilla uses a hardcoded value
++        //this.e = iworlddataserver.w(); // Paper - This value is read from the world file only for the first spawn, after which vanilla uses a hardcoded value
++        //if (this.d == 0 && this.e == 0) {
++        //    this.d = 24000;
++        //    iworlddataserver.g(this.d);
++        //    this.e = 25;
++        //    iworlddataserver.h(this.e);
++        //}
++        // Paper end
+ 
+     }
+ 
+     @Override
+     public int a(WorldServer worldserver, boolean flag, boolean flag1) {
++        // Paper start
++        if (this.getMinuteTimer() == Integer.MIN_VALUE) {
++            this.setMinuteTimer(worldserver.paperConfig.wanderingTraderSpawnMinuteTicks);
++            this.setDayTimer(worldserver.paperConfig.wanderingTraderSpawnDayTicks);
++            this.setSpawnChance(worldserver.paperConfig.wanderingTraderSpawnChanceMin);
++        }
+         if (!worldserver.getGameRules().getBoolean(GameRules.DO_TRADER_SPAWNING)) {
+             return 0;
+-        } else if (--this.c > 0) {
++        } else if (this.getMinuteTimer() - 1 > 0) {
++            this.setMinuteTimer(this.getMinuteTimer() - 1);
+             return 0;
+         } else {
+-            this.c = 1200;
+-            this.d -= 1200;
+-            this.b.g(this.d);
+-            if (this.d > 0) {
++            this.setMinuteTimer(worldserver.paperConfig.wanderingTraderSpawnMinuteTicks);
++            this.setDayTimer(getDayTimer() - worldserver.paperConfig.wanderingTraderSpawnMinuteTicks);
++            //this.b.g(this.d); // Paper - We don't need to save this value to disk if it gets set back to a hardcoded value anyways
++            if (this.getDayTimer() > 0) {
+                 return 0;
+             } else {
+-                this.d = 24000;
++                this.setDayTimer(worldserver.paperConfig.wanderingTraderSpawnDayTicks);
+                 if (!worldserver.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING)) {
+                     return 0;
+                 } else {
+-                    int i = this.e;
++                    int i = this.getSpawnChance();
+ 
+-                    this.e = MathHelper.clamp(this.e + 25, 25, 75);
+-                    this.b.h(this.e);
++                    this.setSpawnChance(MathHelper.clamp(i + worldserver.paperConfig.wanderingTraderSpawnChanceFailureIncrement, worldserver.paperConfig.wanderingTraderSpawnChanceMin, worldserver.paperConfig.wanderingTraderSpawnChanceMax));
++                    //this.b.h(this.e); // Paper - We don't need to save this value to disk if it gets set back to a hardcoded value anyways
+                     if (this.a.nextInt(100) > i) {
+                         return 0;
+                     } else if (this.a(worldserver)) {
+-                        this.e = 25;
++                        this.setSpawnChance(worldserver.paperConfig.wanderingTraderSpawnChanceMin);
++                        // Paper end
+                         return 1;
+                     } else {
+                         return 0;

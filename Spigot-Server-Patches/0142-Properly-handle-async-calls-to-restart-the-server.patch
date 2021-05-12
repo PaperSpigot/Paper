@@ -30,7 +30,7 @@ will have plugins and worlds saving to the disk has a high potential to result
 in corruption/dataloss.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9ae25f9496355d3114c0032731c8dcb621d243dc..7637e17e8a811214931c2df3dab50651a4cbcde6 100644
+index 283c1111d99b6ae09b6db0c0079eeb0f1cbb7b2b..d92ca78e483b3f085e3bad1d1250cac2f9031fa7 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -201,6 +201,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -41,7 +41,7 @@ index 9ae25f9496355d3114c0032731c8dcb621d243dc..7637e17e8a811214931c2df3dab50651
      private boolean isStopped;
      private int ticks;
      protected final Proxy proxy;
-@@ -850,7 +851,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -860,7 +861,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          if (this.playerList != null) {
              MinecraftServer.LOGGER.info("Saving players");
              this.playerList.savePlayers();
@@ -50,7 +50,7 @@ index 9ae25f9496355d3114c0032731c8dcb621d243dc..7637e17e8a811214931c2df3dab50651
              try { Thread.sleep(100); } catch (InterruptedException ex) {} // CraftBukkit - SPIGOT-625 - give server at least a chance to send packets
          }
  
-@@ -915,8 +916,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -925,8 +926,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          return this.isRunning;
      }
  
@@ -64,7 +64,7 @@ index 9ae25f9496355d3114c0032731c8dcb621d243dc..7637e17e8a811214931c2df3dab50651
          if (flag) {
              try {
                  this.serverThread.join();
-@@ -926,6 +932,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -936,6 +942,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          }
  
      }

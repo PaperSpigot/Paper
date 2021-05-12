@@ -21,10 +21,10 @@ index 38d25a12c6a52d8a83214e2a0f43a218cf15ceac..ffe9b1a63d78925e1d77b9e730aef42f
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b704401da2832601dd45d3c29e950cb52033a3fd..90eb5d8ed7698b5e19d38cec647c1bcbc15532f4 100644
+index e885e5c4c772a87c0359ed2c56aa71a856c3be59..334fe66cf49404c7514b317629b676e52f1841cb 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -707,35 +707,36 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -718,35 +718,36 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
      // CraftBukkit start
      public void loadSpawn(WorldLoadListener worldloadlistener, WorldServer worldserver) {
@@ -74,8 +74,17 @@ index b704401da2832601dd45d3c29e950cb52033a3fd..90eb5d8ed7698b5e19d38cec647c1bcb
  
          if (true) {
              WorldServer worldserver1 = worldserver;
+@@ -769,7 +770,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         // this.nextTick = SystemUtils.getMonotonicMillis() + 10L;
+         this.executeModerately();
+         // CraftBukkit end
+-        worldloadlistener.b();
++        if (worldserver.getWorld().getKeepSpawnInMemory()) worldloadlistener.b(); // Paper
+         chunkproviderserver.getLightEngine().a(5);
+         // CraftBukkit start
+         // this.updateSpawnFlags();
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 44611304d5bf222900866319a02a333e0f56218d..16441006736abdea0120570557348be4919c82ad 100644
+index fbff779fa581a661cc03850bffa0da346ce15625..d308197995a92f5be8f5b928fa9ae83dd659545c 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
 @@ -67,6 +67,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutWorldEvent;
@@ -86,7 +95,7 @@ index 44611304d5bf222900866319a02a333e0f56218d..16441006736abdea0120570557348be4
  import net.minecraft.server.MinecraftServer;
  import net.minecraft.server.ScoreboardServer;
  import net.minecraft.server.level.progress.WorldLoadListener;
-@@ -1672,12 +1673,88 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1673,12 +1674,88 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          return ((PersistentIdCounts) this.getMinecraftServer().E().getWorldPersistentData().a(PersistentIdCounts::new, "idcounts")).a();
      }
  
@@ -221,10 +230,10 @@ index 872d00de41533ab7f4b43874de6c1747022e2ac5..ca81664d884e80e5cb1eb376a2c2ef1e
      @Override
      public void a(ChunkCoordIntPair chunkcoordintpair) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index d17d77dd9e059bafc3b59ac12f601f9d54226829..c19ac8c28a799bebf68f098171cefd0fc3ec3f0b 100644
+index 5a5f920954effbe549cacdaa39474989dc98ad75..ec9f9fdf1be4f1e68eea5554a6721efd11a53958 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1978,15 +1978,21 @@ public class CraftWorld implements World {
+@@ -1972,15 +1972,21 @@ public class CraftWorld implements World {
  
      @Override
      public void setKeepSpawnInMemory(boolean keepLoaded) {

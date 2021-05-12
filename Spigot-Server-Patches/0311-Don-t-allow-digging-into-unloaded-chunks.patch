@@ -5,10 +5,10 @@ Subject: [PATCH] Don't allow digging into unloaded chunks
 
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
-index cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2..e7f762dc131ae40e36ff5e70b0394e0d5abdcee8 100644
+index 14f287d30c9a141f78f6311bef02a6fc4fa17564..d86b1e528b53db809ac993aa2f1d2799d4f1a574 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
-@@ -113,8 +113,8 @@ public class PlayerInteractManager {
+@@ -114,8 +114,8 @@ public class PlayerInteractManager {
          IBlockData iblockdata;
  
          if (this.j) {
@@ -19,7 +19,7 @@ index cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2..e7f762dc131ae40e36ff5e70b0394e0d
                  this.j = false;
              } else {
                  float f = this.a(iblockdata, this.k, this.l);
-@@ -125,7 +125,13 @@ public class PlayerInteractManager {
+@@ -126,7 +126,13 @@ public class PlayerInteractManager {
                  }
              }
          } else if (this.f) {
@@ -34,7 +34,7 @@ index cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2..e7f762dc131ae40e36ff5e70b0394e0d
              if (iblockdata.isAir()) {
                  this.world.a(this.player.getId(), this.h, -1);
                  this.m = -1;
-@@ -289,10 +295,12 @@ public class PlayerInteractManager {
+@@ -290,10 +296,12 @@ public class PlayerInteractManager {
                  this.player.playerConnection.sendPacket(new PacketPlayOutBlockBreak(blockposition, this.world.getType(blockposition), packetplayinblockdig_enumplayerdigtype, true, "stopped destroying"));
              } else if (packetplayinblockdig_enumplayerdigtype == PacketPlayInBlockDig.EnumPlayerDigType.ABORT_DESTROY_BLOCK) {
                  this.f = false;
@@ -51,10 +51,10 @@ index cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2..e7f762dc131ae40e36ff5e70b0394e0d
  
                  this.world.a(this.player.getId(), blockposition, -1);
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 0cdfc38c3f07b28e1db0ee28952494c1950a698d..76bba793ea2afb52919bcf1cb430b9412fceb319 100644
+index 69b27924b8f12b647133fedcfb0568698d19f413..59617fceecb08edf665902f30ea7064e6333bb96 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -1517,6 +1517,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1519,6 +1519,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
              case START_DESTROY_BLOCK:
              case ABORT_DESTROY_BLOCK:
              case STOP_DESTROY_BLOCK:

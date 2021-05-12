@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Sat, 3 Oct 2020 22:00:27 -0500
+Subject: [PATCH] Fix deop kicking non-whitelisted player when white list is
+ not enabled
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 040933a25f1fa88e86b19ea20f519488af6a2740..2834af3e0ff2ae8466fde191a64bf719242f67f3 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -2019,6 +2019,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         if (this.aN()) {
+             PlayerList playerlist = commandlistenerwrapper.getServer().getPlayerList();
+             WhiteList whitelist = playerlist.getWhitelist();
++            if (!((DedicatedServer)getServer()).getDedicatedServerProperties().whiteList.get()) return; // Paper - white list not enabled
+             List<EntityPlayer> list = Lists.newArrayList(playerlist.getPlayers());
+             Iterator iterator = list.iterator();
+ 

@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: KennyTV <jahnke.nassim@gmail.com>
+Date: Thu, 29 Apr 2021 21:19:33 +0200
+Subject: [PATCH] Add Channel initialization listeners
+
+
+diff --git a/src/main/java/io/papermc/paper/network/ChannelInitializeListener.java b/src/main/java/io/papermc/paper/network/ChannelInitializeListener.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..88099df34c2d74daba9645aadf65b446ca795a91
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/network/ChannelInitializeListener.java
+@@ -0,0 +1,15 @@
++package io.papermc.paper.network;
++
++import io.netty.channel.Channel;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++/**
++ * Internal API to register channel initialization listeners.
++ * <p>
++ * This is not officially supported API and we make no guarantees to the existence or state of this interface.
++ */
++@FunctionalInterface
++public interface ChannelInitializeListener {
++
++    void afterInitChannel(@NonNull Channel channel);
++}
+diff --git a/src/main/java/io/papermc/paper/network/ChannelInitializeListenerHolder.java b/src/main/java/io/papermc/paper/network/ChannelInitializeListenerHolder.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..30e62719e0a83525daa33cf41cb61df360c0e046
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/network/ChannelInitializeListenerHolder.java
+@@ -0,0 +1,74 @@
++package io.papermc.paper.network;
++
++import io.netty.channel.Channel;
++import net.kyori.adventure.key.Key;
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.checkerframework.checker.nullness.qual.Nullable;
++
++import java.util.Collections;
++import java.util.HashMap;
++import java.util.Map;
++
++/**
++ * Internal API to register channel initialization listeners.
++ * <p>
++ * This is not officially supported API and we make no guarantees to the existence or state of this class.
++ */
++public final class ChannelInitializeListenerHolder {
++
++    private static final Map<Key, ChannelInitializeListener> LISTENERS = new HashMap<>();
++    private static final Map<Key, ChannelInitializeListener> IMMUTABLE_VIEW = Collections.unmodifiableMap(LISTENERS);
++
++    private ChannelInitializeListenerHolder() {
++    }
++
++    /**
++     * Registers whether an initialization listener is registered under the given key.
++     *
++     * @param key key
++     * @return whether an initialization listener is registered under the given key
++     */
++    public static boolean hasListener(@NonNull Key key) {
++        return LISTENERS.containsKey(key);
++    }
++
++    /**
++     * Registers a channel initialization listener called after ServerConnection is initialized.
++     *
++     * @param key      key
++     * @param listener initialization listeners
++     */
++    public static void addListener(@NonNull Key key, @NonNull ChannelInitializeListener listener) {
++        LISTENERS.put(key, listener);
++    }
++
++    /**
++     * Removes and returns an initialization listener registered by the given key if present.
++     *
++     * @param key key
++     * @return removed initialization listener if present
++     */
++    public static @Nullable ChannelInitializeListener removeListener(@NonNull Key key) {
++        return LISTENERS.remove(key);
++    }
++
++    /**
++     * Returns an immutable map of registered initialization listeners.
++     *
++     * @return immutable map of registered initialization listeners
++     */
++    public static @NonNull Map<Key, ChannelInitializeListener> getListeners() {
++        return IMMUTABLE_VIEW;
++    }
++
++    /**
++     * Calls the registered listeners with the given channel.
++     *
++     * @param channel channel
++     */
++    public static void callListeners(@NonNull Channel channel) {
++        for (ChannelInitializeListener listener : LISTENERS.values()) {
++            listener.afterInitChannel(channel);
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/network/ServerConnection.java b/src/main/java/net/minecraft/server/network/ServerConnection.java
+index dc362724ea0cc1b2f9d9ceffff483217b4356c40..69fc2789df88344587b6052f93661ed38f24a503 100644
+--- a/src/main/java/net/minecraft/server/network/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/network/ServerConnection.java
+@@ -104,6 +104,7 @@ public class ServerConnection {
+                     pending.add((NetworkManager) object); // Paper
+                     channel.pipeline().addLast("packet_handler", (ChannelHandler) object);
+                     ((NetworkManager) object).setPacketListener(new HandshakeListener(ServerConnection.this.e, (NetworkManager) object));
++                    io.papermc.paper.network.ChannelInitializeListenerHolder.callListeners(channel); // Paper
+                 }
+             }).group((EventLoopGroup) lazyinitvar.a()).localAddress(inetaddress, i)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
+         }

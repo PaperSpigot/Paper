@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Tue, 3 Mar 2020 05:26:40 +0000
+Subject: [PATCH] Prevent teleporting dead entities
+
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index cfdfa3ea95a525af25c7aa830f8e31d5afe56d65..f02ddd53df4674a2b5e0bb142db756d1f153d69b 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1469,6 +1469,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
+     }
+ 
+     private void internalTeleport(double d0, double d1, double d2, float f, float f1, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set) {
++        if (player.dead) {
++            LOGGER.info("Attempt to teleport dead player {} restricted", player.getName());
++            return;
++        }
+         // CraftBukkit start
+         if (Float.isNaN(f)) {
+             f = 0;

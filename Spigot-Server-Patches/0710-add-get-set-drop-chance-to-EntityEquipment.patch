@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 00:28:11 -0700
+Subject: [PATCH] add get-set drop chance to EntityEquipment
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftEntityEquipment.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftEntityEquipment.java
+index 27e0e2767b11195231055f64446afb7ae5e08988..064d8adb47404b0fb839cfa646dfe04f2a2eefb6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftEntityEquipment.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftEntityEquipment.java
+@@ -245,6 +245,17 @@ public class CraftEntityEquipment implements EntityEquipment {
+     public void setBootsDropChance(float chance) {
+         setDropChance(EnumItemSlot.FEET, chance);
+     }
++    // Paper start
++    @Override
++    public float getDropChance(EquipmentSlot slot) {
++        return getDropChance(CraftEquipmentSlot.getNMS(slot));
++    }
++
++    @Override
++    public void setDropChance(EquipmentSlot slot, float chance) {
++        setDropChance(CraftEquipmentSlot.getNMS(slot), chance);
++    }
++    // Paper end
+ 
+     private void setDropChance(EnumItemSlot slot, float chance) {
+         if (slot == EnumItemSlot.MAINHAND || slot == EnumItemSlot.OFFHAND) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryPlayer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryPlayer.java
+index b812e1af411dd7f4509620b6b49b7897603dc970..dacb8e127403ef5234d6bca62aa4a35431724e9e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryPlayer.java
+@@ -354,4 +354,15 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
+     public void setBootsDropChance(float chance) {
+         throw new UnsupportedOperationException("Cannot set drop chance for PlayerInventory");
+     }
++    // Paper start
++    @Override
++    public float getDropChance(EquipmentSlot slot) {
++        return 1;
++    }
++
++    @Override
++    public void setDropChance(EquipmentSlot slot, float chance) {
++        throw new UnsupportedOperationException("Cannot set drop chance for PlayerInventory");
++    }
++    // Paper end
+ }

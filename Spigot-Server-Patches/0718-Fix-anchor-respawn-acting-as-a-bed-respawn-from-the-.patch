@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Fri, 23 Apr 2021 22:42:42 +0100
+Subject: [PATCH] Fix anchor respawn acting as a bed respawn from the end
+ portal
+
+
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 2df8e914f66176e22aeddf8b94a83af5ea921d88..f8f0212497ad4fbb1273820a06a4ae6721053b8e 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -871,6 +871,7 @@ public abstract class PlayerList {
+ 
+         // Paper start
+         boolean isBedSpawn = false;
++        boolean isAnchorSpawn = false;
+         boolean isRespawn = false;
+         boolean isLocAltered = false; // Paper - Fix SPIGOT-5989
+         // Paper end
+@@ -891,6 +892,7 @@ public abstract class PlayerList {
+                 if (optional.isPresent()) {
+                     IBlockData iblockdata = worldserver1.getType(blockposition);
+                     boolean flag3 = iblockdata.a(Blocks.RESPAWN_ANCHOR);
++                    isAnchorSpawn = flag3; // Paper - Fix anchor respawn acting as a bed respawn from the end portal
+                     Vec3D vec3d = (Vec3D) optional.get();
+                     float f1;
+ 
+@@ -918,7 +920,7 @@ public abstract class PlayerList {
+             }
+ 
+             Player respawnPlayer = cserver.getPlayer(entityplayer1);
+-            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn && !flag2, flag2);
++            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn && !isAnchorSpawn, isAnchorSpawn); // Paper - Fix anchor respawn acting as a bed respawn from the end portal
+             cserver.getPluginManager().callEvent(respawnEvent);
+             // Spigot Start
+             if (entityplayer.playerConnection.isDisconnected()) {

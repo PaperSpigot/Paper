@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MiniDigger <admin@minidigger.me>
+Date: Wed, 29 Apr 2020 02:10:32 +0200
+Subject: [PATCH] Allow delegation to vanilla chunk gen
+
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/ChunkConverter.java b/src/main/java/net/minecraft/world/level/chunk/ChunkConverter.java
+index 60ecd3a92af0f1968b10bb8babfb43147ef568d3..9077b70650d70dd294f53a1ef73e86e28ceaece9 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/ChunkConverter.java
++++ b/src/main/java/net/minecraft/world/level/chunk/ChunkConverter.java
+@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
+ public class ChunkConverter {
+ 
+     private static final Logger LOGGER = LogManager.getLogger();
+-    public static final ChunkConverter a = new ChunkConverter();
++    public static final ChunkConverter a = new ChunkConverter(); public static ChunkConverter getEmptyConverter() { return a; } // Paper - obfhelper
+     private static final EnumDirection8[] c = EnumDirection8.values();
+     private final EnumSet<EnumDirection8> d;
+     private final int[][] e;
+@@ -322,7 +322,7 @@ public class ChunkConverter {
+                         if ((Integer) iblockdata.get(BlockProperties.an) >= j) {
+                             generatoraccess.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockProperties.an, j), 18);
+                             if (i != 7) {
+-                                EnumDirection[] aenumdirection = null.f;
++                                EnumDirection[] aenumdirection = f; // Paper - decomp fix
+                                 int k = aenumdirection.length;
+ 
+                                 for (int l = 0; l < k; ++l) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index e95093e1b2d7368a796e3e98e2bd491906164e44..d0eb0509953ddcd8d25bf3a9fd4f2170f7b88037 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -2026,6 +2026,32 @@ public final class CraftServer implements Server {
+         return new CraftChunkData(world);
+     }
+ 
++    // Paper start
++    @Override
++    public ChunkGenerator.ChunkData createVanillaChunkData(World world, int x, int z) {
++        // get empty object
++        CraftChunkData data = (CraftChunkData) createChunkData(world);
++        // do bunch of vanilla shit
++        net.minecraft.server.level.WorldServer nmsWorld = ((CraftWorld) world).getHandle();
++        net.minecraft.world.level.chunk.ProtoChunk protoChunk = new net.minecraft.world.level.chunk.ProtoChunk(new net.minecraft.world.level.ChunkCoordIntPair(x, z), net.minecraft.world.level.chunk.ChunkConverter.getEmptyConverter(), nmsWorld);
++        List<net.minecraft.world.level.chunk.IChunkAccess> list = new ArrayList<>();
++        list.add(protoChunk);
++        net.minecraft.server.level.RegionLimitedWorldAccess genRegion = new net.minecraft.server.level.RegionLimitedWorldAccess(nmsWorld, list);
++        // call vanilla generator, one feature after another. Order here is important!
++        net.minecraft.world.level.chunk.ChunkGenerator chunkGenerator = nmsWorld.getChunkProvider().chunkGenerator;
++        if (chunkGenerator instanceof org.bukkit.craftbukkit.generator.CustomChunkGenerator) {
++            chunkGenerator = ((org.bukkit.craftbukkit.generator.CustomChunkGenerator) chunkGenerator).delegate;
++        }
++        chunkGenerator.createBiomes(nmsWorld.r().b(IRegistry.ay), protoChunk);
++        chunkGenerator.buildNoise(genRegion, nmsWorld.getStructureManager(), protoChunk);
++        chunkGenerator.buildBase(genRegion, protoChunk);
++        // copy over generated sections
++        data.setRawChunkData(protoChunk.getSections());
++        // hooray!
++        return data;
++    }
++    // Paper end
++
+     @Override
+     public BossBar createBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
+         return new CraftBossBar(title, color, style, flags);
+diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java b/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
+index afca0038bb74ac53f07a25729a3c1542e244c6fd..d02281f954aac8d8b65f5d36ec70f0352e4c7cdd 100644
+--- a/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
++++ b/src/main/java/org/bukkit/craftbukkit/generator/CraftChunkData.java
+@@ -19,7 +19,7 @@ import org.bukkit.material.MaterialData;
+  */
+ public final class CraftChunkData implements ChunkGenerator.ChunkData {
+     private final int maxHeight;
+-    private final ChunkSection[] sections;
++    private ChunkSection[] sections; // Paper - remove final
+     private Set<BlockPosition> tiles;
+     private World world; // Paper - Anti-Xray - Add world
+ 
+@@ -168,6 +168,12 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
+         return sections;
+     }
+ 
++    // Paper start
++    public void setRawChunkData(ChunkSection[] sections) {
++        this.sections = sections;
++    }
++    // Paper end
++
+     Set<BlockPosition> getTiles() {
+         return tiles;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
+index 7ce7e13032fe43b8998410937d07bfffa6f01527..fb7f68887efb1de8ff9167dd110fcb52627e9206 100644
+--- a/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
++++ b/src/main/java/org/bukkit/craftbukkit/generator/CustomChunkGenerator.java
+@@ -33,7 +33,7 @@ import org.bukkit.generator.ChunkGenerator.ChunkData;
+ 
+ public class CustomChunkGenerator extends InternalChunkGenerator {
+ 
+-    private final net.minecraft.world.level.chunk.ChunkGenerator delegate;
++    public final net.minecraft.world.level.chunk.ChunkGenerator delegate; // Paper - public
+     private final ChunkGenerator generator;
+     private final WorldServer world;
+     private final Random random = new Random();

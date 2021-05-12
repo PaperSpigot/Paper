@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 3 Jan 2021 20:03:35 -0800
+Subject: [PATCH] Added Vanilla Entity Tags
+
+
+diff --git a/src/main/java/io/papermc/paper/CraftEntityTag.java b/src/main/java/io/papermc/paper/CraftEntityTag.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ca8e1bade5450a14125b77540792e0b18c3e19b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/CraftEntityTag.java
+@@ -0,0 +1,29 @@
++package io.papermc.paper;
++
++import net.minecraft.resources.MinecraftKey;
++import net.minecraft.tags.Tags;
++import net.minecraft.world.entity.EntityTypes;
++import org.bukkit.craftbukkit.tag.CraftTag;
++import org.bukkit.craftbukkit.util.CraftMagicNumbers;
++import org.bukkit.entity.EntityType;
++
++import java.util.Collections;
++import java.util.Set;
++import java.util.stream.Collectors;
++
++public class CraftEntityTag extends CraftTag<EntityTypes<?>, EntityType> {
++
++    public CraftEntityTag(Tags<EntityTypes<?>> registry, MinecraftKey tag) {
++        super(registry, tag);
++    }
++
++    @Override
++    public boolean isTagged(EntityType item) {
++        return getHandle().isTagged(CraftMagicNumbers.getEntityTypes(item));
++    }
++
++    @Override
++    public Set<EntityType> getValues() {
++        return Collections.unmodifiableSet(getHandle().getTagged().stream().map(CraftMagicNumbers::getEntityType).collect(Collectors.toSet()));
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 38553aa11224a1621e7a06801a0448a0948ce130..bc8cb33d2d41deeeecc7b8740ef49d7f79076fcc 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -2215,6 +2215,11 @@ public final class CraftServer implements Server {
+                 Preconditions.checkArgument(clazz == org.bukkit.Fluid.class, "Fluid namespace must have fluid type");
+ 
+                 return (org.bukkit.Tag<T>) new CraftFluidTag(console.getTagRegistry().getFluidTags(), key);
++            // Paper start
++            case org.bukkit.Tag.REGISTRY_ENTITIES:
++                Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity namespace must have entitytype type");
++                return (org.bukkit.Tag<T>) new io.papermc.paper.CraftEntityTag(console.getTagRegistry().getEntityTags(), key);
++            // Paper end
+             default:
+                 throw new IllegalArgumentException();
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 74ebd6257ca7c87bcedff831d213273e7d542612..f69b4576f05dbf763e99d5d1cbed069c55c793ed 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -118,8 +118,17 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
+     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
+     private static final Map<Material, FluidType> MATERIAL_FLUID = new HashMap<>();
++    // Paper start
++    private static final Map<org.bukkit.entity.EntityType, net.minecraft.world.entity.EntityTypes<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap<>();
++    private static final Map<net.minecraft.world.entity.EntityTypes<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap<>();
+ 
+     static {
++        for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
++            if (type == org.bukkit.entity.EntityType.UNKNOWN) continue;
++            ENTITY_TYPE_ENTITY_TYPES.put(type, IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())));
++            ENTITY_TYPES_ENTITY_TYPE.put(IRegistry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())), type);
++        }
++        // Paper end
+         for (Block block : IRegistry.BLOCK) {
+             BLOCK_MATERIAL.put(block, Material.getMaterial(IRegistry.BLOCK.getKey(block).getKey().toUpperCase(Locale.ROOT)));
+         }
+@@ -185,6 +194,14 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     public static MinecraftKey key(Material mat) {
+         return CraftNamespacedKey.toMinecraft(mat.getKey());
+     }
++    // Paper start
++    public static net.minecraft.world.entity.EntityTypes<?> getEntityTypes(org.bukkit.entity.EntityType type) {
++        return ENTITY_TYPE_ENTITY_TYPES.get(type);
++    }
++    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.world.entity.EntityTypes<?> entityTypes) {
++        return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
++    }
++    // Paper end
+     // ========================================================================
+     // Paper start
+     @Override

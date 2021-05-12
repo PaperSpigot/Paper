@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Wed, 30 Dec 2020 19:43:01 -0500
+Subject: [PATCH] Additional Block Material API's
+
+Faster version for isSolid() that utilizes NMS's state for isSolid instead of the slower
+process to do this in the Bukkit API
+
+Adds API for buildable, replaceable, burnable too.
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index fab9e1e5d63c22faceae093dc88769d203d359c6..ed1c92d9f2770f7d0503c6facebc51ddcbdf75cf 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -621,6 +621,25 @@ public class CraftBlock implements Block {
+         return getNMS().getMaterial().isLiquid();
+     }
+ 
++    // Paper start
++    @Override
++    public boolean isBuildable() {
++        return getNMS().getMaterial().isBuildable();
++    }
++    @Override
++    public boolean isBurnable() {
++        return getNMS().getMaterial().isBurnable();
++    }
++    @Override
++    public boolean isReplaceable() {
++        return getNMS().getMaterial().isReplaceable();
++    }
++    @Override
++    public boolean isSolid() {
++        return getNMS().getMaterial().isSolid();
++    }
++    // Paper end
++
+     @Override
+     public PistonMoveReaction getPistonMoveReaction() {
+         return PistonMoveReaction.getById(getNMS().getPushReaction().ordinal());

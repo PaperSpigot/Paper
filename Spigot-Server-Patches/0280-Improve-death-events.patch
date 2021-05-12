@@ -15,7 +15,7 @@ items and experience which is otherwise only properly possible by using
 internal code.
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index b3c5a22bf2eb360399ebfbf90fc74843dcd78509..1198de213b3809ddf7b7d6f1696d9f07bb4dc42e 100644
+index 7b07d17f8ae425418ff3cafdfd30d72a5bc0fe16..1271de75743356090050763ff2fb67d28b48cb23 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -213,6 +213,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -98,7 +98,7 @@ index 046b191e771ed9be337e095214a67febd768e5f6..b6b4eb9ac883cfdfab5f114767fb5cfb
  
      protected void l(double d0, double d1, double d2) {
 diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
-index 9d8f92c313829bb32c17907bf2ef23d069517dc3..c189a7051240bb357acf5075c98206a258409b0c 100644
+index a64b2953c43138491cdab3e3e24e2e7ed969e171..b3c2976a48c2349e5c22d58dd1ac64a02cd969d5 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
 @@ -189,7 +189,7 @@ public abstract class EntityLiving extends Entity {
@@ -346,7 +346,7 @@ index 9d3e01f7ad743dbe60685e9b111308ed06a0b4b7..2334a9a95ab0e2395744343a5a1e3d26
  
      public void injectScaledMaxHealth(Collection<AttributeModifiable> collection, boolean force) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index ecd3b31216616b0ffe239785e3942cfb4bfebcf8..0f8764f16b0719e9e370731dc02627e1a55e9708 100644
+index 877a0ea25f3cea970fa3827b12efc1a44bdcdf9c..fbd24e10b1b966898e7e1556c5f9bd607497d970 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -18,6 +18,8 @@ import net.minecraft.network.protocol.game.PacketPlayInCloseWindow;
@@ -358,7 +358,7 @@ index ecd3b31216616b0ffe239785e3942cfb4bfebcf8..0f8764f16b0719e9e370731dc02627e1
  import net.minecraft.util.Unit;
  import net.minecraft.world.EnumHand;
  import net.minecraft.world.IInventory;
-@@ -784,9 +786,16 @@ public class CraftEventFactory {
+@@ -802,9 +804,16 @@ public class CraftEventFactory {
      public static EntityDeathEvent callEntityDeathEvent(EntityLiving victim, List<org.bukkit.inventory.ItemStack> drops) {
          CraftLivingEntity entity = (CraftLivingEntity) victim.getBukkitEntity();
          EntityDeathEvent event = new EntityDeathEvent(entity, drops, victim.getExpReward());
@@ -375,7 +375,7 @@ index ecd3b31216616b0ffe239785e3942cfb4bfebcf8..0f8764f16b0719e9e370731dc02627e1
          victim.expToDrop = event.getDroppedExp();
  
          for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
-@@ -802,8 +811,15 @@ public class CraftEventFactory {
+@@ -820,8 +829,15 @@ public class CraftEventFactory {
          CraftPlayer entity = victim.getBukkitEntity();
          PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage, stringDeathMessage); // Paper - Adventure
          event.setKeepInventory(keepInventory);
@@ -391,7 +391,7 @@ index ecd3b31216616b0ffe239785e3942cfb4bfebcf8..0f8764f16b0719e9e370731dc02627e1
  
          victim.keepLevel = event.getKeepLevel();
          victim.newLevel = event.getNewLevel();
-@@ -820,6 +836,31 @@ public class CraftEventFactory {
+@@ -838,6 +854,31 @@ public class CraftEventFactory {
          return event;
      }
  

@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Tue, 20 Apr 2021 01:15:04 +0100
+Subject: [PATCH] don't throw when loading invalid TEs
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index f1e586754396439dfb70a4d63e3b8b34fb36ebf4..93d02ccb87c17404c55884f52ae40c7b7ddfb103 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.entity;
+ 
+ import javax.annotation.Nullable;
+ import net.minecraft.CrashReportSystemDetails;
++import net.minecraft.ResourceKeyInvalidException;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.nbt.NBTTagCompound;
+@@ -133,7 +134,13 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
+     public static TileEntity create(IBlockData iblockdata, NBTTagCompound nbttagcompound) {
+         String s = nbttagcompound.getString("id");
+ 
+-        return (TileEntity) IRegistry.BLOCK_ENTITY_TYPE.getOptional(new MinecraftKey(s)).map((tileentitytypes) -> {
++        // Paper
++        MinecraftKey minecraftKey = null;
++        try {
++            minecraftKey = new MinecraftKey(s);
++        } catch (ResourceKeyInvalidException ex) {}
++        // Paper end
++        return (TileEntity) IRegistry.BLOCK_ENTITY_TYPE.getOptional(minecraftKey).map((tileentitytypes) -> {
+             try {
+                 return tileentitytypes.a();
+             } catch (Throwable throwable) {

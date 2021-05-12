@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Tue, 25 Aug 2020 20:45:36 -0400
+Subject: [PATCH] Fix Entity Teleportation and cancel velocity if teleported
+
+Uses correct setPositionRotation for Entity teleporting instead of setLocation
+as this is how Vanilla teleports entities.
+
+Cancel any pending motion when teleported.
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 1d154ef60fd979340cf925748251669e860d4094..68f8a7f227c4d683d4c13d634ccfbabe759e82b3 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -693,7 +693,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+     public void a(PacketPlayInTeleportAccept packetplayinteleportaccept) {
+         PlayerConnectionUtils.ensureMainThread(packetplayinteleportaccept, this, this.player.getWorldServer());
+         if (packetplayinteleportaccept.b() == this.teleportAwait && this.teleportPos != null) { // CraftBukkit
+-            this.player.setLocation(this.teleportPos.x, this.teleportPos.y, this.teleportPos.z, this.player.yaw, this.player.pitch);
++            this.player.setPositionRotation(this.teleportPos.x, this.teleportPos.y, this.teleportPos.z, this.player.yaw, this.player.pitch); // Paper - use proper setPositionRotation for teleportation
+             this.o = this.teleportPos.x;
+             this.p = this.teleportPos.y;
+             this.q = this.teleportPos.z;
+@@ -1537,7 +1537,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+         // CraftBukkit end
+ 
+         this.A = this.e;
+-        this.player.setLocation(d0, d1, d2, f, f1);
++        this.player.setPositionRotation(d0, d1, d2, f, f1); // Paper - use proper setPositionRotation for teleportation
+         this.player.forceCheckHighPriority(); // Paper
+         this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.teleportAwait));
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 743d4725c0a26a8abd0a98eed2ec45ffba6211ad..344862c3f479ae7b6d4f929c9ef7882aba983ffb 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -145,6 +145,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+ 
+     // CraftBukkit start
+     private static final int CURRENT_LEVEL = 2;
++    boolean preserveMotion = true; // Paper - keep initial motion on first setPositionRotation
+     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
+         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
+     }
+@@ -1408,6 +1409,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+     }
+ 
+     public void setPositionRotation(double d0, double d1, double d2, float f, float f1) {
++        // Paper - cancel entity velocity if teleported
++        if (!preserveMotion) {
++            this.mot = Vec3D.ORIGIN;
++        } else {
++            this.preserveMotion = false;
++        }
++        // Paper end
+         this.g(d0, d1, d2);
+         this.yaw = f;
+         this.pitch = f1;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 387f6f6fa9bbb1cce544cfb907f68c7993752dd7..fb52a60437d48282f3e99e7eccb0e76b446155f9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -558,7 +558,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         }
+ 
+         // entity.setLocation() throws no event, and so cannot be cancelled
+-        entity.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
++        entity.setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch()); // Paper - use proper setPosition, as per vanilla teleporting
+         // SPIGOT-619: Force sync head rotation also
+         entity.setHeadRotation(location.getYaw());
+         ((net.minecraft.server.level.WorldServer) entity.world).chunkCheck(entity); // Spigot - register to new chunk

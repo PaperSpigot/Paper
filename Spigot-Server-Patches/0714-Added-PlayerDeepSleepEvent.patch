@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 21 Apr 2021 15:58:19 -0700
+Subject: [PATCH] Added PlayerDeepSleepEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 3a62bde04d7fbb6c571cfef11d4f6891e11c7ac8..3a13e7a050db7f5c93d810afe56325495cec7aa4 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -235,6 +235,11 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+         if (this.isSleeping()) {
+             ++this.sleepTicks;
++            // Paper start
++            if (this.sleepTicks == 100) {
++                if (!new io.papermc.paper.event.player.PlayerDeepSleepEvent((Player) getBukkitEntity()).callEvent()) { this.sleepTicks = Integer.MIN_VALUE; }
++            }
++            // Paper end
+             if (this.sleepTicks > 100) {
+                 this.sleepTicks = 100;
+             }

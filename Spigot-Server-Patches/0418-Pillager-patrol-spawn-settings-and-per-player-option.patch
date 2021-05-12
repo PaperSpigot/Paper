@@ -1,0 +1,151 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Phoenix616 <mail@moep.tv>
+Date: Sat, 1 Feb 2020 16:50:39 +0100
+Subject: [PATCH] Pillager patrol spawn settings and per player options
+
+This adds config options for defining the spawn chance, spawn delay and
+spawn start day as well as toggles for handling the spawn delay and
+start day per player. (Based on the time played statistic)
+When not per player it will use the Vanilla mechanic of one delay per
+world and the world age for the start day.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 525d702d78a609af987ebd2c32169b873e5c05ed..6c8e9d498c9a30a1aa88494ba09c3cae012a8fa1 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -582,10 +582,21 @@ public class PaperWorldConfig {
+     }
+ 
+     public boolean disablePillagerPatrols = false;
++    public double patrolSpawnChance = 0.2;
++    public boolean patrolPerPlayerDelay = false;
++    public int patrolDelay = 12000;
++    public boolean patrolPerPlayerStart = false;
++    public int patrolStartDay = 5;
+     private void pillagerSettings() {
+         disablePillagerPatrols = getBoolean("game-mechanics.disable-pillager-patrols", disablePillagerPatrols);
++        patrolSpawnChance = getDouble("game-mechanics.pillager-patrols.spawn-chance", patrolSpawnChance);
++        patrolPerPlayerDelay = getBoolean("game-mechanics.pillager-patrols.spawn-delay.per-player", patrolPerPlayerDelay);
++        patrolDelay = getInt("game-mechanics.pillager-patrols.spawn-delay.ticks", patrolDelay);
++        patrolPerPlayerStart = getBoolean("game-mechanics.pillager-patrols.start.per-player", patrolPerPlayerStart);
++        patrolStartDay = getInt("game-mechanics.pillager-patrols.start.day", patrolStartDay);
+     }
+ 
++
+     public boolean entitiesTargetWithFollowRange = false;
+     private void entitiesTargetWithFollowRange() {
+         entitiesTargetWithFollowRange = getBoolean("entities-target-with-follow-range", entitiesTargetWithFollowRange);
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index f242330bcf3d63490b5e7be36f8af6eccfb07820..a37c868addc2e4aab8eb28d92b1c9b3e0c0fc4a9 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -215,6 +215,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public boolean viewingCredits;
+     private int containerUpdateDelay; // Paper
+     public long loginTime; // Paper
++    public int patrolSpawnDelay; // Paper - per player patrol spawns
+     // Paper start - cancellable death event
+     public boolean queueHealthUpdatePacket = false;
+     public net.minecraft.network.protocol.game.PacketPlayOutUpdateHealth queuedHealthUpdatePacket;
+diff --git a/src/main/java/net/minecraft/stats/StatisticWrapper.java b/src/main/java/net/minecraft/stats/StatisticWrapper.java
+index c1a694c4a773a41cdefca6b154711f7fc0a7fcaa..00d79ccf9c65acadc030ab1796cff4598392cb6a 100644
+--- a/src/main/java/net/minecraft/stats/StatisticWrapper.java
++++ b/src/main/java/net/minecraft/stats/StatisticWrapper.java
+@@ -28,6 +28,7 @@ public class StatisticWrapper<T> implements Iterable<Statistic<T>> {
+         return this.b.values().iterator();
+     }
+ 
++    public final Statistic<T> get(T t) { return this.b(t); }; // Paper - OBFHELPER
+     public Statistic<T> b(T t0) {
+         return this.a(t0, Counter.DEFAULT);
+     }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
+index cba98adb7f2711fb97c7e4120d962f46a59682e7..111c4c1fad2f1839a8c6b7c277cf801236ae1685 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/MobSpawnerPatrol.java
+@@ -3,7 +3,9 @@ package net.minecraft.world.level.levelgen;
+ import java.util.Random;
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.server.level.WorldServer;
++import net.minecraft.stats.StatisticList;
+ import net.minecraft.world.entity.EntityTypes;
+ import net.minecraft.world.entity.EnumMobSpawn;
+ import net.minecraft.world.entity.GroupDataEntity;
+@@ -20,13 +22,13 @@ import net.minecraft.world.level.block.state.IBlockData;
+ 
+ public class MobSpawnerPatrol implements MobSpawner {
+ 
+-    private int a;
++    private int a;private int getSpawnDelay() { return a; } private void setSpawnDelay(int spawnDelay) { this.a = spawnDelay; } // Paper - OBFHELPER
+ 
+     public MobSpawnerPatrol() {}
+ 
+     @Override
+     public int a(WorldServer worldserver, boolean flag, boolean flag1) {
+-        if (worldserver.paperConfig.disablePillagerPatrols) return 0; // Paper
++        if (worldserver.paperConfig.disablePillagerPatrols || worldserver.paperConfig.patrolSpawnChance == 0) return 0; // Paper
+         if (!flag) {
+             return 0;
+         } else if (!worldserver.getGameRules().getBoolean(GameRules.DO_PATROL_SPAWNING)) {
+@@ -34,23 +36,51 @@ public class MobSpawnerPatrol implements MobSpawner {
+         } else {
+             Random random = worldserver.random;
+ 
+-            --this.a;
+-            if (this.a > 0) {
++            // Paper start - Patrol settings
++            // Random player selection moved up for per player spawning and configuration
++            int j = worldserver.getPlayers().size();
++            if (j < 1) {
+                 return 0;
++            }
++
++            EntityPlayer entityhuman = worldserver.getPlayers().get(random.nextInt(j));
++            if (entityhuman.isSpectator()) {
++                return 0;
++            }
++
++            int patrolSpawnDelay;
++            if (worldserver.paperConfig.patrolPerPlayerDelay) {
++                --entityhuman.patrolSpawnDelay;
++                patrolSpawnDelay = entityhuman.patrolSpawnDelay;
+             } else {
+-                this.a += 12000 + random.nextInt(1200);
+-                long i = worldserver.getDayTime() / 24000L;
++                setSpawnDelay(getSpawnDelay() - 1);
++                patrolSpawnDelay = getSpawnDelay();
++            }
++
++            if (patrolSpawnDelay > 0) {
++                return 0;
++            } else {
++                long days;
++                if (worldserver.paperConfig.patrolPerPlayerStart) {
++                    days = entityhuman.getStatisticManager().getStatisticValue(StatisticList.CUSTOM.get(StatisticList.PLAY_ONE_MINUTE)) / 24000L; // PLAY_ONE_MINUTE is actually counting in ticks, a misnomer by Mojang
++                } else {
++                    days = worldserver.getDayTime() / 24000L;
++                }
++                if (worldserver.paperConfig.patrolPerPlayerDelay) {
++                    entityhuman.patrolSpawnDelay += worldserver.paperConfig.patrolDelay + random.nextInt(1200);
++                } else {
++                    setSpawnDelay(getSpawnDelay() + worldserver.paperConfig.patrolDelay + random.nextInt(1200));
++                }
+ 
+-                if (i >= 5L && worldserver.isDay()) {
+-                    if (random.nextInt(5) != 0) {
++                if (days >= worldserver.paperConfig.patrolStartDay && worldserver.isDay()) {
++                    if (random.nextDouble() >= worldserver.paperConfig.patrolSpawnChance) {
++                        // Paper end
+                         return 0;
+                     } else {
+-                        int j = worldserver.getPlayers().size();
+ 
+                         if (j < 1) {
+                             return 0;
+                         } else {
+-                            EntityHuman entityhuman = (EntityHuman) worldserver.getPlayers().get(random.nextInt(j));
+ 
+                             if (entityhuman.isSpectator()) {
+                                 return 0;

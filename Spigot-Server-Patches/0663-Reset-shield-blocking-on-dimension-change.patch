@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yive <admin@yive.me>
+Date: Sun, 24 Jan 2021 08:55:19 -0800
+Subject: [PATCH] Reset shield blocking on dimension change
+
+
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 45c6eb96310146adab802dc3da019f7ee15e0fe5..1161605d9f4f9727282ac3677a916a9ebdb1263b 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -1117,6 +1117,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                 this.world.getServer().getPluginManager().callEvent(changeEvent);
+                 // CraftBukkit end
+             }
++            // Paper start
++            if (this.isBlocking()) {
++                this.clearActiveItem();
++            }
++            // Paper end
+ 
+             return this;
+         }

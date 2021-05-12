@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 00:28:20 -0700
+Subject: [PATCH] add get-set drop chance to EntityEquipment
+
+
+diff --git a/src/main/java/org/bukkit/inventory/EntityEquipment.java b/src/main/java/org/bukkit/inventory/EntityEquipment.java
+index f905bf7a28a42d8bd2aecd42030d2b2092696fc3..58cfd450973f56bfbdd20f9dca8c1e7455260a55 100644
+--- a/src/main/java/org/bukkit/inventory/EntityEquipment.java
++++ b/src/main/java/org/bukkit/inventory/EntityEquipment.java
+@@ -405,4 +405,32 @@ public interface EntityEquipment {
+      */
+     @Nullable
+     Entity getHolder();
++    // Paper start
++    /**
++     * Gets the drop chance of specified slot.
++     *
++     * <ul>
++     * <li>A drop chance of 0.0F will never drop
++     * <li>A drop chance of 1.0F will always drop
++     * </ul>
++     *
++     * @param slot the slot to get the drop chance of
++     * @return the drop chance for the slot
++     */
++    float getDropChance(@NotNull EquipmentSlot slot);
++
++    /**
++     * Sets the drop chance of the specified slot.
++     *
++     * <ul>
++     * <li>A drop chance of 0.0F will never drop
++     * <li>A drop chance of 1.0F will always drop
++     * </ul>
++     *
++     * @param slot the slot to set the drop chance of
++     * @param chance the drop chance for the slot
++     * @throws UnsupportedOperationException when called on players
++     */
++    void setDropChance(@NotNull EquipmentSlot slot, float chance);
++    // Paper end
+ }

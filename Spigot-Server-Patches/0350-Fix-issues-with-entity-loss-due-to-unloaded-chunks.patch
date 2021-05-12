@@ -19,10 +19,10 @@ This change ensures the chunks are always loaded when entities are
 added to the world, or a valid entity moves between chunks.
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 2a510940525fda83707e2a587e18ce34e5822af1..b8f0ea863b89bf9ddeef8104d09fe7f00b91f711 100644
+index b8a32742b2b2558a6155fc72e277a693c2306302..61d3524e962b97ed032af1990f8dc6513fbe51d6 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -852,11 +852,18 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -854,11 +854,18 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              int k = MathHelper.floor(entity.locZ() / 16.0D);
  
              if (!entity.inChunk || entity.chunkX != i || entity.chunkY != j || entity.chunkZ != k) {
@@ -42,7 +42,7 @@ index 2a510940525fda83707e2a587e18ce34e5822af1..b8f0ea863b89bf9ddeef8104d09fe7f0
                      if (entity.inChunk) {
                          WorldServer.LOGGER.warn("Entity {} left loaded chunk area", entity);
                      }
-@@ -1071,7 +1078,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1073,7 +1080,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  return false;
              }
              // CraftBukkit end

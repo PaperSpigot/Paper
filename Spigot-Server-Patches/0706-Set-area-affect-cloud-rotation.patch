@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 5 Apr 2021 16:58:20 -0400
+Subject: [PATCH] Set area affect cloud rotation
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index a152d5bec8bf0dd87239b0a3432fb589cea61bd8..42417aee4796d39d110e69cb707bd3b7bac30027 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1977,6 +1977,7 @@ public class CraftWorld implements World {
+             entity = EntityTypes.LIGHTNING_BOLT.a(world);
+         } else if (AreaEffectCloud.class.isAssignableFrom(clazz)) {
+             entity = new EntityAreaEffectCloud(world, x, y, z);
++            entity.setPositionRotation(x, y, z, yaw, pitch); // Paper - Set area effect cloud Rotation
+         } else if (EvokerFangs.class.isAssignableFrom(clazz)) {
+             entity = new EntityEvokerFangs(world, x, y, z, (float) Math.toRadians(yaw), 0, null);
+         }

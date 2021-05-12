@@ -5,7 +5,7 @@ Subject: [PATCH] Add ProjectileCollideEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
-index 9bd4a283a99f86c9a26f73e0bad0c3414d66ad55..5ecbe9135a71dd84e0722fa9c039c272a11d206f 100644
+index 7868259a94766a6100d7b278c4296dde0a7f9397..c325c9fe680d9033b20909bcd6100ecc4b0195f6 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
 @@ -198,6 +198,17 @@ public abstract class EntityArrow extends IProjectile {
@@ -24,10 +24,10 @@ index 9bd4a283a99f86c9a26f73e0bad0c3414d66ad55..5ecbe9135a71dd84e0722fa9c039c272
 +                // Paper end
 +
                  if (object != null && !flag) {
-                     this.a((MovingObjectPosition) object);
+                     this.preOnHit((MovingObjectPosition) object); // CraftBukkit - projectile hit event
                      this.impulse = true;
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
-index ed76aec99f46a7923d139e347779c24f512ac131..ede7b4dbf2dce7bac83c5e17eecfdaf0e8a84fe7 100644
+index 2ceae34365c437f2a15ae8587fa9517ea47ad6f2..9660dc2263c48a5818b767843658eeb9ee1748ea 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
 @@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityLiving;
@@ -53,11 +53,11 @@ index ed76aec99f46a7923d139e347779c24f512ac131..ede7b4dbf2dce7bac83c5e17eecfdaf0
 +            // Paper end
 +
 +            if (movingobjectposition != null && movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) { // Paper - add null check in case cancelled
-                 this.a(movingobjectposition);
+                 this.preOnHit(movingobjectposition); // CraftBukkit - projectile hit event
  
                  // CraftBukkit start - Fire ProjectileHitEvent
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java b/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
-index 829b4f28896bcb0eb6e48242bd00585eeaae62c2..3b379e83b79bd9b46dbdd4a48ac3842abc4dfbb8 100644
+index 149588433cd0ea0f71b45267e39b28697ccfd2c0..8bc65e9c0fa5e134a8eb4e03f0da5b2ccd06cd7c 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/EntityProjectile.java
 @@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.TileEntityEndGateway;
@@ -81,16 +81,16 @@ index 829b4f28896bcb0eb6e48242bd00585eeaae62c2..3b379e83b79bd9b46dbdd4a48ac3842a
 +            }
 +            if (movingobjectposition != null) {
 +            // Paper end
-             this.a(movingobjectposition);
+             this.preOnHit(movingobjectposition); // CraftBukkit - projectile hit event
 +            } // Paper
          }
  
          this.checkBlockCollisions();
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 52028387ae90b9e125b4522e5a3963a1119499e4..2dcdc428028a40c06b0ec1e50af76c16f051f084 100644
+index 2127455979b25055c38a4e8088419069d948e539..2ca0d109b148321964ac68259df82e4b1d7c57b2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1181,6 +1181,16 @@ public class CraftEventFactory {
+@@ -1199,6 +1199,16 @@ public class CraftEventFactory {
          return CraftItemStack.asNMSCopy(bitem);
      }
  

@@ -12,7 +12,7 @@ Previous implementation did not calculate TPS correctly.
 Switch to a realistic rolling average and factor in std deviation as an extra reporting variable
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 60a768ea8ffa965dd309c05bebddf5563b5e1992..2b3c32bda846b1a559f9a9d9d6870cb4ec6bfe12 100644
+index 9ba05ab7ec97896349f4b754f2993cda9ab1bbfd..add4f149fd31d1420d825b646b3e088808e5896b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -253,7 +253,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -33,7 +33,7 @@ index 60a768ea8ffa965dd309c05bebddf5563b5e1992..2b3c32bda846b1a559f9a9d9d6870cb4
      public final double[] recentTps = new double[ 3 ];
      public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
      // Spigot end
-@@ -915,6 +915,57 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -925,6 +925,57 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      {
          return ( avg * exp ) + ( tps * ( 1 - exp ) );
      }
@@ -91,7 +91,7 @@ index 60a768ea8ffa965dd309c05bebddf5563b5e1992..2b3c32bda846b1a559f9a9d9d6870cb4
      // Spigot End
  
      protected void w() {
-@@ -927,30 +978,38 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -937,30 +988,38 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
  
                  // Spigot start
                  Arrays.fill( recentTps, 20 );

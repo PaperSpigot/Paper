@@ -2375,7 +2375,7 @@ index e543b6927280a14e1d1220534758289934e31282..d5bec8b0e155ea5ae5746b6da571754a
          return this.b.size();
      }
 diff --git a/src/main/java/net/minecraft/nbt/NBTTagCompound.java b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
-index b2fb24e9ae19ab6e7039a98fc0c265f801be8a99..44fefe1cdc23667219ce825ba283f84cd3020e14 100644
+index b2fb24e9ae19ab6e7039a98fc0c265f801be8a99..bf4826e90976fed2ae95e84cadc7f29433af1ddf 100644
 --- a/src/main/java/net/minecraft/nbt/NBTTagCompound.java
 +++ b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
 @@ -76,7 +76,7 @@ public class NBTTagCompound implements NBTBase {
@@ -2387,7 +2387,7 @@ index b2fb24e9ae19ab6e7039a98fc0c265f801be8a99..44fefe1cdc23667219ce825ba283f84c
  
      protected NBTTagCompound(Map<String, NBTBase> map) {
          this.map = map;
-@@ -139,10 +139,14 @@ public class NBTTagCompound implements NBTBase {
+@@ -139,10 +139,16 @@ public class NBTTagCompound implements NBTBase {
          this.map.put(s, NBTTagLong.a(i));
      }
  
@@ -2397,8 +2397,10 @@ index b2fb24e9ae19ab6e7039a98fc0c265f801be8a99..44fefe1cdc23667219ce825ba283f84c
      }
  
 +
-+    @Nullable public UUID getUUID(String prefix) { return a(prefix); } // Paper - OBFHELPER
-+    @Nullable
++    /**
++     * You must use {@link #hasUUID(String)} before or else it <b>will</b> throw an NPE.
++     */
++    public UUID getUUID(String prefix) { return a(prefix); } // Paper - OBFHELPER
      public UUID a(String s) {
          return GameProfileSerializer.a(this.get(s));
      }
@@ -3009,10 +3011,10 @@ index 0000000000000000000000000000000000000000..18b56b59fd6efd618e6ff6f9cf3a02f5
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 078631631616874741b0e0662e51b3faadcddcec..8203192a94da26e8bfd6cf9999a2b2e8d26b1acf 100644
+index 81cff54c93bc04d19e3cc0f5307799c62d139ab2..cd3e7b8a23e40c717829bd262bfa675e4e3532f9 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -874,6 +874,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -884,6 +884,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              MinecraftServer.LOGGER.error("Failed to unlock level {}", this.convertable.getLevelName(), ioexception1);
          }
          // Spigot start
@@ -3515,7 +3517,7 @@ index 254953c1d8ad80173bcc9ed703bacaf32ca89c9a..7dea5e783ce2a1f8ddd2b3ab7a19e03a
          }
  
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index b9a0b37ceeeda9f6b1c4c23283e53dcb229f7249..0bf95b97140a67682ec2953ccc773f6faad7b7da 100644
+index 565aa1690d5427f5059ab117c4c15b0754e8830b..19856555793f742abb1178ede72dea5623f0e383 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 @@ -54,6 +54,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutLightUpdate;
@@ -3568,7 +3570,7 @@ index b9a0b37ceeeda9f6b1c4c23283e53dcb229f7249..0bf95b97140a67682ec2953ccc773f6f
      private CompletableFuture<Either<List<IChunkAccess>, PlayerChunk.Failure>> a(ChunkCoordIntPair chunkcoordintpair, int i, IntFunction<ChunkStatus> intfunction) {
          List<CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>>> list = Lists.newArrayList();
          int j = chunkcoordintpair.x;
-@@ -945,6 +974,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -953,6 +982,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              if (!flag1) {
                  this.chunkDistanceManager.a(SectionPosition.a((Entity) entityplayer), entityplayer);
              }
@@ -3576,7 +3578,7 @@ index b9a0b37ceeeda9f6b1c4c23283e53dcb229f7249..0bf95b97140a67682ec2953ccc773f6f
          } else {
              SectionPosition sectionposition = entityplayer.O();
  
-@@ -952,6 +982,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -960,6 +990,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              if (!flag2) {
                  this.chunkDistanceManager.b(sectionposition, entityplayer);
              }
@@ -3584,7 +3586,7 @@ index b9a0b37ceeeda9f6b1c4c23283e53dcb229f7249..0bf95b97140a67682ec2953ccc773f6f
          }
  
          for (int k = i - this.viewDistance; k <= i + this.viewDistance; ++k) {
-@@ -1062,6 +1093,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1070,6 +1101,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              }
          }
  
@@ -3637,7 +3639,7 @@ index 9cae7fed34df3ff81d75105b2fcbc4510f2a0e71..285a03b57431bd6a4d26bb84e916d2c6
      public static <T> TicketType<T> a(String s, Comparator<T> comparator) {
          return new TicketType<>(s, comparator, 0L);
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index b88b0890cb5b5b0c4c2c35456fdffb02e8cfcf91..bc580b35bdffddc5675a7bd50801057587fd02fe 100644
+index 7f9a1d64d123ce54608497a0e0a37d161d8c9d3c..780e541b8d594a8a6dc3a8626a82218f2502a5c7 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
 @@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
@@ -3657,7 +3659,7 @@ index b88b0890cb5b5b0c4c2c35456fdffb02e8cfcf91..bc580b35bdffddc5675a7bd508010575
      boolean tickingEntities;
      private final MinecraftServer server;
      public final WorldDataServer worldDataServer; // CraftBukkit - type
-@@ -1687,7 +1688,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1688,7 +1689,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  ObjectIterator objectiterator = spawnercreature_d.b().object2IntEntrySet().iterator();
  
                  while (objectiterator.hasNext()) {
@@ -3667,10 +3669,10 @@ index b88b0890cb5b5b0c4c2c35456fdffb02e8cfcf91..bc580b35bdffddc5675a7bd508010575
                      bufferedwriter.write(String.format("spawn_count.%s: %d\n", ((EnumCreatureType) it_unimi_dsi_fastutil_objects_object2intmap_entry.getKey()).b(), it_unimi_dsi_fastutil_objects_object2intmap_entry.getIntValue()));
                  }
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 638eb973121af6d942bdc6e9e0d6fceaa75ea665..5ed893d96fe317dc5a238c82b0bd5f3f03dfa9cc 100644
+index 1a8f4ed15f7df5c734efc83c91444a42041af978..bc9321e77c6b2f9ac17821413fa1357da2f26b05 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -218,9 +218,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -220,9 +220,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
      private final MinecraftServer minecraftServer;
      public EntityPlayer player;
      private int e;
@@ -3741,7 +3743,7 @@ index b91bb7f562d5c43ec1d0d88ba417e43b07dbf0f3..dbfcdc3cc7c1dccf785f5e13634e84c5
          // CraftBukkit start - fire event
          setGoalTarget(entityliving, EntityTargetEvent.TargetReason.UNKNOWN, true);
 diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
-index e4710d5fd7d28d6269d26cf1e3d399a66f5fabf1..feb640a21f4d0b00d85c1c4f013c22454616578a 100644
+index 97591280da3bfb30703a95fbe4e34b56b70544f4..c76ab1e6a54399eddae1ef2a595778385cd50026 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
 @@ -231,6 +231,7 @@ public abstract class EntityLiving extends Entity {
@@ -4143,10 +4145,10 @@ index f794113e7cc5809d1da0c85648fb7311fb633f40..0cbebc2095489c240fecd3fd32f5373b
              return chunk.getType(blockposition);
          }
 diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
-index 2e9a7deaf7837558519528d30fcc3f729b11d7b2..a96c7b0883f3bdf8b731aeccaf1217583a32f5c8 100644
+index ef652d8f3eb7371c9ddfc3afe67fd1bd669a77c0..2902117fd2803741b053a04fda7f4414fb8593cb 100644
 --- a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
 +++ b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
-@@ -687,6 +687,7 @@ public abstract class BlockBase {
+@@ -688,6 +688,7 @@ public abstract class BlockBase {
              return this.a != null ? this.a.d : Block.a(this.getCollisionShape(iblockaccess, blockposition));
          }
  
@@ -4509,10 +4511,10 @@ index 859561a5dccba6548967b685b20e8fcfc296db2a..9ebf2806122a308f7655cdbee1f642cd
  
      protected IOWorker(File file, boolean flag, String s) {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index d5b11b08cadbe53fee06025f5658c9a165bd2bd7..f2694e46123ac2edcfdc53ef1abae283227eaa51 100644
+index 5e3bbc6d89794e23df7b60b13ae48c0f5136f20e..d1b761055c508a4b80436b50a832e00d0449d8cb 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-@@ -111,6 +111,7 @@ public class RegionFile implements AutoCloseable {
+@@ -112,6 +112,7 @@ public class RegionFile implements AutoCloseable {
          return this.e.resolve(s);
      }
  

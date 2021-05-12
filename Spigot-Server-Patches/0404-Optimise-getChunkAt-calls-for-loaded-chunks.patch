@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Sat, 25 Jan 2020 17:04:35 -0800
+Subject: [PATCH] Optimise getChunkAt calls for loaded chunks
+
+bypass the need to get a player chunk, then get the either,
+then unwrap it...
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 372e5268783a84effa8f9f06c3f85b182e209cb8..0c8864eeae6e3b449514f52d95c17f2e4a304f0e 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -470,6 +470,12 @@ public class ChunkProviderServer extends IChunkProvider {
+                 return this.getChunkAt(i, j, chunkstatus, flag);
+             }, this.serverThreadQueue).join();
+         } else {
++            // Paper start - optimise for loaded chunks
++            Chunk ifLoaded = this.getChunkAtIfLoadedMainThread(i, j);
++            if (ifLoaded != null) {
++                return ifLoaded;
++            }
++            // Paper end
+             GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
+ 
+             gameprofilerfiller.c("getChunk");
+@@ -520,39 +526,7 @@ public class ChunkProviderServer extends IChunkProvider {
+         if (Thread.currentThread() != this.serverThread) {
+             return null;
+         } else {
+-            this.world.getMethodProfiler().c("getChunkNow");
+-            long k = ChunkCoordIntPair.pair(i, j);
+-
+-            for (int l = 0; l < 4; ++l) {
+-                if (k == this.cachePos[l] && this.cacheStatus[l] == ChunkStatus.FULL) {
+-                    IChunkAccess ichunkaccess = this.cacheChunk[l];
+-
+-                    return ichunkaccess instanceof Chunk ? (Chunk) ichunkaccess : null;
+-                }
+-            }
+-
+-            PlayerChunk playerchunk = this.getChunk(k);
+-
+-            if (playerchunk == null) {
+-                return null;
+-            } else {
+-                Either<IChunkAccess, PlayerChunk.Failure> either = (Either) playerchunk.b(ChunkStatus.FULL).getNow(null); // CraftBukkit - decompile error
+-
+-                if (either == null) {
+-                    return null;
+-                } else {
+-                    IChunkAccess ichunkaccess1 = (IChunkAccess) either.left().orElse(null); // CraftBukkit - decompile error
+-
+-                    if (ichunkaccess1 != null) {
+-                        this.a(k, ichunkaccess1, ChunkStatus.FULL);
+-                        if (ichunkaccess1 instanceof Chunk) {
+-                            return (Chunk) ichunkaccess1;
+-                        }
+-                    }
+-
+-                    return null;
+-                }
+-            }
++            return this.getChunkAtIfLoadedMainThread(i, j); // Paper - optimise for loaded chunks
+         }
+     }
+ 

@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: JRoy <joshroy126@gmail.com>
+Date: Thu, 27 Aug 2020 16:57:25 -0400
+Subject: [PATCH] Fix hex colors not working in some kick messages
+
+
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index 3d5381a6737876d3d7de40cacef900ab7ad27e27..97c7914e9826defc3e7167879e387fe697c10f3e 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -50,7 +50,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                     synchronized (throttleTracker) {
+                         if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
+                             throttleTracker.put(address, currentTime);
+-                            ChatMessage chatmessage = new ChatMessage(com.destroystokyo.paper.PaperConfig.connectionThrottleKickMessage); // Paper - Configurable connection throttle kick message
++                            IChatBaseComponent chatmessage = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(com.destroystokyo.paper.PaperConfig.connectionThrottleKickMessage, true)[0]; // Paper - Configurable connection throttle kick message // Paper - Fix hex colors not working in some kick messages
+                             this.c.sendPacket(new PacketLoginOutDisconnect(chatmessage));
+                             this.c.close(chatmessage);
+                             return;
+@@ -76,12 +76,12 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                 }
+                 // CraftBukkit end
+                 if (packethandshakinginsetprotocol.c() != SharedConstants.getGameVersion().getProtocolVersion()) {
+-                    ChatMessage chatmessage;
++                    IChatBaseComponent chatmessage; // Paper - Fix hex colors not working in some kick messages
+ 
+                     if (packethandshakinginsetprotocol.c() < 754) {
+-                        chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) ); // Spigot
++                        chatmessage = org.bukkit.craftbukkit.util.CraftChatMessage.fromString( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) , true )[0]; // Spigot // Paper - Fix hex colors not working in some kick messages
+                     } else {
+-                        chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) ); // Spigot
++                        chatmessage = org.bukkit.craftbukkit.util.CraftChatMessage.fromString( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) , true )[0]; // Spigot // Paper - Fix hex colors not working in some kick messages
+                     }
+ 
+                     this.c.sendPacket(new PacketLoginOutDisconnect(chatmessage));
+@@ -98,7 +98,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                     if (event.callEvent()) {
+                         // If we've failed somehow, let the client know so and go no further.
+                         if (event.isFailed()) {
+-                            chatmessage = new ChatMessage(event.getFailMessage());
++                            IChatBaseComponent chatmessage = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(event.getFailMessage(), true)[0]; // Paper - Fix hex colors not working in some kick messages
+                             this.getNetworkManager().sendPacket(new PacketLoginOutDisconnect(chatmessage));
+                             this.getNetworkManager().close(chatmessage);
+                             return;
+diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
+index e9fc38f69af815f021a08a94dd41b91171dbf2d6..c67b94840e4c967baebf6eb351df15f0e4ead4be 100644
+--- a/src/main/java/net/minecraft/server/network/LoginListener.java
++++ b/src/main/java/net/minecraft/server/network/LoginListener.java
+@@ -106,14 +106,7 @@ public class LoginListener implements PacketLoginInListener {
+     // CraftBukkit start
+     @Deprecated
+     public void disconnect(String s) {
+-        try {
+-            IChatBaseComponent ichatbasecomponent = new ChatComponentText(s);
+-            LoginListener.LOGGER.info("Disconnecting {}: {}", this.d(), s);
+-            this.networkManager.sendPacket(new PacketLoginOutDisconnect(ichatbasecomponent));
+-            this.networkManager.close(ichatbasecomponent);
+-        } catch (Exception exception) {
+-            LoginListener.LOGGER.error("Error whilst disconnecting player", exception);
+-        }
++        disconnect(org.bukkit.craftbukkit.util.CraftChatMessage.fromString(s, true)[0]); // Paper - Fix hex colors not working in some kick messages
+     }
+     // CraftBukkit end
+ 

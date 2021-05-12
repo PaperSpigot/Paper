@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 11 Apr 2020 21:23:42 -0400
+Subject: [PATCH] Delay unsafe actions until after entity ticking is done
+
+This will help prevent many cases of unregistering entities during entity ticking
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index c34ec6440b3c081a6e573b213f483c9ccf345c2b..ae99f3fb3a4b37c737fb276590004b2e10beab5a 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -178,6 +178,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     public final List<EntityPlayer> players = Lists.newArrayList(); // Paper - private -> public
+     public final ChunkProviderServer chunkProvider; // Paper - public
+     boolean tickingEntities;
++    // Paper start
++    List<java.lang.Runnable> afterEntityTickingTasks = Lists.newArrayList();
++    public void doIfNotEntityTicking(java.lang.Runnable run) {
++        if (tickingEntities) {
++            afterEntityTickingTasks.add(run);
++        } else {
++            run.run();
++        }
++    }
++    // Paper end
+     private final MinecraftServer server;
+     public final WorldDataServer worldDataServer; // CraftBukkit - type
+     public boolean savingDisabled;
+@@ -647,6 +657,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             timings.entityTick.stopTiming(); // Spigot
+ 
+             this.tickingEntities = false;
++            // Paper start
++            for (java.lang.Runnable run : this.afterEntityTickingTasks) {
++                try {
++                    run.run();
++                } catch (Exception e) {
++                    LOGGER.error("Error in After Entity Ticking Task", e);
++                }
++            }
++            this.afterEntityTickingTasks.clear();
++            // Paper end
+             this.getMinecraftServer().midTickLoadChunks(); // Paper
+ 
+             Entity entity2;

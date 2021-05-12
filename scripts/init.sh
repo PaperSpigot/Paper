@@ -54,7 +54,7 @@ do
     mkdir -p "$(dirname $cb/"$file")"
     cp "$nms/$file" "$cb/$file"
 done <   <(find nms-patches -type f -print0)
-$gitcmd add src
+$gitcmd add --force src
 $gitcmd commit -m "Minecraft $ $(date)" --author="Vanilla <auto@mated.null>"
 
 # apply patches
@@ -71,7 +71,7 @@ do
     "$patch" -d src/main/java -p 1 < "$patchFile"
 done <   <(find nms-patches -type f -print0)
 
-$gitcmd add src
+$gitcmd add --force src
 $gitcmd commit -m "CraftBukkit $ $(date)" --author="CraftBukkit <auto@mated.null>"
 $gitcmd checkout -f HEAD~2
 )

@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: oxygencraft <21054297+oxygencraft@users.noreply.github.com>
+Date: Sun, 25 Oct 2020 18:34:50 +1100
+Subject: [PATCH] Add getOfflinePlayerIfCached(String)
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 21bc20882835243bff5308e6a6a168e9811f5a60..38553aa11224a1621e7a06801a0448a0948ce130 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1606,6 +1606,28 @@ public final class CraftServer implements Server {
+         return result;
+     }
+ 
++    // Paper start
++    @Override
++    @Nullable
++    public OfflinePlayer getOfflinePlayerIfCached(String name) {
++        Validate.notNull(name, "Name cannot be null");
++        Validate.notEmpty(name, "Name cannot be empty");
++
++        OfflinePlayer result = getPlayerExact(name);
++        if (result == null) {
++            GameProfile profile = console.getUserCache().getProfileIfCached(name);
++
++            if (profile != null) {
++                result = getOfflinePlayer(profile);
++            }
++        } else {
++            offlinePlayers.remove(result.getUniqueId());
++        }
++
++        return result;
++    }
++    // Paper end
++
+     @Override
+     public OfflinePlayer getOfflinePlayer(UUID id) {
+         Validate.notNull(id, "UUID cannot be null");

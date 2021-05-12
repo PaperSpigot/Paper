@@ -6,10 +6,10 @@ Subject: [PATCH] Fix sign edit memory leak
 when a player edits a sign, a reference to their Entity is never cleand up.
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index a2413a4e1d16b856df9f74e42eb141f72b0893c6..593609ff38b01ae35e17dd65bf101e38d080dc3a 100644
+index 7158d3e3a7e2912d8d170aca4096355d43645cfa..e54c06b1214091985d9e360592a7759ff45efc75 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -2838,7 +2838,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -2851,7 +2851,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
              TileEntitySign tileentitysign = (TileEntitySign) tileentity;
  

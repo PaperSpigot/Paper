@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Thu, 16 Apr 2020 16:13:59 -0700
+Subject: [PATCH] Optimize ChunkProviderServer's chunk level checking helper
+ methods
+
+These can be hot functions (i.e entity ticking and block ticking),
+so inline where possible, and avoid the abstraction of the
+Either class.
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 99108d2c8145c16943fb29872c55d8e74f75eb77..2d7d2e712a7117e6985e3104097a31a5577c1b82 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -643,21 +643,29 @@ public class ChunkProviderServer extends IChunkProvider {
+ 
+     public final boolean isInEntityTickingChunk(Entity entity) { return this.a(entity); } // Paper - OBFHELPER
+     @Override public boolean a(Entity entity) {
+-        long i = ChunkCoordIntPair.pair(MathHelper.floor(entity.locX()) >> 4, MathHelper.floor(entity.locZ()) >> 4);
+-
+-        return this.a(i, (Function<PlayerChunk, CompletableFuture<Either<Chunk, PlayerChunk.Failure>>>) PlayerChunk::b); // CraftBukkit - decompile error
++        // Paper start - optimize is ticking ready type functions
++        // entity ticking
++        PlayerChunk playerChunk = this.getChunk(MCUtil.getCoordinateKey(entity));
++        return playerChunk != null && playerChunk.isEntityTickingReady();
++        // Paper end - optimize is ticking ready type functions
+     }
+ 
+     public final boolean isEntityTickingChunk(ChunkCoordIntPair chunkcoordintpair) { return this.a(chunkcoordintpair); } // Paper - OBFHELPER
+     @Override public boolean a(ChunkCoordIntPair chunkcoordintpair) {
+-        return this.a(chunkcoordintpair.pair(), (Function<PlayerChunk, CompletableFuture<Either<Chunk, PlayerChunk.Failure>>>) PlayerChunk::b); // CraftBukkit - decompile error
++        // Paper start - optimize is ticking ready type functions
++        // is entity ticking ready
++        PlayerChunk playerChunk = this.getChunk(MCUtil.getCoordinateKey(chunkcoordintpair));
++        return playerChunk != null && playerChunk.isEntityTickingReady();
++        // Paper end - optimize is ticking ready type functions
+     }
+ 
+     @Override
+     public boolean a(BlockPosition blockposition) {
+-        long i = ChunkCoordIntPair.pair(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+-
+-        return this.a(i, (Function<PlayerChunk, CompletableFuture<Either<Chunk, PlayerChunk.Failure>>>) PlayerChunk::a); // CraftBukkit - decompile error
++        // Paper start - optimize is ticking ready type functions
++        // is ticking ready
++        PlayerChunk playerChunk = this.getChunk(MCUtil.getCoordinateKey(blockposition));
++        return playerChunk != null && playerChunk.isTickingReady();
++        // Paper end - optimize is ticking ready type functions
+     }
+ 
+     private boolean a(long i, Function<PlayerChunk, CompletableFuture<Either<Chunk, PlayerChunk.Failure>>> function) {

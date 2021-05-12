@@ -178,19 +178,13 @@ index 4a0c43acc2714e095973eb78536041bb1a179ddc..acf2244f77133df53eb5f862c8e713c8
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/inventory/SmithingInventory.java b/src/main/java/org/bukkit/inventory/SmithingInventory.java
-index 616495f8517a187a1eba4d03d5a25580fd0c8715..2b8f21cfce99b6caaedb48df4aa1e989644b88ff 100644
+index 96d526b7b153e56c9a97de42ce3270b6638510e4..a41ca6bd2672db2810dd70c4925b84a4f081af05 100644
 --- a/src/main/java/org/bukkit/inventory/SmithingInventory.java
 +++ b/src/main/java/org/bukkit/inventory/SmithingInventory.java
-@@ -1,6 +1,68 @@
- package org.bukkit.inventory;
- 
-+import org.jetbrains.annotations.Nullable; // Paper
-+
- /**
-  * Interface to the inventory of a Smithing table.
-  */
--public interface SmithingInventory extends Inventory { }
-+public interface SmithingInventory extends Inventory {
+@@ -30,4 +30,44 @@ public interface SmithingInventory extends Inventory {
+      */
+     @Nullable
+     Recipe getRecipe();
 +
 +    // Paper start
 +    /**
@@ -230,27 +224,8 @@ index 616495f8517a187a1eba4d03d5a25580fd0c8715..2b8f21cfce99b6caaedb48df4aa1e989
 +    default void setInputMineral(@Nullable ItemStack itemStack) {
 +        setItem(1, itemStack);
 +    }
-+
-+    /**
-+     * Gets the result item.
-+     *
-+     * @return result
-+     */
-+    @Nullable
-+    default ItemStack getResult() {
-+        return getItem(2);
-+    }
-+
-+    /**
-+     * Sets the result item.
-+     *
-+     * @param itemStack item to set
-+     */
-+    default void setResult(@Nullable ItemStack itemStack) {
-+        setItem(2, itemStack);
-+    }
 +    // Paper end
-+}
+ }
 diff --git a/src/main/java/org/bukkit/inventory/StonecutterInventory.java b/src/main/java/org/bukkit/inventory/StonecutterInventory.java
 index dbb034fae3b8bfaf40e6341460e274c21e321a3b..e7a8e7188bf8b9840de56dc80c2b79d64a9389cb 100644
 --- a/src/main/java/org/bukkit/inventory/StonecutterInventory.java

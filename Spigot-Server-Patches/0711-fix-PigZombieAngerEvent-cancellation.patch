@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Thu, 18 Mar 2021 21:38:01 +0100
+Subject: [PATCH] fix PigZombieAngerEvent cancellation
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
+index 59ea1432152051ce8a60c0a526db787593f0e744..1212c8e2af1f7e658d8bec7e5474a35190b1949e 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoal.java
+@@ -28,6 +28,7 @@ public abstract class PathfinderGoal {
+ 
+     public void c() { this.start(); } public void start() {} // Paper - OBFHELPER
+ 
++    public final void onTaskResetObfHelper() { d(); } // Paper - OBFHELPER
+     public void d() {
+         onTaskReset(); // Paper
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityPigZombie.java b/src/main/java/net/minecraft/world/entity/monster/EntityPigZombie.java
+index cc1bff409cad2eb6264d4b691599576960080ccd..d10d1b768601236b9892461ee41d61c7239d1a07 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityPigZombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityPigZombie.java
+@@ -49,6 +49,7 @@ public class EntityPigZombie extends EntityZombie implements IEntityAngerable {
+     private UUID br;
+     private static final IntRange bs = TimeRange.a(4, 6);
+     private int bt;
++    private PathfinderGoalHurtByTarget pathfinderGoalHurtByTarget; // Paper
+ 
+     public EntityPigZombie(EntityTypes<? extends EntityPigZombie> entitytypes, World world) {
+         super(entitytypes, world);
+@@ -69,7 +70,7 @@ public class EntityPigZombie extends EntityZombie implements IEntityAngerable {
+     protected void m() {
+         this.goalSelector.a(2, new PathfinderGoalZombieAttack(this, 1.0D, false));
+         this.goalSelector.a(7, new PathfinderGoalRandomStrollLand(this, 1.0D));
+-        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this).a(new Class[0])); // CraftBukkit - decompile error
++        this.targetSelector.a(1, pathfinderGoalHurtByTarget = new PathfinderGoalHurtByTarget(this).a(new Class[0])); // CraftBukkit - decompile error // Paper - assign field
+         this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, this::a_));
+         this.targetSelector.a(3, new PathfinderGoalUniversalAngerReset<>(this, true));
+     }
+@@ -172,6 +173,7 @@ public class EntityPigZombie extends EntityZombie implements IEntityAngerable {
+         this.world.getServer().getPluginManager().callEvent(event);
+         if (event.isCancelled()) {
+             this.setAngerTarget(null);
++            pathfinderGoalHurtByTarget.onTaskResetObfHelper(); // Paper - clear goalTargets to fix cancellation
+             return;
+         }
+         this.setAnger(event.getNewAnger());

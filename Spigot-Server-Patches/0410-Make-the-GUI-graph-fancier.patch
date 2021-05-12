@@ -1,0 +1,436 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Sun, 2 Feb 2020 04:00:40 -0600
+Subject: [PATCH] Make the GUI graph fancier
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphColor.java b/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a4e641fdcccd3efcd1a2865dc6dc28d50671b995
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
+@@ -0,0 +1,44 @@
++package com.destroystokyo.paper.gui;
++
++import java.awt.Color;
++
++public class GraphColor {
++    private static final Color[] colorLine = new Color[101];
++    private static final Color[] colorFill = new Color[101];
++
++    static {
++        for (int i = 0; i < 101; i++) {
++            Color color = createColor(i);
++            colorLine[i] = new Color(color.getRed() / 2, color.getGreen() / 2, color.getBlue() / 2, 255);
++            colorFill[i] = new Color(colorLine[i].getRed(), colorLine[i].getGreen(), colorLine[i].getBlue(), 125);
++        }
++    }
++
++    public static Color getLineColor(int percent) {
++        return colorLine[percent];
++    }
++
++    public static Color getFillColor(int percent) {
++        return colorFill[percent];
++    }
++
++    private static Color createColor(int percent) {
++        if (percent <= 50) {
++            return new Color(0X00FF00);
++        }
++
++        int value = 510 - (int) (Math.min(Math.max(0, ((percent - 50) / 50F)), 1) * 510);
++
++        int red, green;
++        if (value < 255) {
++            red = 255;
++            green = (int) (Math.sqrt(value) * 16);
++        } else {
++            green = 255;
++            value = value - 255;
++            red = 255 - (value * value / 255);
++        }
++
++        return new Color(red, green, 0);
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphData.java b/src/main/java/com/destroystokyo/paper/gui/GraphData.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..186fc722965e403f76b1480e1c2381fc34e29049
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/gui/GraphData.java
+@@ -0,0 +1,47 @@
++package com.destroystokyo.paper.gui;
++
++import java.awt.Color;
++
++public class GraphData {
++    private long total;
++    private long free;
++    private long max;
++    private long usedMem;
++    private int usedPercent;
++
++    public GraphData(long total, long free, long max) {
++        this.total = total;
++        this.free = free;
++        this.max = max;
++        this.usedMem = total - free;
++        this.usedPercent = usedMem == 0 ? 0 : (int) (usedMem * 100L / max);
++    }
++
++    public long getTotal() {
++        return total;
++    }
++
++    public long getFree() {
++        return free;
++    }
++
++    public long getMax() {
++        return max;
++    }
++
++    public long getUsedMem() {
++        return usedMem;
++    }
++
++    public int getUsedPercent() {
++        return usedPercent;
++    }
++
++    public Color getFillColor() {
++        return GraphColor.getFillColor(usedPercent);
++    }
++
++    public Color getLineColor() {
++        return GraphColor.getLineColor(usedPercent);
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java b/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0f29ad583e798c09b2fe3f568ed50cbc719e40e2
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
+@@ -0,0 +1,41 @@
++package com.destroystokyo.paper.gui;
++
++import net.minecraft.server.MinecraftServer;
++
++import javax.swing.JPanel;
++import javax.swing.Timer;
++import java.awt.BorderLayout;
++import java.awt.Dimension;
++
++public class GuiStatsComponent extends JPanel {
++    private final Timer timer;
++    private final RAMGraph ramGraph;
++
++    public GuiStatsComponent(MinecraftServer server) {
++        super(new BorderLayout());
++
++        setOpaque(false);
++
++        ramGraph = new RAMGraph();
++        RAMDetails ramDetails = new RAMDetails(server);
++
++        add(ramGraph, "North");
++        add(ramDetails, "Center");
++
++        timer = new Timer(500, (event) -> {
++            ramGraph.update();
++            ramDetails.update();
++        });
++        timer.start();
++    }
++
++    @Override
++    public Dimension getPreferredSize() {
++        return new Dimension(350, 200);
++    }
++
++    public void stop() { a(); } public void a() {
++        timer.stop();
++        ramGraph.stop();
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..67d064e3959ed8d886df30ce9d97f86c2443fa39
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
+@@ -0,0 +1,73 @@
++package com.destroystokyo.paper.gui;
++
++import net.minecraft.SystemUtils;
++import net.minecraft.server.MinecraftServer;
++
++import javax.swing.DefaultListCellRenderer;
++import javax.swing.DefaultListSelectionModel;
++import javax.swing.JList;
++import javax.swing.border.EmptyBorder;
++import java.awt.Dimension;
++import java.text.DecimalFormat;
++import java.text.DecimalFormatSymbols;
++import java.util.Locale;
++import java.util.Vector;
++
++public class RAMDetails extends JList<String> {
++    public static final DecimalFormat DECIMAL_FORMAT = SystemUtils.peek(new DecimalFormat("########0.000"), (format)
++        -> format.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
++
++    private final MinecraftServer server;
++
++    public RAMDetails(MinecraftServer server) {
++        this.server = server;
++
++        setBorder(new EmptyBorder(0, 10, 0, 0));
++        setFixedCellHeight(20);
++        setOpaque(false);
++
++        DefaultListCellRenderer renderer = new DefaultListCellRenderer();
++        renderer.setOpaque(false);
++        setCellRenderer(renderer);
++
++        setSelectionModel(new DefaultListSelectionModel() {
++            @Override
++            public void setAnchorSelectionIndex(final int anchorIndex) {
++            }
++
++            @Override
++            public void setLeadAnchorNotificationEnabled(final boolean flag) {
++            }
++
++            @Override
++            public void setLeadSelectionIndex(final int leadIndex) {
++            }
++
++            @Override
++            public void setSelectionInterval(final int index0, final int index1) {
++            }
++        });
++    }
++
++    @Override
++    public Dimension getPreferredSize() {
++        return new Dimension(350, 100);
++    }
++
++    public void update() {
++        GraphData data = RAMGraph.DATA.peekLast();
++        Vector<String> vector = new Vector<>();
++        vector.add("Memory use: " + (data.getUsedMem() / 1024L / 1024L) + " mb (" + (data.getFree() * 100L / data.getMax()) + "% free)");
++        vector.add("Heap: " + (data.getTotal() / 1024L / 1024L) + " / " + (data.getMax() / 1024L / 1024L) + " mb");
++        vector.add("Avg tick: " + DECIMAL_FORMAT.format(getAverage(server.getTickTimes())) + " ms");
++        setListData(vector);
++    }
++
++    public double getAverage(long[] tickTimes) {
++        long total = 0L;
++        for (long value : tickTimes) {
++            total += value;
++        }
++        return ((double) total / (double) tickTimes.length) * 1.0E-6D;
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java b/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c3e54da4ab6440811aab2f9dd1e218802ac13285
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
+@@ -0,0 +1,144 @@
++package com.destroystokyo.paper.gui;
++
++import javax.swing.JComponent;
++import javax.swing.SwingUtilities;
++import javax.swing.Timer;
++import javax.swing.ToolTipManager;
++import java.awt.Color;
++import java.awt.Dimension;
++import java.awt.Graphics;
++import java.awt.MouseInfo;
++import java.awt.Point;
++import java.awt.PointerInfo;
++import java.awt.event.MouseAdapter;
++import java.awt.event.MouseEvent;
++import java.text.SimpleDateFormat;
++import java.util.Date;
++import java.util.LinkedList;
++import java.util.concurrent.TimeUnit;
++
++public class RAMGraph extends JComponent {
++    public static final LinkedList<GraphData> DATA = new LinkedList<GraphData>() {
++        @Override
++        public boolean add(GraphData data) {
++            if (size() >= 348) {
++                remove();
++            }
++            return super.add(data);
++        }
++    };
++
++    static {
++        GraphData empty = new GraphData(0, 0, 0);
++        for (int i = 0; i < 350; i++) {
++            DATA.add(empty);
++        }
++    }
++
++    private final Timer timer;
++    private final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
++
++    private int currentTick;
++
++    public RAMGraph() {
++        ToolTipManager.sharedInstance().setInitialDelay(0);
++
++        addMouseListener(new MouseAdapter() {
++            final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
++            final int dismissDelayMinutes = (int) TimeUnit.MINUTES.toMillis(10);
++
++            @Override
++            public void mouseEntered(MouseEvent me) {
++                ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
++            }
++
++            @Override
++            public void mouseExited(MouseEvent me) {
++                ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
++            }
++        });
++
++        timer = new Timer(50, (event) -> repaint());
++        timer.start();
++    }
++
++    @Override
++    public Dimension getPreferredSize() {
++        return new Dimension(350, 110);
++    }
++
++    public void update() {
++        Runtime jvm = Runtime.getRuntime();
++        DATA.add(new GraphData(jvm.totalMemory(), jvm.freeMemory(), jvm.maxMemory()));
++
++        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
++        if (pointerInfo != null) {
++            Point point = pointerInfo.getLocation();
++            if (point != null) {
++                Point loc = new Point(point);
++                SwingUtilities.convertPointFromScreen(loc, this);
++                if (this.contains(loc)) {
++                    ToolTipManager.sharedInstance().mouseMoved(
++                        new MouseEvent(this, -1, System.currentTimeMillis(), 0, loc.x, loc.y,
++                            point.x, point.y, 0, false, 0));
++                }
++            }
++        }
++
++        currentTick++;
++    }
++
++    @Override
++    public void paint(Graphics graphics) {
++        graphics.setColor(new Color(0xFFFFFFFF));
++        graphics.fillRect(0, 0, 350, 100);
++
++        graphics.setColor(new Color(0x888888));
++        graphics.drawLine(1, 25, 348, 25);
++        graphics.drawLine(1, 50, 348, 50);
++        graphics.drawLine(1, 75, 348, 75);
++
++        int i = 0;
++        for (GraphData data : DATA) {
++            i++;
++            if ((i + currentTick) % 120 == 0) {
++                graphics.setColor(new Color(0x888888));
++                graphics.drawLine(i, 1, i, 99);
++            }
++            int used = data.getUsedPercent();
++            if (used > 0) {
++                Color color = data.getLineColor();
++                graphics.setColor(data.getFillColor());
++                graphics.fillRect(i, 100 - used, 1, used);
++                graphics.setColor(color);
++                graphics.fillRect(i, 100 - used, 1, 1);
++            }
++        }
++
++        graphics.setColor(new Color(0xFF000000));
++        graphics.drawRect(0, 0, 348, 100);
++
++        Point m = getMousePosition();
++        if (m != null && m.x > 0 && m.x < 348 && m.y > 0 && m.y < 100) {
++            GraphData data = DATA.get(m.x);
++            int used = data.getUsedPercent();
++            graphics.setColor(new Color(0x000000));
++            graphics.drawLine(m.x, 1, m.x, 99);
++            graphics.drawOval(m.x - 2, 100 - used - 2, 5, 5);
++            graphics.setColor(data.getLineColor());
++            graphics.fillOval(m.x - 2, 100 - used - 2, 5, 5);
++            setToolTipText(String.format("<html><body>Used: %s mb (%s%%)<br/>%s</body></html>",
++                Math.round(data.getUsedMem() / 1024F / 1024F),
++                used, getTime(m.x)));
++        }
++    }
++
++    public String getTime(int halfSeconds) {
++        int millis = (348 - halfSeconds) / 2 * 1000;
++        return TIME_FORMAT.format(new Date((System.currentTimeMillis() - millis)));
++    }
++
++    public void stop() {
++        timer.stop();
++    }
++}
+diff --git a/src/main/java/net/minecraft/SystemUtils.java b/src/main/java/net/minecraft/SystemUtils.java
+index 46d82c1548088b8305f758699388edf0d5d4d050..397194b3e90c9df39cfae17b401c7ac891b0dbb7 100644
+--- a/src/main/java/net/minecraft/SystemUtils.java
++++ b/src/main/java/net/minecraft/SystemUtils.java
+@@ -260,6 +260,7 @@ public class SystemUtils {
+         return supplier.get();
+     }
+ 
++    public static <T> T peek(T t0, Consumer<T> consumer) { return a(t0, consumer); } // Paper - OBFHELPER
+     public static <T> T a(T t0, Consumer<T> consumer) {
+         consumer.accept(t0);
+         return t0;
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 94525c8bd49334fb5aa1b113ed992e857e44ab96..c86c3cdea77369e3297548c8d5f10674c1100f76 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -218,7 +218,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     private String motd;
+     private int F;
+     private int G;
+-    public final long[] h;
++    public final long[] h; public long[] getTickTimes() { return h; } // Paper - OBFHELPER
+     @Nullable
+     private KeyPair H;
+     @Nullable
+diff --git a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+index 7ac8a9af459656483dc693a3028ebf8c34628cc7..f85a4079bb2931fd29a526379ba350eb7e8ae636 100644
+--- a/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
++++ b/src/main/java/net/minecraft/server/gui/GuiStatsComponent.java
+@@ -13,7 +13,7 @@ import net.minecraft.server.MinecraftServer;
+ 
+ public class GuiStatsComponent extends JComponent {
+ 
+-    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a((Object) (new DecimalFormat("########0.000")), (decimalformat) -> {
++    private static final DecimalFormat a = (DecimalFormat) SystemUtils.a(new DecimalFormat("########0.000"), (decimalformat) -> { // Paper - decompile error
+         decimalformat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+     });
+     private final int[] b = new int[256];
+diff --git a/src/main/java/net/minecraft/server/gui/ServerGUI.java b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+index dc2a36f6dbc83ba25bcd59d981f75499adbd22e5..c2c075b9e3b70f863b6c450e4f31d6fde2935be6 100644
+--- a/src/main/java/net/minecraft/server/gui/ServerGUI.java
++++ b/src/main/java/net/minecraft/server/gui/ServerGUI.java
+@@ -91,7 +91,7 @@ public class ServerGUI extends JComponent {
+ 
+     private JComponent c() {
+         JPanel jpanel = new JPanel(new BorderLayout());
+-        GuiStatsComponent guistatscomponent = new GuiStatsComponent(this.c);
++        com.destroystokyo.paper.gui.GuiStatsComponent guistatscomponent = new com.destroystokyo.paper.gui.GuiStatsComponent(this.c); // Paper
+ 
+         this.e.add(guistatscomponent::a);
+         jpanel.add(guistatscomponent, "North");

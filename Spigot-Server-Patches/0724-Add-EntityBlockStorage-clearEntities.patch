@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 5 Apr 2021 18:12:29 -0400
+Subject: [PATCH] Add EntityBlockStorage#clearEntities()
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeehive.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeehive.java
+index 3cbcbb028b864f1d14e004628bbc0829f71ab476..80083a6666a28372946cf0e68ded44d075357f7d 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeehive.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBeehive.java
+@@ -120,6 +120,11 @@ public class TileEntityBeehive extends TileEntity implements ITickable {
+         return this.bees.size();
+     }
+ 
++    // Paper start - Add EntityBlockStorage clearEntities
++    public void clearBees() {
++        this.bees.clear();
++    }
++    // Paper end
+     public static int a(IBlockData iblockdata) {
+         return (Integer) iblockdata.get(BlockBeehive.b);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBeehive.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBeehive.java
+index af691b28b38e388617d241008c2e9d403bc5c15d..9f4fb1ff9c945799d10d6905c8b73376e4133d23 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBeehive.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBeehive.java
+@@ -83,4 +83,10 @@ public class CraftBeehive extends CraftBlockEntityState<TileEntityBeehive> imple
+ 
+         getSnapshot().addBee(((CraftBee) entity).getHandle(), false);
+     }
++    // Paper start - Add EntityBlockStorage clearEntities
++    @Override
++    public void clearEntities() {
++        getSnapshot().clearBees();
++    }
++    // Paper end
+ }

@@ -5,18 +5,9 @@ Subject: [PATCH] Add More Creeper API
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
-index ea15f54b70361bca529936e6d2e9bc555c60a657..9c8abb18c0ed850939b6691396f5d551e13c7af9 100644
+index cbb973e077e04e5221bcc837f434b7093bdbcc2a..b47f71ca1f1c8bbd1a521836d9cb5d676a33ec76 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
-@@ -50,7 +50,7 @@ public class EntityCreeper extends EntityMonster {
-     private static final DataWatcherObject<Boolean> POWERED = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
-     private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i); private static final DataWatcherObject<Boolean> isIgnitedDW = d; // Paper OBFHELPER
-     private int bo;
--    private int fuseTicks;
-+    public int fuseTicks; // Paper - public
-     public int maxFuseTicks = 30;
-     public int explosionRadius = 3;
-     private int bs;
 @@ -290,7 +290,18 @@ public class EntityCreeper extends EntityMonster {
      }
  
@@ -38,10 +29,10 @@ index ea15f54b70361bca529936e6d2e9bc555c60a657..9c8abb18c0ed850939b6691396f5d551
  
      public boolean canCauseHeadDrop() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftCreeper.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftCreeper.java
-index 013e0b1bca7cb348316bf3917455b160af0c57cc..8499a37611d7bb4f0a6598d6e78de1d52ae5ea02 100644
+index 167b8f0c742be07ee0c5d698e04d6e29addda70c..629518d4bb314a1d46e32397b6fb7b90bce94e83 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftCreeper.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftCreeper.java
-@@ -88,4 +88,18 @@ public class CraftCreeper extends CraftMonster implements Creeper {
+@@ -101,4 +101,14 @@ public class CraftCreeper extends CraftMonster implements Creeper {
      public EntityType getType() {
          return EntityType.CREEPER;
      }
@@ -53,10 +44,6 @@ index 013e0b1bca7cb348316bf3917455b160af0c57cc..8499a37611d7bb4f0a6598d6e78de1d5
 +
 +    public boolean isIgnited() {
 +        return getHandle().isIgnited();
-+    }
-+
-+    public int getFuseTicks() {
-+        return getHandle().fuseTicks;
 +    }
 +    // Paper end
  }

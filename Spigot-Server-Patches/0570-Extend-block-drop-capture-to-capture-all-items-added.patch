@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Thu, 17 Sep 2020 00:36:05 +0100
+Subject: [PATCH] Extend block drop capture to capture all items added to the
+ world
+
+
+diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+index 984209e4f66ad23d85d2c5d02318caab1aff7324..31012963815a5c7355753b8cd2749976282ef0d2 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
+@@ -12,6 +12,7 @@ import net.minecraft.world.EnumHand;
+ import net.minecraft.world.EnumInteractionResult;
+ import net.minecraft.world.ITileInventory;
+ import net.minecraft.world.InteractionResultWrapper;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.context.ItemActionContext;
+@@ -419,10 +420,12 @@ public class PlayerInteractManager {
+                     // return true; // CraftBukkit
+                 }
+                 // CraftBukkit start
++                java.util.List<EntityItem> itemsToDrop = world.captureDrops; // Paper - store current list
++                world.captureDrops = null; // Paper - Remove this earlier so that we can actually drop stuff
+                 if (event.isDropItems()) {
+-                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, world.captureDrops);
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, itemsToDrop); // Paper - use stored ref
+                 }
+-                world.captureDrops = null;
++                //world.captureDrops = null; // Paper - move up
+ 
+                 // Drop event experience
+                 if (flag && event != null) {
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 246708808cbcd9a5c1b8690c869a514d02fddb5c..4a87b9ebc2a584d8a2fca874342057e81fbbc1c6 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -99,6 +99,7 @@ import net.minecraft.world.entity.animal.EntityWaterAnimal;
+ import net.minecraft.world.entity.animal.horse.EntityHorseSkeleton;
+ import net.minecraft.world.entity.boss.EntityComplexPart;
+ import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
++import net.minecraft.world.entity.item.EntityItem;
+ import net.minecraft.world.entity.npc.NPC;
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.entity.raid.PersistentRaid;
+@@ -1290,6 +1291,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         } else if (this.isUUIDTaken(entity)) {
+             return false;
+         } else {
++            // Paper start - capture all item additions to the world
++            if (captureDrops != null && entity instanceof EntityItem) {
++                captureDrops.add((EntityItem) entity);
++                return true;
++            }
++            // Paper end
++
+             if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
+                 return false;
+             }

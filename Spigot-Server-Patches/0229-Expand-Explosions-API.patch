@@ -6,10 +6,10 @@ Subject: [PATCH] Expand Explosions API
 Add Entity as a Source capability, and add more API choices, and on Location.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index e2dd76d0bc5db5dd07d8574135b8d64b40e2c34a..ad80ebd9d69b4d86078a7c3daa274f115f172794 100644
+index f9af209170b5dccf425b2ca35c416ed61ccda3eb..36c9ee703660d0ef558481ef0fea0984502bc14e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -896,6 +896,11 @@ public class CraftWorld implements World {
+@@ -889,6 +889,11 @@ public class CraftWorld implements World {
      public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, Entity source) {
          return !world.createExplosion(source == null ? null : ((CraftEntity) source).getHandle(), x, y, z, power, setFire, breakBlocks ? Explosion.Effect.BREAK : Explosion.Effect.NONE).wasCanceled;
      }

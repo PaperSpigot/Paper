@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lukas81298 <lukas81298@gommehd.net>
+Date: Mon, 25 Jan 2021 14:37:57 +0100
+Subject: [PATCH] added option to disable pathfinding updates on block changes
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 1ceacb6bbfe99069763845a8aef48a3fb4841e32..d2f6e1308a4dfec663770e2c7f4de0cf22402a97 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -799,4 +799,9 @@ public class PaperWorldConfig {
+     private void enderDragonsDeathAlwaysPlacesDragonEgg() {
+         enderDragonsDeathAlwaysPlacesDragonEgg = getBoolean("ender-dragons-death-always-places-dragon-egg", enderDragonsDeathAlwaysPlacesDragonEgg);
+     }
++
++    public boolean updatePathfindingOnBlockUpdate = true;
++    private void setUpdatePathfindingOnBlockUpdate() {
++        updatePathfindingOnBlockUpdate = getBoolean("update-pathfinding-on-block-update", this.updatePathfindingOnBlockUpdate);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index c7a661d4f43fad04ebada1bbebf4e4274fc9c452..325eba4e30ddcdfd038a215fbfde3bdc3e7c9b2a 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1684,6 +1684,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     @Override
+     public void notify(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1, int i) {
+         this.getChunkProvider().flagDirty(blockposition);
++        if(this.paperConfig.updatePathfindingOnBlockUpdate) { // Paper - option to disable pathfinding updates
+         VoxelShape voxelshape = iblockdata.getCollisionShape(this, blockposition);
+         VoxelShape voxelshape1 = iblockdata1.getCollisionShape(this, blockposition);
+ 
+@@ -1712,6 +1713,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+ 
+             this.tickingEntities = wasTicking; // Paper
+         }
++        } // Paper
+     }
+ 
+     @Override

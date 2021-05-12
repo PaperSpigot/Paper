@@ -8,7 +8,7 @@ our own relocation. Also lets us rewrite NMS calls for when we're
 debugging in an IDE pre-relocate.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Commodore.java b/src/main/java/org/bukkit/craftbukkit/util/Commodore.java
-index ac48431777b70c200f9e4113c8a0c03957126e90..1d78086cb94d24372f9fbe21463e21277e25eab7 100644
+index 45cbdcfc131bbc0e2bf23cc30a572df72eecd51c..49e5a86c223f1b28ce7da6ced276b2f880777856 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Commodore.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/Commodore.java
 @@ -6,7 +6,9 @@ import java.io.FileOutputStream;
@@ -82,7 +82,7 @@ index ac48431777b70c200f9e4113c8a0c03957126e90..1d78086cb94d24372f9fbe21463e2127
          OptionParser parser = new OptionParser();
 @@ -130,15 +173,86 @@ public class Commodore
  
-         cr.accept( new ClassVisitor( Opcodes.ASM8, cw )
+         cr.accept( new ClassVisitor( Opcodes.ASM9, cw )
          {
 +            // Paper start - Rewrite plugins
 +            @Override
@@ -167,7 +167,7 @@ index ac48431777b70c200f9e4113c8a0c03957126e90..1d78086cb94d24372f9fbe21463e2127
                          if ( owner.equals( "org/bukkit/block/Biome" ) )
                          {
                              switch ( name )
-@@ -260,6 +374,14 @@ public class Commodore
+@@ -270,6 +384,14 @@ public class Commodore
                              return;
                          }
  

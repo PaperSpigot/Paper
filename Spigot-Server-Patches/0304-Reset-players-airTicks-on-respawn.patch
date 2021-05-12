@@ -5,10 +5,10 @@ Subject: [PATCH] Reset players airTicks on respawn
 
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index d750c814ca3b7dc7df7f87de3e360235849c000b..ae5fe4f71ea1cc231e5d87920c2243f4f4f581f1 100644
+index 46d1e766e234bf49d31583e9e59aeb33c719b1ec..fbc0c81bb7e87f7820325a9a7bb39123db272845 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -2152,6 +2152,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2153,6 +2153,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          }
  
          this.setHealth(this.getMaxHealth());
@@ -17,7 +17,7 @@ index d750c814ca3b7dc7df7f87de3e360235849c000b..ae5fe4f71ea1cc231e5d87920c2243f4
          this.fallDistance = 0;
          this.foodData = new FoodMetaData(this);
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 2fc25a13a554174d2b5f415c910c4a26e37b30e1..f102ecb56ac04a5b840fa52e6d1ff9604598d58d 100644
+index b6b4eb9ac883cfdfab5f114767fb5cfb29445730..0b61d03506bd56cf7e373daacbf4fb2e29bb0a58 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -2350,6 +2350,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne

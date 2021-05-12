@@ -6,10 +6,10 @@ Subject: [PATCH] Add Debug Entities option to debug dupe uuid issues
 Add -Ddebug.entities=true to your JVM flags to gain more information
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index c6b9b02e6d31bebb3f8c0cadd68e4b5c47fab090..c4dd2bac48bb93117925b35dcd753d0fbb22e3cf 100644
+index d1e45dfb99074ec027d4f943391a024c726d93b2..66c808244bba70f827d8f15a96814251d352a046 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -1139,6 +1139,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1147,6 +1147,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              } else {
                  PlayerChunkMap.EntityTracker playerchunkmap_entitytracker = new PlayerChunkMap.EntityTracker(entity, i, j, entitytypes.isDeltaTracking());
  
@@ -17,7 +17,7 @@ index c6b9b02e6d31bebb3f8c0cadd68e4b5c47fab090..c4dd2bac48bb93117925b35dcd753d0f
                  this.trackedEntities.put(entity.getId(), playerchunkmap_entitytracker);
                  playerchunkmap_entitytracker.track(this.world.getPlayers());
                  if (entity instanceof EntityPlayer) {
-@@ -1180,7 +1181,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1188,7 +1189,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          if (playerchunkmap_entitytracker1 != null) {
              playerchunkmap_entitytracker1.a();
          }
@@ -27,7 +27,7 @@ index c6b9b02e6d31bebb3f8c0cadd68e4b5c47fab090..c4dd2bac48bb93117925b35dcd753d0f
  
      protected void g() {
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 24563d21ce2a77b47300cca00e07658a014be96c..04b708e776f277985340f329dc8cb3c16a6100a7 100644
+index d6a4ec132cadf8134a21f625f4ca978d37c643d0..650015f08ef4defe7510ff2f5cbd25364b733515 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
 @@ -197,6 +197,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
@@ -40,7 +40,7 @@ index 24563d21ce2a77b47300cca00e07658a014be96c..04b708e776f277985340f329dc8cb3c1
  
      @Override public Chunk getChunkIfLoaded(int x, int z) { // Paper - this was added in world too but keeping here for NMS ABI
          return this.chunkProvider.getChunkAt(x, z, false);
-@@ -1036,8 +1039,28 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1038,8 +1041,28 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      // CraftBukkit start
      private boolean addEntity0(Entity entity, CreatureSpawnEvent.SpawnReason spawnReason) {
          org.spigotmc.AsyncCatcher.catchOp("entity add"); // Spigot
@@ -70,7 +70,7 @@ index 24563d21ce2a77b47300cca00e07658a014be96c..04b708e776f277985340f329dc8cb3c1
              // WorldServer.LOGGER.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.getEntityType())); // CraftBukkit
              return false;
          } else if (this.isUUIDTaken(entity)) {
-@@ -1235,7 +1258,24 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1237,7 +1260,24 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  }
              }
  
@@ -97,7 +97,7 @@ index 24563d21ce2a77b47300cca00e07658a014be96c..04b708e776f277985340f329dc8cb3c1
              // CraftBukkit start - SPIGOT-5278
              if (entity instanceof EntityDrowned) {
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index a4915d330d9df8773ce2643a17f353045fff7965..36ac9ba19b3bbcab40b5d4339ba9c297d4b5a65b 100644
+index bd9cd050c72792c3d5a2094991b21e3a998b2cd9..c88eea18e2e219f242c53ffb4e28cfc6d7bf318a 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -48,6 +48,7 @@ import net.minecraft.resources.MinecraftKey;

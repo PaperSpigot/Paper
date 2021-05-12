@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: chickeneer <emcchickeneer@gmail.com>
+Date: Fri, 19 Mar 2021 00:33:15 -0500
+Subject: [PATCH] Fix PlayerItemConsumeEvent cancelling properly
+
+When the active item is not cleared, the item is still readied
+for use and will repeatedly trigger the PlayerItemConsumeEvent
+till their item is switched.
+This patch clears the active item when the event is cancelled
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 21341eeb8148be119fbc1dd370c1beaf70a319e0..2537c9fcf155253da53ada3829c3caca765f35f4 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3351,6 +3351,7 @@ public abstract class EntityLiving extends Entity {
+                     world.getServer().getPluginManager().callEvent(event);
+ 
+                     if (event.isCancelled()) {
++                        this.clearActiveItem(); // Paper - event is using an item, clear active item to reset its use
+                         // Update client
+                         ((EntityPlayer) this).getBukkitEntity().updateInventory();
+                         ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();

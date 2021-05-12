@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MisterErwin <git@askarian.net>
+Date: Wed, 30 Oct 2019 16:57:54 +0100
+Subject: [PATCH] Fix spawning of hanging entities that are not ItemFrames and
+ can not face UP or DOWN
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 6aaf868cf3213e1935080c64c652c3055cb58e0c..fcad64fcfc22af227be19741b634b773aca7a98d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1886,7 +1886,12 @@ public class CraftWorld implements World {
+                 height = 9;
+             }
+ 
+-            BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
++            // Paper start - In addition to d65a2576e40e58c8e446b330febe6799d13a604f do not check UP/DOWN for non item frames
++            // BlockFace[] faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
++            BlockFace[] faces = (ItemFrame.class.isAssignableFrom(clazz))
++                    ? new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN}
++                    : new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
++            // Paper end
+             final BlockPosition pos = new BlockPosition(x, y, z);
+             for (BlockFace dir : faces) {
+                 IBlockData nmsBlock = world.getType(pos.shift(CraftBlock.blockFaceToNotch(dir)));

@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alphaesia <creepashadowz@gmail.com>
+Date: Fri, 23 Apr 2021 09:57:56 +1200
+Subject: [PATCH] Fix duplicating /give items on item drop cancel
+
+Fixes SPIGOT-2942 (Give command fires PlayerDropItemEvent, cancelling it causes item duplication).
+
+For every stack of items to give, /give puts the item stack straight
+into the player's inventory. However, it also summons a "fake item"
+at the player's location. When the PlayerDropItemEvent for this fake
+item is cancelled, the server attempts to put the item back into the
+player's inventory. The result is that the fake item, which is never
+meant to be obtained, is combined with the real items injected directly
+into the player's inventory. This means more items than the amount
+specified in /give are given to the player - one for every stack of
+items given. (e.g. /give @s dirt 1 gives you 2 dirt).
+
+While this isn't a big issue for general building usage, it can affect
+e.g. adventure maps where the number of items the player receives is
+important (and you want to restrict the player from throwing items).
+
+If there are any overflow items that didn't make it into the inventory
+(insufficient space), those items are dropped as a real item instead
+of a fake one. While cancelling this drop would also result in the
+server attempting to put those items into the inventory, since it is
+full this has no effect.
+
+Just ignoring cancellation of the PlayerDropItemEvent seems like the
+cleanest and least intrusive way to fix it.
+
+diff --git a/src/main/java/net/minecraft/server/commands/CommandGive.java b/src/main/java/net/minecraft/server/commands/CommandGive.java
+index 6685bf1757458d908e32d4069f7a8a22a28c28d7..a10207f7cb9455e29db7e6906cb2138ad5609a1f 100644
+--- a/src/main/java/net/minecraft/server/commands/CommandGive.java
++++ b/src/main/java/net/minecraft/server/commands/CommandGive.java
+@@ -49,7 +49,7 @@ public class CommandGive {
+ 
+                 if (flag && itemstack.isEmpty()) {
+                     itemstack.setCount(1);
+-                    entityitem = entityplayer.drop(itemstack, false);
++                    entityitem = entityplayer.drop(itemstack, false, false, true); // Paper - Fix duplicating /give items on item drop cancel
+                     if (entityitem != null) {
+                         entityitem.s();
+                     }
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index ec0956a98c133bcd3d4f92f696c667eab6ff98f1..3a62bde04d7fbb6c571cfef11d4f6891e11c7ac8 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -642,6 +642,13 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+     @Nullable
+     public EntityItem a(ItemStack itemstack, boolean flag, boolean flag1) {
++        // Paper start - Fix duplicating /give items on item drop cancel
++        return this.drop(itemstack, flag, flag1, false);
++    }
++
++    @Nullable
++    public EntityItem drop(ItemStack itemstack, boolean flag, boolean flag1, boolean alwaysSucceed) {
++        // Paper end
+         if (itemstack.isEmpty()) {
+             return null;
+         } else {
+@@ -683,7 +690,7 @@ public abstract class EntityHuman extends EntityLiving {
+             PlayerDropItemEvent event = new PlayerDropItemEvent(player, drop);
+             this.world.getServer().getPluginManager().callEvent(event);
+ 
+-            if (event.isCancelled()) {
++            if (event.isCancelled() && !alwaysSucceed) { // Paper - Fix duplicating /give items on item drop cancel
+                 org.bukkit.inventory.ItemStack cur = player.getInventory().getItemInHand();
+                 if (flag1 && (cur == null || cur.getAmount() == 0)) {
+                     // The complete stack was dropped

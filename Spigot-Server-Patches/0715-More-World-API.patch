@@ -1,0 +1,146 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 7 Jul 2020 10:52:34 -0700
+Subject: [PATCH] More World API
+
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 325eba4e30ddcdfd038a215fbfde3bdc3e7c9b2a..7e032845fe9a46d33236444d62405a41e29daa17 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1869,6 +1869,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         return !this.worldDataServer.getGeneratorSettings().shouldGenerateMapFeatures() ? null : this.getChunkProvider().getChunkGenerator().findNearestMapFeature(this, structuregenerator, blockposition, i, flag); // CraftBukkit
+     }
+ 
++    public BlockPosition getNearestBiome(BiomeBase biomeBase, BlockPosition blockPosition, int radius, int step) { return this.a(biomeBase, blockPosition, radius, step); } // Paper - OBFHELPER
+     @Nullable
+     public BlockPosition a(BiomeBase biomebase, BlockPosition blockposition, int i, int j) {
+         return this.getChunkProvider().getChunkGenerator().getWorldChunkManager().a(blockposition.getX(), blockposition.getY(), blockposition.getZ(), i, j, (biomebase1) -> {
+@@ -1891,6 +1892,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         return this.savingDisabled;
+     }
+ 
++    public IRegistryCustom getWorldCustomRegistry() { return r(); } // Paper - OBFHELPER
+     @Override
+     public IRegistryCustom r() {
+         return this.server.getCustomRegistry();
+diff --git a/src/main/java/net/minecraft/world/level/dimension/DimensionManager.java b/src/main/java/net/minecraft/world/level/dimension/DimensionManager.java
+index 72bc1a1e1c2153550313e93cf7df901a514a9bef..be6d63bcf15027e02a0bfbee0792c24f2300b27e 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/DimensionManager.java
++++ b/src/main/java/net/minecraft/world/level/dimension/DimensionManager.java
+@@ -142,10 +142,10 @@ public class DimensionManager {
+     public static IRegistryCustom.Dimension a(IRegistryCustom.Dimension iregistrycustom_dimension) {
+         IRegistryWritable<DimensionManager> iregistrywritable = iregistrycustom_dimension.b(IRegistry.K);
+ 
+-        iregistrywritable.a(DimensionManager.OVERWORLD, (Object) DimensionManager.OVERWORLD_IMPL, Lifecycle.stable());
+-        iregistrywritable.a(DimensionManager.l, (Object) DimensionManager.m, Lifecycle.stable());
+-        iregistrywritable.a(DimensionManager.THE_NETHER, (Object) DimensionManager.THE_NETHER_IMPL, Lifecycle.stable());
+-        iregistrywritable.a(DimensionManager.THE_END, (Object) DimensionManager.THE_END_IMPL, Lifecycle.stable());
++        iregistrywritable.a(DimensionManager.OVERWORLD, DimensionManager.OVERWORLD_IMPL, Lifecycle.stable()); // Paper - decompile fix
++        iregistrywritable.a(DimensionManager.l, DimensionManager.m, Lifecycle.stable()); // Paper - decompile fix
++        iregistrywritable.a(DimensionManager.THE_NETHER, DimensionManager.THE_NETHER_IMPL, Lifecycle.stable()); // Paper - decompile fix
++        iregistrywritable.a(DimensionManager.THE_END, DimensionManager.THE_END_IMPL, Lifecycle.stable()); // Paper - decompile fix
+         return iregistrycustom_dimension;
+     }
+ 
+@@ -164,10 +164,10 @@ public class DimensionManager {
+     public static RegistryMaterials<WorldDimension> a(IRegistry<DimensionManager> iregistry, IRegistry<BiomeBase> iregistry1, IRegistry<GeneratorSettingBase> iregistry2, long i) {
+         RegistryMaterials<WorldDimension> registrymaterials = new RegistryMaterials<>(IRegistry.M, Lifecycle.experimental());
+ 
+-        registrymaterials.a(WorldDimension.THE_NETHER, (Object) (new WorldDimension(() -> {
++        registrymaterials.a(WorldDimension.THE_NETHER, (new WorldDimension(() -> { // Paper - decompile fix
+             return (DimensionManager) iregistry.d(DimensionManager.THE_NETHER);
+         }, b(iregistry1, iregistry2, i))), Lifecycle.stable());
+-        registrymaterials.a(WorldDimension.THE_END, (Object) (new WorldDimension(() -> {
++        registrymaterials.a(WorldDimension.THE_END, (new WorldDimension(() -> { // Paper - decompile fix
+             return (DimensionManager) iregistry.d(DimensionManager.THE_END);
+         }, a(iregistry1, iregistry2, i))), Lifecycle.stable());
+         return registrymaterials;
+@@ -256,6 +256,7 @@ public class DimensionManager {
+         return this.E[i];
+     }
+ 
++    public Tag<Block> getInfiniburnTag() { return o(); } // Paper - OBFHELPER
+     public Tag<Block> o() {
+         Tag<Block> tag = TagsBlock.a().a(this.infiniburn);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 42417aee4796d39d110e69cb707bd3b7bac30027..3b3eda95c0ff8b129adedbae6561bba2d01c2f3a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2533,6 +2533,75 @@ public class CraftWorld implements World {
+         return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
+     }
+ 
++    // Paper start
++    @Override
++    public Location locateNearestBiome(Location origin, Biome biome, int radius) {
++        return this.locateNearestBiome(origin, biome, radius, 8);
++    }
++
++    @Override
++    public Location locateNearestBiome(Location origin, Biome biome, int radius, int step) {
++        BlockPosition originPos = new BlockPosition(origin.getX(), origin.getY(), origin.getZ());
++        BlockPosition nearest = getHandle().getNearestBiome(CraftBlock.biomeToBiomeBase(getHandle().getWorldCustomRegistry().b(IRegistry.ay), biome), originPos, radius, step);
++        return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
++    }
++
++    @Override
++    public boolean isUltrawarm() {
++        return getHandle().getDimensionManager().isNether();
++    }
++
++    @Override
++    public boolean isNatural() {
++        return getHandle().getDimensionManager().isNatural();
++    }
++
++    @Override
++    public double getCoordinateScale() {
++        return getHandle().getDimensionManager().getCoordinateScale();
++    }
++
++    @Override
++    public boolean hasSkylight() {
++        return getHandle().getDimensionManager().hasSkyLight();
++    }
++
++    @Override
++    public boolean hasBedrockCeiling() {
++        return getHandle().getDimensionManager().hasSkyLight();
++    }
++
++    @Override
++    public boolean isPiglinSafe() {
++        return getHandle().getDimensionManager().isPiglinSafe();
++    }
++
++    @Override
++    public boolean doesBedWork() {
++        return getHandle().getDimensionManager().isBedWorks();
++    }
++
++    @Override
++    public boolean doesRespawnAnchorWork() {
++        return getHandle().getDimensionManager().isRespawnAnchorWorks();
++    }
++
++    @Override
++    public boolean hasRaids() {
++        return getHandle().getDimensionManager().hasRaids();
++    }
++
++    @Override
++    public boolean isFixedTime() {
++        return getHandle().getDimensionManager().isFixedTime();
++    }
++
++    @Override
++    public Collection<org.bukkit.Material> getInfiniburn() {
++        return com.google.common.collect.Sets.newHashSet(com.google.common.collect.Iterators.transform(getHandle().getDimensionManager().getInfiniburnTag().getTagged().iterator(), CraftMagicNumbers::getMaterial));
++    }
++    // Paper end
++
+     @Override
+     public Raid locateNearestRaid(Location location, int radius) {
+         Validate.notNull(location, "Location cannot be null");

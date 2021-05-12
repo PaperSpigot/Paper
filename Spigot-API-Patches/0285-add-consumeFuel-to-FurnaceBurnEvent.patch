@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 16:45:15 -0700
+Subject: [PATCH] add consumeFuel to FurnaceBurnEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/inventory/FurnaceBurnEvent.java b/src/main/java/org/bukkit/event/inventory/FurnaceBurnEvent.java
+index bc71bc2d3ace0d19d730c09f05f9e0655bcee8f5..caef53d0f6546516fa7aabb2cb3abed70808b3ba 100644
+--- a/src/main/java/org/bukkit/event/inventory/FurnaceBurnEvent.java
++++ b/src/main/java/org/bukkit/event/inventory/FurnaceBurnEvent.java
+@@ -16,6 +16,7 @@ public class FurnaceBurnEvent extends BlockEvent implements Cancellable {
+     private int burnTime;
+     private boolean cancelled;
+     private boolean burning;
++    private boolean consumeFuel = true; // Paper
+ 
+     public FurnaceBurnEvent(@NotNull final Block furnace, @NotNull final ItemStack fuel, final int burnTime) {
+         super(furnace);
+@@ -70,6 +71,25 @@ public class FurnaceBurnEvent extends BlockEvent implements Cancellable {
+     public void setBurning(boolean burning) {
+         this.burning = burning;
+     }
++    // Paper start
++    /**
++     * Gets whether the furnace's fuel will be consumed or not.
++     *
++     * @return whether the furnace's fuel will be consumed
++     */
++    public boolean willConsumeFuel() {
++        return consumeFuel;
++    }
++
++    /**
++     * Sets whether the furnace's fuel will be consumed or not.
++     *
++     * @param consumeFuel true to consume the fuel
++     */
++    public void setConsumeFuel(boolean consumeFuel) {
++        this.consumeFuel = consumeFuel;
++    }
++    // Paper end
+ 
+     @Override
+     public boolean isCancelled() {

@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alvinn8 <42838560+Alvinn8@users.noreply.github.com>
+Date: Fri, 8 Jan 2021 20:29:58 +0100
+Subject: [PATCH] Add Adventure message to PlayerAdvancementDoneEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/player/PlayerAdvancementDoneEvent.java b/src/main/java/org/bukkit/event/player/PlayerAdvancementDoneEvent.java
+index 21ff095afb434d15babcdbe85fa0b94cbb7e75a7..6f618bb140a901c5c1cd08210978a6a651677ba4 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerAdvancementDoneEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerAdvancementDoneEvent.java
+@@ -4,6 +4,10 @@ import org.bukkit.advancement.Advancement;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.HandlerList;
+ import org.jetbrains.annotations.NotNull;
++// Paper start
++import org.jetbrains.annotations.Nullable;
++import net.kyori.adventure.text.Component;
++// Paper end
+ 
+ /**
+  * Called when a player has completed all criteria in an advancement.
+@@ -13,10 +17,17 @@ public class PlayerAdvancementDoneEvent extends PlayerEvent {
+     private static final HandlerList handlers = new HandlerList();
+     //
+     private final Advancement advancement;
++    private Component message; // Paper - Add Adventure message
+ 
+     public PlayerAdvancementDoneEvent(@NotNull Player who, @NotNull Advancement advancement) {
++        // Paper start - Add Adventure message
++        this(who, advancement, null);
++    }
++    public PlayerAdvancementDoneEvent(@NotNull Player who, @NotNull Advancement advancement, @Nullable Component message) {
++        // Paper end
+         super(who);
+         this.advancement = advancement;
++        this.message = message; // Paper - Add Adventure message
+     }
+ 
+     /**
+@@ -29,6 +40,31 @@ public class PlayerAdvancementDoneEvent extends PlayerEvent {
+         return advancement;
+     }
+ 
++    // Paper start - Add Adventure message
++    /**
++     * Gets the message to send to all online players.
++     * <p>
++     * Will be null if the advancement does not announce to chat, for example if
++     * it is a recipe unlock or a root advancement.
++     *
++     * @return The announcement message, or null
++     */
++    @Nullable
++    public Component message() {
++        return this.message;
++    }
++
++    /**
++     * Sets the message to send to all online players.
++     * <p>
++     * If set to null the message will not be sent.
++     *
++     * @param message The new message
++     */
++    public void message(@Nullable Component message) {
++        this.message = message;
++    }
++    // Paper end
+     @NotNull
+     @Override
+     public HandlerList getHandlers() {

@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 24 Dec 2020 12:27:41 -0800
+Subject: [PATCH] Added PlayerBedFailEnterEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 3a13e7a050db7f5c93d810afe56325495cec7aa4..c39c50e53549e9cb9d3520bc7e8b7e89cfa20163 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -2233,6 +2233,7 @@ public abstract class EntityHuman extends EntityLiving {
+             this.g = ichatbasecomponent;
+         }
+ 
++        public @Nullable IChatBaseComponent getChatComponent() { return this.a(); }; // Paper - OBFHELPER
+         @Nullable
+         public IChatBaseComponent a() {
+             return this.g;
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockBed.java b/src/main/java/net/minecraft/world/level/block/BlockBed.java
+index eca84595342756e3550883551e487aaf79574fde..abe0a1c309d526de37efcac44922fa259e1d112c 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockBed.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockBed.java
+@@ -43,6 +43,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
+ import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.apache.commons.lang3.ArrayUtils;
++import io.papermc.paper.event.player.PlayerBedFailEnterEvent; // Paper
++import io.papermc.paper.adventure.PaperAdventure; // Paper
+ 
+ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
+ 
+@@ -101,14 +103,22 @@ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
+                 BlockPosition finalblockposition = blockposition;
+                 // CraftBukkit end
+                 entityhuman.sleep(blockposition).ifLeft((entityhuman_enumbedresult) -> {
++                    // Paper start - PlayerBedFailEnterEvent
++                    if (entityhuman_enumbedresult != null) {
++                        PlayerBedFailEnterEvent event = new PlayerBedFailEnterEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), PlayerBedFailEnterEvent.FailReason.VALUES[entityhuman_enumbedresult.ordinal()], org.bukkit.craftbukkit.block.CraftBlock.at(world, finalblockposition), entityhuman_enumbedresult == EntityHuman.EnumBedResult.NOT_POSSIBLE_HERE, PaperAdventure.asAdventure(entityhuman_enumbedresult.getChatComponent()));
++                        if (!event.callEvent()) {
++                            return;
++                        }
++                        // Paper end
+                     // CraftBukkit start - handling bed explosion from below here
+-                    if (entityhuman_enumbedresult == EntityHuman.EnumBedResult.NOT_POSSIBLE_HERE) {
++                    if (event.getWillExplode()) { // Paper
+                         this.explodeBed(finaliblockdata, world, finalblockposition);
+                     } else
+                     // CraftBukkit end
+                     if (entityhuman_enumbedresult != null) {
+-                        entityhuman.a(entityhuman_enumbedresult.a(), true);
++                        entityhuman.a(PaperAdventure.asVanilla(event.getMessage()), true); // Paper
+                     }
++                    } // Paper
+ 
+                 });
+                 return EnumInteractionResult.SUCCESS;

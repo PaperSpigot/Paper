@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Mon, 6 Jul 2020 20:46:50 -0700
+Subject: [PATCH] Improve inlinig for some hot IBlockData methods
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+index 9af91784544dbb0555824a91088257659bdf2c3d..3fdafc0ff0c4148ec844dbdc1455d17cdcb4a75a 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+@@ -391,7 +391,14 @@ public abstract class BlockBase {
+         }
+         // Paper end
+ 
++        // Paper start
++        protected boolean isTicking;
++        protected Fluid fluid;
++        // Paper end
++
+         public void a() {
++            this.fluid = this.getBlock().d(this.p()); // Paper - moved from getFluid()
++            this.isTicking = this.getBlock().isTicking(this.p()); // Paper - moved from isTicking()
+             if (!this.getBlock().o()) {
+                 this.a = new BlockBase.BlockData.Cache(this.p());
+             }
+@@ -430,19 +437,19 @@ public abstract class BlockBase {
+             return this.getBlock().d(this.p(), iblockaccess, blockposition);
+         }
+ 
+-        public boolean d() {
++        public final boolean d() { // Paper
+             return this.a == null || this.a.c;
+         }
+ 
+-        public boolean e() {
++        public final boolean e() { // Paper
+             return this.e;
+         }
+ 
+-        public int f() {
++        public final int f() { // Paper
+             return this.b;
+         }
+ 
+-        public boolean isAir() {
++        public final boolean isAir() { // Paper
+             return this.f;
+         }
+ 
+@@ -508,7 +515,7 @@ public abstract class BlockBase {
+             }
+         }
+ 
+-        public boolean l() {
++        public final boolean l() { // Paper
+             return this.k;
+         }
+ 
+@@ -680,12 +687,12 @@ public abstract class BlockBase {
+             return this.getBlock().a(block);
+         }
+ 
+-        public Fluid getFluid() {
+-            return this.getBlock().d(this.p());
++        public final Fluid getFluid() { // Paper
++            return this.fluid; // Paper - moved into init
+         }
+ 
+-        public boolean isTicking() {
+-            return this.getBlock().isTicking(this.p());
++        public final boolean isTicking() { // Paper
++            return this.isTicking; // Paper - moved into init
+         }
+ 
+         public SoundEffectType getStepSound() {
+diff --git a/src/main/java/net/minecraft/world/level/material/Fluid.java b/src/main/java/net/minecraft/world/level/material/Fluid.java
+index 9a93b204973eef4c02a52f33fd9578a43603ed98..147e628bd562da4cf6f07218724a9d6c79d26e38 100644
+--- a/src/main/java/net/minecraft/world/level/material/Fluid.java
++++ b/src/main/java/net/minecraft/world/level/material/Fluid.java
+@@ -20,8 +20,12 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
+ 
+     public static final Codec<Fluid> a = a((Codec) IRegistry.FLUID, FluidType::h).stable();
+ 
++    // Paper start
++    protected final boolean isEmpty;
++    // Paper end
+     public Fluid(FluidType fluidtype, ImmutableMap<IBlockState<?>, Comparable<?>> immutablemap, MapCodec<Fluid> mapcodec) {
+         super(fluidtype, immutablemap, mapcodec);
++        this.isEmpty = fluidtype.b(); // Paper - moved from isEmpty()
+     }
+ 
+     public FluidType getType() {
+@@ -33,7 +37,7 @@ public final class Fluid extends IBlockDataHolder<FluidType, Fluid> {
+     }
+ 
+     public boolean isEmpty() {
+-        return this.getType().b();
++        return this.isEmpty; // Paper - moved into constructor
+     }
+ 
+     public float getHeight(IBlockAccess iblockaccess, BlockPosition blockposition) {

@@ -9,10 +9,10 @@ In Offline Mode, will return an Offline UUID
 This is a more performant way to obtain a UUID for a name than loading an OfflinePlayer
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index cef40ca8f3c7da1ac16dc11c3643899f2fe45098..ece800d6f7d156be97e3069f76df5d667b9ce94d 100644
+index f1d4e2ac2823e2246463350b21f28c6d32f4f2c5..6b0b55aa2ac4dec4e6005f557b9ba6975a7b58ed 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -1511,6 +1511,26 @@ public final class CraftServer implements Server {
+@@ -1511,6 +1511,25 @@ public final class CraftServer implements Server {
          return recipients.size();
      }
  
@@ -25,8 +25,7 @@ index cef40ca8f3c7da1ac16dc11c3643899f2fe45098..ece800d6f7d156be97e3069f76df5d66
 +        }
 +        GameProfile profile;
 +        // Only fetch an online UUID in online mode
-+        if (net.minecraft.server.MinecraftServer.getServer().getOnlineMode()
-+                || (org.spigotmc.SpigotConfig.bungee && com.destroystokyo.paper.PaperConfig.bungeeOnlineMode)) {
++        if (com.destroystokyo.paper.PaperConfig.isProxyOnlineMode()) {
 +            profile = console.getUserCache().getProfile( name );
 +        } else {
 +            // Make an OfflinePlayer using an offline mode UUID since the name has no profile

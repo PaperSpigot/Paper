@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matthew Miller <mnmiller1@me.com>
+Date: Sun, 17 Jan 2021 13:16:09 +1000
+Subject: [PATCH] Implement BlockPreDispenseEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+index 966051ab3e720e5b3f0fb9ab852c8908c5f23f3b..9b92824f1c2797e321ced953d33d2c2fd339374a 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockDispenser.java
+@@ -88,6 +88,7 @@ public class BlockDispenser extends BlockTileEntity {
+             IDispenseBehavior idispensebehavior = this.a(itemstack);
+ 
+             if (idispensebehavior != IDispenseBehavior.NONE) {
++                if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockPreDispenseEvent(worldserver, blockposition, itemstack, i)) return; // Paper - BlockPreDispenseEvent is called here
+                 eventFired = false; // CraftBukkit - reset event status
+                 tileentitydispenser.setItem(i, idispensebehavior.dispense(sourceblock, itemstack));
+             }
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index d2f471b8af997cfedaba8e6b5932f8f6079f3392..f0ab3d42bc34bf8c1b81642e600360110a88115b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -70,6 +70,7 @@ import net.minecraft.world.phys.MovingObjectPosition;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import net.minecraft.world.phys.MovingObjectPositionEntity;
+ import net.minecraft.world.phys.Vec3D;
++import io.papermc.paper.event.block.BlockPreDispenseEvent; // Paper
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location; // Paper
+ import org.bukkit.Material;
+@@ -1805,5 +1806,11 @@ public class CraftEventFactory {
+         BlockFailedDispenseEvent event = new BlockFailedDispenseEvent(block);
+         return event.callEvent();
+     }
++
++    public static boolean handleBlockPreDispenseEvent(WorldServer worldserver, BlockPosition blockposition, ItemStack itemStack, int slot) {
++        org.bukkit.block.Block block = worldserver.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++        BlockPreDispenseEvent event = new BlockPreDispenseEvent(block, org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemStack), slot);
++        return event.callEvent();
++    }
+     // Paper end
+ }

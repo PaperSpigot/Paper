@@ -189,7 +189,7 @@ index eb970c1e954cb0aa83aa12e83c471778809e69b2..2d8c917509f10a96fc82404908b452cb
      public void a(PacketDataSerializer packetdataserializer) throws IOException {
          this.a = packetdataserializer.i();
 diff --git a/src/main/java/net/minecraft/server/network/LoginListener.java b/src/main/java/net/minecraft/server/network/LoginListener.java
-index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f6d519608 100644
+index 21e70a133278d85ecd65fec36a273ed4faabf6cc..36f747af18347197bab7c335d5d7dfc01a5aff80 100644
 --- a/src/main/java/net/minecraft/server/network/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/network/LoginListener.java
 @@ -18,12 +18,14 @@ import javax.crypto.Cipher;
@@ -223,7 +223,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
  
      public LoginListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
          this.g = LoginListener.EnumProtocolState.HELLO;
-@@ -212,6 +216,14 @@ public class LoginListener implements PacketLoginInListener {
+@@ -213,6 +217,14 @@ public class LoginListener implements PacketLoginInListener {
              this.g = LoginListener.EnumProtocolState.KEY;
              this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic().getEncoded(), this.e));
          } else {
@@ -238,7 +238,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
              // Spigot start
              // Paper start - Cache authenticator threads
              authenticatorPool.execute(new Runnable() {
-@@ -313,6 +325,12 @@ public class LoginListener implements PacketLoginInListener {
+@@ -314,6 +326,12 @@ public class LoginListener implements PacketLoginInListener {
      public class LoginHandler {
  
          public void fireEvents() throws Exception {
@@ -251,7 +251,7 @@ index 2ce081e68fe27381d3e7f851b685cc547de35eb7..a3c989ef850919fa90590b942f037c1f
                          String playerName = i.getName();
                          java.net.InetAddress address = ((java.net.InetSocketAddress) networkManager.getSocketAddress()).getAddress();
                          java.util.UUID uniqueId = i.getId();
-@@ -360,6 +378,35 @@ public class LoginListener implements PacketLoginInListener {
+@@ -361,6 +379,35 @@ public class LoginListener implements PacketLoginInListener {
      // Spigot end
  
      public void a(PacketLoginInCustomPayload packetloginincustompayload) {

@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Thu, 2 Jan 2020 12:25:07 -0600
+Subject: [PATCH] Add effect to block break naturally
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 724b230259b1b44bc9fdde6c4fcbcdde5f690e05..e3ab0b76e5003553b29215a43bc5a762f2663648 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -633,6 +633,13 @@ public class CraftBlock implements Block {
+ 
+     @Override
+     public boolean breakNaturally(ItemStack item) {
++        // Paper start
++        return breakNaturally(item, false);
++    }
++
++    @Override
++    public boolean breakNaturally(ItemStack item, boolean triggerEffect) {
++        // Paper end
+         // Order matters here, need to drop before setting to air so skulls can get their data
+         net.minecraft.world.level.block.state.IBlockData iblockdata = this.getNMS();
+         net.minecraft.world.level.block.Block block = iblockdata.getBlock();
+@@ -642,6 +649,7 @@ public class CraftBlock implements Block {
+         // Modelled off EntityHuman#hasBlock
+         if (block != Blocks.AIR && (item == null || !iblockdata.isRequiresSpecialTool() || nmsItem.canDestroySpecialBlock(iblockdata))) {
+             net.minecraft.world.level.block.Block.dropItems(iblockdata, world.getMinecraftWorld(), position, world.getTileEntity(position), null, nmsItem);
++            if (triggerEffect) world.triggerEffect(org.bukkit.Effect.STEP_SOUND.getId(), position, net.minecraft.world.level.block.Block.getCombinedId(block.getBlockData())); // Paper
+             result = true;
+         }
+ 

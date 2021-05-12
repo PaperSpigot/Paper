@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: miclebrick <miclebrick@outlook.com>
+Date: Thu, 6 Dec 2018 19:52:50 -0500
+Subject: [PATCH] Cache block data strings
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index bd6b9c7be8951393e7ba731f4d6a9486f0743be7..040933a25f1fa88e86b19ea20f519488af6a2740 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1954,6 +1954,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+             this.getPlayerList().reload();
+             this.customFunctionData.a(this.dataPackResources.a());
+             this.ak.a(this.dataPackResources.h());
++            org.bukkit.craftbukkit.block.data.CraftBlockData.reloadCache(); // Paper - cache block data strings, they can be defined by datapacks so refresh it here
+         }, this);
+ 
+         if (this.isMainThread()) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
+index ed88da727feddc319a650fb35710d16727f6dbd7..58f892478de74b853cd35ef2fec8c462e3a9ecee 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
+@@ -13,6 +13,7 @@ import net.minecraft.commands.arguments.blocks.ArgumentBlock;
+ import net.minecraft.core.EnumDirection;
+ import net.minecraft.core.IRegistry;
+ import net.minecraft.nbt.NBTTagCompound;
++import net.minecraft.resources.MinecraftKey;
+ import net.minecraft.util.INamable;
+ import net.minecraft.world.level.block.Block;
+ import net.minecraft.world.level.block.state.IBlockData;
+@@ -476,9 +477,39 @@ public class CraftBlockData implements BlockData {
+         Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
+     }
+ 
++    // Paper start - cache block data strings
++    private static Map<String, CraftBlockData> stringDataCache = new HashMap<>();
++
++    static {
++        // cache all of the default states at startup, will not cache ones with the custom states inside of the
++        // brackets in a different order, though
++        reloadCache();
++    }
++
++    public static void reloadCache() {
++        stringDataCache.clear();
++        Block.REGISTRY_ID.forEach(blockData -> stringDataCache.put(blockData.toString(), blockData.createCraftBlockData()));
++    }
++    // Paper end
++
+     public static CraftBlockData newData(Material material, String data) {
+         Preconditions.checkArgument(material == null || material.isBlock(), "Cannot get data for not block %s", material);
+ 
++        // Paper start - cache block data strings
++        if (material != null) {
++            Block block = CraftMagicNumbers.getBlock(material);
++            if (block != null) {
++                MinecraftKey key = IRegistry.BLOCK.getKey(block);
++                data = data == null ? key.toString() : key + data;
++            }
++        }
++
++        CraftBlockData cached = stringDataCache.computeIfAbsent(data, s -> createNewData(null, s));
++        return (CraftBlockData) cached.clone();
++    }
++
++    private static CraftBlockData createNewData(Material material, String data) {
++        // Paper end - cache block data strings
+         IBlockData blockData;
+         Block block = CraftMagicNumbers.getBlock(material);
+         Map<IBlockState<?>, Comparable<?>> parsed = null;

@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: chickeneer <emcchickeneer@gmail.com>
+Date: Thu, 22 Apr 2021 19:02:07 -0700
+Subject: [PATCH] fix PlayerItemHeldEvent firing twice
+
+
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInHeldItemSlot.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInHeldItemSlot.java
+index d68f3e6b35f0af846c8a66710c5752508c095179..0e8ee44d0104ca7c666f57bdb54e0957935d5b34 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInHeldItemSlot.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInHeldItemSlot.java
+@@ -24,6 +24,7 @@ public class PacketPlayInHeldItemSlot implements Packet<PacketListenerPlayIn> {
+         packetlistenerplayin.a(this);
+     }
+ 
++    public int getItemInHandIndex() { return b(); } // Paper - OBFHELPER
+     public int b() {
+         return this.itemInHandIndex;
+     }
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index db42f3b524adc4458c9c468b0299332e73a07a44..fd9f38f0bb723b3e78bd013ccb9538489a9ca43e 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1908,6 +1908,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+         PlayerConnectionUtils.ensureMainThread(packetplayinhelditemslot, this, this.player.getWorldServer());
+         if (this.player.isFrozen()) return; // CraftBukkit
+         if (packetplayinhelditemslot.b() >= 0 && packetplayinhelditemslot.b() < PlayerInventory.getHotbarSize()) {
++            if (packetplayinhelditemslot.getItemInHandIndex() == this.player.inventory.itemInHandIndex) { return; } // Paper - don't fire itemheldevent when there wasn't a slot change
+             PlayerItemHeldEvent event = new PlayerItemHeldEvent(this.getPlayer(), this.player.inventory.itemInHandIndex, packetplayinhelditemslot.b());
+             this.server.getPluginManager().callEvent(event);
+             if (event.isCancelled()) {

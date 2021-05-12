@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mark Vainomaa <mikroskeem@mikroskeem.eu>
+Date: Sun, 13 Dec 2020 05:32:05 +0200
+Subject: [PATCH] Expose LivingEntity hurt direction
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 358bb6244b7b9e785c7dcc3725ee00cfbb917cec..deffd82dfca1d2eea6e5b8db9228015bf35ad0a3 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -163,7 +163,7 @@ public abstract class EntityLiving extends Entity {
+     public int am;
+     public int hurtTicks;
+     public int hurtDuration;
+-    public float ap;
++    public float ap; public final float getHurtDirection() { return ap; } public final void setHurtDirection(float hurtDirection) { this.ap = hurtDirection; } // Paper - OBFHELPER
+     public int deathTicks;
+     public float ar;
+     public float as;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 5d2ed8a0cf8351df1c8b2946f8a614fe13c34673..e574e2453c7bc848168ff24372d6772bd423b672 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -825,5 +825,15 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+     public void playPickupItemAnimation(org.bukkit.entity.Item item, int quantity) {
+         getHandle().receive(((CraftItem) item).getHandle(), quantity);
+     }
++
++    @Override
++    public float getHurtDirection() {
++        return getHandle().getHurtDirection();
++    }
++
++    @Override
++    public void setHurtDirection(float hurtDirection) {
++        getHandle().setHurtDirection(hurtDirection);
++    }
+     // Paper end
+ }

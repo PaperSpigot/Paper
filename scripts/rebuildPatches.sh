@@ -52,7 +52,7 @@ function savePatches {
 
     $gitcmd format-patch --zero-commit --full-index --no-signature --no-stat -N -o "$basedir/${what_name}-Patches/" upstream/upstream >/dev/null
     cd "$basedir"
-    $gitcmd add -A "$basedir/${what_name}-Patches"
+    $gitcmd add --force -A "$basedir/${what_name}-Patches"
     if [ "$nofilter" == "0" ]; then
         cleanupPatches "$basedir/${what_name}-Patches"
     fi

@@ -1,0 +1,107 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 18 Jun 2016 23:22:12 -0400
+Subject: [PATCH] Delay Chunk Unloads based on Player Movement
+
+When players are moving in the world, doing things such as building or exploring,
+they will commonly go back and forth in a small area. This causes a ton of chunk load
+and unload activity on the edge chunks of their view distance.
+
+A simple back and forth movement in 6 blocks could spam a chunk to thrash a
+loading and unload cycle over and over again.
+
+This is very wasteful. This system introduces a delay of inactivity on a chunk
+before it actually unloads, which will be handled by the ticket expiry process.
+
+This allows servers with smaller worlds who do less long distance exploring to stop
+wasting cpu cycles on saving/unloading/reloading chunks repeatedly.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 6463d3e4837d032a35654a035f42b8a805e0e286..1655bca0502e7b871de4addaa163536d86547a02 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -637,4 +637,13 @@ public class PaperWorldConfig {
+     private void viewDistance() {
+         this.noTickViewDistance = this.getInt("viewdistances.no-tick-view-distance", -1);
+     }
++
++    public long delayChunkUnloadsBy;
++    private void delayChunkUnloadsBy() {
++        delayChunkUnloadsBy = PaperConfig.getSeconds(getString("delay-chunk-unloads-by", "10s"));
++        if (delayChunkUnloadsBy > 0) {
++            log("Delaying chunk unloads by " + delayChunkUnloadsBy + " seconds");
++            delayChunkUnloadsBy *= 20;
++        }
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+index a3c44fdfca8290313b9b1117b984533183b583ad..3644e8b24b082e17752ef52934625416130aaa08 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
++++ b/src/main/java/net/minecraft/server/level/ChunkMapDistance.java
+@@ -185,6 +185,27 @@ public abstract class ChunkMapDistance {
+         boolean removed = false; // CraftBukkit
+         if (arraysetsorted.remove(ticket)) {
+             removed = true; // CraftBukkit
++            // Paper start - delay chunk unloads for player tickets
++            long delayChunkUnloadsBy = chunkMap.world.paperConfig.delayChunkUnloadsBy;
++            if (ticket.getTicketType() == TicketType.PLAYER && delayChunkUnloadsBy > 0) {
++                boolean hasPlayer = false;
++                for (Ticket<?> ticket1 : arraysetsorted) {
++                    if (ticket1.getTicketType() == TicketType.PLAYER) {
++                        hasPlayer = true;
++                        break;
++                    }
++                }
++                PlayerChunk playerChunk = chunkMap.getUpdatingChunk(i);
++                if (!hasPlayer && playerChunk != null && playerChunk.isFullChunkReady()) {
++                    Ticket<Long> delayUnload = new Ticket<Long>(TicketType.DELAY_UNLOAD, 33, i);
++                    delayUnload.delayUnloadBy = delayChunkUnloadsBy;
++                    delayUnload.setCurrentTick(this.currentTick);
++                    arraysetsorted.remove(delayUnload);
++                    // refresh ticket
++                    arraysetsorted.add(delayUnload);
++                }
++            }
++            // Paper end
+         }
+ 
+         if (arraysetsorted.isEmpty()) {
+diff --git a/src/main/java/net/minecraft/server/level/Ticket.java b/src/main/java/net/minecraft/server/level/Ticket.java
+index 90cbd12611b7b078f35f08f910453bcc02f6665b..6e5ae954c6eb40590bf8c83f592c22088d489be8 100644
+--- a/src/main/java/net/minecraft/server/level/Ticket.java
++++ b/src/main/java/net/minecraft/server/level/Ticket.java
+@@ -9,11 +9,13 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
+     public final T identifier; public final T getObjectReason() { return this.identifier; } // Paper - OBFHELPER
+     private long d; public final long getCreationTick() { return this.d; } // Paper - OBFHELPER
+     public int priority = 0; // Paper
++    public long delayUnloadBy; // Paper
+ 
+     protected Ticket(TicketType<T> tickettype, int i, T t0) {
+         this.a = tickettype;
+         this.b = i;
+         this.identifier = t0;
++        this.delayUnloadBy = tickettype.loadPeriod; // Paper
+     }
+ 
+     public int compareTo(Ticket<?> ticket) {
+@@ -63,7 +65,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
+     }
+ 
+     protected boolean b(long i) {
+-        long j = this.a.b();
++        long j = delayUnloadBy; // Paper
+ 
+         return j != 0L && i - this.d > j;
+     }
+diff --git a/src/main/java/net/minecraft/server/level/TicketType.java b/src/main/java/net/minecraft/server/level/TicketType.java
+index f5d18834e0e2ee0e3bcf55810456766d2f134450..3c804c7b20a14ea6e510810e2be10c1cc89ff5c1 100644
+--- a/src/main/java/net/minecraft/server/level/TicketType.java
++++ b/src/main/java/net/minecraft/server/level/TicketType.java
+@@ -30,6 +30,7 @@ public class TicketType<T> {
+     public static final TicketType<Long> ASYNC_LOAD = a("async_load", Long::compareTo); // Paper
+     public static final TicketType<ChunkCoordIntPair> PRIORITY = a("priority", Comparator.comparingLong(ChunkCoordIntPair::pair), 300); // Paper
+     public static final TicketType<ChunkCoordIntPair> URGENT = a("urgent", Comparator.comparingLong(ChunkCoordIntPair::pair), 300); // Paper
++    public static final TicketType<Long> DELAY_UNLOAD = a("delay_unload", Long::compareTo, 300); // Paper
+ 
+     public static <T> TicketType<T> a(String s, Comparator<T> comparator) {
+         return new TicketType<>(s, comparator, 0L);

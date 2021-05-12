@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Sun, 4 Apr 2021 14:25:04 -0400
+Subject: [PATCH] Fix checkReach check for Shulker boxes
+
+
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerShulkerBox.java b/src/main/java/net/minecraft/world/inventory/ContainerShulkerBox.java
+index fdc47411aa3e0e27d3a20c18274fef0a0db9a5b1..6ef70e209a8e282f7c00d80678636c2b8aa49b7a 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerShulkerBox.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerShulkerBox.java
+@@ -65,6 +65,7 @@ public class ContainerShulkerBox extends Container {
+ 
+     @Override
+     public boolean canUse(EntityHuman entityhuman) {
++        if (!this.checkReachable) return true; // Paper - Add reachable override for ContainerShulkerBox
+         return this.c.a(entityhuman);
+     }
+ 

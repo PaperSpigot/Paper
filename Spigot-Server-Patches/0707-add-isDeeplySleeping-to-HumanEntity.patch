@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 8 Apr 2021 17:36:10 -0700
+Subject: [PATCH] add isDeeplySleeping to HumanEntity
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+index b99423b3b413fc6364c6530a99e3c74dd406e1b4..f2b2db663198037ba4b7942815bfcd5ddd0e2a8d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
+@@ -123,6 +123,13 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
+         }
+     }
+ 
++    // Paper start
++    @Override
++    public boolean isDeeplySleeping() {
++        return getHandle().isDeeplySleeping();
++    }
++    // Paper end
++
+     @Override
+     public int getSleepTicks() {
+         return getHandle().sleepTicks;

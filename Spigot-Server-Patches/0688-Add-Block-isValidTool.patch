@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Mon, 6 Jul 2020 12:44:31 -0700
+Subject: [PATCH] Add Block#isValidTool
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index ed1c92d9f2770f7d0503c6facebc51ddcbdf75cf..0006b3cad5fe46e50b0efeae99102f9d80276d61 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -806,5 +806,9 @@ public class CraftBlock implements Block {
+         }
+         return speed;
+     }
++
++    public boolean isValidTool(ItemStack itemStack) {
++        return getDrops(itemStack).size() != 0;
++    }
+     // Paper end
+ }

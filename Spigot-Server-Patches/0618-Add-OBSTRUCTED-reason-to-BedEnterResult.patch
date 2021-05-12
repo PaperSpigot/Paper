@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 24 Dec 2020 12:43:39 -0800
+Subject: [PATCH] Add OBSTRUCTED reason to BedEnterResult
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 703f2648dde7ad1620e83f88ac4184e5803ed9b4..62fcf390e5cf5b76e1f7b34fea856911d9494044 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -268,6 +268,10 @@ public class CraftEventFactory {
+                         return BedEnterResult.TOO_FAR_AWAY;
+                     case NOT_SAFE:
+                         return BedEnterResult.NOT_SAFE;
++                        // Paper start
++                    case OBSTRUCTED:
++                        return BedEnterResult.OBSTRUCTED;
++                        // Paper end
+                     default:
+                         return BedEnterResult.OTHER_PROBLEM;
+                 }

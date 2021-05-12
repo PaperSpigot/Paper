@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 16:45:28 -0700
+Subject: [PATCH] add consumeFuel to FurnaceBurnEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+index 1997139fb87dc1947acfdf02e1f116577c3fa943..9ce19b89c16eb6edd3d5d5cc87a966a37f66895c 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+@@ -331,7 +331,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+                     if (this.isBurning() && furnaceBurnEvent.isBurning()) {
+                         // CraftBukkit end
+                         flag1 = true;
+-                        if (!itemstack.isEmpty()) {
++                        if (!itemstack.isEmpty() && furnaceBurnEvent.willConsumeFuel()) { // Paper
+                             Item item = itemstack.getItem();
+ 
+                             itemstack.subtract(1);

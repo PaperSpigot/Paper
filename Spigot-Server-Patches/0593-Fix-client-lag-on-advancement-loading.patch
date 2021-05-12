@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Sat, 31 Oct 2020 11:49:01 -0700
+Subject: [PATCH] Fix client lag on advancement loading
+
+When new advancements are added via the UnsafeValues#loadAdvancement
+API, it triggers a full datapack reload when this is not necessary. The
+advancement is already loaded directly into the advancement registry,
+and the point of saving the advancement to the Bukkit datapack seems to
+be for persistence. By removing the call to reload datapacks when an
+advancement is loaded, the client no longer completely freezes up when
+adding a new advancement.
+To ensure the client still receives the updated advancement data, we
+manually reload the advancement data for all players, which
+normally takes place as a part of the datapack reloading.
+
+diff --git a/src/main/java/net/minecraft/server/AdvancementDataPlayer.java b/src/main/java/net/minecraft/server/AdvancementDataPlayer.java
+index 8e760445885f6ab92f60db0ee2a02d098b5e5f03..7a8a1960882e291c46301d07da3e1c5415516893 100644
+--- a/src/main/java/net/minecraft/server/AdvancementDataPlayer.java
++++ b/src/main/java/net/minecraft/server/AdvancementDataPlayer.java
+@@ -97,6 +97,7 @@ public class AdvancementDataPlayer {
+ 
+     }
+ 
++    public final void reload(AdvancementDataWorld advancementDataWorld) { this.a(advancementDataWorld); } // Paper - OBFHELPER
+     public void a(AdvancementDataWorld advancementdataworld) {
+         this.a();
+         this.data.clear();
+@@ -393,6 +394,7 @@ public class AdvancementDataPlayer {
+ 
+     }
+ 
++    public final void sendUpdateIfNeeded(EntityPlayer entityPlayer) { this.b(entityPlayer); } // Paper - OBFHELPER
+     public void b(EntityPlayer entityplayer) {
+         if (this.m || !this.i.isEmpty() || !this.j.isEmpty()) {
+             Map<MinecraftKey, AdvancementProgress> map = Maps.newHashMap();
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index a1c918e84627d79f6665237851f614880a9da6f7..74ebd6257ca7c87bcedff831d213273e7d542612 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -309,7 +309,13 @@ public final class CraftMagicNumbers implements UnsafeValues {
+                     Bukkit.getLogger().log(Level.SEVERE, "Error saving advancement " + key, ex);
+                 }
+ 
+-                MinecraftServer.getServer().getPlayerList().reload();
++                // Paper start
++                //MinecraftServer.getServer().getPlayerList().reload();
++                MinecraftServer.getServer().getPlayerList().getPlayers().forEach(player -> {
++                    player.getAdvancementData().reload(MinecraftServer.getServer().getAdvancementData());
++                    player.getAdvancementData().sendUpdateIfNeeded(player);
++                });
++                // Paper end
+ 
+                 return bukkit;
+             }

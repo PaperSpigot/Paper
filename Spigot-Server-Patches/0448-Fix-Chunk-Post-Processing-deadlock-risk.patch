@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 18 Apr 2020 04:36:11 -0400
+Subject: [PATCH] Fix Chunk Post Processing deadlock risk
+
+See: https://gist.github.com/aikar/dd22bbd2a3d78a2fd3d92e95e9f28dc6
+
+as part of post processing a chunk, we can call ChunkConverter.
+
+ChunkConverter then kicks off major physics updates, and when blocks
+that have connections across chunk boundries occur, a recursive risk
+can occur where A updates a block that triggers a physics request.
+
+That physics request may trigger a chunk request, that then enqueues
+a task into the Mailbox ChunkTaskQueueSorter.
+
+If anything requests that same chunk that is in the middle of conversion,
+it's mailbox queue is going to be held up, so the subsequent chunk request
+will be unable to proceed.
+
+We delay post processing of Chunk.A() 1 "pass" by re stuffing it back into
+the executor so that the mailbox ChunkQueue is now considered empty.
+
+This successfully fixed a reoccurring and highly reproduceable crash
+for heightmaps.
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 2d7d2e712a7117e6985e3104097a31a5577c1b82..6e5d21af43261dc2f12ceec7b7e3269be635cf7a 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -1019,6 +1019,7 @@ public class ChunkProviderServer extends IChunkProvider {
+                 return super.executeNext() || execChunkTask; // Paper
+             }
+         } finally {
++            playerChunkMap.chunkLoadConversionCallbackExecutor.run(); // Paper - Add chunk load conversion callback executor to prevent deadlock due to recursion in the chunk task queue sorter
+             playerChunkMap.callbackExecutor.run();
+         }
+         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 21bd5524af246cd19996dc8ec2e969d981cf8ee9..a7efc5c7e4da8f18ecfd6a335a01709db4259367 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -183,6 +183,8 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+     };
+     // CraftBukkit end
+ 
++    final CallbackExecutor chunkLoadConversionCallbackExecutor = new CallbackExecutor(); // Paper
++
+     // Paper start - distance maps
+     private final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<EntityPlayer> pooledLinkedPlayerHashSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
+ 
+@@ -1056,7 +1058,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+                 return Either.left(chunk);
+             });
+         }, (runnable) -> {
+-            this.mailboxMain.a(ChunkTaskQueueSorter.a(playerchunk, runnable));
++            this.mailboxMain.a(ChunkTaskQueueSorter.a(playerchunk, () -> PlayerChunkMap.this.chunkLoadConversionCallbackExecutor.execute(runnable))); // Paper - delay running Chunk post processing until outside of the sorter to prevent a deadlock scenario when post processing causes another chunk request.
+         });
+ 
+         completablefuture1.thenAcceptAsync((either) -> {

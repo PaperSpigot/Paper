@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Sat, 27 Mar 2021 11:13:30 +0100
+Subject: [PATCH] fix cancelling block falling causing client desync
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+index 62d8b53c024888aa43b8fddf8a475dfb8284a4cc..2a61c24dd26edf4c72e977c6024fe233bab08a2f 100644
+--- a/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/world/entity/item/EntityFallingBlock.java
+@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
+ import net.minecraft.network.syncher.DataWatcher;
+ import net.minecraft.network.syncher.DataWatcherObject;
+ import net.minecraft.network.syncher.DataWatcherRegistry;
++import net.minecraft.server.level.WorldServer;
+ import net.minecraft.tags.Tag;
+ import net.minecraft.tags.TagsBlock;
+ import net.minecraft.tags.TagsFluid;
+@@ -43,6 +44,7 @@ import net.minecraft.world.phys.MovingObjectPosition;
+ import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import net.minecraft.world.phys.Vec3D;
+ 
++import org.bukkit.craftbukkit.block.CraftBlock;
+ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+ 
+ public class EntityFallingBlock extends Entity {
+@@ -116,8 +118,18 @@ public class EntityFallingBlock extends Entity {
+ 
+             if (this.ticksLived++ == 0) {
+                 blockposition = this.getChunkCoordinates();
+-                if (this.world.getType(blockposition).a(block) && !CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
+-                    this.world.a(blockposition, false);
++                // Paper start - fix cancelling block falling causing client desync
++                if (this.world.getType(blockposition).isSameInstance(block)) {
++                    if (CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
++                        if (this.world.getType(blockposition).isSameInstance(block)) { //if listener didn't update the block
++                            ((WorldServer) world).getChunkProvider().flagDirty(blockposition);
++                        }
++                        this.die();
++                        return;
++                    } else {
++                        this.world.setAir(blockposition, false);
++                    }
++                    // Paper end - fix cancelling block falling causing client desync
+                 } else if (!this.world.isClientSide) {
+                     this.die();
+                     return;
+diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+index 3fdafc0ff0c4148ec844dbdc1455d17cdcb4a75a..0d26250887f80d0c250bcd6bc7de303362427d3e 100644
+--- a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
++++ b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
+@@ -683,6 +683,7 @@ public abstract class BlockBase {
+             return this.getBlock().a(tag) && predicate.test(this);
+         }
+ 
++        public final boolean isSameInstance(Block block) { return a(block); } // Paper - OBFHELPER
+         public boolean a(Block block) {
+             return this.getBlock().a(block);
+         }

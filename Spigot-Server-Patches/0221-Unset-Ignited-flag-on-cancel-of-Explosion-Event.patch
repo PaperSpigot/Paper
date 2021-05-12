@@ -6,7 +6,7 @@ Subject: [PATCH] Unset Ignited flag on cancel of Explosion Event
 Otherwise the creeper infinite explodes
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
-index e3124c46f740df3a24b22128d50ce7efb7d76f17..ea15f54b70361bca529936e6d2e9bc555c60a657 100644
+index 08292753f925f33d75f3aca835c1fd19494b22ec..cbb973e077e04e5221bcc837f434b7093bdbcc2a 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/EntityCreeper.java
 @@ -48,7 +48,7 @@ public class EntityCreeper extends EntityMonster {
@@ -16,7 +16,7 @@ index e3124c46f740df3a24b22128d50ce7efb7d76f17..ea15f54b70361bca529936e6d2e9bc55
 -    private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
 +    private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i); private static final DataWatcherObject<Boolean> isIgnitedDW = d; // Paper OBFHELPER
      private int bo;
-     private int fuseTicks;
+     public int fuseTicks; // PAIL
      public int maxFuseTicks = 30;
 @@ -253,6 +253,7 @@ public class EntityCreeper extends EntityMonster {
                  this.createEffectCloud();

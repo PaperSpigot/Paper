@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 16 Jan 2021 14:30:12 -0500
+Subject: [PATCH] Respect ProjectileHitEvent cancel where missing
+
+The duplicate ProjectileHitEvent in EntityFireball was not cancelled
+
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+index 9660dc2263c48a5818b767843658eeb9ee1748ea..243b24e7c304b379aeb925fe1e2435853f80397d 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFireball.java
+@@ -87,7 +87,7 @@ public abstract class EntityFireball extends IProjectile {
+ 
+                 // CraftBukkit start - Fire ProjectileHitEvent
+                 if (this.dead) {
+-                    CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
++                    if (CraftEventFactory.callProjectileHitEvent(this, movingobjectposition).isCancelled()) return; // Paper - this is an undesired duplicate event, but make cancellable
+                 }
+                 // CraftBukkit end
+             }

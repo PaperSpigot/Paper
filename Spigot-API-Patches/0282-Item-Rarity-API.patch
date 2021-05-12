@@ -1,0 +1,108 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 12 Mar 2021 17:09:40 -0800
+Subject: [PATCH] Item Rarity API
+
+
+diff --git a/src/main/java/io/papermc/paper/inventory/ItemRarity.java b/src/main/java/io/papermc/paper/inventory/ItemRarity.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..74ef8395cc040ce488c2acaa416db20272cc2734
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/ItemRarity.java
+@@ -0,0 +1,28 @@
++package io.papermc.paper.inventory;
++
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.format.TextColor;
++import org.jetbrains.annotations.NotNull;
++
++public enum ItemRarity {
++
++    COMMON(NamedTextColor.WHITE),
++    UNCOMMON(NamedTextColor.YELLOW),
++    RARE(NamedTextColor.AQUA),
++    EPIC(NamedTextColor.LIGHT_PURPLE);
++
++    TextColor color;
++
++    ItemRarity(TextColor color) {
++        this.color = color;
++    }
++
++    /**
++     * Gets the color formatting associated with the rarity.
++     * @return
++     */
++    @NotNull
++    public TextColor getColor() {
++        return color;
++    }
++}
+diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
+index 112c3f035ec7e7a7cae939264e0af4c6f4450abd..9b1c9e60dba9ea3ef8d8e164f13dd76daf57db8e 100644
+--- a/src/main/java/org/bukkit/Material.java
++++ b/src/main/java/org/bukkit/Material.java
+@@ -3589,6 +3589,17 @@ public enum Material implements Keyed {
+     public String getTranslationKey() {
+         return Bukkit.getUnsafe().getTranslationKey(this);
+     }
++
++    /**
++     * Returns the item rarity for the item. The Material <b>MUST</b> be an Item not a block.
++     * Use {@link #isItem()} before this.
++     *
++     * @return the item rarity
++     */
++    @NotNull
++    public io.papermc.paper.inventory.ItemRarity getItemRarity() {
++        return Bukkit.getUnsafe().getItemRarity(this);
++    }
+     // Paper end
+ 
+     /**
+diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
+index fafc4d63b6202b00a133c50cd38dec54db9b3576..6db8c3bae9c9bb10eedf8102b3ac4c6eb288b77b 100644
+--- a/src/main/java/org/bukkit/UnsafeValues.java
++++ b/src/main/java/org/bukkit/UnsafeValues.java
+@@ -131,5 +131,21 @@ public interface UnsafeValues {
+      */
+     public int nextEntityId();
+ 
++    /**
++     * Gets the item rarity of a material. The material <b>MUST</b> be an item.
++     * Use {@link Material#isItem()} before this.
++     *
++     * @param material the material to get the rarity of
++     * @return the item rarity
++     */
++    public io.papermc.paper.inventory.ItemRarity getItemRarity(Material material);
++
++    /**
++     * Gets the item rarity of the itemstack. The rarity can change based on enchantements.
++     *
++     * @param itemStack the itemstack to get the rarity of
++     * @return the itemstack rarity
++     */
++    public io.papermc.paper.inventory.ItemRarity getItemStackRarity(ItemStack itemStack);
+     // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
+index 58f99e3ebac9a01ebffe4d208e16cbee474d4aa3..3c64c6ef397af102a3e085fe6b77a888d5c3de84 100644
+--- a/src/main/java/org/bukkit/inventory/ItemStack.java
++++ b/src/main/java/org/bukkit/inventory/ItemStack.java
+@@ -842,5 +842,15 @@ public class ItemStack implements Cloneable, ConfigurationSerializable, net.kyor
+         ItemMeta itemMeta = getItemMeta();
+         return itemMeta != null && itemMeta.hasItemFlag(flag);
+     }
++
++    /**
++     * Gets the item rarity of the itemstack. The rarity can change based on enchantements.
++     *
++     * @return the itemstack rarity
++     */
++    @NotNull
++    public io.papermc.paper.inventory.ItemRarity getRarity() {
++        return Bukkit.getUnsafe().getItemStackRarity(this);
++    }
+     // Paper end
+ }

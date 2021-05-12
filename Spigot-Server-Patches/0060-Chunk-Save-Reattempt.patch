@@ -6,10 +6,10 @@ Subject: [PATCH] Chunk Save Reattempt
 We commonly have "Stream Closed" errors on chunk saving, so this code should re-try to save the chunk in the event of failure and hopefully prevent rollbacks.
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 7f695f2b49df3400cd263fd6ffff77e753a65ea1..6efbb8a3502f86e105d4dfb9cef114a790966e95 100644
+index 1638f7902290e1bb233f11e5d0bbf83a9e863939..4bf3e0cb4602d33a2e00c502b1dd212032b22a8f 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-@@ -264,7 +264,7 @@ public class RegionFile implements AutoCloseable {
+@@ -265,7 +265,7 @@ public class RegionFile implements AutoCloseable {
                      return true;
                  }
              } catch (IOException ioexception) {

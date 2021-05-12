@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Mon, 5 Apr 2021 18:35:15 -0700
+Subject: [PATCH] Don't ignore result of PlayerEditBookEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index c6a65467d2d096d471ce5c4d761dc69d60644b75..6ad075907d56a8f41ca3a7b82ff90a6d3ad9f1d4 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1146,7 +1146,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+             list.stream().map(NBTTagString::a).forEach(nbttaglist::add);
+             ItemStack old = itemstack.cloneItemStack(); // CraftBukkit
+             itemstack.a("pages", (NBTBase) nbttaglist);
+-            CraftEventFactory.handleEditBookEvent(player, i, old, itemstack); // CraftBukkit
++            this.player.inventory.setItem(i, CraftEventFactory.handleEditBookEvent(player, i, old, itemstack)); // CraftBukkit // Paper - Don't ignore result (see other callsite for handleEditBookEvent)
+         }
+     }
+ 

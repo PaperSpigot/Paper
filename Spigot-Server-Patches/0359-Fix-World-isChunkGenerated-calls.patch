@@ -76,10 +76,10 @@ index 9891cf98f8c740f84f9135ee8176e67abb648b3a..6bced8533df49d7bfdb32dfa0caad9d7
  
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index a0fcd20d4a7e951437756edb60a44c627612e04c..ccfde274edfe1b611ccf8c583c92b16d52e4518d 100644
+index 27211cb52bf227e2c40313390f49ca18a1d947fb..1272d26124685e19f73e277b5a74108f3363b71a 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -985,12 +985,61 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -993,12 +993,61 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      }
  
      @Nullable
@@ -209,10 +209,10 @@ index 247d14a3ca56734bbbf4dc0ec247d60a1f241e7a..d785f44cd503d4d91589f3fc4bc8dc80
      @Nullable
      private PersistentStructureLegacy c;
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index a9cbe17f6ccf0ce4ace97ba4b951b3fd7415d71b..39d3a71f3945b1c97df35e28d1011b9d42b162f5 100644
+index 00cef1c0bc19976a000389e57a1af5d93690c0e7..d50b9c9d030016f951e2ed7fb519250b7408c833 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-@@ -26,6 +26,7 @@ import net.minecraft.SystemUtils;
+@@ -27,6 +27,7 @@ import net.minecraft.SystemUtils;
  import net.minecraft.nbt.NBTCompressedStreamTools;
  import net.minecraft.nbt.NBTTagCompound;
  import net.minecraft.world.level.ChunkCoordIntPair;
@@ -220,7 +220,7 @@ index a9cbe17f6ccf0ce4ace97ba4b951b3fd7415d71b..39d3a71f3945b1c97df35e28d1011b9d
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  
-@@ -43,6 +44,30 @@ public class RegionFile implements AutoCloseable {
+@@ -44,6 +45,30 @@ public class RegionFile implements AutoCloseable {
      protected final RegionFileBitSet freeSectors;
      public final File file; // Paper
  
@@ -251,7 +251,7 @@ index a9cbe17f6ccf0ce4ace97ba4b951b3fd7415d71b..39d3a71f3945b1c97df35e28d1011b9d
      public RegionFile(File file, File file1, boolean flag) throws IOException {
          this(file.toPath(), file1.toPath(), RegionFileCompression.b, flag);
      }
-@@ -379,11 +404,13 @@ public class RegionFile implements AutoCloseable {
+@@ -380,11 +405,13 @@ public class RegionFile implements AutoCloseable {
          return this.getOffset(chunkcoordintpair) != 0;
      }
  
@@ -294,7 +294,7 @@ index ab9f4d40fd1126a3d7ba5b16fdc6ab09de4a7fdb..55e7e983d2c760a8052d7b3ddbdc8447
          } catch (Throwable throwable1) {
              throwable = throwable1;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 9e47e9cfa5bf1819e6d6779c52828e4472e4eed0..bf1ebb108149f519ae29a2277020398c898d2bc3 100644
+index ec9f9fdf1be4f1e68eea5554a6721efd11a53958..d46c513512c25e55ccdb0be16524f19444c358c5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -19,6 +19,7 @@ import java.util.Objects;

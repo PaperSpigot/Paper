@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Wed, 8 Apr 2020 21:24:05 -0400
+Subject: [PATCH] Increase Light Queue Size
+
+Wiz mentioned that large WorldEdit operations cause light to run on
+main thread. The queue was small, set to 5.. this bumps it to 20
+but makes it configurable per-world.
+
+The main risk of increasing this higher is during shutdown, some
+queued light updates may be lost because mojang did not flush the
+light engine on shutdown...
+
+The queue size only puts a cap on max loss, doesn't solve that problem.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 6c8e9d498c9a30a1aa88494ba09c3cae012a8fa1..cd248eb6be663e8be33f2c3c6b06b77b6d5753a4 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -620,4 +620,9 @@ public class PaperWorldConfig {
+     private void zombieVillagerInfectionChance() {
+         zombieVillagerInfectionChance = getDouble("zombie-villager-infection-chance", zombieVillagerInfectionChance);
+     }
++
++    public int lightQueueSize = 20;
++    private void lightQueueSize() {
++        lightQueueSize = getInt("light-queue-size", lightQueueSize);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index c86c3cdea77369e3297548c8d5f10674c1100f76..54738ef346b1fe4c45ea95db2f236d10f8525a20 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -777,7 +777,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         this.executeModerately();
+         // CraftBukkit end
+         if (worldserver.getWorld().getKeepSpawnInMemory()) worldloadlistener.b(); // Paper
+-        chunkproviderserver.getLightEngine().a(5);
++        chunkproviderserver.getLightEngine().a(worldserver.paperConfig.lightQueueSize); // Paper - increase light queue size
+         // CraftBukkit start
+         // this.updateSpawnFlags();
+         worldserver.setSpawnFlags(this.getSpawnMonsters(), this.getSpawnAnimals());

@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Mon, 26 Apr 2021 01:27:08 +0100
+Subject: [PATCH] Send empty commands if tab completion is disabled
+
+
+diff --git a/src/main/java/net/minecraft/commands/CommandDispatcher.java b/src/main/java/net/minecraft/commands/CommandDispatcher.java
+index 988d1c9e9f4f29325043eb083123d12dd5f8081d..29a395e69aab9c50a45c5fd5ab8795fd8e3ef727 100644
+--- a/src/main/java/net/minecraft/commands/CommandDispatcher.java
++++ b/src/main/java/net/minecraft/commands/CommandDispatcher.java
+@@ -326,7 +326,12 @@ public class CommandDispatcher {
+     }
+ 
+     public void a(EntityPlayer entityplayer) {
+-        if ( org.spigotmc.SpigotConfig.tabComplete < 0 ) return; // Spigot
++        // Paper start - Send empty commands if tab completion is disabled
++        if ( org.spigotmc.SpigotConfig.tabComplete < 0 ) { //return; // Spigot
++            entityplayer.playerConnection.sendPacket(new PacketPlayOutCommands(new RootCommandNode<>()));
++            return;
++        }
++        // Paper end
+         // CraftBukkit start
+         // Register Vanilla commands into builtRoot as before
+         // Paper start - Async command map building

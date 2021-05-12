@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Sat, 9 Jan 2021 14:17:07 +0100
+Subject: [PATCH] Remove stale POIs
+
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 7942f492f7688fab52acbefbe5703221b0435752..530963c1435985e17d0e3181c2d8affe003f81de 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -2077,6 +2077,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             });
+             optional1.ifPresent((villageplacetype) -> {
+                 this.getMinecraftServer().execute(() -> {
++                    // Paper start
++                    if (!optional.isPresent() && this.getPoiStorage().test(blockposition1, com.google.common.base.Predicates.alwaysTrue())) {
++                        this.getPoiStorage().remove(blockposition1);
++                    }
++                    // Paper end
+                     this.y().a(blockposition1, villageplacetype);
+                     PacketDebug.a(this, blockposition1);
+                 });
+@@ -2084,6 +2089,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         }
+     }
+ 
++    public final VillagePlace getPoiStorage() { return this.y(); } // Paper - OBFHELPER
+     public VillagePlace y() {
+         return this.getChunkProvider().j();
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java b/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
+index 04b01cb841dc4f34ded5aaa4ea7a8e6d4b470183..ce165233739c7b92a76031b949f269bd0a11149c 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
++++ b/src/main/java/net/minecraft/world/entity/ai/village/poi/VillagePlace.java
+@@ -54,6 +54,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+         ((VillagePlaceSection) this.e(SectionPosition.a(blockposition).s())).a(blockposition, villageplacetype);
+     }
+ 
++    public void remove(BlockPosition blockposition) { this.a(blockposition); } // Paper - OBFHELPER
+     public void a(BlockPosition blockposition) {
+         ((VillagePlaceSection) this.e(SectionPosition.a(blockposition).s())).a(blockposition);
+     }
+@@ -138,6 +139,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+         return ((VillagePlaceSection) this.e(SectionPosition.a(blockposition).s())).c(blockposition);
+     }
+ 
++    public final boolean test(BlockPosition blockposition, Predicate<VillagePlaceType> predicate) { return this.a(blockposition, predicate); } // Paper - OBFHELPER
+     public boolean a(BlockPosition blockposition, Predicate<VillagePlaceType> predicate) {
+         return (Boolean) this.d(SectionPosition.a(blockposition).s()).map((villageplacesection) -> {
+             return villageplacesection.a(blockposition, predicate);

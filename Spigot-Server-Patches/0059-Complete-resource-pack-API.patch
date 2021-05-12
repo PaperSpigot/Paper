@@ -5,10 +5,10 @@ Subject: [PATCH] Complete resource pack API
 
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index a70fb56b0f44372cc62adbb9a263684224c264d2..98189c2f4c973427563c48a231bf8e6c21e0391d 100644
+index 6a8567c355202560ee523c6dc68cac1ac3e562fd..69dc4431a430461ce242de5c1a1c3023367c99b7 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -1602,7 +1602,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -1604,7 +1604,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
      // CraftBukkit start
      public void a(PacketPlayInResourcePackStatus packetplayinresourcepackstatus) {
          PlayerConnectionUtils.ensureMainThread(packetplayinresourcepackstatus, this, this.player.getWorldServer());
@@ -22,7 +22,7 @@ index a70fb56b0f44372cc62adbb9a263684224c264d2..98189c2f4c973427563c48a231bf8e6c
      // CraftBukkit end
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index da193bfc1d98e489eedc373ee87ab58b75d4377e..144faef77e69c6c3bf963327179a51bb4c37cc18 100644
+index f473808393b8440f457dfa1b2e1b9e8ccd60ec48..628f34f3855f0c8359b1e916dd3419345f690575 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -138,6 +138,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -36,7 +36,7 @@ index da193bfc1d98e489eedc373ee87ab58b75d4377e..144faef77e69c6c3bf963327179a51bb
  
      public CraftPlayer(CraftServer server, EntityPlayer entity) {
          super(server, entity);
-@@ -1871,6 +1875,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1876,6 +1880,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      public boolean getAffectsSpawning() {
          return this.getHandle().affectsSpawning;
      }

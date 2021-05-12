@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Wed, 15 Apr 2020 17:56:07 -0700
+Subject: [PATCH] Don't run entity collision code if not needed
+
+Will not run if max entity craming is disabled and
+the max collisions per entity is less than or equal to 0
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 86c6a8fd4511dfe426cc1651d289f38b467d3029..dc9e12c38d1682f6c4558ca07b781de2226c0621 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -2944,10 +2944,16 @@ public abstract class EntityLiving extends Entity {
+     protected void doTick() {}
+ 
+     protected void collideNearby() {
++        // Paper - start don't run getEntities if we're not going to use its result
++        int i = this.world.getGameRules().getInt(GameRules.MAX_ENTITY_CRAMMING);
++        if (i <= 0 && world.paperConfig.maxCollisionsPerEntity <= 0) {
++            return;
++        }
++        // Paper - end don't run getEntities if we're not going to use its result
+         List<Entity> list = this.world.getEntities(this, this.getBoundingBox(), IEntitySelector.a(this));
+ 
+         if (!list.isEmpty()) {
+-            int i = this.world.getGameRules().getInt(GameRules.MAX_ENTITY_CRAMMING);
++            // Paper - move up
+             int j;
+ 
+             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {

@@ -1,0 +1,188 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MiniDigger <admin@minidigger.me>
+Date: Mon, 20 Jan 2020 21:38:15 +0100
+Subject: [PATCH] Implement Player Client Options API
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperSkinParts.java b/src/main/java/com/destroystokyo/paper/PaperSkinParts.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b6f4400df3d8ec7e06a996de54f8cabba57885e1
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/PaperSkinParts.java
+@@ -0,0 +1,74 @@
++package com.destroystokyo.paper;
++
++import com.google.common.base.Objects;
++
++import java.util.StringJoiner;
++
++public class PaperSkinParts implements SkinParts {
++
++    private final int raw;
++
++    public PaperSkinParts(int raw) {
++        this.raw = raw;
++    }
++
++    public boolean hasCapeEnabled() {
++        return (raw & 1) == 1;
++    }
++
++    public boolean hasJacketEnabled() {
++        return (raw >> 1 & 1) == 1;
++    }
++
++    public boolean hasLeftSleeveEnabled() {
++        return (raw >> 2 & 1) == 1;
++    }
++
++    public boolean hasRightSleeveEnabled() {
++        return (raw >> 3 & 1) == 1;
++    }
++
++    public boolean hasLeftPantsEnabled() {
++        return (raw >> 4 & 1) == 1;
++    }
++
++    public boolean hasRightPantsEnabled() {
++        return (raw >> 5 & 1) == 1;
++    }
++
++    public boolean hasHatsEnabled() {
++        return (raw >> 6 & 1) == 1;
++    }
++
++    @Override
++    public int getRaw() {
++        return raw;
++    }
++
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (o == null || getClass() != o.getClass()) return false;
++        PaperSkinParts that = (PaperSkinParts) o;
++        return raw == that.raw;
++    }
++
++    @Override
++    public int hashCode() {
++        return Objects.hashCode(raw);
++    }
++
++    @Override
++    public String toString() {
++        return new StringJoiner(", ", PaperSkinParts.class.getSimpleName() + "[", "]")
++            .add("raw=" + raw)
++            .add("cape=" + hasCapeEnabled())
++            .add("jacket=" + hasJacketEnabled())
++            .add("leftSleeve=" + hasLeftSleeveEnabled())
++            .add("rightSleeve=" + hasRightSleeveEnabled())
++            .add("leftPants=" + hasLeftPantsEnabled())
++            .add("rightPants=" + hasRightPantsEnabled())
++            .add("hats=" + hasHatsEnabled())
++            .toString();
++    }
++}
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInSettings.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInSettings.java
+index 90842b27f64afcdd8eb7d0e52df8cfcb418b5b5a..f47cd43f96f61475bd1d5da11bdbc7c5e5f7e1bc 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInSettings.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInSettings.java
+@@ -41,14 +41,17 @@ public class PacketPlayInSettings implements Packet<PacketListenerPlayIn> {
+         packetlistenerplayin.a(this);
+     }
+ 
++    public EnumChatVisibility getChatVisibility() { return d(); } // Paper - OBFHELPER
+     public EnumChatVisibility d() {
+         return this.c;
+     }
+ 
++    public boolean hasChatColorsEnabled() { return e(); } // Paper - OBFHELPER
+     public boolean e() {
+         return this.d;
+     }
+ 
++    public int getSkinParts() { return f(); } // Paper - OBFHELPER
+     public int f() {
+         return this.e;
+     }
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 3e23bda4c1f379d28b722d21d600627a61a65ff0..d010aed07a1e608897ca5f87afcb7661e295d933 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -2,6 +2,7 @@ package net.minecraft.server.level;
+ 
+ import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent;
+ import com.google.common.collect.Lists;
++import com.destroystokyo.paper.event.player.PlayerClientOptionsChangeEvent; // Paper
+ import com.mojang.authlib.GameProfile;
+ import com.mojang.datafixers.util.Either;
+ import com.mojang.serialization.DataResult;
+@@ -190,7 +191,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public int lastSentExp = -99999999;
+     public int invulnerableTicks = 60;
+     private EnumChatVisibility bY;
+-    private boolean bZ = true;
++    private boolean bZ = true; public boolean hasChatColorsEnabled() { return this.bZ; } // Paper - OBFHELPER
+     private long ca = SystemUtils.getMonotonicMillis();
+     private Entity spectatedEntity;
+     public boolean worldChangeInvuln;
+@@ -1801,6 +1802,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public String locale = null; // CraftBukkit - add, lowercase // Paper - default to null
+     public java.util.Locale adventure$locale = java.util.Locale.US; // Paper
+     public void a(PacketPlayInSettings packetplayinsettings) {
++        new PlayerClientOptionsChangeEvent(getBukkitEntity(), packetplayinsettings.locale, packetplayinsettings.viewDistance, com.destroystokyo.paper.ClientOption.ChatVisibility.valueOf(packetplayinsettings.getChatVisibility().name()), packetplayinsettings.hasChatColorsEnabled(), new com.destroystokyo.paper.PaperSkinParts(packetplayinsettings.getSkinParts()), packetplayinsettings.getMainHand() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT).callEvent(); // Paper - settings event
+         // CraftBukkit start
+         if (getMainHand() != packetplayinsettings.getMainHand()) {
+             PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), getMainHand() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT);
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index 8981dfacd10cae9de052e1b36ce5181cd0e6752d..202fa94d5dc55b549475ae0309bbcfca8f1b2c96 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -133,7 +133,7 @@ public abstract class EntityHuman extends EntityLiving {
+     private static final Map<EntityPose, EntitySize> b = ImmutableMap.<EntityPose, EntitySize>builder().put(EntityPose.STANDING, EntityHuman.bh).put(EntityPose.SLEEPING, EntityHuman.ah).put(EntityPose.FALL_FLYING, EntitySize.b(0.6F, 0.6F)).put(EntityPose.SWIMMING, EntitySize.b(0.6F, 0.6F)).put(EntityPose.SPIN_ATTACK, EntitySize.b(0.6F, 0.6F)).put(EntityPose.CROUCHING, EntitySize.b(0.6F, 1.5F)).put(EntityPose.DYING, EntitySize.c(0.2F, 0.2F)).build();
+     private static final DataWatcherObject<Float> c = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.c);
+     private static final DataWatcherObject<Integer> d = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.b);
+-    protected static final DataWatcherObject<Byte> bi = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.a);
++    protected static final DataWatcherObject<Byte> bi = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.a); public static DataWatcherObject<Byte> getSkinPartsWatcher() { return bi; } // Paper - OBFHELPER
+     protected static final DataWatcherObject<Byte> bj = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.a);
+     protected static final DataWatcherObject<NBTTagCompound> bk = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.p);
+     protected static final DataWatcherObject<NBTTagCompound> bl = DataWatcher.a(EntityHuman.class, DataWatcherRegistry.p);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index c0d2abd31272e35c0a0a4f8c31cfd89e56552bea..f518fb4cabf53971daf635e3d82967c9baf0d086 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1,5 +1,8 @@
+ package org.bukkit.craftbukkit.entity;
+ 
++import com.destroystokyo.paper.ClientOption.ChatVisibility;
++import com.destroystokyo.paper.PaperSkinParts;
++import com.destroystokyo.paper.ClientOption;
+ import com.destroystokyo.paper.Title;
+ import com.google.common.base.Preconditions;
+ import com.google.common.collect.ImmutableSet;
+@@ -2255,6 +2258,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     public void setViewDistance(int viewDistance) {
+         throw new NotImplementedException("Per-Player View Distance APIs need further understanding to properly implement (There are per world view distances though!)"); // TODO
+     }
++
++    @Override
++    public <T> T getClientOption(ClientOption<T> type) {
++        if(ClientOption.SKIN_PARTS.equals(type)) {
++            return type.getType().cast(new PaperSkinParts(getHandle().getDataWatcher().get(EntityHuman.getSkinPartsWatcher())));
++        } else if(ClientOption.CHAT_COLORS_ENABLED.equals(type)) {
++            return type.getType().cast(getHandle().hasChatColorsEnabled());
++        } else if(ClientOption.CHAT_VISIBILITY.equals(type)) {
++            return type.getType().cast(getHandle().getChatFlags() == null ? ChatVisibility.UNKNOWN : ChatVisibility.valueOf(getHandle().getChatFlags().name()));
++        } else if(ClientOption.LOCALE.equals(type)) {
++            return type.getType().cast(getLocale());
++        } else if(ClientOption.MAIN_HAND.equals(type)) {
++            return type.getType().cast(getMainHand());
++        } else if(ClientOption.VIEW_DISTANCE.equals(type)) {
++            return type.getType().cast(getClientViewDistance());
++        }
++        throw new RuntimeException("Unknown settings type");
++    }
+     // Paper end
+ 
+     // Spigot start

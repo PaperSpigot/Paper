@@ -1,0 +1,79 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 2 Dec 2020 20:04:01 -0800
+Subject: [PATCH] Added ServerResourcesReloadedEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 13aac7efac8bfc8ea685621c942c310fdf2496d9..1c17db3e9e30d16bc5778bb3220e3e9e8c336258 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -2,9 +2,6 @@ package net.minecraft.server;
+ 
+ import com.google.common.base.Splitter;
+ import com.google.common.collect.ImmutableList;
+-import co.aikar.timings.Timings;
+-import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+-import com.google.common.base.Stopwatch;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+@@ -183,6 +180,7 @@ import org.bukkit.event.server.ServerLoadEvent;
+ import co.aikar.timings.MinecraftTimings; // Paper
+ import org.spigotmc.SlackActivityAccountant; // Spigot
+ import io.papermc.paper.util.PaperJvmChecker; // Paper
++import io.papermc.paper.event.server.ServerResourcesReloadedEvent; // Paper
+ 
+ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTask> implements IMojangStatistics, ICommandListener, AutoCloseable {
+ 
+@@ -1935,7 +1933,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         return this.customFunctionData;
+     }
+ 
++    // Paper start - add cause
++    @Deprecated
+     public CompletableFuture<Void> a(Collection<String> collection) {
++        return this.reloadServerResources(collection, ServerResourcesReloadedEvent.Cause.PLUGIN);
++    }
++    public CompletableFuture<Void> reloadServerResources(Collection<String> collection, ServerResourcesReloadedEvent.Cause cause) {
++        // Paper end
+         CompletableFuture<Void> completablefuture = CompletableFuture.supplyAsync(() -> {
+             Stream<String> stream = collection.stream(); // CraftBukkit - decompile error
+             ResourcePackRepository resourcepackrepository = this.resourcePackRepository;
+@@ -1951,6 +1955,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+             this.resourcePackRepository.a(collection);
+             this.saveData.a(a(this.resourcePackRepository));
+             datapackresources.i();
++            new ServerResourcesReloadedEvent(cause).callEvent(); // Paper
+             if (Thread.currentThread() != this.serverThread) return; // Paper
+             //this.getPlayerList().savePlayers(); // Paper - we don't need to do this
+             this.getPlayerList().reload();
+diff --git a/src/main/java/net/minecraft/server/commands/CommandReload.java b/src/main/java/net/minecraft/server/commands/CommandReload.java
+index 01ff3713aff19b231b616376fb41c011b74eefdf..2c66816f7930e90559feaf4c5b0790d3358882b7 100644
+--- a/src/main/java/net/minecraft/server/commands/CommandReload.java
++++ b/src/main/java/net/minecraft/server/commands/CommandReload.java
+@@ -12,13 +12,14 @@ import net.minecraft.server.packs.repository.ResourcePackRepository;
+ import net.minecraft.world.level.storage.SaveData;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import io.papermc.paper.event.server.ServerResourcesReloadedEvent; // Paper
+ 
+ public class CommandReload {
+ 
+     private static final Logger LOGGER = LogManager.getLogger();
+ 
+     public static void a(Collection<String> collection, CommandListenerWrapper commandlistenerwrapper) {
+-        commandlistenerwrapper.getServer().a(collection).exceptionally((throwable) -> {
++        commandlistenerwrapper.getServer().reloadServerResources(collection, ServerResourcesReloadedEvent.Cause.COMMAND).exceptionally((throwable) -> { // Paper
+             CommandReload.LOGGER.warn("Failed to execute reload", throwable);
+             commandlistenerwrapper.sendFailureMessage(new ChatMessage("commands.reload.failure"));
+             return null;
+@@ -48,7 +49,7 @@ public class CommandReload {
+         SaveData savedata = minecraftserver.getSaveData();
+         Collection<String> collection = resourcepackrepository.d();
+         Collection<String> collection1 = a(resourcepackrepository, savedata, collection);
+-        minecraftserver.a(collection1);
++        minecraftserver.reloadServerResources(collection1, ServerResourcesReloadedEvent.Cause.PLUGIN); // Paper
+     }
+     // CraftBukkit end
+ 

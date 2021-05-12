@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Sun, 18 Apr 2021 21:27:01 +0100
+Subject: [PATCH] Add bypass host check
+
+Paper.bypassHostCheck
+
+Seriously, fix your firewalls. -.-
+
+diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+index 97c7914e9826defc3e7167879e387fe697c10f3e..c30270ab3e822977a87240bbb98289e1d03d3748 100644
+--- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
+@@ -30,6 +30,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+     private static final IChatBaseComponent a = new ChatComponentText("Ignoring status request");
+     private final MinecraftServer b;
+     private final NetworkManager c; final NetworkManager getNetworkManager() { return this.c; } // Paper - OBFHELPER
++    private static final boolean BYPASS_HOSTCHECK = Boolean.getBoolean("Paper.bypassHostCheck"); // Paper
+ 
+     public HandshakeListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
+         this.b = minecraftserver;
+@@ -117,7 +118,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                     // Spigot Start
+                 //if (org.spigotmc.SpigotConfig.bungee) { // Paper - comment out, we check above!
+                         String[] split = packethandshakinginsetprotocol.hostname.split("\00");
+-                        if ( ( split.length == 3 || split.length == 4 ) && ( HOST_PATTERN.matcher( split[1] ).matches() ) ) {
++                        if ( ( split.length == 3 || split.length == 4 ) && ( BYPASS_HOSTCHECK || HOST_PATTERN.matcher( split[1] ).matches() ) ) { // Paper
+                             packethandshakinginsetprotocol.hostname = split[0];
+                             c.socketAddress = new java.net.InetSocketAddress(split[1], ((java.net.InetSocketAddress) c.getSocketAddress()).getPort());
+                             c.spoofedUUID = com.mojang.util.UUIDTypeAdapter.fromString( split[2] );

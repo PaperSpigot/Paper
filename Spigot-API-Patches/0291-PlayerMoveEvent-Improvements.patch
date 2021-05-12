@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Thu, 29 Apr 2021 10:31:44 +0100
+Subject: [PATCH] PlayerMoveEvent Improvements
+
+
+diff --git a/src/main/java/org/bukkit/event/player/PlayerMoveEvent.java b/src/main/java/org/bukkit/event/player/PlayerMoveEvent.java
+index 1a58734d919fae247eeb85dd785fd59990856505..b484abf3b06b1fb3577b43d50d64498dcd7652c9 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerMoveEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerMoveEvent.java
+@@ -93,6 +93,53 @@ public class PlayerMoveEvent extends PlayerEvent implements Cancellable {
+         this.to = to;
+     }
+ 
++    // Paper start - PlayerMoveEvent improvements
++    /**
++     * Check if the player has changed position (even within the same block) in the event
++     *
++     * @return whether the player has changed position or not
++     */
++    public boolean hasChangedPosition() {
++        return hasExplicitlyChangedPosition() || !from.getWorld().equals(to.getWorld());
++    }
++
++    /**
++     * Check if the player has changed position (even within the same block) in the event, disregarding a possible world change
++     *
++     * @return whether the player has changed position or not
++     */
++    public boolean hasExplicitlyChangedPosition() {
++        return from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ();
++    }
++
++    /**
++     * Check if the player has moved to a new block in the event
++     *
++     * @return whether the player has moved to a new block or not
++     */
++    public boolean hasChangedBlock() {
++        return hasExplicitlyChangedBlock() || !from.getWorld().equals(to.getWorld());
++    }
++
++    /**
++     * Check if the player has moved to a new block in the event, disregarding a possible world change
++     *
++     * @return whether the player has moved to a new block or not
++     */
++    public boolean hasExplicitlyChangedBlock() {
++        return from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ();
++    }
++
++    /**
++     * Check if the player has changed orientation in the event
++     *
++     * @return whether the player has changed orientation or not
++     */
++    public boolean hasChangedOrientation() {
++        return from.getPitch() != to.getPitch() || from.getYaw() != to.getYaw();
++    }
++    // Paper end
++
+     private void validateLocation(@NotNull Location loc) {
+         Preconditions.checkArgument(loc != null, "Cannot use null location!");
+         Preconditions.checkArgument(loc.getWorld() != null, "Cannot use null location with null world!");

@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheMolkaPL <themolkapl@gmail.com>
+Date: Sun, 21 Jun 2020 17:21:46 +0200
+Subject: [PATCH] Fix interact event not being called in adventure
+
+Call PlayerInteractEvent when left-clicking on a block in adventure mode
+
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 79c0ef65f3a1d28de73afb3f1891cfc1a0a3dd90..358d1095b219fce6b308ec0362f22db7cfc85251 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1702,7 +1702,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+                     IChatMutableComponent ichatmutablecomponent = (new ChatMessage("build.tooHigh", new Object[]{this.minecraftServer.getMaxBuildHeight()})).a(EnumChatFormat.RED);
+ 
+                     this.player.playerConnection.sendPacket(new PacketPlayOutChat(ichatmutablecomponent, ChatMessageType.GAME_INFO, SystemUtils.b));
+-                } else if (enuminteractionresult.b()) {
++                } else if (enuminteractionresult.b() && !this.player.playerInteractManager.interactResult) {
+                     this.player.swingHand(enumhand, true);
+                 }
+             }
+@@ -2203,7 +2203,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+         Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
+         MovingObjectPosition movingobjectposition = this.player.world.rayTrace(new RayTrace(vec3d, vec3d1, RayTrace.BlockCollisionOption.OUTLINE, RayTrace.FluidCollisionOption.NONE, player));
+ 
+-        if (movingobjectposition == null || movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.BLOCK) {
++        if (movingobjectposition == null || movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.BLOCK || this.player.playerInteractManager.getGameMode() == EnumGamemode.ADVENTURE) { // Paper - call PlayerInteractEvent when left-clicking on a block in adventure mode
+             CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getItemInHand(), EnumHand.MAIN_HAND);
+         }
+ 

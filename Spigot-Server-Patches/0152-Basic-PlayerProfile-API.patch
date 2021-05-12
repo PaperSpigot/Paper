@@ -7,7 +7,7 @@ Establishes base extension of profile systems for future edits too
 
 diff --git a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..040fd0c3fc4bc3a04fe5dff919a41fe9b474708e
+index 0000000000000000000000000000000000000000..3d9452892a4077e64f37424052a9e52d76dd7a6d
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
 @@ -0,0 +1,301 @@
@@ -150,7 +150,7 @@ index 0000000000000000000000000000000000000000..040fd0c3fc4bc3a04fe5dff919a41fe9
 +    @Override
 +    public boolean completeFromCache() {
 +        MinecraftServer server = MinecraftServer.getServer();
-+        return completeFromCache(false, server.getOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode));
++        return completeFromCache(false, PaperConfig.isProxyOnlineMode());
 +    }
 +
 +    public boolean completeFromCache(boolean onlineMode) {
@@ -193,7 +193,7 @@ index 0000000000000000000000000000000000000000..040fd0c3fc4bc3a04fe5dff919a41fe9
 +
 +    public boolean complete(boolean textures) {
 +        MinecraftServer server = MinecraftServer.getServer();
-+        return complete(textures, server.getOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode));
++        return complete(textures, PaperConfig.isProxyOnlineMode());
 +    }
 +    public boolean complete(boolean textures, boolean onlineMode) {
 +        MinecraftServer server = MinecraftServer.getServer();
@@ -473,10 +473,10 @@ index 89db31061fcc3420bc8e668533a4051cdbd12253..191a74bd9b894f9d64d0a55747cb17e0
              GameProfileRepository gameprofilerepository = yggdrasilauthenticationservice.createProfileRepository();
              UserCache usercache = new UserCache(gameprofilerepository, new File(file, MinecraftServer.b.getName()));
 diff --git a/src/main/java/net/minecraft/server/players/UserCache.java b/src/main/java/net/minecraft/server/players/UserCache.java
-index 6c349128bdedc53003f043c9cb1210b4666aee33..e3801a4a13d0bac7816a1350d3799a9815481c4b 100644
+index b9f94f957dd5372c8b02d785204690e4ade36a98..692d95c94df85d752a3ddc66e1f2af765565b160 100644
 --- a/src/main/java/net/minecraft/server/players/UserCache.java
 +++ b/src/main/java/net/minecraft/server/players/UserCache.java
-@@ -44,7 +44,7 @@ public class UserCache {
+@@ -45,7 +45,7 @@ public class UserCache {
  
      private static final Logger LOGGER = LogManager.getLogger();
      private static boolean b;
@@ -485,15 +485,15 @@ index 6c349128bdedc53003f043c9cb1210b4666aee33..e3801a4a13d0bac7816a1350d3799a98
      private final Map<UUID, UserCache.UserCacheEntry> d = Maps.newConcurrentMap();
      private final GameProfileRepository e;
      private final Gson f = (new GsonBuilder()).create();
-@@ -108,6 +108,7 @@ public class UserCache {
-         return UserCache.b;
+@@ -110,6 +110,7 @@ public class UserCache {
+         return com.destroystokyo.paper.PaperConfig.isProxyOnlineMode(); // Paper
      }
  
 +    public void saveProfile(GameProfile gameprofile) { a(gameprofile); } // Paper - OBFHELPER
      public synchronized void a(GameProfile gameprofile) { // Paper - synchronize
          Calendar calendar = Calendar.getInstance();
  
-@@ -157,6 +158,13 @@ public class UserCache {
+@@ -159,6 +160,13 @@ public class UserCache {
          return gameprofile;
      }
  
@@ -507,7 +507,7 @@ index 6c349128bdedc53003f043c9cb1210b4666aee33..e3801a4a13d0bac7816a1350d3799a98
      @Nullable
      public GameProfile getProfile(UUID uuid) {
          UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.d.get(uuid);
-@@ -339,7 +347,7 @@ public class UserCache {
+@@ -341,7 +349,7 @@ public class UserCache {
  
      static class UserCacheEntry {
  

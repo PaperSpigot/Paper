@@ -1,0 +1,164 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 6 Jan 2021 00:34:10 -0800
+Subject: [PATCH] Implement Keyed on World
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 68101a322ffab8ec28843386b79b8079576fa720..5f7208196684d9c8373df28b7cfb5f9e21baa41e 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -639,6 +639,18 @@ public final class Bukkit {
+     public static World getWorld(@NotNull UUID uid) {
+         return server.getWorld(uid);
+     }
++    // Paper start
++    /**
++     * Gets the world from the given NamespacedKey
++     *
++     * @param worldKey the NamespacedKey of the world to retrieve
++     * @return a world with the given NamespacedKey, or null if none exists
++     */
++    @Nullable
++    public static World getWorld(@NotNull NamespacedKey worldKey) {
++        return server.getWorld(worldKey);
++    }
++    // Paper end
+ 
+     /**
+      * Gets the map from the given item ID.
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index a79fa08b9e6fb924b2da933eb6e4b365d14d938d..f3e27d2d02a9407bb1b091b8c1125ad5abf99e55 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -541,6 +541,17 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+     @Nullable
+     public World getWorld(@NotNull UUID uid);
+ 
++    // Paper start
++    /**
++     * Gets the world from the given NamespacedKey
++     *
++     * @param worldKey the NamespacedKey of the world to retrieve
++     * @return a world with the given NamespacedKey, or null if none exists
++     */
++    @Nullable
++    public World getWorld(@NotNull NamespacedKey worldKey);
++    // Paper end
++
+     /**
+      * Gets the map from the given item ID.
+      *
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index ced33fc6de6bfa2767123131d532e7ae9ef3a5be..98512bddbb0c8bd6a3f487c60b1ec77b274b991e 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -43,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
+ /**
+  * Represents a world, which may contain entities, chunks and blocks
+  */
+-public interface World extends PluginMessageRecipient, Metadatable, net.kyori.adventure.audience.ForwardingAudience { // Paper
++public interface World extends PluginMessageRecipient, Metadatable, net.kyori.adventure.audience.ForwardingAudience, Keyed { // Paper
+ 
+     // Paper start
+     /**
+@@ -829,6 +829,15 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+ 
+     @NotNull
+     java.util.concurrent.CompletableFuture<Chunk> getChunkAtAsync(int x, int z, boolean gen, boolean urgent);
++
++    /**
++     * Get the world's key
++     *
++     * @return the world's key
++     */
++    @NotNull
++    @Override
++    NamespacedKey getKey();
+     // Paper end
+ 
+     /**
+diff --git a/src/main/java/org/bukkit/WorldCreator.java b/src/main/java/org/bukkit/WorldCreator.java
+index 6e6945dd4c770be04ec09da3958fae751717527a..e6a83252f42da31ad38f8dc1beccc7aa2c3f54b8 100644
+--- a/src/main/java/org/bukkit/WorldCreator.java
++++ b/src/main/java/org/bukkit/WorldCreator.java
+@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
+  * Represents various types of options that may be used to create a world.
+  */
+ public class WorldCreator {
++    private final NamespacedKey key; // Paper
+     private final String name;
+     private long seed;
+     private World.Environment environment = World.Environment.NORMAL;
+@@ -26,13 +27,67 @@ public class WorldCreator {
+      * @param name Name of the world that will be created
+      */
+     public WorldCreator(@NotNull String name) {
+-        if (name == null) {
+-            throw new IllegalArgumentException("World name cannot be null");
+-        }
++        // Paper start
++        this(name, NamespacedKey.minecraft(name.toLowerCase(java.util.Locale.ENGLISH).replace(" ", "_")));
++    }
+ 
+-        this.name = name;
++    /**
++     * Creates an empty WorldCreator for the given world name and key
++     *
++     * @param levelName LevelName of the world that will be created
++     * @param worldKey NamespacedKey of the world that will be created
++     */
++    public WorldCreator(@NotNull String levelName, @NotNull NamespacedKey worldKey) {
++        if (levelName == null || worldKey == null) {
++            throw new IllegalArgumentException("World name and key cannot be null");
++        }
++        this.name = levelName;
+         this.seed = (new Random()).nextLong();
++        this.key = worldKey;
++    }
++
++    /**
++     * Creates an empty WorldCreator for the given key.
++     * LevelName will be the Key part of the NamespacedKey.
++     *
++     * @param worldKey NamespacedKey of the world that will be created
++     */
++    public WorldCreator(@NotNull NamespacedKey worldKey) {
++        this(worldKey.getKey(), worldKey);
++    }
++
++    /**
++     * Gets the key for this WorldCreator
++     *
++     * @return the key
++     */
++    @NotNull
++    public NamespacedKey key() {
++        return key;
++    }
++
++    /**
++     * Creates an empty WorldCreator for the given world name and key
++     *
++     * @param levelName LevelName of the world that will be created
++     * @param worldKey NamespacedKey of the world that will be created
++     */
++    @NotNull
++    public static WorldCreator ofNameAndKey(@NotNull String levelName, @NotNull NamespacedKey worldKey) {
++        return new WorldCreator(levelName, worldKey);
++    }
++
++    /**
++     * Creates an empty WorldCreator for the given key.
++     * LevelName will be the Key part of the NamespacedKey.
++     *
++     * @param worldKey NamespacedKey of the world that will be created
++     */
++    @NotNull
++    public static WorldCreator ofKey(@NotNull NamespacedKey worldKey) {
++        return new WorldCreator(worldKey);
+     }
++    // Paper end
+ 
+     /**
+      * Copies the options from the specified world

@@ -6,10 +6,10 @@ Subject: [PATCH] Properly fix item duplication bug
 Credit to prplz for figuring out the real issue
 
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index fa315f10219dc340da4f51a8d4a78e1f33023bb3..afa87cf70ad978161853771c59f5a4906733cab3 100644
+index 4b9595f89c75b220fe70840a74e0aaa0276fa122..09385eabefeb7d59de1ce4138648badd123396f9 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-@@ -2059,8 +2059,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -2060,8 +2060,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      }
  
      @Override
@@ -21,10 +21,10 @@ index fa315f10219dc340da4f51a8d4a78e1f33023bb3..afa87cf70ad978161853771c59f5a490
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 010d4d33a2044bd54bf0bab055708711865b8d12..bc0b1d0cc9c54d53c68ee59b0a707e0335297441 100644
+index 908d52f48b4bf2ddd638f2d718e1f6cb6148ce0a..8a5a1ca08073d1a4df949a53fbf7e75339bf2761 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -2806,7 +2806,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -2819,7 +2819,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
      }
  
      public final boolean isDisconnected() {

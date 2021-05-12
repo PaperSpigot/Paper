@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Mon, 6 Jul 2020 12:44:23 -0700
+Subject: [PATCH] Add Block#isValidTool
+
+
+diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
+index 181658c679d306ffc4ad45259494571ee224ef47..08e6f1741685f54506c8a4ff29bbd30f62cf8e45 100644
+--- a/src/main/java/org/bukkit/block/Block.java
++++ b/src/main/java/org/bukkit/block/Block.java
+@@ -218,6 +218,15 @@ public interface Block extends Metadatable {
+     public static int getBlockKeyZ(long packed) {
+         return (int) ((packed << 10) >> 37);
+     }
++
++    /**
++     * Checks if the itemstack is a valid tool to
++     * break the block with
++     *
++     * @param itemStack The (tool) itemstack
++     * @return whether the block will drop items
++     */
++    boolean isValidTool(@NotNull ItemStack itemStack);
+     // Paper End
+ 
+     /**

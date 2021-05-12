@@ -23,10 +23,10 @@ index 6943524c2dd8b12691b8ac5b08daee823ce50c3d..b67bd98cca4a06bc0ebaed577195dffc
                      MutablePair<Integer, Map<ChunkCoordIntPair, Integer>> info = list.computeIfAbsent(key, k -> MutablePair.of(0, Maps.newHashMap()));
                      ChunkCoordIntPair chunk = new ChunkCoordIntPair(e.chunkX, e.chunkZ);
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd..8452b4f62689b231d38f4608c2d72b41164078b3 100644
+index ce7431ea8597c645bb2c97f596796dbf12206e72..4eda8d2065d72c67b1e1cf9e9560e13e7f24d470 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1307,6 +1307,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1309,6 +1309,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  entity.origin = entity.getBukkitEntity().getLocation();
              }
              // Paper end
@@ -34,7 +34,7 @@ index c59bcb6e19b712e007c7bf66bf70a4ffa3c6c2cd..8452b4f62689b231d38f4608c2d72b41
              new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
          }
  
-@@ -1319,6 +1320,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1321,6 +1322,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              this.removeEntityFromChunk(entity);
              this.entitiesById.remove(entity.getId());
              this.unregisterEntity(entity);
@@ -83,10 +83,10 @@ index e4accac8f2e8daa58f9b0c279ffcad9347448bb0..79ff96f18c53f3d1ce4a00be2e2d8fe6
                  if (oclass.isInstance(t0) && t0.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.test(t0))) { // Spigot - instance check
                      list.add(t0);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 1bb6ed364cdde01fe54553cfad8ec4256789620b..24c80cf3820622297046abaa13205814b8178195 100644
+index 945ea6022d89bfb6ee4429233909f8294141fbb6..716974f9f455a8b35a2bee0ef17e795676f44105 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -1046,6 +1046,7 @@ public class CraftWorld implements World {
+@@ -1040,6 +1040,7 @@ public class CraftWorld implements World {
          for (Object o : world.entitiesById.values()) {
              if (o instanceof net.minecraft.world.entity.Entity) {
                  net.minecraft.world.entity.Entity mcEnt = (net.minecraft.world.entity.Entity) o;
@@ -94,7 +94,7 @@ index 1bb6ed364cdde01fe54553cfad8ec4256789620b..24c80cf3820622297046abaa13205814
                  Entity bukkitEntity = mcEnt.getBukkitEntity();
  
                  // Assuming that bukkitEntity isn't null
-@@ -1065,6 +1066,7 @@ public class CraftWorld implements World {
+@@ -1059,6 +1060,7 @@ public class CraftWorld implements World {
          for (Object o : world.entitiesById.values()) {
              if (o instanceof net.minecraft.world.entity.Entity) {
                  net.minecraft.world.entity.Entity mcEnt = (net.minecraft.world.entity.Entity) o;
@@ -102,7 +102,7 @@ index 1bb6ed364cdde01fe54553cfad8ec4256789620b..24c80cf3820622297046abaa13205814
                  Entity bukkitEntity = mcEnt.getBukkitEntity();
  
                  // Assuming that bukkitEntity isn't null
-@@ -1091,6 +1093,7 @@ public class CraftWorld implements World {
+@@ -1085,6 +1087,7 @@ public class CraftWorld implements World {
  
          for (Object entity: world.entitiesById.values()) {
              if (entity instanceof net.minecraft.world.entity.Entity) {
@@ -110,7 +110,7 @@ index 1bb6ed364cdde01fe54553cfad8ec4256789620b..24c80cf3820622297046abaa13205814
                  Entity bukkitEntity = ((net.minecraft.world.entity.Entity) entity).getBukkitEntity();
  
                  if (bukkitEntity == null) {
-@@ -1114,6 +1117,7 @@ public class CraftWorld implements World {
+@@ -1108,6 +1111,7 @@ public class CraftWorld implements World {
  
          for (Object entity: world.entitiesById.values()) {
              if (entity instanceof net.minecraft.world.entity.Entity) {

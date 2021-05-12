@@ -5,10 +5,10 @@ Subject: [PATCH] Add hand to bucket events
 
 
 diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
-index 8452b4f62689b231d38f4608c2d72b41164078b3..ab18969083e89eb2016c6a6bffc06f4e83c9f753 100644
+index 9151d84e2f6fb316525c74466589178769fbc8ef..ecb4cb5df868673e5aa2eec3fdd8618dbea09655 100644
 --- a/src/main/java/net/minecraft/server/level/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/level/WorldServer.java
-@@ -1656,15 +1656,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1657,15 +1657,17 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          this.getMinecraftServer().getPlayerList().sendAll(new PacketPlayOutSpawnPosition(blockposition, f));
      }
  
@@ -126,10 +126,10 @@ index 07c5cdd00930a55fd412ef95f71f55ee908189a1..88b1a0235bfc0b41ae1855f8900632e4
      public boolean s_() {
          return this.isClientSide;
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index e0e48094160b55b55efb9b567fa5fd7d497ed628..ecd3b31216616b0ffe239785e3942cfb4bfebcf8 100644
+index 6d08487ff25b474b2372de37ea77aa0eb997d89a..877a0ea25f3cea970fa3827b12efc1a44bdcdf9c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -227,7 +227,7 @@ public class CraftEventFactory {
+@@ -231,7 +231,7 @@ public class CraftEventFactory {
      public static Entity entityDamage; // For use in EntityDamageByEntityEvent
  
      // helper methods
@@ -138,7 +138,7 @@ index e0e48094160b55b55efb9b567fa5fd7d497ed628..ecd3b31216616b0ffe239785e3942cfb
          int spawnSize = Bukkit.getServer().getSpawnRadius();
  
          if (world.getDimensionKey() != World.OVERWORLD) return true;
-@@ -406,6 +406,20 @@ public class CraftEventFactory {
+@@ -421,6 +421,20 @@ public class CraftEventFactory {
      }
  
      private static PlayerEvent getPlayerBucketEvent(boolean isFilling, WorldServer world, EntityHuman who, BlockPosition changed, BlockPosition clicked, EnumDirection clickedFace, ItemStack itemstack, net.minecraft.world.item.Item item) {
@@ -159,7 +159,7 @@ index e0e48094160b55b55efb9b567fa5fd7d497ed628..ecd3b31216616b0ffe239785e3942cfb
          Player player = (Player) who.getBukkitEntity();
          CraftItemStack itemInHand = CraftItemStack.asNewCraftStack(item);
          Material bucket = CraftMagicNumbers.getMaterial(itemstack.getItem());
-@@ -418,10 +432,10 @@ public class CraftEventFactory {
+@@ -433,10 +447,10 @@ public class CraftEventFactory {
  
          PlayerEvent event;
          if (isFilling) {

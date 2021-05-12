@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <blake.galbreath@gmail.com>
+Date: Sat, 22 Aug 2020 23:36:21 +0200
+Subject: [PATCH] Fix SpawnChangeEvent not firing for all use-cases
+
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 5401db70b4516ab960cffae0aae9b3ea297288b5..68a2fef79eae006ea7a8de1fc903e7000b6aab85 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1987,12 +1987,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     }
+     // Paper end
+ 
++    public final void setSpawn(BlockPosition blockposition, float f) { this.a(blockposition, f); } // Paper - OBFHELPER
+     public void a(BlockPosition blockposition, float f) {
+         // Paper - configurable spawn radius
+         BlockPosition prevSpawn = this.getSpawn();
+         //ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(new BlockPosition(this.worldData.a(), 0, this.worldData.c()));
+ 
+         this.worldData.setSpawn(blockposition, f);
++        new org.bukkit.event.world.SpawnChangeEvent(getWorld(), MCUtil.toLocation(this, prevSpawn)).callEvent(); // Paper
+         if (this.keepSpawnInMemory) {
+             // if this keepSpawnInMemory is false a plugin has already removed our tickets, do not re-add
+             this.removeTicketsForSpawn(this.paperConfig.keepLoadedRange, prevSpawn);
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 74ee2013a47855cdd1d56a06a2e209776513fd14..d3f5a3d4872665b4c52a6cfad1518016919557d0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -389,11 +389,13 @@ public class CraftWorld implements World {
+     public boolean setSpawnLocation(int x, int y, int z, float angle) {
+         try {
+             Location previousLocation = getSpawnLocation();
+-            world.worldData.setSpawn(new BlockPosition(x, y, z), angle);
++            world.setSpawn(new BlockPosition(x, y, z), angle); // Paper - use WorldServer#setSpawn
+ 
++            // Paper start - move to nms.World
+             // Notify anyone who's listening.
+-            SpawnChangeEvent event = new SpawnChangeEvent(this, previousLocation);
+-            server.getPluginManager().callEvent(event);
++            // SpawnChangeEvent event = new SpawnChangeEvent(this, previousLocation);
++            // server.getPluginManager().callEvent(event);
++            // Paper end
+ 
+             return true;
+         } catch (Exception e) {

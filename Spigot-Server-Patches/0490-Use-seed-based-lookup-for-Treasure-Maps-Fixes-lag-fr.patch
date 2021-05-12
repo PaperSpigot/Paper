@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sun, 7 Jun 2020 19:25:13 -0400
+Subject: [PATCH] Use seed based lookup for Treasure Maps - Fixes lag from
+ carto/sunken maps
+
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index 06fa9b91cc103a5d5f39ab8fcfb5ccad4cf0e5de..1a7d06d8a3d1fe0a2a943eae5efd23d28fe4bd62 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -421,8 +421,8 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         this.worldDataServer.setThundering(flag1);
+     }
+ 
+-    @Override
+-    public BiomeBase a(int i, int j, int k) {
++    public BiomeBase getBiomeBySeed(int i, int j, int k) { return a(i, j, k); } // Paper - OBFHELPER
++    @Override public BiomeBase a(int i, int j, int k) {
+         return this.getChunkProvider().getChunkGenerator().getWorldChunkManager().getBiome(i, j, k);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/item/ItemWorldMap.java b/src/main/java/net/minecraft/world/item/ItemWorldMap.java
+index a1945e9ac1dd8961c5758a22bef3908d3adf0704..3aa0f19d4a924d40005a38bb95a08d4a109c5b2e 100644
+--- a/src/main/java/net/minecraft/world/item/ItemWorldMap.java
++++ b/src/main/java/net/minecraft/world/item/ItemWorldMap.java
+@@ -253,7 +253,7 @@ public class ItemWorldMap extends ItemWorldMapBase {
+ 
+                 for (l = 0; l < 128 * i; ++l) {
+                     for (i1 = 0; i1 < 128 * i; ++i1) {
+-                        abiomebase[l * 128 * i + i1] = worldserver.getBiome(new BlockPosition((j / i - 64) * i + i1, 0, (k / i - 64) * i + l));
++                        abiomebase[l * 128 * i + i1] = worldserver.getBiomeBySeed((j / i - 64) * i + i1, 0, (k / i - 64) * i + l); // Paper
+                     }
+                 }
+ 

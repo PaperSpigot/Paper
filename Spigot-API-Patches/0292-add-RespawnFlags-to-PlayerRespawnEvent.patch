@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 17:17:54 -0700
+Subject: [PATCH] add RespawnFlags to PlayerRespawnEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/player/PlayerRespawnEvent.java b/src/main/java/org/bukkit/event/player/PlayerRespawnEvent.java
+index d2be2ad2e3665728e614a89dd62ef9237f1d3ce6..359e385bd6854a4b146cd0a54badb9c3d31ca12d 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerRespawnEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerRespawnEvent.java
+@@ -14,17 +14,30 @@ public class PlayerRespawnEvent extends PlayerEvent {
+     private Location respawnLocation;
+     private final boolean isBedSpawn;
+     private final boolean isAnchorSpawn;
++    private final java.util.Set<RespawnFlag> respawnFlags; // Paper
+ 
+     @Deprecated
+     public PlayerRespawnEvent(@NotNull final Player respawnPlayer, @NotNull final Location respawnLocation, final boolean isBedSpawn) {
+         this(respawnPlayer, respawnLocation, isBedSpawn, false);
+     }
+ 
++    @Deprecated // Paper
+     public PlayerRespawnEvent(@NotNull final Player respawnPlayer, @NotNull final Location respawnLocation, final boolean isBedSpawn, final boolean isAnchorSpawn) {
++        // Paper start
++        this(respawnPlayer, respawnLocation, isBedSpawn, isAnchorSpawn, com.google.common.collect.ImmutableSet.builder());
++    }
++
++    public PlayerRespawnEvent(@NotNull final Player respawnPlayer, @NotNull final Location respawnLocation, final boolean isBedSpawn, final boolean isAnchorSpawn, @NotNull final com.google.common.collect.ImmutableSet.Builder<org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag> respawnFlags) {
++        // Paper end
+         super(respawnPlayer);
+         this.respawnLocation = respawnLocation;
+         this.isBedSpawn = isBedSpawn;
+         this.isAnchorSpawn = isAnchorSpawn;
++        // Paper start
++        if (this.isBedSpawn) { respawnFlags.add(RespawnFlag.BED_SPAWN); }
++        if (this.isAnchorSpawn) { respawnFlags.add(RespawnFlag.ANCHOR_SPAWN); }
++        this.respawnFlags = respawnFlags.build();
++        // Paper end
+     }
+ 
+     /**
+@@ -77,4 +90,31 @@ public class PlayerRespawnEvent extends PlayerEvent {
+     public static HandlerList getHandlerList() {
+         return handlers;
+     }
++
++    // Paper start
++    /**
++     * Get the set of flags that apply to this respawn.
++     *
++     * @return an immutable set of the flags that apply to this respawn
++     */
++    @NotNull
++    public java.util.Set<RespawnFlag> getRespawnFlags() {
++        return respawnFlags;
++    }
++
++    public enum RespawnFlag {
++        /**
++         * Will use the bed spawn location
++         */
++        BED_SPAWN,
++        /**
++         * Will use the respawn anchor location
++         */
++        ANCHOR_SPAWN,
++        /**
++         * Is caused by going to the end portal in the end.
++         */
++        END_PORTAL,
++    }
++    // Paper end
+ }

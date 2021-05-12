@@ -1,0 +1,407 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Thu, 1 Apr 2021 00:34:41 -0700
+Subject: [PATCH] Allow for Component suggestion tooltips in
+ AsyncTabCompleteEvent
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/event/server/AsyncTabCompleteEvent.java b/src/main/java/com/destroystokyo/paper/event/server/AsyncTabCompleteEvent.java
+index 619ed37169c126a8c75d02699a04728bac49d10d..4cd97cb102e1ec53b3fe1a451b65b4b640fde099 100644
+--- a/src/main/java/com/destroystokyo/paper/event/server/AsyncTabCompleteEvent.java
++++ b/src/main/java/com/destroystokyo/paper/event/server/AsyncTabCompleteEvent.java
+@@ -24,6 +24,11 @@
+ package com.destroystokyo.paper.event.server;
+ 
+ import com.google.common.collect.ImmutableList;
++import io.papermc.paper.util.TransformingRandomAccessList;
++import net.kyori.adventure.text.Component;
++import net.kyori.examination.Examinable;
++import net.kyori.examination.ExaminableProperty;
++import net.kyori.examination.string.StringExaminer;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.Location;
+ import org.bukkit.command.Command;
+@@ -34,6 +39,7 @@ import org.bukkit.event.HandlerList;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.stream.Stream;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+@@ -48,15 +54,29 @@ public class AsyncTabCompleteEvent extends Event implements Cancellable {
+     private final boolean isCommand;
+     @Nullable
+     private final Location loc;
+-    @NotNull private List<String> completions;
++    private final List<Completion> completions = new ArrayList<>();
++    private final List<String> stringCompletions = new TransformingRandomAccessList<>(
++        this.completions,
++        Completion::suggestion,
++        Completion::completion
++    );
+     private boolean cancelled;
+     private boolean handled = false;
+     private boolean fireSyncHandler = true;
+ 
++    public AsyncTabCompleteEvent(@NotNull CommandSender sender, @NotNull String buffer, boolean isCommand, @Nullable Location loc) {
++        super(true);
++        this.sender = sender;
++        this.buffer = buffer;
++        this.isCommand = isCommand;
++        this.loc = loc;
++    }
++
++    @Deprecated
+     public AsyncTabCompleteEvent(@NotNull CommandSender sender, @NotNull List<String> completions, @NotNull String buffer, boolean isCommand, @Nullable Location loc) {
+         super(true);
+         this.sender = sender;
+-        this.completions = completions;
++        this.completions.addAll(fromStrings(completions));
+         this.buffer = buffer;
+         this.isCommand = isCommand;
+         this.loc = loc;
+@@ -84,7 +104,7 @@ public class AsyncTabCompleteEvent extends Event implements Cancellable {
+      */
+     @NotNull
+     public List<String> getCompletions() {
+-        return completions;
++        return this.stringCompletions;
+     }
+ 
+     /**
+@@ -98,8 +118,42 @@ public class AsyncTabCompleteEvent extends Event implements Cancellable {
+      * @param completions the new completions
+      */
+     public void setCompletions(@NotNull List<String> completions) {
++        if (completions == this.stringCompletions) {
++            return;
++        }
+         Validate.notNull(completions);
+-        this.completions = new ArrayList<>(completions);
++        this.completions.clear();
++        this.completions.addAll(fromStrings(completions));
++    }
++
++    /**
++     * The list of {@link Completion completions} which will be offered to the sender, in order.
++     * This list is mutable and reflects what will be offered.
++     * <p>
++     * If this collection is not empty after the event is fired, then
++     * the standard process of calling {@link Command#tabComplete(CommandSender, String, String[])}
++     * or current player names will not be called.
++     *
++     * @return a list of offered completions
++     */
++    public @NotNull List<Completion> completions() {
++        return this.completions;
++    }
++
++    /**
++     * Set the {@link Completion completions} offered, overriding any already set.
++     * If this collection is not empty after the event is fired, then
++     * the standard process of calling {@link Command#tabComplete(CommandSender, String, String[])}
++     * or current player names will not be called.
++     * <p>
++     * The passed collection will be cloned to a new List. You must call {{@link #completions()}} to mutate from here
++     *
++     * @param newCompletions the new completions
++     */
++    public void completions(final @NotNull List<Completion> newCompletions) {
++        Validate.notNull(newCompletions, "new completions");
++        this.completions.clear();
++        this.completions.addAll(newCompletions);
+     }
+ 
+     /**
+@@ -174,4 +228,102 @@ public class AsyncTabCompleteEvent extends Event implements Cancellable {
+     public static HandlerList getHandlerList() {
+         return handlers;
+     }
++
++    private static @NotNull List<Completion> fromStrings(final @NotNull List<String> strings) {
++        final List<Completion> list = new ArrayList<>();
++        for (final String it : strings) {
++            list.add(new CompletionImpl(it, null));
++        }
++        return list;
++    }
++
++    /**
++     * A rich tab completion, consisting of a string suggestion, and a nullable {@link Component} tooltip.
++     */
++    public interface Completion extends Examinable {
++        /**
++         * Get the suggestion string for this {@link Completion}.
++         *
++         * @return suggestion string
++         */
++        @NotNull String suggestion();
++
++        /**
++         * Get the suggestion tooltip for this {@link Completion}.
++         *
++         * @return tooltip component
++         */
++        @Nullable Component tooltip();
++
++        @Override
++        default @NotNull Stream<? extends ExaminableProperty> examinableProperties() {
++            return Stream.of(ExaminableProperty.of("suggestion", this.suggestion()), ExaminableProperty.of("tooltip", this.tooltip()));
++        }
++
++        /**
++         * Create a new {@link Completion} from a suggestion string.
++         *
++         * @param suggestion suggestion string
++         * @return new completion instance
++         */
++        static @NotNull Completion completion(final @NotNull String suggestion) {
++            return new CompletionImpl(suggestion, null);
++        }
++
++        /**
++         * Create a new {@link Completion} from a suggestion string and a tooltip {@link Component}.
++         *
++         * <p>If the provided component is null, the suggestion will not have a tooltip.</p>
++         *
++         * @param suggestion suggestion string
++         * @param tooltip    tooltip component, or null
++         * @return new completion instance
++         */
++        static @NotNull Completion completion(final @NotNull String suggestion, final @Nullable Component tooltip) {
++            return new CompletionImpl(suggestion, tooltip);
++        }
++    }
++
++    static final class CompletionImpl implements Completion {
++        private final String suggestion;
++        private final Component tooltip;
++
++        CompletionImpl(final @NotNull String suggestion, final @Nullable Component tooltip) {
++            this.suggestion = suggestion;
++            this.tooltip = tooltip;
++        }
++
++        @Override
++        public @NotNull String suggestion() {
++            return this.suggestion;
++        }
++
++        @Override
++        public @Nullable Component tooltip() {
++            return this.tooltip;
++        }
++
++        @Override
++        public boolean equals(final @Nullable Object o) {
++            if (this == o) {
++                return true;
++            }
++            if (o == null || this.getClass() != o.getClass()) {
++                return false;
++            }
++            final CompletionImpl that = (CompletionImpl) o;
++            return this.suggestion.equals(that.suggestion)
++                && java.util.Objects.equals(this.tooltip, that.tooltip);
++        }
++
++        @Override
++        public int hashCode() {
++            return java.util.Objects.hash(this.suggestion, this.tooltip);
++        }
++
++        @Override
++        public @NotNull String toString() {
++            return StringExaminer.simpleEscaping().examine(this);
++        }
++    }
+ }
+diff --git a/src/main/java/io/papermc/paper/util/TransformingRandomAccessList.java b/src/main/java/io/papermc/paper/util/TransformingRandomAccessList.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f560a51277ccbd46a9142cfa057d276118c1c7b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/util/TransformingRandomAccessList.java
+@@ -0,0 +1,169 @@
++package io.papermc.paper.util;
++
++import org.checkerframework.checker.nullness.qual.NonNull;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.AbstractList;
++import java.util.Iterator;
++import java.util.List;
++import java.util.ListIterator;
++import java.util.RandomAccess;
++import java.util.function.Function;
++import java.util.function.Predicate;
++
++import static com.google.common.base.Preconditions.checkNotNull;
++
++/**
++ * Modified version of the Guava class with the same name to support add operations.
++ *
++ * @param <F> backing list element type
++ * @param <T> transformed list element type
++ */
++public final class TransformingRandomAccessList<F, T> extends AbstractList<T> implements RandomAccess {
++    final List<F> fromList;
++    final Function<? super F, ? extends T> toFunction;
++    final Function<? super T, ? extends F> fromFunction;
++
++    /**
++     * Create a new {@link TransformingRandomAccessList}.
++     *
++     * @param fromList     backing list
++     * @param toFunction   function mapping backing list element type to transformed list element type
++     * @param fromFunction function mapping transformed list element type to backing list element type
++     */
++    public TransformingRandomAccessList(
++        final @NonNull List<F> fromList,
++        final @NonNull Function<? super F, ? extends T> toFunction,
++        final @NonNull Function<? super T, ? extends F> fromFunction
++    ) {
++        this.fromList = checkNotNull(fromList);
++        this.toFunction = checkNotNull(toFunction);
++        this.fromFunction = checkNotNull(fromFunction);
++    }
++
++    @Override
++    public void clear() {
++        this.fromList.clear();
++    }
++
++    @Override
++    public T get(int index) {
++        return this.toFunction.apply(this.fromList.get(index));
++    }
++
++    @Override
++    public @NotNull Iterator<T> iterator() {
++        return this.listIterator();
++    }
++
++    @Override
++    public @NotNull ListIterator<T> listIterator(int index) {
++        return new TransformedListIterator<F, T>(this.fromList.listIterator(index)) {
++            @Override
++            T transform(F from) {
++                return TransformingRandomAccessList.this.toFunction.apply(from);
++            }
++
++            @Override
++            F transformBack(T from) {
++                return TransformingRandomAccessList.this.fromFunction.apply(from);
++            }
++        };
++    }
++
++    @Override
++    public boolean isEmpty() {
++        return this.fromList.isEmpty();
++    }
++
++    @Override
++    public boolean removeIf(Predicate<? super T> filter) {
++        checkNotNull(filter);
++        return this.fromList.removeIf(element -> filter.test(this.toFunction.apply(element)));
++    }
++
++    @Override
++    public T remove(int index) {
++        return this.toFunction.apply(this.fromList.remove(index));
++    }
++
++    @Override
++    public int size() {
++        return this.fromList.size();
++    }
++
++    @Override
++    public T set(int i, T t) {
++        return this.toFunction.apply(this.fromList.set(i, this.fromFunction.apply(t)));
++    }
++
++    @Override
++    public void add(int i, T t) {
++        this.fromList.add(i, this.fromFunction.apply(t));
++    }
++
++    static abstract class TransformedListIterator<F, T> implements ListIterator<T>, Iterator<T> {
++        final Iterator<F> backingIterator;
++
++        TransformedListIterator(ListIterator<F> backingIterator) {
++            this.backingIterator = checkNotNull((Iterator<F>) backingIterator);
++        }
++
++        private ListIterator<F> backingIterator() {
++            return cast(this.backingIterator);
++        }
++
++        static <A> ListIterator<A> cast(Iterator<A> iterator) {
++            return (ListIterator<A>) iterator;
++        }
++
++        @Override
++        public final boolean hasPrevious() {
++            return this.backingIterator().hasPrevious();
++        }
++
++        @Override
++        public final T previous() {
++            return this.transform(this.backingIterator().previous());
++        }
++
++        @Override
++        public final int nextIndex() {
++            return this.backingIterator().nextIndex();
++        }
++
++        @Override
++        public final int previousIndex() {
++            return this.backingIterator().previousIndex();
++        }
++
++        @Override
++        public void set(T element) {
++            this.backingIterator().set(this.transformBack(element));
++        }
++
++        @Override
++        public void add(T element) {
++            this.backingIterator().add(this.transformBack(element));
++        }
++
++        abstract T transform(F from);
++
++        abstract F transformBack(T to);
++
++        @Override
++        public final boolean hasNext() {
++            return this.backingIterator.hasNext();
++        }
++
++        @Override
++        public final T next() {
++            return this.transform(this.backingIterator.next());
++        }
++
++        @Override
++        public final void remove() {
++            this.backingIterator.remove();
++        }
++    }
++}
+diff --git a/src/test/java/org/bukkit/AnnotationTest.java b/src/test/java/org/bukkit/AnnotationTest.java
+index 19271057cf24329757c9419fa6c97848e008a96c..82b2783497947f336b0dd95db61f31f8f77f446c 100644
+--- a/src/test/java/org/bukkit/AnnotationTest.java
++++ b/src/test/java/org/bukkit/AnnotationTest.java
+@@ -48,6 +48,8 @@ public class AnnotationTest {
+         // Generic functional interface
+         "org/bukkit/util/Consumer",
+         // Paper start
++        "io/papermc/paper/util/TransformingRandomAccessList",
++        "io/papermc/paper/util/TransformingRandomAccessList$TransformedListIterator",
+         // Timings history is broken in terms of nullability due to guavas Function defining that the param is NonNull
+         "co/aikar/timings/TimingHistory$2",
+         "co/aikar/timings/TimingHistory$2$1",

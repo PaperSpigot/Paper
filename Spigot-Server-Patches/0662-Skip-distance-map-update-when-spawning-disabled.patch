@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Beech Horn <beechhorn@gmail.com>
+Date: Fri, 14 Feb 2020 19:39:59 +0000
+Subject: [PATCH] Skip distance map update when spawning disabled.
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index 326c52f9f2cc729fd52162aeae18ec9dae3a4eaf..c5e54c519e1f686761faa53b5e9579c514a65332 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -825,7 +825,7 @@ public class ChunkProviderServer extends IChunkProvider {
+             int l = this.chunkMapDistance.b();
+             // Paper start - per player mob spawning
+             SpawnerCreature.d spawnercreature_d; // moved down
+-            if (this.playerChunkMap.playerMobDistanceMap != null) {
++            if ((this.allowAnimals || this.allowMonsters) && this.playerChunkMap.playerMobDistanceMap != null) { // don't update when animals and monsters are disabled
+                 // update distance map
+                 this.world.timings.playerMobDistanceMapUpdate.startTiming();
+                 this.playerChunkMap.playerMobDistanceMap.update(this.world.players, this.playerChunkMap.viewDistance);

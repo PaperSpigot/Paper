@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Tue, 24 Dec 2019 00:35:42 +0000
+Subject: [PATCH] PlayerDeathEvent#shouldDropExperience
+
+
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 23bb5cd0b10c211019ff0b71128bbf835238e9d8..f242330bcf3d63490b5e7be36f8af6eccfb07820 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -821,7 +821,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             this.eW();
+         }
+         // SPIGOT-5478 must be called manually now
+-        this.dropExperience();
++        if (event.shouldDropExperience()) this.dropExperience(); // Paper - tie to event
+         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
+         if (!event.getKeepInventory()) {
+             // Paper start - replace logic

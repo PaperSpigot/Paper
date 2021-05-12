@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Sat, 24 Apr 2021 02:09:32 -0700
+Subject: [PATCH] Implement methods to convert between Component and
+ Brigadier's Message
+
+
+diff --git a/src/main/java/io/papermc/paper/brigadier/PaperBrigadierProviderImpl.java b/src/main/java/io/papermc/paper/brigadier/PaperBrigadierProviderImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fb1d6632788ae886b7a0e56fb490920c6ba2ce22
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/brigadier/PaperBrigadierProviderImpl.java
+@@ -0,0 +1,30 @@
++package io.papermc.paper.brigadier;
++
++import com.mojang.brigadier.Message;
++import io.papermc.paper.adventure.PaperAdventure;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.ComponentLike;
++import net.minecraft.network.chat.ChatComponentUtils;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++import static java.util.Objects.requireNonNull;
++
++public enum PaperBrigadierProviderImpl implements PaperBrigadierProvider {
++    INSTANCE;
++
++    PaperBrigadierProviderImpl() {
++        PaperBrigadierProvider.initialize(this);
++    }
++
++    @Override
++    public @NonNull Message message(final @NonNull ComponentLike componentLike) {
++        requireNonNull(componentLike, "componentLike");
++        return PaperAdventure.asVanilla(componentLike.asComponent());
++    }
++
++    @Override
++    public @NonNull Component componentFromMessage(final @NonNull Message message) {
++        requireNonNull(message, "message");
++        return PaperAdventure.asAdventure(ChatComponentUtils.fromMessage(message));
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 52bb528e75eb43156ee2bf19877bc051a35bb6e3..df8270c40ed7ce6f628686ff6f4fa4cf96af6738 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -213,6 +213,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         }
+         com.destroystokyo.paper.PaperConfig.registerCommands();
+         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
++        io.papermc.paper.brigadier.PaperBrigadierProviderImpl.INSTANCE.getClass(); // init PaperBrigadierProvider
+         // Paper end
+ 
+         this.setPVP(dedicatedserverproperties.pvp);

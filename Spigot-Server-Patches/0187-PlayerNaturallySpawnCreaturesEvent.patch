@@ -9,7 +9,7 @@ from triggering monster spawns on a server.
 Also a highly more effecient way to blanket block spawns in a world
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
-index 95af66ebb7849cbf2bcad6bc52aeb85ab2601b6c..eb576566708d50c002e73aa746d2bc58b9b04c2b 100644
+index 9ed97d5db81e3603ccccca7500420d7e401ef2a5..b9bde85a90b429659e1a4ab111253cddd797368e 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
 @@ -611,6 +611,15 @@ public class ChunkProviderServer extends IChunkProvider {
@@ -29,7 +29,7 @@ index 95af66ebb7849cbf2bcad6bc52aeb85ab2601b6c..eb576566708d50c002e73aa746d2bc58
                  Optional<Chunk> optional = ((Either) playerchunk.a().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
  
 diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
-index afa87cf70ad978161853771c59f5a4906733cab3..8b79d547a3296f056731cbb66508494d84809e94 100644
+index 09385eabefeb7d59de1ce4138648badd123396f9..3d517ab98da5fd56101e97b5678f7180839269f8 100644
 --- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
 @@ -1,5 +1,6 @@
@@ -48,10 +48,10 @@ index afa87cf70ad978161853771c59f5a4906733cab3..8b79d547a3296f056731cbb66508494d
      public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleHashSet; // Paper
  
 diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-index 56f83a930c3dad1a1de366bff530131d92b4893c..c6b9b02e6d31bebb3f8c0cadd68e4b5c47fab090 100644
+index 1d71a19a7bbe463f537861531113dd1ed3e5b977..d1e45dfb99074ec027d4f943391a024c726d93b2 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
-@@ -958,12 +958,23 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -966,12 +966,23 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          chunkRange = (chunkRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : chunkRange;
          chunkRange = (chunkRange > 8) ? 8 : chunkRange;
  

@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: KennyTV <jahnke.nassim@gmail.com>
+Date: Fri, 26 Mar 2021 11:23:17 +0100
+Subject: [PATCH] Expose protocol version
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 971877c42f7a46696a389ef7d93f44993c360810..6141e86278d876e42dbed6e8f2275280babcef77 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -481,6 +481,11 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         return io.papermc.paper.inventory.ItemRarity.values()[getItem(itemStack.getType()).getItemStackRarity(CraftItemStack.asNMSCopy(itemStack)).ordinal()];
+     }
+ 
++    @Override
++    public int getProtocolVersion() {
++        return net.minecraft.SharedConstants.getGameVersion().getProtocolVersion();
++    }
++
+     // Paper end
+ 
+     /**

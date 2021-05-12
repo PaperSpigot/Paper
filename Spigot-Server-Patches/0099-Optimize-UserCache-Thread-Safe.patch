@@ -10,10 +10,10 @@ Additionally, move Saving of the User cache to be done async, incase
 the user never changed the default setting for Spigot's save on stop only.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3d20206c3817cc7bf1d0168c0b556b7505eebf93..9ae25f9496355d3114c0032731c8dcb621d243dc 100644
+index f990f242a8d812a93b454b065a17fd4e8170355a..283c1111d99b6ae09b6db0c0079eeb0f1cbb7b2b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -897,7 +897,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -907,7 +907,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          } catch (java.lang.InterruptedException ignored) {} // Paper
          if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
              LOGGER.info("Saving usercache.json");
@@ -36,10 +36,10 @@ index faf4d00bf288359db806913c4d2964324e8706b7..8ae72e8c8325d9b03803f29fcdd83a0c
  
          if (!NameReferencingFileConverter.e(this)) {
 diff --git a/src/main/java/net/minecraft/server/players/UserCache.java b/src/main/java/net/minecraft/server/players/UserCache.java
-index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba857472276821a70ae0 100644
+index 5694ba68a142d735a7c61563ee22cd54da9b4cc9..39d1c379b781c08bfdd720cd6810a9c0bb9f0d09 100644
 --- a/src/main/java/net/minecraft/server/players/UserCache.java
 +++ b/src/main/java/net/minecraft/server/players/UserCache.java
-@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
+@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
  import java.util.concurrent.atomic.AtomicReference;
  import java.util.stream.Stream;
  import javax.annotation.Nullable;
@@ -47,7 +47,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
  import net.minecraft.world.entity.player.EntityHuman;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
-@@ -107,7 +108,7 @@ public class UserCache {
+@@ -108,7 +109,7 @@ public class UserCache {
          return UserCache.b;
      }
  
@@ -56,7 +56,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
          Calendar calendar = Calendar.getInstance();
  
          calendar.setTime(new Date());
-@@ -116,7 +117,7 @@ public class UserCache {
+@@ -117,7 +118,7 @@ public class UserCache {
          UserCache.UserCacheEntry usercache_usercacheentry = new UserCache.UserCacheEntry(gameprofile, date);
  
          this.a(usercache_usercacheentry);
@@ -65,7 +65,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
      }
  
      private long d() {
-@@ -124,7 +125,7 @@ public class UserCache {
+@@ -125,7 +126,7 @@ public class UserCache {
      }
  
      @Nullable
@@ -74,7 +74,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
          String s1 = s.toLowerCase(Locale.ROOT);
          UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.c.get(s1);
          boolean flag = false;
-@@ -150,7 +151,7 @@ public class UserCache {
+@@ -151,7 +152,7 @@ public class UserCache {
          }
  
          if (flag && !org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) { // Spigot - skip saving if disabled
@@ -83,7 +83,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
          }
  
          return gameprofile;
-@@ -232,7 +233,7 @@ public class UserCache {
+@@ -233,7 +234,7 @@ public class UserCache {
          return arraylist;
      }
  
@@ -92,7 +92,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
          JsonArray jsonarray = new JsonArray();
          DateFormat dateformat = e();
  
-@@ -240,6 +241,7 @@ public class UserCache {
+@@ -241,6 +242,7 @@ public class UserCache {
              jsonarray.add(a(usercache_usercacheentry, dateformat));
          });
          String s = this.f.toJson(jsonarray);
@@ -100,7 +100,7 @@ index 581e036f598b51a4e9f2dafd7e92c700c3e04407..2de2d84a56183435d641ba8574722768
  
          try {
              BufferedWriter bufferedwriter = Files.newWriter(this.g, StandardCharsets.UTF_8);
-@@ -267,6 +269,14 @@ public class UserCache {
+@@ -268,6 +270,14 @@ public class UserCache {
          } catch (IOException ioexception) {
              ;
          }

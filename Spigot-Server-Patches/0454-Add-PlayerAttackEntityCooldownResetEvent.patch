@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nossr50 <nossr50@gmail.com>
+Date: Thu, 26 Mar 2020 19:44:50 -0700
+Subject: [PATCH] Add PlayerAttackEntityCooldownResetEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index dc9e12c38d1682f6c4558ca07b781de2226c0621..850225509a5398ddcc9335bf88e99bde662bfc91 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -1931,7 +1931,16 @@ public abstract class EntityLiving extends Entity {
+ 
+             EntityDamageEvent event = CraftEventFactory.handleLivingEntityDamageEvent(this, damagesource, originalDamage, hardHatModifier, blockingModifier, armorModifier, resistanceModifier, magicModifier, absorptionModifier, hardHat, blocking, armor, resistance, magic, absorption);
+             if (damagesource.getEntity() instanceof EntityHuman) {
+-                ((EntityHuman) damagesource.getEntity()).resetAttackCooldown(); // Moved from EntityHuman in order to make the cooldown reset get called after the damage event is fired
++                // Paper start - PlayerAttackEntityCooldownResetEvent
++                if (damagesource.getEntity() instanceof EntityPlayer) {
++                    EntityPlayer player = (EntityPlayer) damagesource.getEntity();
++                    if (new com.destroystokyo.paper.event.player.PlayerAttackEntityCooldownResetEvent(player.getBukkitEntity(), this.getBukkitEntity(), player.getAttackCooldown(0F)).callEvent()) {
++                        player.resetAttackCooldown();
++                    }
++                } else {
++                    ((EntityHuman) damagesource.getEntity()).resetAttackCooldown();
++                }
++                // Paper end
+             }
+             if (event.isCancelled()) {
+                 return false;

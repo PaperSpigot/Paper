@@ -13,7 +13,7 @@ Update adjacent blocks of doors, double plants, pistons and beds
 when cancelling interaction.
 
 diff --git a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
-index 51157a9223f3da22d1110cfa211a502de59fb8a1..cea19f4aafb3d81bf0dfcdac9103c03786fd5fc2 100644
+index 74b4b127f39a0ad06e8f9add6861763724ab70ba..14f287d30c9a141f78f6311bef02a6fc4fa17564 100644
 --- a/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
 +++ b/src/main/java/net/minecraft/server/level/PlayerInteractManager.java
 @@ -6,6 +6,7 @@ import net.minecraft.core.BlockPosition;
@@ -32,7 +32,7 @@ index 51157a9223f3da22d1110cfa211a502de59fb8a1..cea19f4aafb3d81bf0dfcdac9103c037
  import net.minecraft.world.level.block.BlockJigsaw;
  import net.minecraft.world.level.block.BlockStructure;
  import net.minecraft.world.level.block.entity.TileEntity;
-@@ -179,6 +181,11 @@ public class PlayerInteractManager {
+@@ -180,6 +182,11 @@ public class PlayerInteractManager {
                  PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, blockposition, enumdirection, this.player.inventory.getItemInHand(), EnumHand.MAIN_HAND);
                  if (event.isCancelled()) {
                      // Let the client know the block still exists
@@ -44,7 +44,7 @@ index 51157a9223f3da22d1110cfa211a502de59fb8a1..cea19f4aafb3d81bf0dfcdac9103c037
                      this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
                      // Update any tile entity data for this block
                      TileEntity tileentity = this.world.getTileEntity(blockposition);
-@@ -483,13 +490,32 @@ public class PlayerInteractManager {
+@@ -484,6 +491,7 @@ public class PlayerInteractManager {
          interactItemStack = itemstack.cloneItemStack();
  
          if (event.useInteractedBlock() == Event.Result.DENY) {
@@ -52,26 +52,15 @@ index 51157a9223f3da22d1110cfa211a502de59fb8a1..cea19f4aafb3d81bf0dfcdac9103c037
              // If we denied a door from opening, we need to send a correcting update to the client, as it already opened the door.
              if (iblockdata.getBlock() instanceof BlockDoor) {
                  boolean bottom = iblockdata.get(BlockDoor.HALF) == BlockPropertyDoubleBlockHalf.LOWER;
-                 entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockChange(world, bottom ? blockposition.up() : blockposition.down()));
-             } else if (iblockdata.getBlock() instanceof BlockCake) {
-                 entityplayer.getBukkitEntity().sendHealthUpdate(); // SPIGOT-1341 - reset health for cake
+@@ -496,7 +504,13 @@ public class PlayerInteractManager {
+ 
+                 // send a correcting update to the client for the block above as well, this because of replaceable blocks (such as grass, sea grass etc)
+                 entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.up()));
 +            // Paper start  - extend Player Interact cancellation // TODO: consider merging this into the extracted method
 +            } else if (iblockdata.getBlock() instanceof BlockStructure) {
 +                entityplayer.playerConnection.sendPacket(new PacketPlayOutCloseWindow());
 +            } else if (iblockdata.getBlock() instanceof BlockCommand) {
 +                entityplayer.playerConnection.sendPacket(new PacketPlayOutCloseWindow());
-+            } else if (iblockdata.getBlock() instanceof BlockFlowerPot) {
-+                // Send a block change to air and then send back the correct block, just to make the client happy
-+                PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
-+                packet.block = Blocks.AIR.getBlockData();
-+                this.player.playerConnection.sendPacket(packet);
-+
-+                this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
-+
-+                TileEntity tileentity = this.world.getTileEntity(blockposition);
-+                if (tileentity != null) {
-+                    player.playerConnection.sendPacket(tileentity.getUpdatePacket());
-+                }
              }
 +            // Paper end - extend Player Interact cancellation
              entityplayer.getBukkitEntity().updateInventory(); // SPIGOT-2867

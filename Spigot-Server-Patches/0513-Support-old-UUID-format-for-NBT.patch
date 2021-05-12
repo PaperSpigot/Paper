@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Mon, 29 Jun 2020 03:26:17 -0400
+Subject: [PATCH] Support old UUID format for NBT
+
+We have stored UUID in plenty of places that did not get DFU'd
+
+So just look for old format and load it if it exists.
+
+diff --git a/src/main/java/net/minecraft/nbt/GameProfileSerializer.java b/src/main/java/net/minecraft/nbt/GameProfileSerializer.java
+index 0560d115288c67e46d921ce529e603f424e601f5..50515cd9287505fcc8ab52e47393fb1dc771bfc3 100644
+--- a/src/main/java/net/minecraft/nbt/GameProfileSerializer.java
++++ b/src/main/java/net/minecraft/nbt/GameProfileSerializer.java
+@@ -41,6 +41,11 @@ public final class GameProfileSerializer {
+             s = nbttagcompound.getString("Name");
+         }
+ 
++        // Paper start - support string UUID's
++        if (nbttagcompound.hasKeyOfType("Id", 8)) {
++            uuid = UUID.fromString(nbttagcompound.getString("Id"));
++        }
++        // Paper end
+         if (nbttagcompound.b("Id")) {
+             uuid = nbttagcompound.a("Id");
+         }
+diff --git a/src/main/java/net/minecraft/nbt/NBTTagCompound.java b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
+index 77afbaad5b2cb8d912f5404fcbd3a0970490f4f3..945df83d4a2170cdcc29cb6d7b9f0f5f3940cb96 100644
+--- a/src/main/java/net/minecraft/nbt/NBTTagCompound.java
++++ b/src/main/java/net/minecraft/nbt/NBTTagCompound.java
+@@ -142,6 +142,12 @@ public class NBTTagCompound implements NBTBase {
+ 
+     public void setUUID(String prefix, UUID uuid) { a(prefix, uuid); } // Paper - OBFHELPER
+     public void a(String s, UUID uuid) {
++        // Paper start - support old format
++        if (this.hasKeyOfType(s + "Most", 99) && this.hasKeyOfType(s + "Least", 99)) {
++            this.map.remove(s + "Most");
++            this.map.remove(s + "Least");
++        }
++        // Paper end
+         this.map.put(s, GameProfileSerializer.a(uuid));
+     }
+ 
+@@ -151,11 +157,21 @@ public class NBTTagCompound implements NBTBase {
+      */
+     public UUID getUUID(String prefix) { return a(prefix); } // Paper - OBFHELPER
+     public UUID a(String s) {
++        // Paper start - support old format
++        if (!hasKeyOfType(s, 11) && this.hasKeyOfType(s + "Most", 99) && this.hasKeyOfType(s + "Least", 99)) {
++            return new UUID(this.getLong(s + "Most"), this.getLong(s + "Least"));
++        }
++        // Paper end
+         return GameProfileSerializer.a(this.get(s));
+     }
+ 
+     public final boolean hasUUID(String s) { return this.b(s); } // Paper - OBFHELPER
+     public boolean b(String s) {
++        // Paper start - support old format
++        if (this.hasKeyOfType(s + "Most", 99) && this.hasKeyOfType(s + "Least", 99)) {
++            return true;
++        }
++        // Paper end
+         NBTBase nbtbase = this.get(s);
+ 
+         return nbtbase != null && nbtbase.b() == NBTTagIntArray.a && ((NBTTagIntArray) nbtbase).getInts().length == 4;

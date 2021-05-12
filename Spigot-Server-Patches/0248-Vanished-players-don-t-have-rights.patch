@@ -18,7 +18,7 @@ index c88eea18e2e219f242c53ffb4e28cfc6d7bf318a..3a46a5001cda7402a97ac8552650cf64
      protected int j;
      @Nullable
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java b/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
-index 65cea9282467cb362ac6e9e0bb03c5d36085ee43..65cee640040bdd1229149409ff046b765ee08c34 100644
+index 8f14e1ebefe172e056a04bd7b6f55b9bbb1e7b2e..b44b18341331e5176e0f1851aa60cc425ccbd439 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/IProjectile.java
 @@ -4,6 +4,7 @@ import java.util.Iterator;
@@ -29,7 +29,7 @@ index 65cea9282467cb362ac6e9e0bb03c5d36085ee43..65cee640040bdd1229149409ff046b76
  import net.minecraft.server.level.WorldServer;
  import net.minecraft.util.MathHelper;
  import net.minecraft.world.entity.Entity;
-@@ -140,8 +141,14 @@ public abstract class IProjectile extends Entity {
+@@ -158,8 +159,14 @@ public abstract class IProjectile extends Entity {
      protected boolean a(Entity entity) {
          if (!entity.isSpectator() && entity.isAlive() && entity.isInteractable()) {
              Entity entity1 = this.getShooter();
@@ -130,10 +130,10 @@ index 8c7263f9dbb00cf6484e7f70b8d97639bab0cefc..07c5cdd00930a55fd412ef95f71f55ee
      public boolean s_() {
          return this.isClientSide;
 diff --git a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
-index a96c7b0883f3bdf8b731aeccaf1217583a32f5c8..61e2da8d8b2ebf50b28362c5c89bf5c32dbba1ba 100644
+index 2902117fd2803741b053a04fda7f4414fb8593cb..10f4015b8c36e4e27cf7d0745ba70b8a9e60aff3 100644
 --- a/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
 +++ b/src/main/java/net/minecraft/world/level/block/state/BlockBase.java
-@@ -504,6 +504,7 @@ public abstract class BlockBase {
+@@ -505,6 +505,7 @@ public abstract class BlockBase {
              return this.a != null ? this.a.b : this.b(iblockaccess, blockposition, VoxelShapeCollision.a());
          }
  
@@ -174,10 +174,10 @@ index fdd9e37a8c90fc3311e515355af0a0593efbdacc..cf32a4f63e8e59535c02a3f9c57f9883
          if (operatorboolean.apply(false, false)) {
              throw (IllegalArgumentException) SystemUtils.c((Throwable) (new IllegalArgumentException()));
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 681eb48c568029d6e3c5fa140a2c330a5f27df6f..e0e48094160b55b55efb9b567fa5fd7d497ed628 100644
+index 69bcd6dcfc62ab7b5666b8e185efa07a9adbc179..6d08487ff25b474b2372de37ea77aa0eb997d89a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1202,6 +1202,14 @@ public class CraftEventFactory {
+@@ -1220,6 +1220,14 @@ public class CraftEventFactory {
          Projectile projectile = (Projectile) entity.getBukkitEntity();
          org.bukkit.entity.Entity collided = position.getEntity().getBukkitEntity();
          com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = new com.destroystokyo.paper.event.entity.ProjectileCollideEvent(projectile, collided);

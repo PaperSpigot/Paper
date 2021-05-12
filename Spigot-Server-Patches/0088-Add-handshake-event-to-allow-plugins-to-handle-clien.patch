@@ -6,10 +6,10 @@ Subject: [PATCH] Add handshake event to allow plugins to handle client
 
 
 diff --git a/src/main/java/net/minecraft/server/network/HandshakeListener.java b/src/main/java/net/minecraft/server/network/HandshakeListener.java
-index b1714750538a0107d9922812d08471921b755925..31011ec34e5eeae29705f6ec167fb2e832284873 100644
+index 9b24afa4f4fe41d2261b16aaecec2144ac7d049f..5047a742d2e6a9749aa7d37e761d023a3425944b 100644
 --- a/src/main/java/net/minecraft/server/network/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/network/HandshakeListener.java
-@@ -25,7 +25,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -29,7 +29,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
      // CraftBukkit end
      private static final IChatBaseComponent a = new ChatComponentText("Ignoring status request");
      private final MinecraftServer b;
@@ -18,7 +18,7 @@ index b1714750538a0107d9922812d08471921b755925..31011ec34e5eeae29705f6ec167fb2e8
  
      public HandshakeListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
          this.b = minecraftserver;
-@@ -84,8 +84,34 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -88,8 +88,34 @@ public class HandshakeListener implements PacketHandshakingInListener {
                      this.c.close(chatmessage);
                  } else {
                      this.c.setPacketListener(new LoginListener(this.b, this.c));
@@ -52,5 +52,5 @@ index b1714750538a0107d9922812d08471921b755925..31011ec34e5eeae29705f6ec167fb2e8
 -                    if (org.spigotmc.SpigotConfig.bungee) {
 +                //if (org.spigotmc.SpigotConfig.bungee) { // Paper - comment out, we check above!
                          String[] split = packethandshakinginsetprotocol.hostname.split("\00");
-                         if ( split.length == 3 || split.length == 4 ) {
+                         if ( ( split.length == 3 || split.length == 4 ) && ( HOST_PATTERN.matcher( split[1] ).matches() ) ) {
                              packethandshakinginsetprotocol.hostname = split[0];

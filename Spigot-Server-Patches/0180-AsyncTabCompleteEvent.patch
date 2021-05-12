@@ -14,10 +14,10 @@ completion, such as offline players.
 Also adds isCommand and getLocation to the sync TabCompleteEvent
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 54a5b988e5dc8eec35cf91d45f282926d81a0043..cbffc7e1cf7ca7597517cdae12ec9be5efe97217 100644
+index 3628965d2a18a367c2357b54b65786fb90c38205..fc624315b156f450c1cbc87a81e9eeff5d31b4c2 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-@@ -711,10 +711,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -713,10 +713,10 @@ public class PlayerConnection implements PacketListenerPlayIn {
  
      @Override
      public void a(PacketPlayInTabComplete packetplayintabcomplete) {
@@ -30,7 +30,7 @@ index 54a5b988e5dc8eec35cf91d45f282926d81a0043..cbffc7e1cf7ca7597517cdae12ec9be5
              return;
          }
          // CraftBukkit end
-@@ -724,12 +724,35 @@ public class PlayerConnection implements PacketListenerPlayIn {
+@@ -726,12 +726,35 @@ public class PlayerConnection implements PacketListenerPlayIn {
              stringreader.skip();
          }
  
@@ -85,7 +85,7 @@ index 7d2fc05ddb18369aed29595e3c0dcbf6db136309..f1d4e2ac2823e2246463350b21f28c6d
  
          return tabEvent.isCancelled() ? Collections.EMPTY_LIST : tabEvent.getCompletions();
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index 5510266fb114954322823b72e3199f33c4d7a9a7..a51202ed53d8ba99b364e8797fe32fa8aeb4fc87 100644
+index a957695457cf3252848ce6ef37069692841b8e28..c5e00bd9e2790992202aadf8eec2002fc88c78f1 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -28,6 +28,39 @@ public class ConsoleCommandCompleter implements Completer {

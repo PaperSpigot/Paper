@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CDFN <codefun@protonmail.com>
+Date: Tue, 7 Jul 2020 17:53:23 +0200
+Subject: [PATCH] Return chat component with empty text instead of throwing
+ exception
+
+
+diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
+index 664de64b020cf9090a2fbee0afe2bfaf150adc3c..b06995aa57aa9cba0bb59f1d26d81015619a08e6 100644
+--- a/src/main/java/org/bukkit/inventory/InventoryView.java
++++ b/src/main/java/org/bukkit/inventory/InventoryView.java
+@@ -450,7 +450,7 @@ public abstract class InventoryView {
+     /**
+      * Get the title of this inventory window.
+      *
+-     * @return The title.
++     * @return The title or empty string when title is {@code null}. <!-- Paper -->
+      */
+     @NotNull
+     public /*abstract*/ net.kyori.adventure.text.Component title() {

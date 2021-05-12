@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Sat, 27 Mar 2021 09:24:23 +0100
+Subject: [PATCH] forced whitelist: use configurable kick message
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index a116156236caa22d3ee13b5a56f4ed3c8d013f37..35bb4d0b9ed131e6570cce0b43ae78c5557a0bff 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -2041,7 +2041,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+                 EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+ 
+                 if (!whitelist.isWhitelisted(entityplayer.getProfile())) {
+-                    entityplayer.playerConnection.disconnect(new ChatMessage("multiplayer.disconnect.not_whitelisted"));
++                    entityplayer.playerConnection.disconnect(org.spigotmc.SpigotConfig.whitelistMessage); // Paper - use configurable message
+                 }
+             }
+ 

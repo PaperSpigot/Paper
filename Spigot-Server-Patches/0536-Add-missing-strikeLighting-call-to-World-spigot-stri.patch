@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Sun, 26 Jul 2020 12:11:39 +0100
+Subject: [PATCH] Add missing strikeLighting call to
+ World#spigot()#strikeLightningEffect
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 80cd8ce4e70dbb740439ac530a7bc70a7a54cb85..74ee2013a47855cdd1d56a06a2e209776513fd14 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2627,6 +2627,7 @@ public class CraftWorld implements World {
+             lightning.teleportAndSync( loc.getX(), loc.getY(), loc.getZ() );
+             lightning.isEffect = true;
+             lightning.isSilent = isSilent;
++            world.strikeLightning( lightning );
+             return (LightningStrike) lightning.getBukkitEntity();
+         }
+     };

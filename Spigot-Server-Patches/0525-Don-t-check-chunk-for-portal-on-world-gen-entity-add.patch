@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sun, 5 Jul 2020 14:59:31 -0400
+Subject: [PATCH] Don't check chunk for portal on world gen entity add
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index 850225509a5398ddcc9335bf88e99bde662bfc91..a5b731bab16bf05351fee7e64ab6ae4d830309f7 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3041,7 +3041,7 @@ public abstract class EntityLiving extends Entity {
+         Entity entity = this.getVehicle();
+ 
+         super.stopRiding(suppressCancellation); // Paper - suppress
+-        if (entity != null && entity != this.getVehicle() && !this.world.isClientSide) {
++        if (entity != null && entity != this.getVehicle() && !this.world.isClientSide && entity.valid) { // Paper - don't process on world gen
+             this.a(entity);
+         }
+ 
