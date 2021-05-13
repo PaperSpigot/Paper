@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ravkr <rav_kr@interia.pl>
+Date: Fri, 26 Mar 2021 03:38:20 +0100
+Subject: [PATCH] Add ExitPortalCreateEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/world/ExitPortalCreateEvent.java b/src/main/java/io/papermc/paper/event/world/ExitPortalCreateEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2b9dc81dca879f2e24712dbeadc91f36ef2545d9
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/world/ExitPortalCreateEvent.java
+@@ -0,0 +1,82 @@
++package io.papermc.paper.event.world;
++
++import org.bukkit.Location;
++import org.bukkit.Material;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.world.WorldEvent;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called <b>before</b> an exit end portal is created.
++ * May be empty (if player visits The End for the first time) or filled with {@link Material#END_PORTAL} (after killing a dragon).
++ */
++public class ExitPortalCreateEvent extends WorldEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private Location portalLocation;
++    private boolean filled;
++    private boolean cancel = false;
++
++    /**
++     * @param portalLocation The middle {@link Material#BEDROCK} block, on the {@link Material#END_PORTAL} level.
++     */
++    public ExitPortalCreateEvent(@NotNull Location portalLocation, boolean filled) {
++        super(portalLocation.getWorld());
++        this.portalLocation = portalLocation;
++        this.filled = filled;
++    }
++
++    /**
++     * Gets the portal location.
++     *
++     * @return The middle {@link Material#BEDROCK} block, on the {@link Material#END_PORTAL} blocks' level.
++     */
++    @NotNull
++    public Location getPortalLocation() {
++        return portalLocation;
++    }
++
++    /**
++     * @param portalLocation The middle portal block, on the bottom. World will be ignored.
++     */
++    public void setPortalLocation(@NotNull Location portalLocation) {
++        this.portalLocation = portalLocation;
++    }
++
++    public boolean isFilled() {
++        return filled;
++    }
++
++    public void setFilled(boolean filled) {
++        this.filled = filled;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancel;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancel = cancel;
++    }
++
++    @Override
++    public @NotNull HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++    @Override
++    public String toString() {
++        return "ExitPortalCreateEvent{" +
++            "location=" + portalLocation +
++            ", filled=" + filled +
++            ", cancel=" + cancel +
++            '}';
++    }
++}

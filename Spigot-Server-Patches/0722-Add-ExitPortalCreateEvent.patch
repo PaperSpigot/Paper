@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ravkr <rav_kr@interia.pl>
+Date: Fri, 26 Mar 2021 02:25:05 +0100
+Subject: [PATCH] Add ExitPortalCreateEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index 0ab6319aa3e4e1f5679f37be36999ca56ca2484c..ba11b39f435e774f97a76971907107dba9f0fccd 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -58,6 +58,9 @@ import net.minecraft.world.phys.AxisAlignedBB;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import io.papermc.paper.event.block.DragonEggFormEvent; // Paper - DragonEggFormEvent
++import io.papermc.paper.event.world.ExitPortalCreateEvent; // Paper - ExitPortalCreateEvent
++import org.bukkit.Location; // Paper - ExitPortalCreateEvent
++import net.minecraft.server.MCUtil; // Paper - ExitPortalCreateEvent
+ 
+ public class EnderDragonBattle {
+ 
+@@ -442,14 +445,26 @@ public class EnderDragonBattle {
+     }
+ 
+     public void generateExitPortal(boolean flag) {
+-        WorldGenEndTrophy worldgenendtrophy = new WorldGenEndTrophy(flag);
+-
++        // Paper start - Call ExitPortalCreateEvent and use results
+         if (this.exitPortalLocation == null) {
+             for (this.exitPortalLocation = this.world.getHighestBlockYAt(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES, WorldGenEndTrophy.a).down(); this.world.getType(this.exitPortalLocation).a(Blocks.BEDROCK) && this.exitPortalLocation.getY() > this.world.getSeaLevel(); this.exitPortalLocation = this.exitPortalLocation.down()) {
+                 ;
+             }
+         }
+ 
++        // fix MC-93185
++        if (exitPortalLocation.getY() < this.world.getWorld().getMinHeight() + 1)
++            exitPortalLocation.setY(this.world.getWorld().getMinHeight() + 1);
++        if (exitPortalLocation.getY() > this.world.getWorld().getMaxHeight() - 4)
++            exitPortalLocation.setY(this.world.getWorld().getMaxHeight() - 4);
++
++        Location location = MCUtil.toLocation(world, exitPortalLocation);
++        ExitPortalCreateEvent exitPortalEvent = new ExitPortalCreateEvent(location, flag);
++        if (!exitPortalEvent.callEvent()) return;
++
++        this.exitPortalLocation = MCUtil.toBlockPosition(exitPortalEvent.getPortalLocation());
++        WorldGenEndTrophy worldgenendtrophy = new WorldGenEndTrophy(exitPortalEvent.isFilled());
++        // Paper end
+         worldgenendtrophy.b(WorldGenFeatureConfiguration.k).a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), this.exitPortalLocation); // Paper - decompile fix
+     }
+ 
