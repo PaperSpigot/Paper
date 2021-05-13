@@ -1,0 +1,1663 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kyle Wood <demonwav@gmail.com>
+Date: Sun, 16 Jun 2019 21:20:10 -0500
+Subject: [PATCH] Implement daemon mode to interop with paperd
+
+
+diff --git a/pom.xml b/pom.xml
+index ef8ee637a8a0e5e703922b2991c58f4f116b23fb..052e18c4c833d5260eaac2ff997119cb50e7fe31 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -37,6 +37,11 @@
+             <version>${project.version}</version>
+             <scope>compile</scope>
+         </dependency>
++        <dependency>
++            <groupId>org.apache.logging.log4j</groupId>
++            <artifactId>log4j-core</artifactId>
++            <version>2.12.0</version>
++        </dependency>
+         <dependency>
+             <groupId>org.spigotmc</groupId>
+             <artifactId>minecraft-server</artifactId>
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/CloseableQueue.java b/src/main/java/com/destroystokyo/paper/daemon/CloseableQueue.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4cf198fccb1aab43930745288717fa9ad308a39b
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/CloseableQueue.java
+@@ -0,0 +1,28 @@
++package com.destroystokyo.paper.daemon;
++
++import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.TimeUnit;
++import java.util.function.Consumer;
++
++/* package */ final class CloseableQueue<T> implements AutoCloseable {
++
++    private final Consumer<CloseableQueue<T>> closer;
++    private final LinkedBlockingQueue<T> buffer = new LinkedBlockingQueue<>();
++
++    /* package */ CloseableQueue(final Consumer<CloseableQueue<T>> closer) {
++        this.closer = closer;
++    }
++
++    /* package */ void give(final T t) {
++        buffer.offer(t);
++    }
++
++    /* package */ T get() throws InterruptedException {
++        return buffer.poll(10, TimeUnit.MINUTES);
++    }
++
++    @Override
++    public void close() {
++        closer.accept(this);
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/NativeErrorException.java b/src/main/java/com/destroystokyo/paper/daemon/NativeErrorException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d5005d360e1f4eed2d8522e04a1cdd3e19a99a31
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/NativeErrorException.java
+@@ -0,0 +1,7 @@
++package com.destroystokyo.paper.daemon;
++
++/* package */ final class NativeErrorException extends Exception {
++    /* package */ NativeErrorException(final String errorMessage) {
++        super(errorMessage);
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/NativeSocketClosedException.java b/src/main/java/com/destroystokyo/paper/daemon/NativeSocketClosedException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..023a0835dbdd2105fce53c3bc8b1149ac30907ab
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/NativeSocketClosedException.java
+@@ -0,0 +1,4 @@
++package com.destroystokyo.paper.daemon;
++
++/* package */ final class NativeSocketClosedException extends Exception {
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/NativeTimeoutException.java b/src/main/java/com/destroystokyo/paper/daemon/NativeTimeoutException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..75d4cd63ea50710a143b168df9fdc4282191cfa0
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/NativeTimeoutException.java
+@@ -0,0 +1,4 @@
++package com.destroystokyo.paper.daemon;
++
++/* package */ final class NativeTimeoutException extends Exception {
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemon.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemon.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ae5fb3d7317091a3787a24e0cf9f98fae5cb09d4
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemon.java
+@@ -0,0 +1,621 @@
++package com.destroystokyo.paper.daemon;
++
++import com.google.common.util.concurrent.ThreadFactoryBuilder;
++import com.google.gson.Gson;
++import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
++import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
++import it.unimi.dsi.fastutil.objects.ObjectIterator;
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.InputStreamReader;
++import java.io.OutputStream;
++import java.io.PrintStream;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.Locale;
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.TimeUnit;
++import java.util.function.Consumer;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++import javax.annotation.Nullable;
++import net.minecraft.server.DedicatedServer;
++import net.minecrell.terminalconsole.TerminalConsoleAppender;
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.CraftServer;
++
++/**
++ * <a href="https://github.com/PaperMC/paperd">{@code paperd}</a> is a native binary utility which assists in running
++ * the Paper server in the background, more like a daemon than simply backgrounding it in {@code screen} or
++ * {@code tmux}. {@code paperd} also provides a variety of tools for interfacing with and communicating with the server
++ * when it's in {@link #IS_DAEMON daemon mode}. The Paper side of the implementation for supporting this communication
++ * is what this class does. Most of the time it is completely disconnected from the rest of the Minecraft server, except
++ * for handling commands from {@code paperd}. The {@code paperd} code will call Bukkit APIs or access MC internals when
++ * needed to handle commands, but otherwise the rest of the code runs in separate threads from MC.
++ * <p/>
++ * This class represents all of the implementation specific to providing interoperability support with {@code paperd}.
++ * Unix sockets are used to receive messages from {@code paperd} and send responses back through the
++ * {@link #SOCK_FILE paperd socket file}.
++ * <p/>
++ * Due both to this architecture decision and to the generally low demand of system admins running persistent Paper
++ * servers on anything other than Linux, Linux is the only supported system. macOS, being Unix as well, does also work
++ * just fine, but only Linux pre-built binaries will be supported and released for {@code paperd}.
++ * <p/>
++ * Further documentation on the specifics of the communication system used here can be found in the {@code paperd} repo
++ * <a href="https://github.com/PaperMC/paperd/blob/master/protocol.md">here</a>.
++ */
++public final class PaperDaemon {
++
++    /**
++     * This is the Unix socket file that {@code paperd} will use to communicate with this server.
++     */
++    private static final String SOCK_FILE = "paper.sock";
++
++    /**
++     * The return exit code to give to {@link System#exit(int) System.exit()} in order for {@code paperd} to
++     * automatically restart the server. {@link #restartExitCode()} is used as a helper method to only return this value
++     * when the server is in {@link #IS_DAEMON daemon mode}, as this value is only applicable when run by
++     * {@code paperd}.
++     */
++    private static final int RESTART_EXIT_CODE = 27;
++    /**
++     * The return exit code to give to {@link System#exit(int) System.exit()} to specify the server shut down
++     * successfully in daemon mode. When {@code paperd} has keep alive enabled it will restart the server automatically
++     * if the exit code is not this. {@link #shutdownExitCode()} is used as a helper method to only return this value
++     * when the server is in {@link #IS_DAEMON daemon mode}, as this value is only applicable when run by
++     * {@code paperd}.
++     */
++    private static final int STOP_EXIT_CODE = 13;
++
++    /**
++     * The path to the file which defines the {@code paperd} protocol version that this server supports. This file path
++     * resolves to a file inside the currently running jar. This file must only contain a single integer.
++     */
++    private static final String PROTOCOL_VERSION_FILE = "/META-INF/io.papermc.paper.daemon.protocol";
++
++    /**
++     * This is the system property which {@code paperd} will set to enable daemon mode.
++     */
++    private static final String DAEMON_ENABLED_PROPERTY = "io.papermc.daemon.enabled";
++
++    private static final Gson gson = new Gson();
++
++    /**
++     * Defines the mappings between messages type integers and their corresponding message classes. The message class
++     * ({@link PaperDaemonMessage}) is also the handler for the message.
++     */
++    private static final @Nullable Long2ObjectArrayMap<Class<? extends PaperDaemonMessage>> messageTypeMap;
++
++    /* package */ static @Nullable Thread messageThread = null;
++
++    /* package */ static @Nullable ExecutorService messageSenderService = null;
++
++    private static @Nullable ExecutorService messageResponseHandlerService = null;
++
++    /**
++     * If we are in {@link #IS_DAEMON daemon mode} this will be set to the socket id for the server socket. If not in
++     * daemon mode, this will be uninitialized.
++     */
++    private static int sock;
++    /**
++     * IF we are in {@link #IS_DAEMON daemon mode} this will be set to the {@link Path} created from {@link #SOCK_FILE}
++     * relative to the PWD of the server. If not in daemon mode, this will be {@code null}.
++     */
++    private static @Nullable Path sockFile = null;
++
++    private static boolean initCalled = false;
++
++    private static boolean hasErrored = false;
++    private static boolean isRestarting = false;
++    private static boolean isShuttingDown = false;
++
++    /**
++     * {@code true} if daemon mode has been enabled for the server. This is defined by whether or not the
++     * {@code io.papermc.daemon.enabled property} system property was set to {@code true} at startup.
++     */
++    public static final boolean IS_DAEMON;
++
++    /**
++     * The {@code paperd} protocol version this server supports. For safety, {@code paperd} will refuse to talk to
++     * servers where the protocol does not match. The protocol is defined by the file at {@link #PROTOCOL_VERSION_FILE}.
++     */
++    /* package */ static final int PROTOCOL_VERSION;
++
++    static {
++        IS_DAEMON = Boolean.getBoolean(DAEMON_ENABLED_PROPERTY);
++        PROTOCOL_VERSION = findProtocolVersion();
++
++        // Don't take up this space if daemon mode isn't enabled
++        if (IS_DAEMON) {
++            messageTypeMap = new Long2ObjectArrayMap<>();
++            messageTypeMap.put(0, PaperDaemonMessage.ProtocolVersionMessage.class);
++            messageTypeMap.put(1, PaperDaemonMessage.StopMessage.class);
++            messageTypeMap.put(2, PaperDaemonMessage.RestartMessage.class);
++            messageTypeMap.put(3, PaperDaemonMessage.StatusMessage.class);
++            messageTypeMap.put(4, PaperDaemonMessage.SendCommandMessage.class);
++            messageTypeMap.put(5, PaperDaemonMessage.TimingsMessage.class);
++            messageTypeMap.put(6, PaperDaemonMessage.LogsMessage.class);
++            messageTypeMap.put(7, PaperDaemonMessage.EndLogsListenerMessage.class);
++            messageTypeMap.put(8, PaperDaemonMessage.ConsoleStatusMessage.class);
++            messageTypeMap.put(9, PaperDaemonMessage.TabCompleteMessage.class);
++        } else {
++            messageTypeMap = null;
++        }
++    }
++
++    private static int findProtocolVersion() {
++        try (
++            final InputStream is = PaperDaemon.class.getResourceAsStream(PROTOCOL_VERSION_FILE);
++            final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
++        ) {
++            final String text = reader.readLine();
++            try {
++                return Integer.parseInt(text.trim());
++            } catch (final NumberFormatException e) {
++                throw new PaperDaemonException("Failed to parse protocol version descriptor", e);
++            }
++        } catch (final IOException e) {
++            throw new PaperDaemonException("Failed to read protocol version descriptor", e);
++        }
++    }
++
++    /**
++     * Returns the exit code which will tell {@code paperd} to restart the server if the server is in
++     * {@link #IS_DAEMON daemon mode}. This value is {@link #RESTART_EXIT_CODE}. If the server is <i>not</i> in
++     * {@link #IS_DAEMON daemon mode}, {@code 0} is returned.
++     */
++    private static int restartExitCode() {
++        if (IS_DAEMON) {
++            return RESTART_EXIT_CODE;
++        } else {
++            return 0;
++        }
++    }
++
++    /**
++     * Returns the exit code which will tell {@code paperd} that the stop was intentional if the server is in
++     * {@link #IS_DAEMON daemon mode} and has not errored. This value is {@link #STOP_EXIT_CODE}. If the server is
++     * <i>not</i> in {@link #IS_DAEMON daemon mode}, {@code 0} is returned.
++     */
++    public static int shutdownExitCode() {
++        if (isRestarting) {
++            // If this has been set then we're being asked to restart anyways
++            return restartExitCode();
++        }
++        if (!hasErrored && IS_DAEMON) {
++            return STOP_EXIT_CODE;
++        } else {
++            return 0;
++        }
++    }
++
++    public static void setHasErrored(final boolean hasErrored) {
++        PaperDaemon.hasErrored = hasErrored;
++    }
++
++    public static void setIsRestarting(final boolean isRestarting) {
++        PaperDaemon.isRestarting = isRestarting;
++    }
++
++    /**
++     * Setups up the necessary infrastructure for running the server in daemon mode if <b>both</b> of the following
++     * are true:
++     * <ul>
++     *   <li>The {@code io.papermc.daemon.enabled property} is set to {@code true}</li>
++     *   <li>The OS is Unix, namely Linux and macOS are checked</li>
++     * </ul>
++     * In the instance that the above checks are satisfied, the following things will happen:
++     * <ul>
++     *   <li>{@code stdout} ({@link System#out}) will be closed</li>
++     *   <li>{@code stderr} ({@link System#err}) will be closed</li>
++     *   <li>{@code stdin} ({@link System#in}) will be closed</li>
++     *   <li>A Unix socket will be created at {@link #SOCK_FILE} (this will allow {@code paperd} to communicate with the
++     *       running server)</li>
++     *   <li>This method will return {@code true}</li>
++     * </ul>
++     * <p>
++     * If the above checks are not satisfied, this method does nothing and will return {@code false}.
++     *
++     * @return {@code true} if the server is running in daemon mode.
++     */
++    public static boolean init() {
++        if (!IS_DAEMON) {
++            return false;
++        }
++
++        synchronized (PaperDaemon.class) {
++            if (initCalled) {
++                return false;
++            }
++            initCalled = true;
++        }
++
++        final String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
++        if (!osName.contains("nux") && !osName.contains("nix") &&
++            !osName.contains("mac os") && !osName.contains("macos")
++        ) {
++            System.out.println("ERROR: Property io.papermc.daemon.enabled was true, but this is not running on a " +
++                "Unix system, so the option will be ignored.");
++            System.out.println("    System type: " + osName);
++            return false;
++        }
++
++        sockFile = Paths.get(SOCK_FILE);
++        if (Files.exists(sockFile)) {
++            System.out.println("ERROR: Socket file already exists: " + sockFile.toAbsolutePath());
++            System.out.println("    This file must not already exist in daemon mode.");
++            System.out.println("    Stopping the server due to previous error.");
++            System.exit(1);
++        }
++
++        PaperDaemonJni.init();
++
++        System.setProperty(TerminalConsoleAppender.ANSI_OVERRIDE_PROPERTY, "true");
++
++        messageSenderService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
++            .setNameFormat("paperd-Async-Message-Sender")
++            .build());
++        messageResponseHandlerService = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
++            .setNameFormat("paperd-Message-Response-Handler-%d")
++            .build());
++
++        createSocket();
++        startListening();
++
++        // When running as a daemon, we won't have stdout, stderr, and stdin
++        // If we leave this around as normal then that will cause crashes elsewhere,
++        // since paperd has already closed them
++        // Set them to a PrintStream which does nothing, rather than null, to prevent NPE errors
++        final PrintStream stream = new PrintStream(new OutputStream() {
++            @Override
++            public void write(int b) {
++            }
++        });
++        System.setOut(stream);
++        System.setErr(stream);
++
++        System.setIn(new InputStream() {
++            @Override
++            public synchronized int read() {
++                // block forever
++                // noinspection InfiniteLoopStatement
++                while (true) {
++                    try {
++                        this.wait();
++                    } catch (final InterruptedException ignored) {
++                    }
++                }
++            }
++        });
++
++        return true;
++    }
++
++    /**
++     * Cleans up all of the {@code paperd} handler resources. This will stop all handler threads and shutdown all
++     * executors before finally closing the socket. Unix sockets are cleaned up after the process which owns it ends,
++     * so it's not a big deal if we are killed and don't get a chance to do this, but it's still good practice.
++     */
++    public static void shutdown() {
++        isShuttingDown = true;
++
++        // Finish processing any current messages and stop accepting new messages
++        final ExecutorService messageResponseHandlerService = PaperDaemon.messageResponseHandlerService;
++        PaperDaemon.messageResponseHandlerService = null;
++
++        if (messageResponseHandlerService == null) {
++            return;
++        } else {
++            messageResponseHandlerService.shutdown();
++        }
++
++        final Int2ObjectArrayMap<Thread> responseThreads = PaperDaemonMessage.LogsMessage.responseThreads;
++        PaperDaemonMessage.LogsMessage.responseThreads = null;
++        if (responseThreads != null) {
++            for (final Thread thread : responseThreads.values()) {
++                thread.interrupt();
++            }
++            responseThreads.clear();
++        }
++
++        // Tell the message receiver loop it should quit
++        final Thread messageThread = PaperDaemon.messageThread;
++        PaperDaemon.messageThread = null;
++        if (messageThread != null) {
++            messageThread.interrupt();
++            try {
++                messageThread.join(TimeUnit.SECONDS.toMillis(3));
++            } catch (final InterruptedException ignored) {
++            }
++        }
++
++        // Wait for any message handlers to finish processing
++        try {
++            if (!messageResponseHandlerService.awaitTermination(3, TimeUnit.SECONDS)) {
++                messageResponseHandlerService.shutdownNow();
++            }
++        } catch (final InterruptedException ignored) {
++        }
++
++        // Shut this down last in case any of the messages needed to use it
++        final ExecutorService messageSenderService = PaperDaemon.messageSenderService;
++        PaperDaemon.messageSenderService = null;
++        if (messageSenderService != null) {
++            messageSenderService.shutdown();
++        }
++
++        // This part isn't strictly necessary, the OS will clean up after the process closes anyways
++        // We just do this to be proper
++        Throwable baseThrown = null;
++        try {
++            PaperDaemonJni.closeSocket(sock);
++        } catch (final NativeErrorException e) {
++            baseThrown = new PaperDaemonException("Failed to close paperd socket", e);
++        } catch (final Throwable t) {
++            baseThrown = t;
++        }
++        try {
++            final Path sockFile = PaperDaemon.sockFile;
++            if (sockFile != null) {
++                Files.delete(sockFile);
++            }
++        } catch (final IOException e) {
++            final Throwable current = new PaperDaemonException("Failed to delete socket file", e);
++            if (baseThrown != null) {
++                baseThrown.addSuppressed(current);
++            } else {
++                baseThrown = current;
++            }
++        }
++        if (baseThrown != null) {
++            if (baseThrown instanceof RuntimeException) {
++                throw (RuntimeException) baseThrown;
++            } else {
++                throw (Error) baseThrown;
++            }
++        }
++    }
++
++    /**
++     * Create a new socket for communication with {@code paperd} at the given file. Throws a runtime exception on
++     * failure to cause init to fail if something goes wrong.
++     */
++    private static void createSocket() {
++        final Path sockFile = PaperDaemon.sockFile;
++        if (sockFile == null) {
++            throw new IllegalStateException("Socket file not set");
++        }
++        try {
++            sock = PaperDaemonJni.createSocket(sockFile);
++        } catch (final NativeErrorException e) {
++            throw new PaperDaemonException("Failed to create socket for daemon mode at " + sockFile.toAbsolutePath(), e);
++        }
++    }
++
++    /**
++     * Begins listening and responding to socket messages. This method will loop forever in a separate
++     * {@link Thread#setDaemon(boolean) daemon} thread.
++     */
++    private static void startListening() {
++        messageThread = new Thread(() -> {
++            while (!Thread.interrupted()) {
++                try {
++                    final int clientSock;
++                    try {
++                        clientSock = PaperDaemonJni.acceptConnection(PaperDaemon.sock);
++                    } catch (final NativeTimeoutException e) {
++                        continue;
++                    } catch (final NativeErrorException e) {
++                        log(logger -> logger.log(Level.WARNING, "Failed to accept message from socket", e));
++                        continue;
++                    }
++
++                    if (Thread.interrupted()) {
++                        break;
++                    }
++
++                    final ExecutorService messageResponseHandlerService = PaperDaemon.messageResponseHandlerService;
++                    if (messageResponseHandlerService != null) {
++                        messageResponseHandlerService.submit(new MessageHandler(clientSock));
++                    }
++                } catch (final Throwable t) {
++                    log(logger -> logger.log(Level.SEVERE, "Unhandled exception in paperd message receiver", t));
++                }
++            }
++        });
++        messageThread.setDaemon(true);
++        messageThread.setName("paperd-Message-Receiver");
++        messageThread.start();
++    }
++
++    /* package */ static final class MessageHandler implements Runnable {
++        private final int clientSock;
++
++        /* package */ MessageHandler(final int clientSock) {
++            this.clientSock = clientSock;
++        }
++
++        @Override
++        public void run() {
++            try {
++                while (true) {
++                    final PaperDaemonMessageBuffer buffer;
++                    try {
++                        buffer = PaperDaemonJni.receiveMessage(clientSock);
++                    } catch (final NativeTimeoutException e) {
++                        continue;
++                    } catch (final NativeErrorException e) {
++                        log(logger -> logger.log(Level.WARNING, "Error ", e));
++                        break;
++                    }
++
++                    if (buffer == null || Thread.currentThread().isInterrupted()) {
++                        break;
++                    }
++
++                    handleMessage(buffer.messageType, buffer.messageData, clientSock);
++
++                    if (Thread.currentThread().isInterrupted()) {
++                        break;
++                    }
++                }
++            } finally {
++                if (PaperDaemon.isShuttingDown) {
++                    // We're shutting down, tell that to the client
++                    sendMessage(clientSock, ServerErrorMessage.shuttingDown(), false);
++                }
++            }
++        }
++    }
++
++    /* package */ static void handleMessage(final long messageType, final String message, final int clientSock) {
++        final Long2ObjectArrayMap<Class<? extends PaperDaemonMessage>> messageTypeMap = PaperDaemon.messageTypeMap;
++        if (messageTypeMap == null) {
++            return;
++        }
++
++        final Class<? extends PaperDaemonMessage> clazz = messageTypeMap.get(messageType);
++        if (clazz == null) {
++            log(logger -> logger.warning("Unknown message type: " + messageType));
++            return;
++        }
++        final PaperDaemonMessage handler;
++        try {
++            handler = gson.fromJson(message, clazz);
++        } catch (final Throwable t) {
++            log(logger -> logger.log(Level.SEVERE, "Failed to parse paperd message: " + message, t));
++            return;
++        }
++        try {
++            handler.execute(clientSock);
++        } catch (final Throwable t) {
++            log(logger -> logger.log(Level.SEVERE, "Exception thrown in paperd message handler: " + clazz.getName(), t));
++        }
++    }
++
++    /* package */ static void sendMessageAsync(final int clientSock, final Object data) {
++        final ExecutorService executorService = PaperDaemon.messageSenderService;
++        if (executorService == null) {
++            return;
++        }
++        executorService.execute(() -> sendMessage(clientSock, data));
++    }
++
++    /* package */ static void sendMessage(final int clientSock, final Object data) {
++        sendMessage(clientSock, data, true);
++    }
++
++    /* package */ static boolean sendMessage(final int clientSock, final Object data, final boolean logError) {
++        checkMainThread();
++
++        final String json = gson.toJson(data);
++        try {
++            PaperDaemonJni.sendMessage(clientSock, new PaperDaemonMessageBuffer(0, json));
++        } catch (final NativeErrorException e) {
++            if (logError) {
++                log(logger -> logger.log(Level.WARNING, "Failed to send message to paperd ", e));
++            }
++            return false;
++        } catch (final NativeSocketClosedException e) {
++            return false;
++        }
++
++        return true;
++    }
++
++    private static void checkMainThread() {
++        final CraftServer server = getCraftServer();
++        if (server == null) {
++            return;
++        }
++        if (server.console.isMainThread()) {
++            server.getLogger().log(Level.WARNING, "paperd message sent on main thread", new Throwable());
++        }
++    }
++
++    /* package */ static final class ServerErrorMessage {
++        /* package */ final String error;
++        /* package */ final boolean shutdown;
++
++        private ServerErrorMessage(final String message, final boolean shudown) {
++            this.error = message;
++            this.shutdown = shudown;
++        }
++
++        /* package */ static ServerErrorMessage serverNotReady() {
++            return new ServerErrorMessage("Server not ready yet", false);
++        }
++        /* package */ static ServerErrorMessage shuttingDown() {
++            return new ServerErrorMessage(null, true);
++        }
++    }
++
++    /* package */ static void serverNotReadyYet(final int channel) {
++        sendMessage(channel, ServerErrorMessage.serverNotReady());
++    }
++
++    //
++    // The code in this file can sometimes run much sooner than CraftBukkit has had time to initialize. With this taken
++    // into consideration, extra care must be taken to prevent NPEs from code which would always be safe in normal
++    // conditions.
++    //
++
++    @Nullable
++    @SuppressWarnings("ConstantConditions")
++    /* package */ static CraftServer getCraftServer() {
++        return (CraftServer) Bukkit.getServer();
++    }
++
++    @Nullable
++    /* package */ static DedicatedServer getConsole() {
++        final CraftServer server = getCraftServer();
++        if (server == null) {
++            return null;
++        }
++        return server.console;
++    }
++
++    /**
++     * Provide a {@code consumer} to use to execute a log statement immediately, or in the future once the system Logger
++     * is available if it is not already. This method exists because there may be cases where important log messages are
++     * printed before the server has fully started and the system logger has been created. In these cases, to make sure
++     * no critical information is lost due to this, this method will create a new thread to wait for the system logger
++     * to become available before executing the provided {@code consumer}. The cost of creating a new thread is
++     * negligible as this will likely rarely, if ever, happen, and if it does the volume will likely not go much higher
++     * than 1.
++     *
++     * @param consumer The {@link Consumer} to execute with the system logger once it is available.
++     */
++    /* package */ static void log(final Consumer<Logger> consumer) {
++        {
++            final CraftServer server = getCraftServer();
++            if (server != null) {
++                consumer.accept(server.getLogger());
++                return;
++            }
++        }
++
++        final Thread t = new Thread(() -> {
++            while (true) {
++                try {
++                    //noinspection BusyWait
++                    Thread.sleep(500);
++                } catch (final InterruptedException ignored) {
++                    break;
++                }
++
++                final CraftServer server = getCraftServer();
++                if (server != null) {
++                    consumer.accept(server.getLogger());
++                    break;
++                }
++            }
++        });
++        t.setDaemon(true);
++        t.start();
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonAppender.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonAppender.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..add8445f3017d17fef2472247076da83d409be2b
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonAppender.java
+@@ -0,0 +1,95 @@
++package com.destroystokyo.paper.daemon;
++
++import com.google.common.collect.EvictingQueue;
++import java.io.Serializable;
++import java.util.ArrayList;
++import net.minecrell.terminalconsole.TerminalConsoleAppender;
++import org.apache.logging.log4j.core.Appender;
++import org.apache.logging.log4j.core.Core;
++import org.apache.logging.log4j.core.Filter;
++import org.apache.logging.log4j.core.Layout;
++import org.apache.logging.log4j.core.LogEvent;
++import org.apache.logging.log4j.core.appender.AbstractAppender;
++import org.apache.logging.log4j.core.config.plugins.Plugin;
++import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
++import org.apache.logging.log4j.core.config.plugins.PluginElement;
++import org.apache.logging.log4j.core.config.plugins.PluginFactory;
++import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
++import org.apache.logging.log4j.core.layout.PatternLayout;
++
++@SuppressWarnings("UnstableApiUsage")
++@Plugin(name = PaperDaemonAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
++public final class PaperDaemonAppender extends AbstractAppender {
++    private static final int LOG_HISTORY_SIZE = 1000;
++
++    /* package */ static final String PLUGIN_NAME = "PaperConsole";
++
++    private final TerminalConsoleAppender delegate;
++
++    private final Object lock;
++    private final EvictingQueue<String> pastMessages;
++    private final ArrayList<CloseableQueue<String>> logConsumers;
++
++    /* package */ static PaperDaemonAppender instance;
++
++    @PluginFactory
++    public static PaperDaemonAppender createAppender(
++        @Required(message = "No name provided for PaperDaemonAppender") @PluginAttribute("name") String name,
++        @PluginElement("Filter") Filter filter,
++        @PluginElement("Layout") Layout<? extends Serializable> layout,
++        @PluginAttribute(value = "ignoreExceptions", defaultBoolean = true) boolean ignoreExceptions
++    ) {
++        if (layout == null) {
++            layout = PatternLayout.createDefaultLayout();
++        }
++
++        return new PaperDaemonAppender(name, filter, layout, ignoreExceptions);
++    }
++
++    private PaperDaemonAppender(
++        final String name,
++        final Filter filter,
++        final Layout<? extends Serializable> layout,
++        final boolean ignoreExceptions
++    ) {
++        super(name, filter, layout, ignoreExceptions);
++        delegate = TerminalConsoleAppender.createAppender(name, filter, layout, ignoreExceptions);
++
++        instance = this;
++
++        if (!PaperDaemon.IS_DAEMON) {
++            lock = null;
++            pastMessages = null;
++            logConsumers = null;
++            return;
++        }
++
++        lock = new Object();
++        pastMessages = EvictingQueue.create(LOG_HISTORY_SIZE);
++        logConsumers = new ArrayList<>();
++    }
++
++    @Override
++    public void append(final LogEvent event) {
++        if (!PaperDaemon.IS_DAEMON) {
++            delegate.append(event);
++            return;
++        }
++
++        final String text = getLayout().toSerializable(event).toString();
++        for (final CloseableQueue<String> consumer : logConsumers) {
++            consumer.give(text);
++        }
++
++        synchronized (lock) {
++            pastMessages.offer(text);
++        }
++    }
++
++    /* package */ CloseableQueue<String> openConnection() {
++        final CloseableQueue<String> buf = new CloseableQueue<>(logConsumers::remove);
++        pastMessages.forEach(buf::give);
++        logConsumers.add(buf);
++        return buf;
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonException.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e10b1e46221d26e256eab9e0f9e5af2870aa9471
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonException.java
+@@ -0,0 +1,11 @@
++package com.destroystokyo.paper.daemon;
++
++/* package */ final class PaperDaemonException extends RuntimeException {
++    /* package */ PaperDaemonException(final String message) {
++        super(message);
++    }
++
++    /* package */ PaperDaemonException(final String message, final Throwable cause) {
++        super(message, cause);
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonJni.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonJni.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0b0e2e41289334de342516f77832e218ef1a9e90
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonJni.java
+@@ -0,0 +1,98 @@
++package com.destroystokyo.paper.daemon;
++
++import java.io.IOException;
++import java.io.InputStream;
++import java.nio.channels.Channels;
++import java.nio.channels.FileChannel;
++import java.nio.channels.ReadableByteChannel;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.InvalidPathException;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.zip.GZIPInputStream;
++
++import static java.nio.file.StandardOpenOption.CREATE;
++import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
++import static java.nio.file.StandardOpenOption.WRITE;
++
++/* package */ final class PaperDaemonJni {
++
++    private static final String PAPERD_FILE_PROPERTY = "io.papermc.daemon.paperd.binary";
++
++    static {
++        final String paperdFile = System.getProperty(PAPERD_FILE_PROPERTY);
++        if (paperdFile == null) {
++            throw new PaperDaemonException(PAPERD_FILE_PROPERTY + " property not set");
++        }
++
++        final Path paperdPath = Paths.get(paperdFile);
++        if (Files.notExists(paperdPath)) {
++            throw new PaperDaemonException(PAPERD_FILE_PROPERTY +
++                " references a non-existent file: " + paperdFile);
++        }
++
++        Path outputFile = tryExistingFile(paperdPath);
++        if (outputFile == null) {
++            try {
++                outputFile = Files.createTempFile("libpaperd_jni", "so");
++            } catch (final IOException e) {
++                throw new PaperDaemonException("Failed to create temp file for JNI lib");
++            }
++
++            try (
++                final InputStream in = Files.newInputStream(paperdPath);
++                final GZIPInputStream gin = new GZIPInputStream(in);
++                final ReadableByteChannel inChan = Channels.newChannel(gin);
++                final FileChannel outChan = FileChannel.open(outputFile, WRITE, CREATE, TRUNCATE_EXISTING)
++            ) {
++                outChan.transferFrom(inChan, 0, Long.MAX_VALUE);
++            } catch (final IOException e) {
++                throw new PaperDaemonException("Failed to extract paperd JNI library", e);
++            }
++
++            try {
++                // bit of a hack, but if we write the file path out here then paperd can attempt
++                // to cleanup after us one we're done
++                Files.write(paperdPath, outputFile.toAbsolutePath().toString()
++                    .getBytes(StandardCharsets.UTF_8), WRITE, CREATE, TRUNCATE_EXISTING);
++            } catch (final IOException e) {
++                throw new PaperDaemonException("Failed to write output JNI lib path to " + paperdPath, e);
++            }
++        }
++
++        System.load(outputFile.toAbsolutePath().toString());
++    }
++
++    private static Path tryExistingFile(final Path path) {
++        try {
++            // If we've restarted then we've already extracted the lib and written the file path (hopefully)
++            final Path currentLib = Paths.get(new String(Files.readAllBytes(path), StandardCharsets.UTF_8));
++
++            if (Files.exists(currentLib)) {
++                return currentLib;
++            }
++        } catch (final IOException | InvalidPathException ignored) {
++        }
++        return null;
++    }
++
++    private PaperDaemonJni() {
++    }
++
++    /**
++     * This is a dummy method to call to explicitly cause the {@code <clinit>} method to run to initialize the JNI part
++     * of {@code paperd}.
++     */
++    /* package */ static void init () {}
++
++    /* package */ static native int createSocket(final Path sockFile) throws NativeErrorException;
++
++    /* package */ static native int acceptConnection(final int sock) throws NativeErrorException, NativeTimeoutException;
++
++    /* package */ static native PaperDaemonMessageBuffer receiveMessage(final int clientSock) throws NativeErrorException, NativeTimeoutException;
++
++    /* package */ static native void sendMessage(final int clientSock, final PaperDaemonMessageBuffer message) throws NativeErrorException, NativeSocketClosedException;
++
++    /* package */ static native void closeSocket(final int sock) throws NativeErrorException;
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessage.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessage.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fde6ea9c98551cee4a78722c6ec28fb00890272a
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessage.java
+@@ -0,0 +1,441 @@
++package com.destroystokyo.paper.daemon;
++
++import co.aikar.timings.SimpleTimingsReportListener;
++import co.aikar.timings.Timings;
++import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
++import java.text.DecimalFormat;
++import java.util.List;
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.stream.Collectors;
++import javax.annotation.Nonnull;
++import net.minecraft.server.DedicatedServer;
++import org.apache.commons.lang3.text.WordUtils;
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.command.ConsoleCommandCompleter;
++import org.bukkit.entity.Player;
++import org.spigotmc.RestartCommand;
++
++/* package */ interface PaperDaemonMessage {
++    /* package */ void execute(final int clientSock);
++
++    /**
++     * This message tells {@code paperd} the version of the communication protocol this server implements. In the case
++     * that a protocol bump happens due to adding, removing, or changing commands, the number returned by this message
++     * will change accordingly. All other messages are free to change between protocol versions, but this message cannot
++     * change, or compatibility would be broken. This message is therefore intentionally simple.
++     */
++    /* package */ final class ProtocolVersionMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(final int clientSock) {
++            PaperDaemon.sendMessage(clientSock, new ProtocolVersionMessageResponse(PaperDaemon.PROTOCOL_VERSION));
++        }
++
++        /* package */ final static class ProtocolVersionMessageResponse {
++            final int protocolVersion;
++
++            /* package */ ProtocolVersionMessageResponse(final int protocolVersion) {
++                this.protocolVersion = protocolVersion;
++            }
++        }
++    }
++
++    /**
++     * Stops the server gracefully.
++     */
++    /* package */ final class StopMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++            PaperDaemon.log(logger -> logger.info("Shutdown command received from paperd"));
++            server.scheduleOnMain(Bukkit::shutdown);
++        }
++    }
++
++    /**
++     * A command to be executed on the server as the console sender.
++     */
++    /* package */ final class SendCommandMessage implements PaperDaemonMessage {
++        /* package */ String message;
++
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++            PaperDaemon.log(logger -> logger.info("Command received from paperd: " + message));
++            server.scheduleOnMain(() ->
++                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message));
++        }
++    }
++
++    /**
++     * Returns various bits of status information about the server:
++     * <ul>
++     *   <li>Server Name</li>
++     *   <li>Server Version</li>
++     *   <li>API Version</li>
++     *   <li>Server Address</li>
++     *   <li>Server Name</li>
++     *   <li>All Players</li>
++     *   <li>World Info<ul>
++     *       <li>Name</li>
++     *       <li>Dimension</li>
++     *       <li>Seed</li>
++     *       <li>Difficulty</li>
++     *       <li>Players</li>
++     *       <li>Time</li>
++     *   </ul></li>
++     *   <li>TPS</li>
++     *   <li>Memory Usage</li>
++     * </ul>
++     */
++    /* package */ final class StatusMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++            server.scheduleOnMain(() -> {
++                final String motd = Bukkit.getMotd();
++                final String serverName = Bukkit.getName();
++                final String serverVersion = Bukkit.getVersion();
++                final String apiVersion = Bukkit.getBukkitVersion();
++                final List<String> players = Bukkit.getOnlinePlayers().stream()
++                    .map(Player::getDisplayName).collect(Collectors.toList());
++
++                // this decimal format means the resulting number will be 0 padded at least to 3 digits
++                final DecimalFormat format = new DecimalFormat("000");
++
++                final List<StatusMessage.WorldStatus> worlds = Bukkit.getWorlds().stream().map(world -> {
++                    final String name = world.getName();
++                    final String dimension =
++                        WordUtils.capitalizeFully(world.getEnvironment().name().replace('_', ' '));
++                    final long seed = world.getSeed();
++                    final String difficulty =
++                        WordUtils.capitalizeFully(world.getDifficulty().name().replace('_', ' '));
++                    final List<String> worldPlayers =
++                        world.getPlayers().stream().map(Player::getDisplayName).collect(Collectors.toList());
++                    final String time;
++                    final long worldTime = world.getTime();
++                    if (worldTime == 0) {
++                        time = "000";
++                    } else {
++                        time = format.format(worldTime / 10L);
++                    }
++
++                    return new StatusMessage.WorldStatus(name, dimension, seed, difficulty, worldPlayers, time);
++                }).collect(Collectors.toList());
++
++                final double[] tps = Bukkit.getTPS();
++
++                final long freeMem = Runtime.getRuntime().freeMemory();
++                final long currentMem = Runtime.getRuntime().totalMemory();
++                final long maxMem = Runtime.getRuntime().maxMemory();
++
++
++                PaperDaemon.sendMessageAsync(clientSock, new StatusMessage.StatusMessageResponse(
++                    motd, serverName, serverVersion, apiVersion, players, worlds,
++                    new StatusMessage.TpsStatus(tps),
++                    new StatusMessage.MemoryStatus(freeMem, currentMem, maxMem)
++                ));
++            });
++        }
++
++        /* package */ final static class StatusMessageResponse {
++            /* package */ final String motd;
++            /* package */ final String serverName;
++            /* package */ final String serverVersion;
++            /* package */ final String apiVersion;
++            /* package */ final List<String> players;
++            /* package */ final List<StatusMessage.WorldStatus> worlds;
++            /* package */ final StatusMessage.TpsStatus tps;
++            /* package */ final StatusMessage.MemoryStatus memoryUsage;
++
++            /* package */ StatusMessageResponse(
++                final String motd,
++                final String serverName,
++                final String serverVersion,
++                final String apiVersion,
++                final List<String> players,
++                final List<StatusMessage.WorldStatus> worlds,
++                final StatusMessage.TpsStatus tps,
++                final StatusMessage.MemoryStatus memoryUsage
++            ) {
++                this.motd = motd;
++                this.serverName = serverName;
++                this.serverVersion = serverVersion;
++                this.apiVersion = apiVersion;
++                this.players = players;
++                this.worlds = worlds;
++                this.tps = tps;
++                this.memoryUsage = memoryUsage;
++            }
++        }
++
++        /* package */ final static class WorldStatus {
++            /* package */ final String name;
++            /* package */ final String dimension;
++            /* package */ final long seed;
++            /* package */ final String difficulty;
++            /* package */ final List<String> players;
++            /* package */ final String time;
++
++            /* package */ WorldStatus(
++                final String name,
++                final String dimension,
++                final long seed,
++                final String difficulty,
++                final List<String> players,
++                final String time
++            ) {
++                this.name = name;
++                this.dimension = dimension;
++                this.seed = seed;
++                this.difficulty = difficulty;
++                this.players = players;
++                this.time = time;
++            }
++        }
++
++        /* package */ final static class TpsStatus {
++            /* package */ final double oneMin;
++            /* package */ final double fiveMin;
++            /* package */ final double fifteenMin;
++
++            /* package */ TpsStatus(final double[] mins) {
++                this.oneMin = mins[0];
++                this.fiveMin = mins[1];
++                this.fifteenMin = mins[2];
++            }
++        }
++
++        /* package */ final static class MemoryStatus {
++            /* package */ final String usedMemory;
++            /* package */ final String totalMemory;
++            /* package */ final String maxMemory;
++
++            /* package */ MemoryStatus(final long freeMemory, final long totalMemory, final long maxMemory) {
++                final long usedMemory = totalMemory - freeMemory;
++                this.usedMemory = (usedMemory / 1_000_000) + " MB";
++                this.totalMemory = (totalMemory / 1_000_000) + " MB";
++                this.maxMemory = maxMemory == Long.MAX_VALUE ? "Not Set" : ((maxMemory / 1_000_000) + " MB");
++            }
++        }
++    }
++
++    /**
++     * Restarts the server gracefully.
++     */
++    /* package */ final class RestartMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++            PaperDaemon.log(logger -> logger.info("Restart command received from paperd"));
++            server.scheduleOnMain(() -> RestartCommand.shutdownServer(true));
++        }
++    }
++
++    /**
++     * Generates a timings report.
++     */
++    /* package */ final class TimingsMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++
++            PaperDaemon.log(logger -> logger.info("Timings command received from paperd"));
++            server.scheduleOnMain(() -> {
++                if (!Timings.isTimingsEnabled()) {
++                    PaperDaemon.sendMessageAsync(
++                        clientSock,
++                        new TimingsMessage.TimingsMessageResponse("Timings is not enabled")
++                    );
++                    return;
++                }
++
++                Timings.generateReport(new SimpleTimingsReportListener() {
++                    @Override
++                    public void sendMessage(@Nonnull final String message) {
++                        PaperDaemon.sendMessageAsync(clientSock, new TimingsMessage.TimingsMessageResponse(message));
++                    }
++
++                    @Override
++                    public void done() {
++                        PaperDaemon.sendMessageAsync(clientSock, new TimingsMessage.TimingsMessageResponse());
++                    }
++                });
++            });
++        }
++
++        /* package */ final static class TimingsMessageResponse {
++            /* package */ final String message;
++            /* package */ final boolean done;
++
++            /* package */ TimingsMessageResponse() {
++                this.message = null;
++                this.done = true;
++            }
++
++            /* package */ TimingsMessageResponse(final String message) {
++                this.message = message;
++                this.done = false;
++            }
++        }
++    }
++
++    /* package */ final class LogsMessage implements PaperDaemonMessage {
++        /* package */ static final Object responseThreadsLock = new Object();
++        /* package */ static Int2ObjectArrayMap<Thread> responseThreads = null;
++
++        private transient final AtomicInteger counter = new AtomicInteger(0);
++
++        @Override
++        public void execute(final int clientSock) {
++            final PaperDaemonAppender appender = PaperDaemonAppender.instance;
++            if (appender == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++
++            final Thread t = new Thread(() -> {
++                try (final CloseableQueue<String> sup = appender.openConnection()) {
++                    while (!Thread.currentThread().isInterrupted()) {
++                        final String nextMessage;
++                        try {
++                            nextMessage = sup.get();
++                        } catch (final InterruptedException ignored) {
++                            break;
++                        }
++                        if (nextMessage == null) {
++                            continue;
++                        }
++
++                        if (!PaperDaemon.sendMessage(clientSock, new LogsMessageResponse(nextMessage), false)) {
++                            break;
++                        }
++                    }
++                } finally {
++                    counter.decrementAndGet();
++                    synchronized (responseThreadsLock) {
++                        if (responseThreads != null) {
++                            responseThreads.remove(clientSock);
++                            if (responseThreads.isEmpty()) {
++                                responseThreads = null;
++                            }
++                        }
++                    }
++                }
++            }, "paperd-Console-" + counter.incrementAndGet());
++            t.setDaemon(true);
++            t.start();
++
++            synchronized (responseThreadsLock) {
++                if (responseThreads == null) {
++                    responseThreads = new Int2ObjectArrayMap<>();
++                }
++                responseThreads.put(clientSock, t);
++            }
++        }
++
++        /* package */ final static class LogsMessageResponse {
++            /* package */ final String message;
++
++            /* package */ LogsMessageResponse(final String message) {
++                this.message = message;
++            }
++        }
++    }
++
++    /* package */ final class EndLogsListenerMessage implements PaperDaemonMessage {
++        /* package */ int channel;
++
++        @Override
++        public void execute(final int clientSock) {
++            synchronized (LogsMessage.responseThreadsLock) {
++                if (LogsMessage.responseThreads == null) {
++                    return;
++                }
++                final Thread thread = LogsMessage.responseThreads.remove(channel);
++                if (thread != null) {
++                    thread.interrupt();
++                }
++                if (LogsMessage.responseThreads.isEmpty()) {
++                    LogsMessage.responseThreads = null;
++                }
++            }
++        }
++    }
++
++    /* package */ final class ConsoleStatusMessage implements PaperDaemonMessage {
++        @Override
++        public void execute(int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++
++            final String serverName = Bukkit.getName();
++            final int players = Bukkit.getOnlinePlayers().size();
++            final int maxPlayers = Bukkit.getMaxPlayers();
++            final double tps = Bukkit.getTPS()[0];
++
++            PaperDaemon.sendMessage(clientSock, new ConsoleStatusResponse(serverName, players, maxPlayers, tps));
++        }
++
++        /* package */ final static class ConsoleStatusResponse {
++            /* package */ final String serverName;
++            /* package */ final int players;
++            /* package */ final int maxPlayers;
++            /* package */ final double tps;
++
++            /* package */ ConsoleStatusResponse(String serverName, int players, int maxPlayers, double tps) {
++                this.serverName = serverName;
++                this.players = players;
++                this.maxPlayers = maxPlayers;
++                this.tps = tps;
++            }
++        }
++    }
++
++    /* package */ final class TabCompleteMessage implements PaperDaemonMessage {
++        /* package */ String command;
++
++        @Override
++        public void execute(final int clientSock) {
++            final DedicatedServer server = PaperDaemon.getConsole();
++            if (server == null) {
++                PaperDaemon.serverNotReadyYet(clientSock);
++                return;
++            }
++
++            final List<String> suggestions = ConsoleCommandCompleter.complete(command, server);
++            final TabCompleteMessageResponse response = new TabCompleteMessageResponse(suggestions);
++            PaperDaemon.sendMessage(clientSock, response);
++        }
++
++        /* package */ final static class TabCompleteMessageResponse {
++            /* package */ final List<String> suggestions;
++
++            /* package */ TabCompleteMessageResponse(final List<String> suggestions) {
++                this.suggestions = suggestions;
++            }
++        }
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessageBuffer.java b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessageBuffer.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c88bffdc75f107ccf3b72cb9e17c2217f95a5e1
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/daemon/PaperDaemonMessageBuffer.java
+@@ -0,0 +1,13 @@
++package com.destroystokyo.paper.daemon;
++
++/* package */ final class PaperDaemonMessageBuffer {
++
++    /* package */ final long messageType;
++
++    /* package */ final String messageData;
++
++    /* package */ PaperDaemonMessageBuffer(final long messageType, final String messageData) {
++        this.messageType = messageType;
++        this.messageData = messageData;
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 8b2755a3b95e472e884976195d1d3551fc260e39..eaf4b1019bce2a6a089621ce3384d63516f2f799 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -368,8 +368,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             //this.remoteStatusListener.b(); // Paper - don't wait for remote connections
+         }
+ 
++        com.destroystokyo.paper.daemon.PaperDaemon.shutdown(); // Paper daemon
+         hasFullyShutdown = true; // Paper
+-        System.exit(0); // CraftBukkit
++        System.exit(com.destroystokyo.paper.daemon.PaperDaemon.shutdownExitCode()); // Paper daemon
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 0defaec8a8a25b1a0172f211d599d07264977cfa..deefebe9766880a1a0172089f63f80e17bfe6ef3 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -866,6 +866,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     public void safeShutdown(boolean flag, boolean isRestarting) {
+         this.isRunning = false;
+         this.isRestarting = isRestarting;
++        com.destroystokyo.paper.daemon.PaperDaemon.setIsRestarting(isRestarting); // Paper daemon
+         if (flag) {
+             try {
+                 this.serverThread.join();
+@@ -1012,6 +1013,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+                 this.a((CrashReport) null);
+             }
+         } catch (Throwable throwable) {
++            com.destroystokyo.paper.daemon.PaperDaemon.setHasErrored(true); // Paper daemon
+             // Paper start
+             if (throwable instanceof ThreadDeath) {
+                 MinecraftServer.LOGGER.error("Main thread terminated by WatchDog due to hard crash", throwable);
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 6282a05ae855a6b55eec4980fbc1b356f65f500e..ca5fd839de009dec076074c37e7c1db5235c7894 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -241,7 +241,7 @@ public final class CraftServer implements Server {
+     private final SimpleHelpMap helpMap = new SimpleHelpMap(this);
+     private final StandardMessenger messenger = new StandardMessenger();
+     private final SimplePluginManager pluginManager = new SimplePluginManager(this, commandMap);
+-    protected final DedicatedServer console;
++    public final DedicatedServer console; // Paper - make public
+     protected final DedicatedPlayerList playerList;
+     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
+     private YamlConfiguration configuration;
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 9dd994f8b111cec2dfa30a962db8654a68c344b1..39ce35ac1f7d5ba3e3bac3509f35ba06854b1079 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -19,6 +19,8 @@ public class Main {
+     public static boolean useConsole = true;
+ 
+     public static void main(String[] args) {
++        if (com.destroystokyo.paper.daemon.PaperDaemon.init()) { useJline = false; useConsole = false; } // Paper - daemon mode
++
+         // Todo: Installation script
+         if (System.getProperty("jdk.nio.maxCachedBufferSize") == null) System.setProperty("jdk.nio.maxCachedBufferSize", "262144"); // Paper - cap per-thread NIO cache size
+         OptionParser parser = new OptionParser() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
+index a51202ed53d8ba99b364e8797fe32fa8aeb4fc87..623dd3e13c1d810be08ebadc684f5f54b14209ba 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
+@@ -1,5 +1,7 @@
+ package org.bukkit.craftbukkit.command;
+ 
++import com.google.common.collect.ImmutableList;
++import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.List;
+ import java.util.concurrent.ExecutionException;
+@@ -23,11 +25,21 @@ public class ConsoleCommandCompleter implements Completer {
+         this.server = server;
+     }
+ 
+-    // Paper start - Change method signature for JLine update
++    // Paper start - rework so completions can also work with the paperd console
+     @Override
+     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+-        final CraftServer server = this.server.server;
+-        final String buffer = line.line();
++        final List<String> completions = complete(line.line(), server);
++        final List<Candidate> resCandidates = new ArrayList<>(completions.size());
++        for (final String completion : completions) {
++            resCandidates.add(new Candidate(completion));
++        }
++        candidates.addAll(resCandidates);
++    }
++
++    public static List<String> complete(final String buffer, final DedicatedServer dedicatedServer) {
++    // Paper end - paperd rework
++        // Paper start - Change method signature for JLine update
++        final CraftServer server = dedicatedServer.server;
+         // Async Tab Complete
+         com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
+         java.util.List<String> completions = new java.util.ArrayList<>();
+@@ -55,10 +67,7 @@ public class ConsoleCommandCompleter implements Completer {
+                 }
+             }
+ 
+-            if (!completions.isEmpty()) {
+-                candidates.addAll(completions.stream().map(Candidate::new).collect(java.util.stream.Collectors.toList()));
+-            }
+-            return;
++            return completions; // Paper - just return completion list
+         }
+ 
+         // Paper end
+@@ -76,19 +85,7 @@ public class ConsoleCommandCompleter implements Completer {
+         server.getServer().processQueue.add(waitable); // Paper - Remove "this."
+         try {
+             List<String> offers = waitable.get();
+-            if (offers == null) {
+-                return; // Paper - Method returns void
+-            }
+-
+-            // Paper start - JLine update
+-            for (String completion : offers) {
+-                if (completion.isEmpty()) {
+-                    continue;
+-                }
+-
+-                candidates.add(new Candidate(completion));
+-            }
+-            // Paper end
++            return offers == null ? ImmutableList.of() : offers; // Paper - just return completion list
+ 
+             // Paper start - JLine handles cursor now
+             /*
+@@ -105,5 +102,6 @@ public class ConsoleCommandCompleter implements Completer {
+         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
+         }
++        return ImmutableList.of(); // Paper - return required
+     }
+ }
+diff --git a/src/main/java/org/spigotmc/RestartCommand.java b/src/main/java/org/spigotmc/RestartCommand.java
+index 123de5ac9026508e21cdc225f0962f5c3c46fed5..418a381e84a735c26c2cea6eb4dc4e545ef83d2c 100644
+--- a/src/main/java/org/spigotmc/RestartCommand.java
++++ b/src/main/java/org/spigotmc/RestartCommand.java
+@@ -47,14 +47,23 @@ public class RestartCommand extends Command
+         try
+         {
+             // Paper - extract method and cleanup
+-            boolean isRestarting = addShutdownHook( restartScript );
+-            if ( isRestarting )
++            boolean isRestarting;
++            // Paper daemon, don't call the startup script in daemon mode, let paperd do the restart
++            if ( com.destroystokyo.paper.daemon.PaperDaemon.IS_DAEMON )
+             {
+-                System.out.println( "Attempting to restart with " + SpigotConfig.restartScript );
++                isRestarting = true;
+             } else
+             {
+-                System.out.println( "Startup script '" + SpigotConfig.restartScript + "' does not exist! Stopping server." );
++                isRestarting = addShutdownHook( restartScript );
++                if ( isRestarting )
++                {
++                    System.out.println( "Attempting to restart with " + SpigotConfig.restartScript );
++                } else
++                {
++                    System.out.println( "Startup script '" + SpigotConfig.restartScript + "' does not exist! Stopping server." );
++                }
+             }
++
+             // Stop the watchdog
+             WatchdogThread.doStop();
+ 
+@@ -67,8 +76,9 @@ public class RestartCommand extends Command
+     }
+ 
+     // Paper start - sync copied from above with minor changes, async added
+-    private static void shutdownServer(boolean isRestarting)
++    public static void shutdownServer(boolean isRestarting) // Paper - make public
+     {
++        com.destroystokyo.paper.daemon.PaperDaemon.setIsRestarting(isRestarting); // Paper daemon
+         if ( MinecraftServer.getServer().isMainThread() )
+         {
+             // Kick all players
+@@ -94,8 +104,10 @@ public class RestartCommand extends Command
+             {
+             }
+ 
++            /* Paper daemon - this is misleading, calling MinecraftServer.close above will already call System.exit
+             // Actually stop the JVM
+             System.exit( 0 );
++             */
+ 
+         } else
+         {
+@@ -117,7 +129,8 @@ public class RestartCommand extends Command
+ 
+             // If the server hasn't stopped by now, assume worse case and kill
+             closeSocket();
+-            System.exit( 0 );
++            com.destroystokyo.paper.daemon.PaperDaemon.shutdown(); // Paper daemon
++            System.exit( com.destroystokyo.paper.daemon.PaperDaemon.shutdownExitCode() ); // Paper daemon - use paperd for restart if we are in daemon mode
+         }
+     }
+     // Paper end
+diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
+index 513c1041c34ebb3ac1775674a3f4526693759c08..6a68dd6d51c82b8448cece84ca4deebb7544db91 100644
+--- a/src/main/java/org/spigotmc/WatchdogThread.java
++++ b/src/main/java/org/spigotmc/WatchdogThread.java
+@@ -140,11 +140,12 @@ public class WatchdogThread extends Thread
+                 {
+                 if ( !server.hasStopped() )
+                 {
++                    com.destroystokyo.paper.daemon.PaperDaemon.setHasErrored(true); // Paper daemon
+                     AsyncCatcher.enabled = false; // Disable async catcher incase it interferes with us
+                     AsyncCatcher.shuttingDown = true;
+                     server.forceTicks = true;
+                     if (restart) {
+-                        RestartCommand.addShutdownHook( SpigotConfig.restartScript );
++                        RestartCommand.restart();
+                     }
+                     // try one last chance to safe shutdown on main incase it 'comes back'
+                     server.safeShutdown(false, restart);
+diff --git a/src/main/resources/META-INF/io.papermc.paper.daemon.protocol b/src/main/resources/META-INF/io.papermc.paper.daemon.protocol
+new file mode 100644
+index 0000000000000000000000000000000000000000..56a6051ca2b02b04ef92d5150c9ef600403cb1de
+--- /dev/null
++++ b/src/main/resources/META-INF/io.papermc.paper.daemon.protocol
+@@ -0,0 +1 @@
++1
+\ No newline at end of file
+diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
+index 8af159abd3d0cc94cf155fec5b384c42f69551bf..2066bc6328030c1dbda798763faad69020a05828 100644
+--- a/src/main/resources/log4j2.xml
++++ b/src/main/resources/log4j2.xml
+@@ -4,7 +4,7 @@
+         <Queue name="ServerGuiConsole">
+             <PatternLayout pattern="[%d{HH:mm:ss} %level]: %msg%n" />
+         </Queue>
+-        <TerminalConsole name="TerminalConsole">
++        <PaperConsole name="PaperConsole">
+             <PatternLayout>
+                 <LoggerNamePatternSelector defaultPattern="%highlightError{[%d{HH:mm:ss} %level]: [%logger] %minecraftFormatting{%msg}%n%xEx{full}}">
+                     <!-- Log root, Minecraft, Mojang and Bukkit loggers without prefix -->
+@@ -13,7 +13,7 @@
+                                   pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg}%n%xEx{full}}" />
+                 </LoggerNamePatternSelector>
+             </PatternLayout>
+-        </TerminalConsole>
++        </PaperConsole>
+         <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+             <PatternLayout>
+                 <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level]: [%logger] %minecraftFormatting{%msg}{strip}%n%xEx{full}">
+@@ -36,7 +36,7 @@
+                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
+             </filters>
+             <AppenderRef ref="File"/>
+-            <AppenderRef ref="TerminalConsole" level="info"/>
++            <AppenderRef ref="PaperConsole" level="info"/>
+             <AppenderRef ref="ServerGuiConsole" level="info"/>
+         </Root>
+     </Loggers>
