@@ -989,10 +989,10 @@ index 5c32cbe81c47fcb9ae347faa6fc007c5d28d79bf..59ea1432152051ce8a60c0a526db7875
          private Type() {}
      }
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
-index 385cd079e264a7e66e91ab3b70b90afb59688dcd..637928664f8c7b1c694a234e507c20724294e450 100644
+index 385cd079e264a7e66e91ab3b70b90afb59688dcd..b26c107aaac31594c09db482582e5c698a90bf77 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalSelector.java
-@@ -28,7 +28,7 @@ public class PathfinderGoalSelector {
+@@ -28,18 +28,20 @@ public class PathfinderGoalSelector {
          }
      };
      private final Map<PathfinderGoal.Type, PathfinderGoalWrapped> c = new EnumMap(PathfinderGoal.Type.class);
@@ -1001,26 +1001,43 @@ index 385cd079e264a7e66e91ab3b70b90afb59688dcd..637928664f8c7b1c694a234e507c2072
      private final Supplier<GameProfilerFiller> e;
      private final EnumSet<PathfinderGoal.Type> f = EnumSet.noneOf(PathfinderGoal.Type.class); // Paper unused, but dummy to prevent plugins from crashing as hard. Theyll need to support paper in a special case if this is super important, but really doesn't seem like it would be.
      private final OptimizedSmallEnumSet<PathfinderGoal.Type> goalTypes = new OptimizedSmallEnumSet<>(PathfinderGoal.Type.class); // Paper - remove streams from pathfindergoalselector
-@@ -39,7 +39,7 @@ public class PathfinderGoalSelector {
+     private int g = 3;private int getTickRate() { return g; } // Paper - OBFHELPER
+     private int curRate;private int getCurRate() { return curRate; } private void incRate() { this.curRate++; } // Paper TODO
++    private boolean ticking = false; // Paper
+ 
+     public PathfinderGoalSelector(Supplier<GameProfilerFiller> supplier) {
          this.e = supplier;
      }
  
 -    public void a(int i, PathfinderGoal pathfindergoal) {
 +    public void addGoal(int priority, PathfinderGoal goal) {a(priority, goal);} public void a(int i, PathfinderGoal pathfindergoal) { // Paper - OBFHELPER
++        if (ticking) throw new IllegalStateException("Cannot add goal while ticking"); // Paper
          this.d.add(new PathfinderGoalWrapped(i, pathfindergoal));
      }
  
-@@ -58,7 +58,7 @@ public class PathfinderGoalSelector {
+@@ -58,7 +60,8 @@ public class PathfinderGoalSelector {
      }
      // Paper end
  
 -    public void a(PathfinderGoal pathfindergoal) {
 +    public void removeGoal(PathfinderGoal goal) {a(goal);} public void a(PathfinderGoal pathfindergoal) { // Paper - OBFHELPER
++        if (ticking) throw new IllegalStateException("Cannot remove goal while ticking"); // Paper
          // Paper start - remove streams from pathfindergoalselector
          for (Iterator<PathfinderGoalWrapped> iterator = this.d.iterator(); iterator.hasNext();) {
              PathfinderGoalWrapped goalWrapped = iterator.next();
-@@ -154,6 +154,7 @@ public class PathfinderGoalSelector {
+@@ -76,6 +79,7 @@ public class PathfinderGoalSelector {
+     private static final PathfinderGoal.Type[] PATHFINDER_GOAL_TYPES = PathfinderGoal.Type.values(); // Paper - remove streams from pathfindergoalselector
+ 
+     public void doTick() {
++        this.ticking = true; // Paper
+         GameProfilerFiller gameprofilerfiller = (GameProfilerFiller) this.e.get();
+ 
+         gameprofilerfiller.enter("goalCleanup");
+@@ -152,8 +156,10 @@ public class PathfinderGoalSelector {
+         }
+         // Paper end - remove streams from pathfindergoalselector
          gameprofilerfiller.exit();
++        this.ticking = false; // Paper
      }
  
 +    public final Stream<PathfinderGoalWrapped> getExecutingGoals() { return d(); } // Paper - OBFHELPER
