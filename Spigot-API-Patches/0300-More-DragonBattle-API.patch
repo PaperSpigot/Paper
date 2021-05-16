@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 16 May 2021 11:43:15 -0700
+Subject: [PATCH] More DragonBattle API
+
+
+diff --git a/src/main/java/org/bukkit/boss/DragonBattle.java b/src/main/java/org/bukkit/boss/DragonBattle.java
+index 927dcc9ac268721d5577e30a989476c68e3f0e1e..6131b456f5d073ea3df52b8fa8137fa892521d3a 100644
+--- a/src/main/java/org/bukkit/boss/DragonBattle.java
++++ b/src/main/java/org/bukkit/boss/DragonBattle.java
+@@ -120,4 +120,31 @@ public interface DragonBattle {
+          */
+         NONE;
+     }
++    // Paper start - More Dragon Battle API
++    /**
++     * Tries to spawn a new gateway using default game mechanics.
++     *
++     * @return true if gateway was spawned, false if not
++     */
++    boolean spawnNewGateway();
++
++    /**
++     * Spawns a new gateway. Will continue spawning even after
++     * the maximum number of gateways have been generated.<br>
++     * The world will always be the world of this {@link DragonBattle}
++     * regardless of what {@link Location#getWorld()}
++     * for the {@code location} argument returns.
++     *
++     * @param location location for new gateway
++     */
++    void spawnNewGateway(@NotNull Location location);
++
++    /**
++     * Returns the number of gateways generated either from
++     * killing the Ender Dragon, or calling {@link #spawnNewGateway()}.
++     *
++     * @return the number of gateways
++     */
++    int getGatewayCount();
++    // Paper end
+ }

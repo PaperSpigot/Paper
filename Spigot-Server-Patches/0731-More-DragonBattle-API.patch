@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 16 May 2021 11:43:26 -0700
+Subject: [PATCH] More DragonBattle API
+
+
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index 0ab6319aa3e4e1f5679f37be36999ca56ca2484c..14bf1c51617fa73fffaac5a87082a54e00f44298 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -65,7 +65,7 @@ public class EnderDragonBattle {
+     private static final Predicate<Entity> b = IEntitySelector.a.and(IEntitySelector.a(0.0D, 128.0D, 0.0D, 192.0D));
+     public final BossBattleServer bossBattle;
+     public final WorldServer world;
+-    private final List<Integer> gateways;
++    private final List<Integer> gateways; public final List<Integer> getGatewaysLeft() { return gateways; } // Paper - OBFHELPER
+     private final ShapeDetector f;
+     private int g;
+     private int h;
+@@ -426,6 +426,13 @@ public class EnderDragonBattle {
+ 
+     }
+ 
++    public boolean generateNewGateway() { // Paper - OBFHELPER (kind of)
++        if (!this.gateways.isEmpty()) {
++            n();
++            return true;
++        }
++        return false;
++    }
+     private void n() {
+         if (!this.gateways.isEmpty()) {
+             int i = (Integer) this.gateways.remove(this.gateways.size() - 1);
+@@ -436,6 +443,7 @@ public class EnderDragonBattle {
+         }
+     }
+ 
++    public void generateNewGateway(BlockPosition blockPosition) { a(blockPosition); } // Paper - OBFHELPER
+     private void a(BlockPosition blockposition) {
+         this.world.triggerEffect(3000, blockposition, 0);
+         BiomeDecoratorGroups.END_GATEWAY_DELAYED.a(this.world, this.world.getChunkProvider().getChunkGenerator(), new Random(), blockposition);
+diff --git a/src/main/java/org/bukkit/craftbukkit/boss/CraftDragonBattle.java b/src/main/java/org/bukkit/craftbukkit/boss/CraftDragonBattle.java
+index d2c583516120e3ff7bc1f7aed47b1d358746cc4a..f48472b9e6f6dd3aa4c55ef27f8ad791cbf8d928 100644
+--- a/src/main/java/org/bukkit/craftbukkit/boss/CraftDragonBattle.java
++++ b/src/main/java/org/bukkit/craftbukkit/boss/CraftDragonBattle.java
+@@ -97,4 +97,20 @@ public class CraftDragonBattle implements DragonBattle {
+     private EnumDragonRespawn toNMSRespawnPhase(RespawnPhase phase) {
+         return (phase != RespawnPhase.NONE) ? EnumDragonRespawn.values()[phase.ordinal()] : null;
+     }
++    // Paper start
++    @Override
++    public boolean spawnNewGateway() {
++        return this.handle.generateNewGateway();
++    }
++
++    @Override
++    public void spawnNewGateway(org.bukkit.Location location) {
++        this.handle.generateNewGateway(net.minecraft.server.MCUtil.toBlockPosition(location));
++    }
++
++    @Override
++    public int getGatewayCount() {
++        return 20 - this.handle.getGatewaysLeft().size();
++    }
++    // Paper end
+ }
