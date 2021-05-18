@@ -1,0 +1,334 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 12:32:02 -0700
+Subject: [PATCH] Add drops to shear events
+
+
+diff --git a/src/main/java/net/minecraft/core/dispenser/DispenseBehaviorShears.java b/src/main/java/net/minecraft/core/dispenser/DispenseBehaviorShears.java
+index 2bf17e5bb456575987d494ba98e763b96bb07f0e..91e21fe091f364ea9dbe90880554740cd319247a 100644
+--- a/src/main/java/net/minecraft/core/dispenser/DispenseBehaviorShears.java
++++ b/src/main/java/net/minecraft/core/dispenser/DispenseBehaviorShears.java
+@@ -101,11 +101,14 @@ public class DispenseBehaviorShears extends DispenseBehaviorMaybe {
+ 
+                 if (ishearable.canShear()) {
+                     // CraftBukkit start
+-                    if (CraftEventFactory.callBlockShearEntityEvent(entityliving, bukkitBlock, craftItem).isCancelled()) {
++                    // Paper start
++                    org.bukkit.event.block.BlockShearEntityEvent event = CraftEventFactory.callBlockShearEntityEvent(entityliving, bukkitBlock, craftItem, ishearable.generateDefaultDrops());
++                    if (event.isCancelled()) {
++                        // Paper end
+                         continue;
+                     }
+                     // CraftBukkit end
+-                    ishearable.shear(SoundCategory.BLOCKS);
++                    ishearable.shear(SoundCategory.BLOCKS, event.getDrops()); // Paper
+                     return true;
+                 }
+             }
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 429f0591c6a55f6c5d08a0755f7d39da676468bc..5e99c59810f7fd14f129f7de9c17252a9b73d385 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2013,6 +2013,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+             itemstack.setCount(0); // Paper - destroy this item - if this ever leaks due to game bugs, ensure it doesn't dupe
+ 
+             entityitem.defaultPickupDelay();
++            // Paper start
++            return this.dropItemEntity(entityitem);
++        }
++    }
++    @Nullable
++    public EntityItem dropItemEntity(EntityItem entityitem) {
++        // Paper end
+             // CraftBukkit start
+             EntityDropItemEvent event = new EntityDropItemEvent(this.getBukkitEntity(), (org.bukkit.entity.Item) entityitem.getBukkitEntity());
+             Bukkit.getPluginManager().callEvent(event);
+@@ -2022,7 +2029,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+             // CraftBukkit end
+             this.world.addEntity(entityitem);
+             return entityitem;
+-        }
+     }
+ 
+     public boolean isAlive() {
+@@ -3428,6 +3434,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         return this.loc.y;
+     }
+ 
++    public double getY(double heightMultiplier) { return this.e(heightMultiplier); } // Paper - OBFHELPER
+     public double e(double d0) {
+         return this.loc.y + (double) this.getHeight() * d0;
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/IShearable.java b/src/main/java/net/minecraft/world/entity/IShearable.java
+index 4e5689787afc44a05b1dea9979ed8da9187a37d7..ed951932c94efa025b7c74c108e552fc7eee75b5 100644
+--- a/src/main/java/net/minecraft/world/entity/IShearable.java
++++ b/src/main/java/net/minecraft/world/entity/IShearable.java
+@@ -4,7 +4,13 @@ import net.minecraft.sounds.SoundCategory;
+ 
+ public interface IShearable {
+ 
++    default void shear(SoundCategory soundCategory, @javax.annotation.Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) { this.shear(soundCategory); } // Paper
+     void shear(SoundCategory soundcategory);
+ 
+     boolean canShear();
++    // Paper start - ensure all implementing entities override this
++    default java.util.List<net.minecraft.world.item.ItemStack> generateDefaultDrops() {
++        return java.util.Collections.emptyList();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+index 9face4480dcc89d9106ebe596020c1888350ef2d..f21a5df59e20999f36d4a206f9571eb4c044e19d 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+@@ -117,11 +117,14 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+             return EnumInteractionResult.a(this.world.isClientSide);
+         } else if (itemstack.getItem() == Items.SHEARS && this.canShear()) {
+             // CraftBukkit start
+-            if (!CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand)) {
++            // Paper start
++            org.bukkit.event.player.PlayerShearEntityEvent event = CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand, generateDefaultDrops());
++            if (event != null && event.isCancelled()) {
++                // Paper end
+                 return EnumInteractionResult.PASS;
+             }
+             // CraftBukkit end
+-            this.shear(SoundCategory.PLAYERS);
++            this.shear(SoundCategory.PLAYERS, event == null ? null : event.getDrops()); // Paper - pass event drops
+             if (!this.world.isClientSide) {
+                 itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                     entityhuman1.broadcastItemBreak(enumhand);
+@@ -164,6 +167,22 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+ 
+     @Override
+     public void shear(SoundCategory soundcategory) {
++        // Paper start - add drops to shear events
++        this.shear(soundcategory, null);
++    }
++
++    @Override
++    public java.util.List<ItemStack> generateDefaultDrops() {
++        java.util.List<ItemStack> dropEntities = new java.util.ArrayList<>(5);
++        for (int i = 0; i < 5; ++i) {
++            dropEntities.add(new ItemStack(this.getVariant().getVariantDrop().getBlock()));
++        }
++        return dropEntities;
++    }
++
++    @Override
++    public void shear(net.minecraft.sounds.SoundCategory soundcategory, @javax.annotation.Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) { // If drops is null, need to generate drops
++        // Paper end
+         this.world.playSound((EntityHuman) null, (Entity) this, SoundEffects.ENTITY_MOOSHROOM_SHEAR, soundcategory, 1.0F, 1.0F);
+         if (!this.world.s_()) {
+             ((WorldServer) this.world).a(Particles.EXPLOSION, this.locX(), this.e(0.5D), this.locZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
+@@ -192,9 +211,15 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+             this.die(); // CraftBukkit - from above
+             // CraftBukkit end
+ 
++            if (drops == null) { // Paper
+             for (int i = 0; i < 5; ++i) {
+                 this.world.addEntity(new EntityItem(this.world, this.locX(), this.e(1.0D), this.locZ(), new ItemStack(this.getVariant().d.getBlock())));
+             }
++            // Paper start - add drops from shear events
++            } else {
++                drops.forEach(bukkitItemStack -> this.dropItemEntity(new EntityItem(this.world, this.locX(), this.getY(1.0D), this.locZ(), org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitItemStack))));
++            }
++            // Paper end
+         }
+ 
+     }
+@@ -280,7 +305,7 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+         RED("red", Blocks.RED_MUSHROOM.getBlockData()), BROWN("brown", Blocks.BROWN_MUSHROOM.getBlockData());
+ 
+         private final String c;
+-        private final IBlockData d;
++        private final IBlockData d; private final IBlockData getVariantDrop() { return this.d; } // Paper - OBFHELPER
+ 
+         private Type(String s, IBlockData iblockdata) {
+             this.c = s;
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntitySheep.java b/src/main/java/net/minecraft/world/entity/animal/EntitySheep.java
+index 88bed962bc17242ee6a9c93b7e0fec8bc578b35f..91918d9b58febe9f365d47dfba4598f37ebe4f3a 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntitySheep.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntitySheep.java
+@@ -88,7 +88,7 @@ public class EntitySheep extends EntityAnimal implements IShearable {
+         enummap.put(EnumColor.GREEN, Blocks.GREEN_WOOL);
+         enummap.put(EnumColor.RED, Blocks.RED_WOOL);
+         enummap.put(EnumColor.BLACK, Blocks.BLACK_WOOL);
+-    });
++    }); public static final Map<EnumColor, IMaterial> getColorMap() { return bp; } // Paper - OBFHELPER
+     private static final Map<EnumColor, float[]> bq = Maps.newEnumMap((Map) Arrays.stream(EnumColor.values()).collect(Collectors.toMap((enumcolor) -> {
+         return enumcolor;
+     }, EntitySheep::c)));
+@@ -199,11 +199,14 @@ public class EntitySheep extends EntityAnimal implements IShearable {
+         if (itemstack.getItem() == Items.SHEARS) {
+             if (!this.world.isClientSide && this.canShear()) {
+                 // CraftBukkit start
+-                if (!CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand)) {
++                // Paper start
++                org.bukkit.event.player.PlayerShearEntityEvent event = CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand, generateDefaultDrops());
++                if (event != null && event.isCancelled()) {
++                    // Paper end
+                     return EnumInteractionResult.PASS;
+                 }
+                 // CraftBukkit end
+-                this.shear(SoundCategory.PLAYERS);
++                this.shear(SoundCategory.PLAYERS, event == null ? null : event.getDrops()); // Paper - pass event drops
+                 itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                     entityhuman1.broadcastItemBreak(enumhand);
+                 });
+@@ -218,10 +221,28 @@ public class EntitySheep extends EntityAnimal implements IShearable {
+ 
+     @Override
+     public void shear(SoundCategory soundcategory) {
++        // Paper start
++        this.shear(soundcategory, null);
++    }
++
++    @Override
++    public java.util.List<ItemStack> generateDefaultDrops() {
++        int count = this.random.nextInt(3);
++        java.util.List<ItemStack> dropEntities = new java.util.ArrayList<>(count);
++        for (int j = 0; j < 1 + count; ++j) {
++            dropEntities.add(new ItemStack(EntitySheep.getColorMap().get(this.getColor())));
++        }
++        return dropEntities;
++    }
++
++    @Override
++    public void shear(net.minecraft.sounds.SoundCategory soundcategory, @Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) {
++        // Paper end
+         this.world.playSound((EntityHuman) null, (Entity) this, SoundEffects.ENTITY_SHEEP_SHEAR, soundcategory, 1.0F, 1.0F);
+         this.setSheared(true);
+         int i = 1 + this.random.nextInt(3);
+ 
++        if (drops == null) { // Paper
+         for (int j = 0; j < i; ++j) {
+             this.forceDrops = true; // CraftBukkit
+             EntityItem entityitem = this.a((IMaterial) EntitySheep.bp.get(this.getColor()), 1);
+@@ -231,6 +252,18 @@ public class EntitySheep extends EntityAnimal implements IShearable {
+                 entityitem.setMot(entityitem.getMot().add((double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double) (this.random.nextFloat() * 0.05F), (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
+             }
+         }
++        // Paper start - drop drops from shear events
++        } else {
++            this.forceDrops = true;
++            drops.forEach(bukkitItemStack -> {
++                EntityItem entityitem = this.dropItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitItemStack), 1.0f);
++                if (entityitem != null) {
++                    entityitem.setMot(entityitem.getMot().add((double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double) (this.random.nextFloat() * 0.05F), (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
++                }
++            });
++            this.forceDrops = false;
++        }
++        // Paper end
+ 
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java b/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
+index b1e2892c7c9f0e35f69332e93917593d97c304a8..b07a653a2df0a9de8b08d643c6a41b2c47d21b58 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
+@@ -148,11 +148,14 @@ public class EntitySnowman extends EntityGolem implements IShearable, IRangedEnt
+ 
+         if (itemstack.getItem() == Items.SHEARS && this.canShear()) {
+             // CraftBukkit start
+-            if (!CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand)) {
++            // Paper start
++            org.bukkit.event.player.PlayerShearEntityEvent event = CraftEventFactory.handlePlayerShearEntityEvent(entityhuman, this, itemstack, enumhand, generateDefaultDrops());
++            if (event != null && event.isCancelled()) {
++                // Paper end
+                 return EnumInteractionResult.PASS;
+             }
+             // CraftBukkit end
+-            this.shear(SoundCategory.PLAYERS);
++            this.shear(SoundCategory.PLAYERS, event == null ? null : event.getDrops()); // Paper
+             if (!this.world.isClientSide) {
+                 itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                     entityhuman1.broadcastItemBreak(enumhand);
+@@ -167,10 +170,30 @@ public class EntitySnowman extends EntityGolem implements IShearable, IRangedEnt
+ 
+     @Override
+     public void shear(SoundCategory soundcategory) {
++        // Paper start
++        this.shear(soundcategory, null);
++    }
++
++    @Override
++    public java.util.List<ItemStack> generateDefaultDrops() {
++        return java.util.Collections.singletonList(new ItemStack(Items.getCarvedPumpkin()));
++    }
++
++    @Override
++    public void shear(SoundCategory soundcategory, @Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) {
++        // Paper end
+         this.world.playSound((EntityHuman) null, (Entity) this, SoundEffects.ENTITY_SNOW_GOLEM_SHEAR, soundcategory, 1.0F, 1.0F);
+         if (!this.world.s_()) {
++            if (drops == null || drops.size() == 1 && ItemStack.matches(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(drops.get(0)), new ItemStack(Items.dj))) { // Paper - check if drops unchanged
+             this.setHasPumpkin(false);
+             this.a(new ItemStack(Items.dj), 1.7F);
++            // Paper start - drop drops from shear events
++            } else {
++                this.forceDrops = true;
++                drops.forEach(bukkitItemStack -> this.dropItem(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitItemStack), 1.7f));
++                this.forceDrops = false;
++            }
++            // Paper end
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/item/Items.java b/src/main/java/net/minecraft/world/item/Items.java
+index fc5cc610e7ea584ce72600b9d9f47543265725bb..6cbecaa71ea78bb862d38752d66b16aaec93062e 100644
+--- a/src/main/java/net/minecraft/world/item/Items.java
++++ b/src/main/java/net/minecraft/world/item/Items.java
+@@ -232,7 +232,7 @@ public class Items {
+     public static final Item dg = a(Blocks.CRIMSON_FENCE, CreativeModeTab.c);
+     public static final Item dh = a(Blocks.WARPED_FENCE, CreativeModeTab.c);
+     public static final Item di = a(Blocks.PUMPKIN, CreativeModeTab.b);
+-    public static final Item dj = a(Blocks.CARVED_PUMPKIN, CreativeModeTab.b);
++    public static final Item dj = a(Blocks.CARVED_PUMPKIN, CreativeModeTab.b); public static Item getCarvedPumpkin() { return Items.dj; } // Paper - OBFHELPER
+     public static final Item dk = a(Blocks.NETHERRACK, CreativeModeTab.b);
+     public static final Item dl = a(Blocks.SOUL_SAND, CreativeModeTab.b);
+     public static final Item dm = a(Blocks.SOUL_SOIL, CreativeModeTab.b);
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index b14cec316b16e46d54d389650372c5c9ce1e5a4d..301ea26508a3b461b463ea0372e43577e6a01d87 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1500,20 +1500,34 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
++    @Deprecated // Paper - use below
+     public static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, org.bukkit.block.Block dispenser, CraftItemStack is) {
+-        BlockShearEntityEvent bse = new BlockShearEntityEvent(dispenser, animal.getBukkitEntity(), is);
++        // Paper start
++        return callBlockShearEntityEvent(animal, dispenser, is, Collections.emptyList());
++    }
++    public static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, Block dispenser, CraftItemStack is, List<ItemStack> drops) {
++        BlockShearEntityEvent bse = new BlockShearEntityEvent(dispenser, animal.getBukkitEntity(), is, Lists.transform(drops, CraftItemStack::asCraftMirror));
++        // Paper end
+         Bukkit.getPluginManager().callEvent(bse);
+         return bse;
+     }
+ 
++    @Deprecated // Paper - use below
+     public static boolean handlePlayerShearEntityEvent(EntityHuman player, Entity sheared, ItemStack shears, EnumHand hand) {
++        // Paper start
++        PlayerShearEntityEvent event = handlePlayerShearEntityEvent(player, sheared, shears, hand, Collections.emptyList());
++        return event == null || !event.isCancelled();
++    }
++    @Nullable
++    public static PlayerShearEntityEvent handlePlayerShearEntityEvent(EntityHuman player, Entity sheared, ItemStack shears, EnumHand hand, List<ItemStack> drops) {
++        // Paper end
+         if (!(player instanceof EntityPlayer)) {
+-            return true;
++            return null; // Paper
+         }
+ 
+-        PlayerShearEntityEvent event = new PlayerShearEntityEvent((Player) player.getBukkitEntity(), sheared.getBukkitEntity(), CraftItemStack.asCraftMirror(shears), (hand == EnumHand.OFF_HAND ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND));
++        PlayerShearEntityEvent event = new PlayerShearEntityEvent((Player) player.getBukkitEntity(), sheared.getBukkitEntity(), CraftItemStack.asCraftMirror(shears), (hand == EnumHand.OFF_HAND ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND), Lists.transform(drops, CraftItemStack::asCraftMirror));
+         Bukkit.getPluginManager().callEvent(event);
+-        return !event.isCancelled();
++        return event; // Paper
+     }
+ 
+     public static Cancellable handleStatisticsIncrease(EntityHuman entityHuman, net.minecraft.stats.Statistic<?> statistic, int current, int newValue) {

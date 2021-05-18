@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 12:31:54 -0700
+Subject: [PATCH] Add drops to shear events
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockShearEntityEvent.java b/src/main/java/org/bukkit/event/block/BlockShearEntityEvent.java
+index 71c0af9373069cfaa074e1fbad592eab81025b1c..0b223d1ecbf3d9ec048a556bbf0054a07e2c8776 100644
+--- a/src/main/java/org/bukkit/event/block/BlockShearEntityEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockShearEntityEvent.java
+@@ -17,11 +17,19 @@ public class BlockShearEntityEvent extends BlockEvent implements Cancellable {
+     private final Entity sheared;
+     private final ItemStack tool;
+     private boolean cancelled;
++    private java.util.List<ItemStack> drops; // Paper
+ 
++    @Deprecated // Paper
+     public BlockShearEntityEvent(@NotNull Block dispenser, @NotNull Entity sheared, @NotNull ItemStack tool) {
++        // Paper start
++        this(dispenser, sheared, tool, java.util.Collections.emptyList());
++    }
++    public BlockShearEntityEvent(@NotNull Block dispenser, @NotNull Entity sheared, @NotNull ItemStack tool, @NotNull java.util.List<ItemStack> drops) {
++        // Paper end
+         super(dispenser);
+         this.sheared = sheared;
+         this.tool = tool;
++        this.drops = drops; // Paper
+     }
+ 
+     /**
+@@ -64,4 +72,27 @@ public class BlockShearEntityEvent extends BlockEvent implements Cancellable {
+     public static HandlerList getHandlerList() {
+         return handlers;
+     }
++    // Paper start
++    /**
++     * Get an list of drops for this shearing.
++     * <p>
++     * The mutablility of this list is undefined so
++     * use {@link #setDrops(List)} to change the drops.
++     *
++     * @return the shearing drops
++     */
++    @NotNull
++    public java.util.List<ItemStack> getDrops() {
++        return drops;
++    }
++
++    /**
++     * Sets the drops for the shearing.
++     *
++     * @param drops
++     */
++    public void setDrops(@org.jetbrains.annotations.Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) {
++        this.drops = com.google.common.base.MoreObjects.firstNonNull(drops, java.util.Collections.emptyList());
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/player/PlayerShearEntityEvent.java b/src/main/java/org/bukkit/event/player/PlayerShearEntityEvent.java
+index 04b3dce008edefb045162d0f69f87462ea1f3534..ab7bb8ab37684cae73cfa2e9228d57b708c9e534 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerShearEntityEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerShearEntityEvent.java
+@@ -18,12 +18,20 @@ public class PlayerShearEntityEvent extends PlayerEvent implements Cancellable {
+     private final Entity what;
+     private final ItemStack item;
+     private final EquipmentSlot hand;
++    private java.util.List<ItemStack> drops; // Paper
+ 
++    @Deprecated // Paper - include item entity list
+     public PlayerShearEntityEvent(@NotNull Player who, @NotNull Entity what, @NotNull ItemStack item, @NotNull EquipmentSlot hand) {
++        // Paper start
++        this(who, what, item, hand, java.util.Collections.emptyList());
++    }
++    public PlayerShearEntityEvent(@NotNull Player who, @NotNull Entity what, @NotNull ItemStack item, @NotNull EquipmentSlot hand, @NotNull java.util.List<ItemStack> drops) {
++        // Paper end
+         super(who);
+         this.what = what;
+         this.item = item;
+         this.hand = hand;
++        this.drops = drops; // Paper
+     }
+ 
+     @Deprecated
+@@ -82,4 +90,27 @@ public class PlayerShearEntityEvent extends PlayerEvent implements Cancellable {
+         return handlers;
+     }
+ 
++    // Paper start
++    /**
++     * Get an list of drops for this shearing.
++     * <p>
++     * The mutablility of this list is undefined so
++     * use {@link #setDrops(List)} to change the drops.
++     *
++     * @return the shearing drops
++     */
++    @NotNull
++    public java.util.List<ItemStack> getDrops() {
++        return drops;
++    }
++
++    /**
++     * Sets the drops for the shearing.
++     *
++     * @param drops
++     */
++    public void setDrops(@org.jetbrains.annotations.Nullable java.util.List<org.bukkit.inventory.ItemStack> drops) {
++        this.drops = com.google.common.base.MoreObjects.firstNonNull(drops, java.util.Collections.emptyList());
++    }
++    // Paper end
+ }
