@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 12:28:22 -0700
+Subject: [PATCH] Fix snow golem shearing
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java b/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
+index b1e2892c7c9f0e35f69332e93917593d97c304a8..d71d11b56f6d9aeba0d58a7e4816123258f981e7 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntitySnowman.java
+@@ -170,7 +170,9 @@ public class EntitySnowman extends EntityGolem implements IShearable, IRangedEnt
+         this.world.playSound((EntityHuman) null, (Entity) this, SoundEffects.ENTITY_SNOW_GOLEM_SHEAR, soundcategory, 1.0F, 1.0F);
+         if (!this.world.s_()) {
+             this.setHasPumpkin(false);
++            this.forceDrops = true; // Paper - don't count as death drops
+             this.a(new ItemStack(Items.dj), 1.7F);
++            this.forceDrops = false; // Paper - don't count as death drops
+         }
+ 
+     }
