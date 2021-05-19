@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 19 May 2021 16:42:39 -0700
+Subject: [PATCH] Fix sending CreatureSpawnEvent for portals
+
+Fixes SPIGOT-6138: https://hub.spigotmc.org/jira/browse/SPIGOT-6138
+
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index f68a252378a94c8fcab622d2d89d738aceab45a4..35a931b31326ebe51a95da81a48ec57396ea7cee 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1218,7 +1218,8 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         boolean flag = entity.attachedToPlayer;
+ 
+         entity.attachedToPlayer = true;
+-        this.addEntitySerialized(entity);
++        // this.addEntitySerialized(entity);
++        this.addEntity1(entity, null, true);
+         entity.attachedToPlayer = flag;
+         this.chunkCheck(entity);
+     }
+@@ -1263,8 +1264,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+ 
+     // CraftBukkit start
+     private boolean addEntity0(Entity entity, CreatureSpawnEvent.SpawnReason spawnReason) {
++        // Paper start
++        return this.addEntity1(entity, spawnReason, false);
++    }
++
++    private boolean addEntity1(Entity entity, CreatureSpawnEvent.SpawnReason spawnReason, boolean isInterDimensionalTeleport) {
++        // Paper end
+         org.spigotmc.AsyncCatcher.catchOp("entity add"); // Spigot
+-        if (entity.spawnReason == null) entity.spawnReason = spawnReason; // Paper
++        if (entity.spawnReason == null && !isInterDimensionalTeleport) entity.spawnReason = spawnReason; // Paper
+         // Paper start
+         if (entity.valid) {
+             MinecraftServer.LOGGER.error("Attempted Double World add on " + entity, new Throwable());
+@@ -1299,9 +1306,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+             }
+             // Paper end
+ 
++            if (!isInterDimensionalTeleport) { // Paper - skip event for inter-dimensional teleports
+             if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
+                 return false;
+             }
++            } // Paper
+             // CraftBukkit end
+             IChunkAccess ichunkaccess = this.getChunkAt(MathHelper.floor(entity.locX() / 16.0D), MathHelper.floor(entity.locZ() / 16.0D), ChunkStatus.FULL, true); // Paper - always load chunks for entity adds
+ 
