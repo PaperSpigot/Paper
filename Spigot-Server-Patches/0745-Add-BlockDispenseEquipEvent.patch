@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 22:43:58 -0700
+Subject: [PATCH] Add BlockDispenseEquipEvent
+
+Implements SPIGOT-6023: https://hub.spigotmc.org/jira/browse/SPIGOT-6023
+
+diff --git a/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java b/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
+index 0055a96b51a1d38d31e129c417c97bcfc9d0b745..2f783ed3e2481c81bf706dccfa573bdb3037e4c8 100644
+--- a/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
++++ b/src/main/java/net/minecraft/core/dispenser/IDispenseBehavior.java
+@@ -317,6 +317,14 @@ public interface IDispenseBehavior {
+                 });
+ 
+                 if (!list.isEmpty()) {
++                    // Paper start
++                    switch (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDispenseEquipEvent(isourceblock, itemstack, list.get(0))) {
++                        case PASSED:
++                            return itemstack;
++                        case CANCEL:
++                            return super.a(isourceblock, itemstack);
++                    }
++                    // Paper end
+                     ((ISaddleable) list.get(0)).saddle(SoundCategory.BLOCKS);
+                     itemstack.subtract(1);
+                     this.a(true);
+@@ -345,6 +353,14 @@ public interface IDispenseBehavior {
+                     entityhorseabstract = (EntityHorseAbstract) iterator1.next();
+                 } while (!entityhorseabstract.l(itemstack) || entityhorseabstract.ft() || !entityhorseabstract.isTamed());
+ 
++                // Paper start
++                switch (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDispenseEquipEvent(isourceblock, itemstack, entityhorseabstract)) {
++                    case PASSED:
++                        return itemstack;
++                    case CANCEL:
++                        return super.a(isourceblock, itemstack);
++                }
++                // Paper end
+                 entityhorseabstract.a_(401, itemstack.cloneAndSubtract(1));
+                 this.a(true);
+                 return itemstack;
+@@ -388,6 +404,16 @@ public interface IDispenseBehavior {
+                     }
+ 
+                     entityhorsechestedabstract = (EntityHorseChestedAbstract) iterator1.next();
++                    // Paper start
++                    if (!entityhorsechestedabstract.isCarryingChest() && entityhorsechestedabstract.isTamed()) { // Will succeed in equiping chest
++                        switch (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDispenseEquipEvent(isourceblock, itemstack, entityhorsechestedabstract)) {
++                            case PASSED:
++                                return itemstack;
++                            case CANCEL:
++                                return super.a(isourceblock, itemstack);
++                        }
++                    }
++                    // Paper end
+                 } while (!entityhorsechestedabstract.isTamed() || !entityhorsechestedabstract.a_(499, itemstack));
+ 
+                 itemstack.subtract(1);
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index b14cec316b16e46d54d389650372c5c9ce1e5a4d..199a1435ead0b0cf456c3727a48d633829b86a49 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1831,5 +1831,30 @@ public class CraftEventFactory {
+         BlockPreDispenseEvent event = new BlockPreDispenseEvent(block, org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemStack), slot);
+         return event.callEvent();
+     }
++
++    @Nullable // returns false if cancelled or passed on
++    public static BlockDispenseEquipResult handleBlockDispenseEquipEvent(net.minecraft.core.ISourceBlock block, ItemStack dispensed, EntityLiving target) {
++        CraftItemStack item = CraftItemStack.asCraftMirror(dispensed);
++        io.papermc.paper.event.block.BlockDispenseEquipEvent event = new org.bukkit.event.block.BlockDispenseArmorEvent(CraftBlock.at(block.getWorld(), block.getBlockPosition()), item.clone(), target.getBukkitLivingEntity());
++        if (!net.minecraft.world.level.block.BlockDispenser.eventFired) {
++            event.callEvent();
++        }
++        if (event.isCancelled()) {
++            return BlockDispenseEquipResult.CANCEL;
++        } else if (!event.getItem().equals(item)) {
++            ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
++            net.minecraft.core.dispenser.IDispenseBehavior idispensebehavior = (net.minecraft.core.dispenser.IDispenseBehavior) net.minecraft.world.level.block.BlockDispenser.REGISTRY.get(eventStack.getItem());
++            net.minecraft.world.level.block.BlockDispenser.eventFired = true;
++            idispensebehavior.dispense(block, eventStack);
++            return BlockDispenseEquipResult.PASSED;
++        }
++        return BlockDispenseEquipResult.ALLOW;
++    }
++
++    public enum BlockDispenseEquipResult {
++        PASSED,
++        CANCEL,
++        ALLOW
++    }
+     // Paper end
+ }
