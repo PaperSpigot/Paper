@@ -5,10 +5,10 @@ Subject: [PATCH] Add sendOpLevel API
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index cf457f6b6ee2968f68f4eede30bb703a6a4f990b..1358993217e601e3bab6e0a4e8c55d555865a13e 100644
+index 43d9ab46645b91910f1c35b326a702ab27f7599a..ab332ee284202ae71ee293342dac57f3fba1cdce 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -1138,6 +1138,11 @@ public abstract class PlayerList {
+@@ -1137,6 +1137,11 @@ public abstract class PlayerList {
      }
  
      private void a(EntityPlayer entityplayer, int i) {
@@ -20,7 +20,7 @@ index cf457f6b6ee2968f68f4eede30bb703a6a4f990b..1358993217e601e3bab6e0a4e8c55d55
          if (entityplayer.playerConnection != null) {
              byte b0;
  
-@@ -1152,8 +1157,10 @@ public abstract class PlayerList {
+@@ -1151,8 +1156,10 @@ public abstract class PlayerList {
              entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, b0));
          }
  
@@ -32,7 +32,7 @@ index cf457f6b6ee2968f68f4eede30bb703a6a4f990b..1358993217e601e3bab6e0a4e8c55d55
  
      // Paper start
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 41987716afa8ec34214868373df97d0e8f8b27c1..e81de526a847c730abf86016354c1dc57780ec8b 100644
+index 94d549552357d6b4827449f354c7573511c195d8..5e4b3ba4d1032ac3493eee209c9b7de2c12e8298 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -2300,6 +2300,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

@@ -22,10 +22,10 @@ index 1d03a79e9010bc514b72a81ba0ad4a62aeff1bb7..429b74474ced04d8dd8f038b8590b8df
  }
 diff --git a/src/main/java/io/papermc/paper/adventure/AdventureComponent.java b/src/main/java/io/papermc/paper/adventure/AdventureComponent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..89597b4a3064c3c6001c7e927a848ee73a1b1fd9
+index 0000000000000000000000000000000000000000..57c3cb944f4d4f1612df84534a15d3e19e0ada7e
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/AdventureComponent.java
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,79 @@
 +package io.papermc.paper.adventure;
 +
 +import com.google.gson.JsonElement;
@@ -35,6 +35,8 @@ index 0000000000000000000000000000000000000000..89597b4a3064c3c6001c7e927a848ee7
 +import java.util.List;
 +import net.kyori.adventure.text.Component;
 +import net.kyori.adventure.text.TextComponent;
++import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
++import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 +import net.minecraft.network.chat.ChatModifier;
 +import net.minecraft.network.chat.IChatBaseComponent;
 +import net.minecraft.network.chat.IChatMutableComponent;
@@ -78,7 +80,7 @@ index 0000000000000000000000000000000000000000..89597b4a3064c3c6001c7e927a848ee7
 +
 +    @Override
 +    public String getString() {
-+        return PaperAdventure.PLAIN.serialize(this.wrapped);
++        return PlainTextComponentSerializer.plainText().serialize(this.wrapped);
 +    }
 +
 +    @Override
@@ -99,16 +101,16 @@ index 0000000000000000000000000000000000000000..89597b4a3064c3c6001c7e927a848ee7
 +    public static class Serializer implements JsonSerializer<AdventureComponent> {
 +        @Override
 +        public JsonElement serialize(final AdventureComponent src, final Type type, final JsonSerializationContext context) {
-+            return PaperAdventure.GSON.serializer().toJsonTree(src.wrapped, Component.class);
++            return GsonComponentSerializer.gson().serializer().toJsonTree(src.wrapped, Component.class);
 +        }
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/ChatProcessor.java b/src/main/java/io/papermc/paper/adventure/ChatProcessor.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43eb655ac43
+index 0000000000000000000000000000000000000000..1ab8567dc90e53882a40cb37a2fc52864e9a5352
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/ChatProcessor.java
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,216 @@
 +package io.papermc.paper.adventure;
 +
 +import io.papermc.paper.chat.ChatComposer;
@@ -124,6 +126,7 @@ index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43e
 +import net.kyori.adventure.text.Component;
 +import net.kyori.adventure.text.TextReplacementConfig;
 +import net.kyori.adventure.text.event.ClickEvent;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 +import net.minecraft.network.chat.ChatMessageType;
 +import net.minecraft.network.chat.IChatBaseComponent;
 +import net.minecraft.server.MinecraftServer;
@@ -173,7 +176,7 @@ index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43e
 +                this.processModern(
 +                    legacyComposer(event.getFormat()),
 +                    event.getRecipients(),
-+                    PaperAdventure.LEGACY_SECTION_UXRC.deserialize(event.getMessage()),
++                    LegacyComponentSerializer.legacySection().deserialize(event.getMessage()),
 +                    event.isCancelled()
 +                );
 +            },
@@ -182,7 +185,7 @@ index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43e
 +                this.processModern(
 +                    legacyComposer(event.getFormat()),
 +                    event.getRecipients(),
-+                    PaperAdventure.LEGACY_SECTION_UXRC.deserialize(event.getMessage()),
++                    LegacyComponentSerializer.legacySection().deserialize(event.getMessage()),
 +                    event.isCancelled()
 +                );
 +            },
@@ -298,7 +301,7 @@ index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43e
 +    }
 +
 +    private static ChatComposer legacyComposer(final String format) {
-+        return (player, displayName, message) -> PaperAdventure.LEGACY_SECTION_UXRC.deserialize(String.format(format, legacyDisplayName((CraftPlayer) player), PaperAdventure.LEGACY_SECTION_UXRC.serialize(message))).replaceText(URL_REPLACEMENT_CONFIG);
++        return (player, displayName, message) -> LegacyComponentSerializer.legacySection().deserialize(String.format(format, legacyDisplayName((CraftPlayer) player), LegacyComponentSerializer.legacySection().serialize(message))).replaceText(URL_REPLACEMENT_CONFIG);
 +    }
 +
 +    private void queueIfAsyncOrRunImmediately(final Waitable<Void> waitable) {
@@ -326,12 +329,13 @@ index 0000000000000000000000000000000000000000..0cb9368dcffe08a1ab004c6e2803b43e
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/DisplayNames.java b/src/main/java/io/papermc/paper/adventure/DisplayNames.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b1d9d6276eb577ed3c66df1f89b3266d2c48eaf2
+index 0000000000000000000000000000000000000000..6f4b40a84898e0598e711dd6fd1c01ce75d6ac6e
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/DisplayNames.java
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +package io.papermc.paper.adventure;
 +
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 +import net.minecraft.server.level.EntityPlayer;
 +import org.bukkit.ChatColor;
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -347,9 +351,76 @@ index 0000000000000000000000000000000000000000..b1d9d6276eb577ed3c66df1f89b3266d
 +    public static String getLegacy(final EntityPlayer player) {
 +        final String legacy = player.displayName;
 +        if (legacy != null) {
-+            return PaperAdventure.LEGACY_SECTION_UXRC.serialize(player.adventure$displayName) + ChatColor.getLastColors(player.displayName);
++            return LegacyComponentSerializer.legacySection().serialize(player.adventure$displayName) + ChatColor.getLastColors(player.displayName);
 +        }
-+        return PaperAdventure.LEGACY_SECTION_UXRC.serialize(player.adventure$displayName);
++        return LegacyComponentSerializer.legacySection().serialize(player.adventure$displayName);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/adventure/GsonComponentSerializerProviderImpl.java b/src/main/java/io/papermc/paper/adventure/GsonComponentSerializerProviderImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ec9fba2f6d5c1179da6eb336b5530bacd7e07450
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/adventure/GsonComponentSerializerProviderImpl.java
+@@ -0,0 +1,22 @@
++package io.papermc.paper.adventure;
++
++import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++@SuppressWarnings("UnstableApiUsage") // permitted provider
++public final class GsonComponentSerializerProviderImpl implements GsonComponentSerializer.Provider {
++    @Override
++    public @NonNull GsonComponentSerializer gson() {
++        return GsonComponentSerializer.builder()
++            .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
++            .build();
++    }
++
++    @Override
++    public @NonNull GsonComponentSerializer gsonLegacy() {
++        return GsonComponentSerializer.builder()
++            .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
++            .downsampleColors()
++            .build();
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/adventure/LegacyComponentSerializerProviderImpl.java b/src/main/java/io/papermc/paper/adventure/LegacyComponentSerializerProviderImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b91cb347461c66a83016d653ed3cd9a2d5d5570
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/adventure/LegacyComponentSerializerProviderImpl.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.adventure;
++
++import java.util.function.Consumer;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++@SuppressWarnings("UnstableApiUsage") // permitted provider
++public final class LegacyComponentSerializerProviderImpl implements LegacyComponentSerializer.Provider {
++    @Override
++    public @NonNull LegacyComponentSerializer legacyAmpersand() {
++        return LegacyComponentSerializer.builder()
++            .flattener(PaperAdventure.FLATTENER)
++            .hexColors()
++            .useUnusualXRepeatedCharacterHexFormat()
++            .build();
++    }
++
++    @Override
++    public @NonNull LegacyComponentSerializer legacySection() {
++        return LegacyComponentSerializer.builder()
++            .flattener(PaperAdventure.FLATTENER)
++            .hexColors()
++            .useUnusualXRepeatedCharacterHexFormat()
++            .build();
++    }
++
++    @Override
++    public @NonNull Consumer<LegacyComponentSerializer.Builder> legacy() {
++        return builder -> {
++            builder.flattener(PaperAdventure.FLATTENER);
++        };
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/NBTLegacyHoverEventSerializer.java b/src/main/java/io/papermc/paper/adventure/NBTLegacyHoverEventSerializer.java
@@ -448,10 +519,10 @@ index 0000000000000000000000000000000000000000..caa9708f321f04cd02534161231c0599
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/PaperAdventure.java b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081fb320c8a7
+index 0000000000000000000000000000000000000000..10f67dda16f9ba0381d9cc8c687ab542c37c7bea
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
-@@ -0,0 +1,344 @@
+@@ -0,0 +1,336 @@
 +package io.papermc.paper.adventure;
 +
 +import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -534,15 +605,7 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +            }
 +        })
 +        .build();
-+    public static final LegacyComponentSerializer LEGACY_SECTION_UXRC = LegacyComponentSerializer.builder().flattener(FLATTENER).hexColors().useUnusualXRepeatedCharacterHexFormat().build();
-+    public static final PlainComponentSerializer PLAIN = PlainComponentSerializer.builder().flattener(FLATTENER).build();
-+    public static final GsonComponentSerializer GSON = GsonComponentSerializer.builder()
-+        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
-+        .build();
-+    public static final GsonComponentSerializer COLOR_DOWNSAMPLING_GSON = GsonComponentSerializer.builder()
-+        .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
-+        .downsampleColors()
-+        .build();
++    @Deprecated public static final PlainComponentSerializer PLAIN = PlainComponentSerializer.builder().flattener(FLATTENER).build();
 +    private static final Codec<NBTTagCompound, String, IOException, IOException> NBT_CODEC = new Codec<NBTTagCompound, String, IOException, IOException>() {
 +        @Override
 +        public @NonNull NBTTagCompound decode(final @NonNull String encoded) throws IOException {
@@ -579,7 +642,7 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +    // Component
 +
 +    public static Component asAdventure(final IChatBaseComponent component) {
-+        return GSON.serializer().fromJson(IChatBaseComponent.ChatSerializer.toJsonTree(component), Component.class);
++        return GsonComponentSerializer.gson().serializer().fromJson(IChatBaseComponent.ChatSerializer.toJsonTree(component), Component.class);
 +    }
 +
 +    public static ArrayList<Component> asAdventure(final List<IChatBaseComponent> vanillas) {
@@ -608,7 +671,7 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +
 +    public static IChatBaseComponent asVanilla(final Component component) {
 +        if (true) return new AdventureComponent(component);
-+        return IChatBaseComponent.ChatSerializer.fromJsonTree(GSON.serializer().toJsonTree(component));
++        return IChatBaseComponent.ChatSerializer.fromJsonTree(GsonComponentSerializer.gson().serializer().toJsonTree(component));
 +    }
 +
 +    public static List<IChatBaseComponent> asVanilla(final List<Component> adventures) {
@@ -620,7 +683,7 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +    }
 +
 +    public static String asJsonString(final Component component, final Locale locale) {
-+        return GSON.serialize(
++        return GsonComponentSerializer.gson().serialize(
 +            GlobalTranslator.render(
 +                component,
 +                // play it safe
@@ -640,7 +703,7 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +
 +    // thank you for being worse than wet socks, Bukkit
 +    public static String superHackyLegacyRepresentationOfComponent(final Component component, final String string) {
-+        return LEGACY_SECTION_UXRC.serialize(component) + ChatColor.getLastColors(string);
++        return LegacyComponentSerializer.legacySection().serialize(component) + ChatColor.getLastColors(string);
 +    }
 +
 +    // BossBar
@@ -796,6 +859,32 @@ index 0000000000000000000000000000000000000000..c60457e9240c33a4721b82a00cef081f
 +        return EnumChatFormat.getByHexValue(color.value());
 +    }
 +}
+diff --git a/src/main/java/io/papermc/paper/adventure/PlainTextComponentSerializerProviderImpl.java b/src/main/java/io/papermc/paper/adventure/PlainTextComponentSerializerProviderImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..de2321f1adc1f272ecac69f528021ada50727c2e
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/adventure/PlainTextComponentSerializerProviderImpl.java
+@@ -0,0 +1,20 @@
++package io.papermc.paper.adventure;
++
++import java.util.function.Consumer;
++import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
++import org.checkerframework.checker.nullness.qual.NonNull;
++
++@SuppressWarnings("UnstableApiUsage") // permitted provider
++public final class PlainTextComponentSerializerProviderImpl implements PlainTextComponentSerializer.Provider {
++    @Override
++    public @NonNull PlainTextComponentSerializer plainTextSimple() {
++        return PlainTextComponentSerializer.builder().flattener(PaperAdventure.FLATTENER).build();
++    }
++
++    @Override
++    public @NonNull Consumer<PlainTextComponentSerializer.Builder> plainText() {
++        return builder -> {
++            builder.flattener(PaperAdventure.FLATTENER);
++        };
++    }
++}
 diff --git a/src/main/java/io/papermc/paper/adventure/VanillaBossBarListener.java b/src/main/java/io/papermc/paper/adventure/VanillaBossBarListener.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..3a4158781e464d9a860bab72ed719a41929c8add
@@ -845,14 +934,15 @@ index 0000000000000000000000000000000000000000..3a4158781e464d9a860bab72ed719a41
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/WrapperAwareSerializer.java b/src/main/java/io/papermc/paper/adventure/WrapperAwareSerializer.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..625b57a4274d6348a85897b92ff07fee7ae3a7ab
+index 0000000000000000000000000000000000000000..f2e3f53ef818b448ca16728e0a2f618cd2f9ab35
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/WrapperAwareSerializer.java
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,21 @@
 +package io.papermc.paper.adventure;
 +
 +import net.kyori.adventure.text.Component;
 +import net.kyori.adventure.text.serializer.ComponentSerializer;
++import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 +import net.minecraft.network.chat.IChatBaseComponent;
 +
 +final class WrapperAwareSerializer implements ComponentSerializer<Component, Component, IChatBaseComponent> {
@@ -861,12 +951,12 @@ index 0000000000000000000000000000000000000000..625b57a4274d6348a85897b92ff07fee
 +        if (input instanceof AdventureComponent) {
 +            return ((AdventureComponent) input).wrapped;
 +        }
-+        return PaperAdventure.GSON.serializer().fromJson(IChatBaseComponent.ChatSerializer.toJsonTree(input), Component.class);
++        return GsonComponentSerializer.gson().serializer().fromJson(IChatBaseComponent.ChatSerializer.toJsonTree(input), Component.class);
 +    }
 +
 +    @Override
 +    public IChatBaseComponent serialize(final Component component) {
-+        return IChatBaseComponent.ChatSerializer.fromJsonTree(PaperAdventure.GSON.serializer().toJsonTree(component));
++        return IChatBaseComponent.ChatSerializer.fromJsonTree(GsonComponentSerializer.gson().serializer().toJsonTree(component));
 +    }
 +}
 diff --git a/src/main/java/net/kyori/adventure/bossbar/HackyBossBarPlatformBridge.java b/src/main/java/net/kyori/adventure/bossbar/HackyBossBarPlatformBridge.java
@@ -1277,7 +1367,7 @@ index 2a96564c1656d42a74c331a6178e511cd5347a66..d219eda271a71f786808a6958b829fca
  
                  @Override
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 4ed497ee04d9e9116e1f7d90bf975aeadd24aa93..a39f58e0c60b5e3ccc3b725f1f4167d52b230e11 100644
+index 4ed497ee04d9e9116e1f7d90bf975aeadd24aa93..e2de0b4ea8d89817d5eac40935a2a4cbf21de37c 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -159,6 +159,8 @@ import org.apache.logging.log4j.LogManager;
@@ -1299,7 +1389,7 @@ index 4ed497ee04d9e9116e1f7d90bf975aeadd24aa93..a39f58e0c60b5e3ccc3b725f1f4167d5
 -        disconnect(CraftChatMessage.fromComponent(ichatbasecomponent));
 +    public void disconnect(String s) {
 +        // Paper start
-+        this.disconnect(PaperAdventure.LEGACY_SECTION_UXRC.deserialize(s));
++        this.disconnect(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(s));
      }
 -    // CraftBukkit end
  
@@ -1394,7 +1484,7 @@ index 4ed497ee04d9e9116e1f7d90bf975aeadd24aa93..a39f58e0c60b5e3ccc3b725f1f4167d5
               }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index c601a5c577e438a3fa8dd4c5f36dbe9494b03d52..6ebd4ec781aa215c2b941261250c15c87c223cab 100644
+index c601a5c577e438a3fa8dd4c5f36dbe9494b03d52..767c8f776e2995722c11f2f5a7593c0b9e84f65f 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
@@ -1483,7 +1573,7 @@ index c601a5c577e438a3fa8dd4c5f36dbe9494b03d52..6ebd4ec781aa215c2b941261250c15c8
          } else if (!this.isWhitelisted(gameprofile)) {
              chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted");
 -            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot
-+            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, PaperAdventure.LEGACY_SECTION_UXRC.deserialize(org.spigotmc.SpigotConfig.whitelistMessage)); // Spigot // Paper - Adventure
++            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.whitelistMessage)); // Spigot // Paper - Adventure
          } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
              IpBanEntry ipbanentry = this.l.get(socketaddress);
  
@@ -1497,7 +1587,7 @@ index c601a5c577e438a3fa8dd4c5f36dbe9494b03d52..6ebd4ec781aa215c2b941261250c15c8
              // return this.players.size() >= this.maxPlayers && !this.f(gameprofile) ? new ChatMessage("multiplayer.disconnect.server_full") : null;
              if (this.players.size() >= this.maxPlayers && !this.f(gameprofile)) {
 -                event.disallow(PlayerLoginEvent.Result.KICK_FULL, org.spigotmc.SpigotConfig.serverFullMessage); // Spigot
-+                event.disallow(PlayerLoginEvent.Result.KICK_FULL, PaperAdventure.LEGACY_SECTION_UXRC.deserialize(org.spigotmc.SpigotConfig.serverFullMessage)); // Spigot // Paper - Adventure
++                event.disallow(PlayerLoginEvent.Result.KICK_FULL, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.serverFullMessage)); // Spigot // Paper - Adventure
              }
          }
  
@@ -1658,7 +1748,7 @@ index 7ec93ddd7e7c9dc54e3e4dcfe0d1654c0b0a8536..3f057f0bd23bc1c693c8f04ee8acd662
              }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 0c1e12b0b43f949d4ace600b2ccdffe52faab1e6..2c2e87d96f61e7ef88847df70e1c6153bca9fcd3 100644
+index 0c1e12b0b43f949d4ace600b2ccdffe52faab1e6..825e10e560cfd7f7478ace5e29b27e2df4c665d2 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -562,8 +562,11 @@ public final class CraftServer implements Server {
@@ -1668,7 +1758,7 @@ index 0c1e12b0b43f949d4ace600b2ccdffe52faab1e6..2c2e87d96f61e7ef88847df70e1c6153
 +    @Deprecated // Paper start
      public int broadcastMessage(String message) {
 -        return broadcast(message, BROADCAST_CHANNEL_USERS);
-+        this.sendMessage(io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(message));
++        this.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message));
 +        return this.getOnlinePlayers().size() + 1;
 +        // Paper end
      }
@@ -1682,7 +1772,7 @@ index 0c1e12b0b43f949d4ace600b2ccdffe52faab1e6..2c2e87d96f61e7ef88847df70e1c6153
      @Override
 +    public net.kyori.adventure.text.Component shutdownMessage() {
 +        String msg = getShutdownMessage();
-+        return msg != null ? io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(msg) : null;
++        return msg != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(msg) : null;
 +    }
 +    // Paper end
 +    @Override
@@ -1697,7 +1787,7 @@ index 0c1e12b0b43f949d4ace600b2ccdffe52faab1e6..2c2e87d96f61e7ef88847df70e1c6153
 +    @Deprecated // Paper
      public int broadcast(String message, String permission) {
 +        // Paper start - Adventure
-+        return this.broadcast(io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(message), permission);
++        return this.broadcast(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message), permission);
 +    }
 +
 +    @Override
@@ -1886,7 +1976,7 @@ index a559a77aae870988f4dd5e6f5f1f08feb3fad054..75ee5cc96c0e54f99e2ce820289bb74f
      public String getCustomName() {
          TileEntityEnchantTable enchant = this.getSnapshot();
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
-index 50d3f9ea1e905522096ef930c144589a1f0d539e..f4b601277ef75e5bc39d541a0d13c6eed3b1ef2c 100644
+index 50d3f9ea1e905522096ef930c144589a1f0d539e..d389600ea54d0fa98995c507ac5f2cfddca4a63d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 @@ -13,8 +13,10 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -1902,7 +1992,7 @@ index 50d3f9ea1e905522096ef930c144589a1f0d539e..f4b601277ef75e5bc39d541a0d13c6ee
  
      public CraftSign(final Block block) {
          super(block, TileEntitySign.class);
-@@ -24,27 +26,52 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements
+@@ -24,27 +26,53 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements
          super(material, te);
      }
  
@@ -1948,25 +2038,26 @@ index 50d3f9ea1e905522096ef930c144589a1f0d539e..f4b601277ef75e5bc39d541a0d13c6ee
 +    @Override
 +    public String[] getLines() {
 +        this.loadLines();
-+        return this.lines.stream().map(io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC::serialize).toArray(String[]::new); // Paper
++        final net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer lcs = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection(); // Paper
++        return this.lines.stream().map(lcs::serialize).toArray(String[]::new); // Paper
      }
  
      @Override
      public String getLine(int index) throws IndexOutOfBoundsException {
 -        return getLines()[index];
 +        this.loadLines();
-+        return io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(this.lines.get(index)); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.lines.get(index)); // Paper
      }
  
      @Override
      public void setLine(int index, String line) throws IndexOutOfBoundsException {
 -        getLines()[index] = line;
 +        this.loadLines();
-+        this.lines.set(index, line != null ? io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(line) : net.kyori.adventure.text.Component.empty()); // Paper
++        this.lines.set(index, line != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line) : net.kyori.adventure.text.Component.empty()); // Paper
      }
  
      @Override
-@@ -72,16 +99,32 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements
+@@ -72,16 +100,32 @@ public class CraftSign extends CraftBlockEntityState<TileEntitySign> implements
          super.applyTo(sign);
  
          if (lines != null) {
@@ -2061,7 +2152,7 @@ index eea242af23825ad29ada6e997205e87edffb6bb9..3cf81734c8580f4d88ea97b6ac737a37
      public void setCustomName(String name) {
          // sane limit for name length
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
-index 3a4e2261d0b0cd17df3f96e75f3c509156679c48..105d0388998d1e35e634d2163fe1a44aa7037ac8 100644
+index 3a4e2261d0b0cd17df3f96e75f3c509156679c48..6d89407228e147c59f1827cb4c9b025854da6262 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftHumanEntity.java
 @@ -316,9 +316,12 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
@@ -2071,7 +2162,7 @@ index 3a4e2261d0b0cd17df3f96e75f3c509156679c48..105d0388998d1e35e634d2163fe1a44a
 -        String title = container.getBukkitView().getTitle();
 +        //String title = container.getBukkitView().getTitle(); // Paper - comment
 +        net.kyori.adventure.text.Component adventure$title = container.getBukkitView().title(); // Paper
-+        if (adventure$title == null) adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(container.getBukkitView().getTitle()); // Paper
++        if (adventure$title == null) adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(container.getBukkitView().getTitle()); // Paper
  
 -        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0]));
 +        //player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0])); // Paper // Paper - comment
@@ -2088,14 +2179,14 @@ index 3a4e2261d0b0cd17df3f96e75f3c509156679c48..105d0388998d1e35e634d2163fe1a44a
 +
 +        //String title = inventory.getTitle(); // Paper - comment
 +        net.kyori.adventure.text.Component adventure$title = inventory.title(); // Paper
-+        if (adventure$title == null) adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(inventory.getTitle()); // Paper
++        if (adventure$title == null) adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(inventory.getTitle()); // Paper
 +        //player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, CraftChatMessage.fromString(title)[0])); // Paper - comment
 +        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, io.papermc.paper.adventure.PaperAdventure.asVanilla(adventure$title))); // Paper
          player.activeContainer = container;
          player.activeContainer.addSlotListener(player);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f652e0b42d 100644
+index b51a874e4665f977a154792e6216e03e04525f39..a01beb690746df61ad4b00d93633d7c026af709e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -240,14 +240,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -2108,7 +2199,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
  
      @Override
      public void setDisplayName(final String name) {
-+        this.getHandle().adventure$displayName = name != null ? io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(name) : net.kyori.adventure.text.Component.text(this.getName()); // Paper
++        this.getHandle().adventure$displayName = name != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(name) : net.kyori.adventure.text.Component.text(this.getName()); // Paper
          getHandle().displayName = name == null ? getName() : name;
      }
  
@@ -2150,26 +2241,26 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      @Override
      public String getPlayerListHeader() {
 -        return (playerListHeader == null) ? null : CraftChatMessage.fromComponent(playerListHeader);
-+        return (playerListHeader == null) ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(playerListHeader); // Paper - Adventure
++        return (playerListHeader == null) ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(playerListHeader); // Paper - Adventure
      }
  
      @Override
      public String getPlayerListFooter() {
 -        return (playerListFooter == null) ? null : CraftChatMessage.fromComponent(playerListFooter);
-+        return (playerListFooter == null) ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(playerListFooter); // Paper - Adventure
++        return (playerListFooter == null) ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(playerListFooter); // Paper - Adventure
      }
  
      @Override
      public void setPlayerListHeader(String header) {
 -        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true);
-+        this.playerListHeader = header == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(header); // Paper - Adventure
++        this.playerListHeader = header == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(header); // Paper - Adventure
          updatePlayerListHeaderFooter();
      }
  
      @Override
      public void setPlayerListFooter(String footer) {
 -        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true);
-+        this.playerListFooter = footer == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(footer); // Paper - Adventure
++        this.playerListFooter = footer == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(footer); // Paper - Adventure
          updatePlayerListHeaderFooter();
      }
  
@@ -2177,8 +2268,8 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      public void setPlayerListHeaderFooter(String header, String footer) {
 -        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true);
 -        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true);
-+        this.playerListHeader = header == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(header); // Paper - Adventure
-+        this.playerListFooter = footer == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(footer); // Paper - Adventure
++        this.playerListHeader = header == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(header); // Paper - Adventure
++        this.playerListFooter = footer == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(footer); // Paper - Adventure
          updatePlayerListHeaderFooter();
      }
  
@@ -2443,7 +2534,7 @@ index 8e83eb95ffce62aad10f4d9b259dc5dd076b7640..418becfe2b4fe5ca808f250469bbb464
          return event;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 384520dd734449d4e4f5243fbaad5f666b0c965c..614ab2d73db2293116f2272f6cd5c16da446132d 100644
+index 384520dd734449d4e4f5243fbaad5f666b0c965c..a45b9bbedf8f5adf2dbb9f2b6eb2f1944d578bdb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 @@ -39,6 +39,7 @@ public class CraftContainer extends Container {
@@ -2460,7 +2551,7 @@ index 384520dd734449d4e4f5243fbaad5f666b0c965c..614ab2d73db2293116f2272f6cd5c16d
          cachedType = view.getType();
 -        cachedTitle = view.getTitle();
 +        this.adventure$title = view.title(); // Paper
-+        if (this.adventure$title == null) this.adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(view.getTitle()); // Paper
++        if (this.adventure$title == null) this.adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(view.getTitle()); // Paper
 +        //cachedTitle = view.getTitle(); // Paper - comment
          cachedSize = getSize();
          setupSlots(top, bottom, player);
@@ -2495,7 +2586,7 @@ index 384520dd734449d4e4f5243fbaad5f666b0c965c..614ab2d73db2293116f2272f6cd5c16d
          cachedType = view.getType();
 -        cachedTitle = view.getTitle();
 +        this.adventure$title = view.title(); // Paper
-+        if (this.adventure$title == null) this.adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(view.getTitle()); // Paper
++        if (this.adventure$title == null) this.adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(view.getTitle()); // Paper
 +        //cachedTitle = view.getTitle(); // Paper - comment
          if (view.getPlayer() instanceof CraftPlayer) {
              CraftPlayer player = (CraftPlayer) view.getPlayer();
@@ -2511,7 +2602,7 @@ index 384520dd734449d4e4f5243fbaad5f666b0c965c..614ab2d73db2293116f2272f6cd5c16d
          }
          return true;
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
-index a537cc4ac5d052168f96a1ae73b6b17a380436ab..21347cf02cc01c90a81e7dd8264ef11968d9f145 100644
+index a537cc4ac5d052168f96a1ae73b6b17a380436ab..18adcc61ef70bad1427b6340db94d722621453ee 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
 @@ -19,6 +19,12 @@ public class CraftInventoryCustom extends CraftInventory {
@@ -2562,7 +2653,7 @@ index a537cc4ac5d052168f96a1ae73b6b17a380436ab..21347cf02cc01c90a81e7dd8264ef119
              Validate.notNull(title, "Title cannot be null");
              this.items = NonNullList.a(size, ItemStack.b);
              this.title = title;
-+            this.adventure$title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(title);
++            this.adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(title);
              this.viewers = new ArrayList<HumanEntity>();
              this.owner = owner;
              this.type = InventoryType.CHEST;
@@ -2572,7 +2663,7 @@ index a537cc4ac5d052168f96a1ae73b6b17a380436ab..21347cf02cc01c90a81e7dd8264ef119
 +        public MinecraftInventory(final InventoryHolder owner, final int size, final net.kyori.adventure.text.Component title) {
 +            Validate.notNull(title, "Title cannot be null");
 +            this.items = NonNullList.a(size, ItemStack.b);
-+            this.title = io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(title);
++            this.title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title);
 +            this.adventure$title = title;
 +            this.viewers = new ArrayList<HumanEntity>();
 +            this.owner = owner;
@@ -2677,7 +2768,7 @@ index ef10c7ab1d615cdba182eca63eb14309339a5314..206c133ebc6c44038585236b0628543b
          @Override
          public CraftMerchant getCraftMerchant() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1ce6f500a 100644
+index 4cdc504df4cad6f7725f6d18482e88433523943a..7920c953a7ea2e73243f82f5e42e36e59df4582e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 @@ -1,8 +1,9 @@
@@ -2699,37 +2790,37 @@ index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1
  
  // Spigot start
  import static org.spigotmc.ValidateUtils.*;
-@@ -269,6 +271,141 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -269,6 +271,142 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
          this.generation = (generation == null) ? null : generation.ordinal();
      }
  
 +    // Paper start
 +    @Override
 +    public net.kyori.adventure.text.Component title() {
-+        return this.title == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(this.title);
++        return this.title == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.title);
 +    }
 +
 +    @Override
 +    public org.bukkit.inventory.meta.BookMeta title(net.kyori.adventure.text.Component title) {
-+        this.setTitle(title == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(title));
++        this.setTitle(title == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title));
 +        return this;
 +    }
 +
 +    @Override
 +    public net.kyori.adventure.text.Component author() {
-+        return this.author == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(this.author);
++        return this.author == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.author);
 +    }
 +
 +    @Override
 +    public org.bukkit.inventory.meta.BookMeta author(net.kyori.adventure.text.Component author) {
-+        this.setAuthor(author == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(author));
++        this.setAuthor(author == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(author));
 +        return this;
 +    }
 +
 +    @Override
 +    public net.kyori.adventure.text.Component page(final int page) {
 +        Validate.isTrue(isValidPage(page), "Invalid page number");
-+        return this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(pages.get(page - 1)) : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(pages.get(page - 1));
++        return this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(pages.get(page - 1)) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(pages.get(page - 1));
 +    }
 +
 +    @Override
@@ -2740,7 +2831,7 @@ index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1
 +        if (data == null) {
 +            data = net.kyori.adventure.text.Component.empty();
 +        }
-+        pages.set(page - 1, this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(data) : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(data));
++        pages.set(page - 1, this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(data) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(data));
 +    }
 +
 +    @Override
@@ -2749,7 +2840,7 @@ index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1
 +        if (this instanceof CraftMetaBookSigned)
 +            return pages.stream().map(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson()::deserialize).collect(ImmutableList.toImmutableList());
 +        else
-+            return pages.stream().map(io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC::deserialize).collect(ImmutableList.toImmutableList());
++            return pages.stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::deserialize).collect(ImmutableList.toImmutableList());
 +    }
 +
 +    @Override
@@ -2780,15 +2871,16 @@ index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1
 +                page = net.kyori.adventure.text.Component.empty();
 +            }
 +
-+            this.pages.add(this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(page) : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(page));
++            this.pages.add(this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(page) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(page));
 +        }
 +    }
 +
 +    private CraftMetaBook(net.kyori.adventure.text.Component title, net.kyori.adventure.text.Component author, List<net.kyori.adventure.text.Component> pages) {
 +        super((org.bukkit.craftbukkit.inventory.CraftMetaItem) org.bukkit.Bukkit.getItemFactory().getItemMeta(org.bukkit.Material.WRITABLE_BOOK));
-+        this.title = title == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(title);
-+        this.author = author == null ? null : io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.serialize(author);
-+        this.pages = pages.subList(0, Math.min(MAX_PAGES, pages.size())).stream().map(io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC::serialize).collect(java.util.stream.Collectors.toList());
++        final net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer lcs = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection();
++        this.title = title == null ? null : lcs.serialize(title);
++        this.author = author == null ? null : lcs.serialize(author);
++        this.pages = pages.subList(0, Math.min(MAX_PAGES, pages.size())).stream().map(lcs::serialize).collect(java.util.stream.Collectors.toList());
 +    }
 +
 +    static final class CraftMetaBookBuilder implements BookMetaBuilder {
@@ -2841,7 +2933,7 @@ index 4cdc504df4cad6f7725f6d18482e88433523943a..65b6d32e3e1130a64df33082f3292cb1
      @Override
      public String getPage(final int page) {
          Validate.isTrue(isValidPage(page), "Invalid page number");
-@@ -413,7 +550,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -413,7 +551,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
      }
  
      @Override
@@ -3075,7 +3167,7 @@ index 8fedca656af0783f3d97a7ccde3a113f97911084..df3deee12b11508b76c5f8f927fac8db
      public String getDisplayName() throws IllegalStateException {
          CraftScoreboard scoreboard = checkState();
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
-index 954389b818de93cf0ab046edc5dc032fceea391b..6ea491f6308317059c4bc6735abbdce370df0f34 100644
+index 954389b818de93cf0ab046edc5dc032fceea391b..166d6d4507b477682689c3e7d45ee11621dfd48f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 @@ -28,6 +28,27 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
@@ -3121,7 +3213,7 @@ index 954389b818de93cf0ab046edc5dc032fceea391b..6ea491f6308317059c4bc6735abbdce3
          ScoreboardObjective objective = board.registerObjective(name, craftCriteria.criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType));
 -        return new CraftObjective(this, objective);
 +        return new CraftObjective(this, objective);*/ // Paper
-+        return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName), renderType); // Paper
++        return registerNewObjective(name, criteria, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(displayName), renderType); // Paper
      }
  
      @Override
@@ -3198,7 +3290,7 @@ index 6a0b4cd36ac54df41642e8499c50e59f2b347b48..666af6cc91bd12ba5d5a846d663a5aab
  
          boolean hadFormat = false;
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 65131f0977fa55c4761c34ce52720170feb61a72..8f737f63f280c00c1276bd1dc3ecf60448732ca8 100644
+index 65131f0977fa55c4761c34ce52720170feb61a72..51da0fe3ffa82c5673b2b959b040a76cbf234b48 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -59,6 +59,33 @@ public final class CraftMagicNumbers implements UnsafeValues {
@@ -3213,12 +3305,12 @@ index 65131f0977fa55c4761c34ce52720170feb61a72..8f737f63f280c00c1276bd1dc3ecf604
 +
 +    @Override
 +    public net.kyori.adventure.text.serializer.gson.GsonComponentSerializer colorDownsamplingGsonComponentSerializer() {
-+        return io.papermc.paper.adventure.PaperAdventure.COLOR_DOWNSAMPLING_GSON;
++        return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.colorDownsamplingGson();
 +    }
 +
 +    @Override
 +    public net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer() {
-+        return io.papermc.paper.adventure.PaperAdventure.GSON;
++        return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson();
 +    }
 +
 +    @Override
@@ -3228,10 +3320,31 @@ index 65131f0977fa55c4761c34ce52720170feb61a72..8f737f63f280c00c1276bd1dc3ecf604
 +
 +    @Override
 +    public net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer() {
-+        return io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC;
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection();
 +    }
 +    // Paper end
 +
      public static IBlockData getBlock(MaterialData material) {
          return getBlock(material.getItemType(), material.getData());
      }
+diff --git a/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.gson.GsonComponentSerializer$Provider b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.gson.GsonComponentSerializer$Provider
+new file mode 100644
+index 0000000000000000000000000000000000000000..3297a08a46a1f3065d4dc13d4fccb91680df35c8
+--- /dev/null
++++ b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.gson.GsonComponentSerializer$Provider
+@@ -0,0 +1 @@
++io.papermc.paper.adventure.GsonComponentSerializerProviderImpl
+diff --git a/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer$Provider b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer$Provider
+new file mode 100644
+index 0000000000000000000000000000000000000000..5a1636380d8d78d23d4151017308198643a74b88
+--- /dev/null
++++ b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer$Provider
+@@ -0,0 +1 @@
++io.papermc.paper.adventure.LegacyComponentSerializerProviderImpl
+diff --git a/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer$Provider b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer$Provider
+new file mode 100644
+index 0000000000000000000000000000000000000000..f11fc9ea0b37960f0cb2e9a0336be5aa62c9a771
+--- /dev/null
++++ b/src/main/resources/META-INF/services/net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer$Provider
+@@ -0,0 +1 @@
++io.papermc.paper.adventure.PlainTextComponentSerializerProviderImpl

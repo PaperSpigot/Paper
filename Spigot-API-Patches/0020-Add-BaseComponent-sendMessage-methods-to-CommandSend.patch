@@ -5,7 +5,7 @@ Subject: [PATCH] Add BaseComponent sendMessage methods to CommandSender
 
 
 diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
-index c88418c7aa19b4fecdfa9af3d18ff202a5dc5763..fb0e608fa92dae99b9eee8fc1cbdf4b91a33e620 100644
+index 2588edf75483855e0c843834f39ca371770730b9..6aa795fe79ceca03c1725c36f2b0d3a63acd134e 100644
 --- a/src/main/java/org/bukkit/command/CommandSender.java
 +++ b/src/main/java/org/bukkit/command/CommandSender.java
 @@ -1,6 +1,9 @@
@@ -20,7 +20,7 @@ index c88418c7aa19b4fecdfa9af3d18ff202a5dc5763..fb0e608fa92dae99b9eee8fc1cbdf4b9
  import org.jetbrains.annotations.NotNull;
 @@ -117,5 +120,33 @@ public interface CommandSender extends net.kyori.adventure.audience.Audience, Pe
      default void sendMessage(final @NotNull net.kyori.adventure.identity.Identity identity, final @NotNull net.kyori.adventure.text.Component message, final @NotNull net.kyori.adventure.audience.MessageType type) {
-         this.sendMessage(org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(message));
+         this.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(message));
      }
 +
 +    /**

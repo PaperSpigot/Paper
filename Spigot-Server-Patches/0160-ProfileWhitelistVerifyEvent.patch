@@ -5,23 +5,31 @@ Subject: [PATCH] ProfileWhitelistVerifyEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 9db65b9d8f66ff83dcf32274fec98a425e7353d8..738a69a1a5765897fb3ca3b4ceb07cddade0d27f 100644
+index ea66d37014a25c0ec94ea30d27742f8d18184efc..a6adf66669370ad5f890e2fd8de43a06a5968f26 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -615,9 +615,9 @@ public abstract class PlayerList {
+@@ -94,7 +94,6 @@ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+ // CraftBukkit start
+-import io.papermc.paper.adventure.PaperAdventure; // Paper
+ import com.google.common.base.Predicate;
+ import com.google.common.collect.Iterables;
+ 
+@@ -615,9 +614,9 @@ public abstract class PlayerList {
  
              // return chatmessage;
              if (!gameprofilebanentry.hasExpired()) event.disallow(PlayerLoginEvent.Result.KICK_BANNED, PaperAdventure.asAdventure(chatmessage)); // Spigot // Paper - Adventure
 -        } else if (!this.isWhitelisted(gameprofile)) {
 -            chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted");
--            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, PaperAdventure.LEGACY_SECTION_UXRC.deserialize(org.spigotmc.SpigotConfig.whitelistMessage)); // Spigot // Paper - Adventure
+-            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(org.spigotmc.SpigotConfig.whitelistMessage)); // Spigot // Paper - Adventure
 +        } else if (!this.isWhitelisted(gameprofile, event)) { // Paper
 +            //chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted"); // Paper
 +            //event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot // Paper - moved to isWhitelisted
          } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
              IpBanEntry ipbanentry = this.l.get(socketaddress);
  
-@@ -1009,9 +1009,25 @@ public abstract class PlayerList {
+@@ -1009,9 +1008,25 @@ public abstract class PlayerList {
          this.server.getCommandDispatcher().a(entityplayer);
      }
  
@@ -38,7 +46,7 @@ index 9db65b9d8f66ff83dcf32274fec98a425e7353d8..738a69a1a5765897fb3ca3b4ceb07cdd
 +        event.callEvent();
 +        if (!event.isWhitelisted()) {
 +            if (loginEvent != null) {
-+                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, PaperAdventure.LEGACY_SECTION_UXRC.deserialize(event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage()));
++                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage()));
 +            }
 +            return false;
 +        }

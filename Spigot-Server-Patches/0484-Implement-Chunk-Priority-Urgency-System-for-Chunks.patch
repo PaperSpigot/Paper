@@ -1220,7 +1220,7 @@ index 2c932d36f982e7f8713aabff9a6c631055810366..f5d18834e0e2ee0e3bcf55810456766d
      public static <T> TicketType<T> a(String s, Comparator<T> comparator) {
          return new TicketType<>(s, comparator, 0L);
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index 6db70005ebc99b19185b8efca550a0783ea05cad..42190a8c6c2eadf05f57df50e3ca997384327b67 100644
+index f7f38237811e75c6ef5cfba5341e117cdf15ac5c..51a2114b29000ea09172e2b6e0d8aec1b6394904 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -1529,6 +1529,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -1232,10 +1232,10 @@ index 6db70005ebc99b19185b8efca550a0783ea05cad..42190a8c6c2eadf05f57df50e3ca9973
      }
  
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 66fcd68f0a0a21b113e8741cc42c841f49009118..b4c5915cc68a838259129b8973b3a6a39c1fc963 100644
+index f691eaef3cc7f210b2306d3ba8dc2868bdd8a09e..d3f861c8bca3b28c4090cf35f4d5ccc88ef2283c 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -275,8 +275,8 @@ public abstract class PlayerList {
+@@ -274,8 +274,8 @@ public abstract class PlayerList {
          final ChunkCoordIntPair pos = new ChunkCoordIntPair(chunkX, chunkZ);
          PlayerChunkMap playerChunkMap = worldserver1.getChunkProvider().playerChunkMap;
          playerChunkMap.getChunkDistanceManager().addTicketAtLevel(TicketType.LOGIN, pos, 31, pos.pair());
@@ -1246,7 +1246,7 @@ index 66fcd68f0a0a21b113e8741cc42c841f49009118..b4c5915cc68a838259129b8973b3a6a3
              PlayerChunk updatingChunk = playerChunkMap.getUpdatingChunk(pos.pair());
              if (updatingChunk != null) {
                  return updatingChunk.getEntityTickingFuture();
-@@ -696,6 +696,7 @@ public abstract class PlayerList {
+@@ -695,6 +695,7 @@ public abstract class PlayerList {
          SocketAddress socketaddress = loginlistener.networkManager.getSocketAddress();
  
          EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(World.OVERWORLD), gameprofile, new PlayerInteractManager(this.server.getWorldServer(World.OVERWORLD)));
@@ -1254,7 +1254,7 @@ index 66fcd68f0a0a21b113e8741cc42c841f49009118..b4c5915cc68a838259129b8973b3a6a3
          Player player = entity.getBukkitEntity();
          PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
  
-@@ -902,6 +903,7 @@ public abstract class PlayerList {
+@@ -901,6 +902,7 @@ public abstract class PlayerList {
          // CraftBukkit end
  
          worldserver1.getChunkProvider().addTicket(TicketType.POST_TELEPORT, new ChunkCoordIntPair(location.getBlockX() >> 4, location.getBlockZ() >> 4), 1, entityplayer.getId()); // Paper
@@ -1290,7 +1290,7 @@ index 2d90ecf04f522a4e16f44c905450a61becaa1ed2..6034ef65ee6030948a5b76fa493addb4
              net.minecraft.world.level.chunk.Chunk chunk = (net.minecraft.world.level.chunk.Chunk) either.left().orElse(null);
              return CompletableFuture.completedFuture(chunk == null ? null : chunk.getBukkitChunk());
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 935b5668a81db4d19a08b09c61519114532a23d9..0f8d10c2bc7728b58528096fc0686c3aeee623a7 100644
+index 9c0cff60fc1fa0dc96653182c73c9bce1e1ce5b3..3236ea38e874300f2f1bded04a6fd87a79c9994f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -60,6 +60,7 @@ import net.minecraft.server.level.PlayerChunkMap;

@@ -8,7 +8,7 @@ Exposes a mutable array on items a player should keep on death
 Example Usage: https://gist.github.com/aikar/5bb202de6057a051a950ce1f29feb0b4
 
 diff --git a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-index a01d4c21bedc7f1a54f5a330bb4c2909ce3a18e4..8c46eaebf004823c1c31eb2c7304181487cb1332 100644
+index 7941c60b0e1840785ba2b250071591bd75bc6e35..7b78afe9281681cb9262fa044c1069a6121358eb 100644
 --- a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 +++ b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 @@ -36,7 +36,6 @@ public class PlayerDeathEvent extends EntityDeathEvent {
@@ -20,7 +20,7 @@ index a01d4c21bedc7f1a54f5a330bb4c2909ce3a18e4..8c46eaebf004823c1c31eb2c73041814
          this(player, drops, droppedExp, 0, deathMessage);
      }
 @@ -56,6 +55,41 @@ public class PlayerDeathEvent extends EntityDeathEvent {
-         this.adventure$deathMessage = deathMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
+         this.adventure$deathMessage = deathMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
      }
  
 +    @Deprecated // Paper

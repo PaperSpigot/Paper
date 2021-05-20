@@ -5,7 +5,7 @@ Subject: [PATCH] add RespawnFlags to PlayerRespawnEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index fd9f38f0bb723b3e78bd013ccb9538489a9ca43e..8c9e97bb093c0e6297397edc71d72deebbcfbed9 100644
+index 25f329e29a485fa8dfd758a26e2b46ffad98486a..7da850a9b2bc12950cacc5ed268cef61f1f8c51f 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -2441,7 +2441,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -18,10 +18,10 @@ index fd9f38f0bb723b3e78bd013ccb9538489a9ca43e..8c9e97bb093c0e6297397edc71d72dee
                  } else {
                      if (this.player.getHealth() > 0.0F) {
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index a83d8cfac8c5ed84dd5224cc3f18f55dba4741af..2a76c3624c64e93509a96579f48c507e29901625 100644
+index 03eaa3738eab90381b918f9e595f777431a69eff..c55285d907510b6e35e07761f98f954d6c7cf8d9 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -820,7 +820,13 @@ public abstract class PlayerList {
+@@ -819,7 +819,13 @@ public abstract class PlayerList {
          return this.moveToWorld(entityplayer, this.server.getWorldServer(entityplayer.getSpawnDimension()), flag, null, true);
      }
  
@@ -35,7 +35,7 @@ index a83d8cfac8c5ed84dd5224cc3f18f55dba4741af..2a76c3624c64e93509a96579f48c507e
          entityplayer.stopRiding(); // CraftBukkit
          this.players.remove(entityplayer);
          this.playersByName.remove(entityplayer.getName().toLowerCase(java.util.Locale.ROOT)); // Spigot
-@@ -920,7 +926,7 @@ public abstract class PlayerList {
+@@ -919,7 +925,7 @@ public abstract class PlayerList {
              }
  
              Player respawnPlayer = cserver.getPlayer(entityplayer1);

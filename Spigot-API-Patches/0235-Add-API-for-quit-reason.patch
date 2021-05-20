@@ -5,7 +5,7 @@ Subject: [PATCH] Add API for quit reason
 
 
 diff --git a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
-index 849e8f10dd77e9fb46aab17752b8f1ff79e9d42e..b6016aa1e91863efc252eecab69ade6f54c89f27 100644
+index 0395ca85a466f6356259078d3bad48b2ce6e57b7..6e9205024ca9d3000a371bd0eb723dcd6c662bce 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 @@ -11,16 +11,28 @@ import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ index 849e8f10dd77e9fb46aab17752b8f1ff79e9d42e..b6016aa1e91863efc252eecab69ade6f
 +    @Deprecated // Paper
 +    public PlayerQuitEvent(@NotNull final Player who, @Nullable final String quitMessage, @Nullable QuitReason quitReason) {
          super(who);
-         this.quitMessage = quitMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(quitMessage) : null; // Paper
+         this.quitMessage = quitMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage) : null; // Paper
 +        this.reason = quitReason == null ? QuitReason.DISCONNECTED : quitReason;
      }
      // Paper start

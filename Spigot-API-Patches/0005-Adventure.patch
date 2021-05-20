@@ -409,10 +409,10 @@ index 0000000000000000000000000000000000000000..13c5df5fb8ce1d0203d99e88dd691019
 +}
 diff --git a/src/main/java/io/papermc/paper/text/PaperComponents.java b/src/main/java/io/papermc/paper/text/PaperComponents.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9bbd30a4e
+index 0000000000000000000000000000000000000000..c4ee5dd1c0ef1fc04be0fb86bfb8761c491c5de9
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/text/PaperComponents.java
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,96 @@
 +package io.papermc.paper.text;
 +
 +import net.kyori.adventure.text.Component;
@@ -449,7 +449,9 @@ index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9
 +     * information that requires access to implementation details.</p>
 +     *
 +     * @return a serializer to plain text
++     * @deprecated use {@link net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer#plainText()}
 +     */
++    @Deprecated
 +    public static @NonNull PlainComponentSerializer plainSerializer() {
 +        return Bukkit.getUnsafe().plainComponentSerializer();
 +    }
@@ -463,7 +465,9 @@ index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9
 +     * (pre-1.16) hover events.</p>
 +     *
 +     * @return a json component serializer
++     * @deprecated use {@link net.kyori.adventure.text.serializer.gson.GsonComponentSerializer#gson()}
 +     */
++    @Deprecated
 +    public static @NonNull GsonComponentSerializer gsonSerializer() {
 +        return Bukkit.getUnsafe().gsonComponentSerializer();
 +    }
@@ -478,7 +482,9 @@ index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9
 +     * (pre-1.16) hover events.</p>
 +     *
 +     * @return a json component serializer
++     * @deprecated use {@link net.kyori.adventure.text.serializer.gson.GsonComponentSerializer#colorDownsamplingGson()}
 +     */
++    @Deprecated
 +    public static @NonNull GsonComponentSerializer colorDownsamplingGsonSerializer() {
 +        return Bukkit.getUnsafe().colorDownsamplingGsonComponentSerializer();
 +    }
@@ -496,7 +502,9 @@ index 0000000000000000000000000000000000000000..77db592d05b754f879f8d1790642e9d9
 +     * information that requires access to implementation details.</p>
 +     *
 +     * @return a section serializer
++     * @deprecated use {@link net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer#legacySection()}
 +     */
++    @Deprecated
 +    public static @NonNull LegacyComponentSerializer legacySectionSerializer() {
 +        return Bukkit.getUnsafe().legacyComponentSerializer();
 +    }
@@ -1009,7 +1017,7 @@ index 768f35c19c4557236bded5f4a85f48a2b2b2a9e6..d0ce64412276512cde133937a85a3340
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 945b8b030d1b2a13afc0c4efad76997eb7bf00ba..207c656c0a11a3a630bc70491efcf433b2681e18 100644
+index 945b8b030d1b2a13afc0c4efad76997eb7bf00ba..f8bc0b75b4a46c889ba2285cb1776b3b90b051c6 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
 @@ -17,6 +17,13 @@ import org.bukkit.plugin.PluginDescriptionFile;
@@ -1018,10 +1026,10 @@ index 945b8b030d1b2a13afc0c4efad76997eb7bf00ba..207c656c0a11a3a630bc70491efcf433
  public interface UnsafeValues {
 +    // Paper start
 +    net.kyori.adventure.text.flattener.ComponentFlattener componentFlattener();
-+    net.kyori.adventure.text.serializer.plain.PlainComponentSerializer plainComponentSerializer();
-+    net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer();
-+    net.kyori.adventure.text.serializer.gson.GsonComponentSerializer colorDownsamplingGsonComponentSerializer();
-+    net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer();
++    @Deprecated net.kyori.adventure.text.serializer.plain.PlainComponentSerializer plainComponentSerializer();
++    @Deprecated net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer();
++    @Deprecated net.kyori.adventure.text.serializer.gson.GsonComponentSerializer colorDownsamplingGsonComponentSerializer();
++    @Deprecated net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer();
 +    // Paper end
  
      void reportTimings(); // Paper
@@ -1141,7 +1149,7 @@ index 7e3cf00e49c66023bf46c298ef46c00e8c3c2caf..6ea9b54d95d80070c01a612c0ce2ab37
  
      /**
 diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
-index ac772bf349e0ffe9cab1df165d9460b387f2fe69..c88418c7aa19b4fecdfa9af3d18ff202a5dc5763 100644
+index ac772bf349e0ffe9cab1df165d9460b387f2fe69..2588edf75483855e0c843834f39ca371770730b9 100644
 --- a/src/main/java/org/bukkit/command/CommandSender.java
 +++ b/src/main/java/org/bukkit/command/CommandSender.java
 @@ -6,12 +6,13 @@ import org.bukkit.permissions.Permissible;
@@ -1231,7 +1239,7 @@ index ac772bf349e0ffe9cab1df165d9460b387f2fe69..c88418c7aa19b4fecdfa9af3d18ff202
 +    // Paper start
 +    @Override
 +    default void sendMessage(final @NotNull net.kyori.adventure.identity.Identity identity, final @NotNull net.kyori.adventure.text.Component message, final @NotNull net.kyori.adventure.audience.MessageType type) {
-+        this.sendMessage(org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(message));
++        this.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(message));
 +    }
 +    // Paper end
  }
@@ -1677,7 +1685,7 @@ index 63c80b4ee1f7adc8a9efc3b607993104b1991f90..91cab8b13d5bba34007f124838b32a1d
  
  }
 diff --git a/src/main/java/org/bukkit/event/block/SignChangeEvent.java b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
-index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1f79f704abf339150df08900b8ea7da4cefef258 100644
+index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1268066e30ddb0cd3792ea4b3de894eb04196669 100644
 --- a/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 @@ -16,12 +16,25 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
@@ -1702,7 +1710,7 @@ index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1f79f704abf339150df08900b8ea7da4
 +        // Paper start
 +        this.adventure$lines = new java.util.ArrayList<>();
 +        for (String theLine : theLines) {
-+            this.adventure$lines.add(org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(theLine));
++            this.adventure$lines.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(theLine));
 +        }
 +        // Paper end
      }
@@ -1758,7 +1766,7 @@ index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1f79f704abf339150df08900b8ea7da4
 +    @Deprecated // Paper
      public String[] getLines() {
 -        return lines;
-+        return adventure$lines.stream().map(org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer()::serialize).toArray(String[]::new); // Paper
++        return adventure$lines.stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::serialize).toArray(String[]::new); // Paper
      }
  
      /**
@@ -1772,7 +1780,7 @@ index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1f79f704abf339150df08900b8ea7da4
 +    @Deprecated // Paper
      public String getLine(int index) throws IndexOutOfBoundsException {
 -        return lines[index];
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.adventure$lines.get(index)); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.adventure$lines.get(index)); // Paper
      }
  
      /**
@@ -1785,12 +1793,12 @@ index 7190db11eff7d48df8a99f405a9dbaefdfa76e3d..1f79f704abf339150df08900b8ea7da4
 +    @Deprecated // Paper
      public void setLine(int index, @Nullable String line) throws IndexOutOfBoundsException {
 -        lines[index] = line;
-+        adventure$lines.set(index, line != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(line) : null); // Paper
++        adventure$lines.set(index, line != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line) : null); // Paper
      }
  
      @Override
 diff --git a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a01d4c21bedc7f1a54f5a330bb4c2909ce3a18e4 100644
+index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..7941c60b0e1840785ba2b250071591bd75bc6e35 100644
 --- a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 +++ b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 @@ -12,25 +12,48 @@ import org.jetbrains.annotations.Nullable;
@@ -1838,7 +1846,7 @@ index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a01d4c21bedc7f1a54f5a330bb4c2909
          this.newTotalExp = newTotalExp;
          this.newLevel = newLevel;
          this.deathMessage = deathMessage;
-+        this.adventure$deathMessage = deathMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
++        this.adventure$deathMessage = deathMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
      }
  
      @NotNull
@@ -1876,7 +1884,7 @@ index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a01d4c21bedc7f1a54f5a330bb4c2909
 +    @Deprecated // Paper
      public void setDeathMessage(@Nullable String deathMessage) {
          this.deathMessage = deathMessage;
-+        this.adventure$deathMessage = deathMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
++        this.adventure$deathMessage = deathMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage) : net.kyori.adventure.text.Component.empty(); // Paper
      }
  
      /**
@@ -1894,7 +1902,7 @@ index 3c2ea8fec3a748cab7f5ad9100d12bd8213ec6c9..a01d4c21bedc7f1a54f5a330bb4c2909
 -
 +    // Paper start //TODO: add translation API to drop String deathMessage in favor of just Adventure
 +    private static String getDeathMessageString(net.kyori.adventure.text.Component component) {
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(component);
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(component);
 +    }
 +    // Paper end
      /**
@@ -1956,7 +1964,7 @@ index 9c68c3f2d61500479f48b80264f625aaae2f3204..399afcd19fcb6acd24857ed6ab48cf0d
      private static final HandlerList handlers = new HandlerList();
      private boolean cancel = false;
 diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-index c8384da69af61e1970f254a3a9c206ee81d7a989..d3b4219a57fff4519ef8d803c333c854fafa7859 100644
+index c8384da69af61e1970f254a3a9c206ee81d7a989..992d1025ca02020e87a9ab5db83d249427f41d69 100644
 --- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 @@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
@@ -2039,7 +2047,7 @@ index c8384da69af61e1970f254a3a9c206ee81d7a989..d3b4219a57fff4519ef8d803c333c854
 +    @NotNull
 +    @Deprecated // Paper
 +    public String getKickMessage() {
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.message); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.message); // Paper
 +    }
 +
 +    /**
@@ -2050,7 +2058,7 @@ index c8384da69af61e1970f254a3a9c206ee81d7a989..d3b4219a57fff4519ef8d803c333c854
 +     */
 +    @Deprecated // Paper
 +    public void setKickMessage(@NotNull final String message) {
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
 +    }
 +
      /**
@@ -2073,7 +2081,7 @@ index c8384da69af61e1970f254a3a9c206ee81d7a989..d3b4219a57fff4519ef8d803c333c854
      public void disallow(@NotNull final Result result, @NotNull final String message) {
          this.result = result;
 -        this.message = message;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
      }
  
      /**
@@ -2082,7 +2090,7 @@ index c8384da69af61e1970f254a3a9c206ee81d7a989..d3b4219a57fff4519ef8d803c333c854
      public void disallow(@NotNull final PlayerPreLoginEvent.Result result, @NotNull final String message) {
          this.result = result == null ? null : Result.valueOf(result.name());
 -        this.message = message;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
      }
  
      /**
@@ -2112,7 +2120,7 @@ index 793b661b6d2d05de3d7f4fc26a4c018a2af58e62..f6d3b817de3001f04ea4554c7c39a129
          player = who;
  
 diff --git a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
-index d06684aba7688ce06777dbd837a46856a9d7767f..851a189d42e271679abc78f95049d8badf7a2b64 100644
+index d06684aba7688ce06777dbd837a46856a9d7767f..4af1d064fcb57773dfa8f6ad40d6482973f8e1a8 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
 @@ -10,30 +10,60 @@ import org.jetbrains.annotations.Nullable;
@@ -2130,7 +2138,7 @@ index d06684aba7688ce06777dbd837a46856a9d7767f..851a189d42e271679abc78f95049d8ba
 +    @Deprecated // Paper end
      public PlayerJoinEvent(@NotNull final Player playerJoined, @Nullable final String joinMessage) {
          super(playerJoined);
-+        this.joinMessage = joinMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(joinMessage) : null; // Paper end
++        this.joinMessage = joinMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(joinMessage) : null; // Paper end
 +    }
 +
 +    // Paper start
@@ -2163,7 +2171,7 @@ index d06684aba7688ce06777dbd837a46856a9d7767f..851a189d42e271679abc78f95049d8ba
 +    @Deprecated // Paper
      public String getJoinMessage() {
 -        return joinMessage;
-+        return this.joinMessage == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.joinMessage); // Paper
++        return this.joinMessage == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.joinMessage); // Paper
      }
  
      /**
@@ -2175,12 +2183,12 @@ index d06684aba7688ce06777dbd837a46856a9d7767f..851a189d42e271679abc78f95049d8ba
 +    @Deprecated // Paper
      public void setJoinMessage(@Nullable String joinMessage) {
 -        this.joinMessage = joinMessage;
-+        this.joinMessage = joinMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(joinMessage) : null; // Paper
++        this.joinMessage = joinMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(joinMessage) : null; // Paper
      }
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
-index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682ff70d1a92 100644
+index 14c337f15fc804f52e52cb0a185aad38d89303a8..2b3f57d1a1c79923a2173f52d9cf61da1f75b7fc 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 @@ -10,35 +10,84 @@ import org.jetbrains.annotations.NotNull;
@@ -2196,8 +2204,8 @@ index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682f
 +    @Deprecated // Paper
      public PlayerKickEvent(@NotNull final Player playerKicked, @NotNull final String kickReason, @NotNull final String leaveMessage) {
 +        super(playerKicked);
-+        this.kickReason = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(kickReason); // Paper
-+        this.leaveMessage = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(leaveMessage); // Paper
++        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason); // Paper
++        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(leaveMessage); // Paper
 +        this.cancel = false;
 +    }
 +    // Paper start
@@ -2255,7 +2263,7 @@ index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682f
 +    @Deprecated // Paper
      public String getReason() {
 -        return kickReason;
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.kickReason); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.kickReason); // Paper
      }
  
      /**
@@ -2268,7 +2276,7 @@ index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682f
 +    @Deprecated // Paper
      public String getLeaveMessage() {
 -        return leaveMessage;
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.leaveMessage); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.leaveMessage); // Paper
      }
  
      @Override
@@ -2281,7 +2289,7 @@ index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682f
 +    @Deprecated // Paper
      public void setReason(@NotNull String kickReason) {
 -        this.kickReason = kickReason;
-+        this.kickReason = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(kickReason); // Paper
++        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason); // Paper
      }
  
      /**
@@ -2293,7 +2301,7 @@ index 14c337f15fc804f52e52cb0a185aad38d89303a8..5c0efe74237dbe6803ce023fde99682f
 +    @Deprecated // Paper
      public void setLeaveMessage(@NotNull String leaveMessage) {
 -        this.leaveMessage = leaveMessage;
-+        this.leaveMessage = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(leaveMessage); // Paper
++        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(leaveMessage); // Paper
      }
  
      @NotNull
@@ -2335,7 +2343,7 @@ index 1db386bb701cb6974daedc6bb5b93a3afbc42100..84521186404b8e43c81a2f9513dce2be
          return locale;
      }
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002d4cfa7e0 100644
+index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..95c53d934f928d25f7b20cfbf2e5faa3df31ddc4 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 @@ -17,7 +17,7 @@ public class PlayerLoginEvent extends PlayerEvent {
@@ -2357,7 +2365,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002
      public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final String message, @NotNull final InetAddress realAddress) { // Spigot
          this(player, hostname, address, realAddress); // Spigot
          this.result = result;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
 +    }
 +
 +    // Paper start
@@ -2410,7 +2418,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002
 +    @Deprecated // Paper
      public String getKickMessage() {
 -        return message;
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.message); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.message); // Paper
      }
  
      /**
@@ -2422,7 +2430,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002
 +    @Deprecated // Paper
      public void setKickMessage(@NotNull final String message) {
 -        this.message = message;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
      }
  
      /**
@@ -2444,7 +2452,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002
 +    @Deprecated // Paper start
      public void disallow(@NotNull final Result result, @NotNull final String message) {
 +        this.result = result;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message);
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +    }
 +    /**
 +     * Disallows the player from logging in, with the given reason
@@ -2458,7 +2466,7 @@ index 084ca8cfcb7381bfa4fa6280748cf9b81210a9c1..75cc54739ef841cd90568d74927d6002
          this.message = message;
      }
 diff --git a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
-index fb066251f793ec3b41bfc075b9478901b15ee549..123979ed64939d615b061f91c19c630e1e1db8c7 100644
+index fb066251f793ec3b41bfc075b9478901b15ee549..6800132c6288b4588fd02b08d26f016c38f27129 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 @@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
@@ -2526,7 +2534,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..123979ed64939d615b061f91c19c630e
 +    @Deprecated // Paper
 +    @NotNull
 +    public String getKickMessage() {
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.message); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.message); // Paper
 +    }
 +
 +    /**
@@ -2537,7 +2545,7 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..123979ed64939d615b061f91c19c630e
 +     */
 +    @Deprecated // Paper
 +    public void setKickMessage(@NotNull final String message) {
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
 +    }
 +
      /**
@@ -2560,12 +2568,12 @@ index fb066251f793ec3b41bfc075b9478901b15ee549..123979ed64939d615b061f91c19c630e
      public void disallow(@NotNull final Result result, @NotNull final String message) {
          this.result = result;
 -        this.message = message;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
      }
  
      /**
 diff --git a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
-index d70c25f404e994766a9ebce89a917c8d0719777c..849e8f10dd77e9fb46aab17752b8f1ff79e9d42e 100644
+index d70c25f404e994766a9ebce89a917c8d0719777c..0395ca85a466f6356259078d3bad48b2ce6e57b7 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 @@ -10,30 +10,59 @@ import org.jetbrains.annotations.Nullable;
@@ -2578,7 +2586,7 @@ index d70c25f404e994766a9ebce89a917c8d0719777c..849e8f10dd77e9fb46aab17752b8f1ff
 +    @Deprecated // Paper
      public PlayerQuitEvent(@NotNull final Player who, @Nullable final String quitMessage) {
          super(who);
-+        this.quitMessage = quitMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(quitMessage) : null; // Paper
++        this.quitMessage = quitMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage) : null; // Paper
 +    }
 +    // Paper start
 +    public PlayerQuitEvent(@NotNull final Player who, @Nullable final net.kyori.adventure.text.Component quitMessage) {
@@ -2615,7 +2623,7 @@ index d70c25f404e994766a9ebce89a917c8d0719777c..849e8f10dd77e9fb46aab17752b8f1ff
 +    @Deprecated // Paper
      public String getQuitMessage() {
 -        return quitMessage;
-+        return this.quitMessage == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.quitMessage); // Paper
++        return this.quitMessage == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.quitMessage); // Paper
      }
  
      /**
@@ -2627,12 +2635,12 @@ index d70c25f404e994766a9ebce89a917c8d0719777c..849e8f10dd77e9fb46aab17752b8f1ff
 +    @Deprecated // Paper
      public void setQuitMessage(@Nullable String quitMessage) {
 -        this.quitMessage = quitMessage;
-+        this.quitMessage = quitMessage != null ? org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(quitMessage) : null; // Paper
++        this.quitMessage = quitMessage != null ? net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage) : null; // Paper
      }
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/event/server/BroadcastMessageEvent.java b/src/main/java/org/bukkit/event/server/BroadcastMessageEvent.java
-index 03bfca9d368bbe4b7c1353d52c883e756bf69bda..4f8c85222c7bd33217c7db0ff5f47bf397f8f3e5 100644
+index 03bfca9d368bbe4b7c1353d52c883e756bf69bda..943d324435350d3f16fad3e21cb472a01a3ff60b 100644
 --- a/src/main/java/org/bukkit/event/server/BroadcastMessageEvent.java
 +++ b/src/main/java/org/bukkit/event/server/BroadcastMessageEvent.java
 @@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
@@ -2652,7 +2660,7 @@ index 03bfca9d368bbe4b7c1353d52c883e756bf69bda..4f8c85222c7bd33217c7db0ff5f47bf3
      public BroadcastMessageEvent(boolean isAsync, @NotNull String message, @NotNull Set<CommandSender> recipients) {
 +        // Paper start
 +        super(isAsync);
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message);
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +        this.recipients = recipients;
 +    }
 +
@@ -2697,7 +2705,7 @@ index 03bfca9d368bbe4b7c1353d52c883e756bf69bda..4f8c85222c7bd33217c7db0ff5f47bf3
 +    @Deprecated // Paper
      public String getMessage() {
 -        return message;
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.message); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.message); // Paper
      }
  
      /**
@@ -2709,12 +2717,12 @@ index 03bfca9d368bbe4b7c1353d52c883e756bf69bda..4f8c85222c7bd33217c7db0ff5f47bf3
 +    @Deprecated // Paper
      public void setMessage(@NotNull String message) {
 -        this.message = message;
-+        this.message = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(message); // Paper
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // Paper
      }
  
      /**
 diff --git a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
-index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..ede5a41bc071a9c9cea369b227b37a50222f295d 100644
+index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..f46ea9f2bd4a4d9582428325e725d9220817b254 100644
 --- a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 +++ b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 @@ -17,15 +17,16 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
@@ -2732,7 +2740,7 @@ index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..ede5a41bc071a9c9cea369b227b37a50
          Validate.isTrue(numPlayers >= 0, "Cannot have negative number of players online", numPlayers);
          this.address = address;
 -        this.motd = motd;
-+        this.motd = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(motd); // Paper
++        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd); // Paper
          this.numPlayers = numPlayers;
          this.maxPlayers = maxPlayers;
      }
@@ -2747,7 +2755,7 @@ index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..ede5a41bc071a9c9cea369b227b37a50
 +        super(true);
 +        this.numPlayers = MAGIC_PLAYER_COUNT;
 +        this.address = address;
-+        this.motd = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(motd); // Paper
++        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd); // Paper
 +        this.maxPlayers = maxPlayers;
 +    }
 +    // Paper start
@@ -2805,7 +2813,7 @@ index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..ede5a41bc071a9c9cea369b227b37a50
 +    @Deprecated // Paper
      public String getMotd() {
 -        return motd;
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.motd); // Paper
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.motd); // Paper
      }
  
      /**
@@ -2817,12 +2825,12 @@ index 7a2a58bac8e721c3f0c64f69f77be07a51f76d58..ede5a41bc071a9c9cea369b227b37a50
 +    @Deprecated // Paper
      public void setMotd(@NotNull String motd) {
 -        this.motd = motd;
-+        this.motd = org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(motd); // Paper
++        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd); // Paper
      }
  
      /**
 diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
-index 14346d83bc99581b18e53d19af03708c0bf22cf7..664de64b020cf9090a2fbee0afe2bfaf150adc3c 100644
+index 14346d83bc99581b18e53d19af03708c0bf22cf7..a4e3d526db2d17dc923cbe82e53d3c902d61e1f3 100644
 --- a/src/main/java/org/bukkit/inventory/InventoryView.java
 +++ b/src/main/java/org/bukkit/inventory/InventoryView.java
 @@ -446,11 +446,25 @@ public abstract class InventoryView {
@@ -2837,7 +2845,7 @@ index 14346d83bc99581b18e53d19af03708c0bf22cf7..664de64b020cf9090a2fbee0afe2bfaf
       */
      @NotNull
 +    public /*abstract*/ net.kyori.adventure.text.Component title() {
-+        return org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(this.getTitle());
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.getTitle());
 +    }
 +    // Paper end
 +
@@ -3275,7 +3283,7 @@ index f2e9f2753ec92aa4a3e3f06ca6053bd70b9091d7..1c362636c56db0e6c118171ba367c43c
  
      /**
 diff --git a/src/main/java/org/bukkit/map/MapCursor.java b/src/main/java/org/bukkit/map/MapCursor.java
-index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ed0bc2024a0bb85837e25f75ae89d1fe257b2e60 100644
+index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ca763b231749f108b6773040a5c6109378b21b31 100644
 --- a/src/main/java/org/bukkit/map/MapCursor.java
 +++ b/src/main/java/org/bukkit/map/MapCursor.java
 @@ -10,7 +10,7 @@ public final class MapCursor {
@@ -3319,7 +3327,7 @@ index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ed0bc2024a0bb85837e25f75ae89d1fe
          setRawType(type);
          this.visible = visible;
 -        this.caption = caption;
-+        this.caption = caption == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(caption); // Paper
++        this.caption = caption == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(caption); // Paper
      }
 +    // Paper start
 +    /**
@@ -3363,7 +3371,7 @@ index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ed0bc2024a0bb85837e25f75ae89d1fe
          setType(type);
          this.visible = visible;
 -        this.caption = caption;
-+        this.caption = caption == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(caption); // Paper
++        this.caption = caption == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(caption); // Paper
      }
  
      /**
@@ -3399,7 +3407,7 @@ index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ed0bc2024a0bb85837e25f75ae89d1fe
 +    @Deprecated // Paper
      public String getCaption() {
 -        return caption;
-+        return this.caption == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().serialize(this.caption); // Paper
++        return this.caption == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(this.caption); // Paper
      }
  
      /**
@@ -3411,7 +3419,7 @@ index 83354b2a38b6261b172b91c1008dcf3313cc4a8f..ed0bc2024a0bb85837e25f75ae89d1fe
 +    @Deprecated // Paper
      public void setCaption(@Nullable String caption) {
 -        this.caption = caption;
-+        this.caption = caption == null ? null : org.bukkit.Bukkit.getUnsafe().legacyComponentSerializer().deserialize(caption); // Paper
++        this.caption = caption == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(caption); // Paper
      }
  
      /**

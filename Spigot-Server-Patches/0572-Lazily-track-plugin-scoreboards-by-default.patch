@@ -28,7 +28,7 @@ index 545948f20efd6c8dd42140b565af94cd6b52b661..7d50aded88f5b7dfebaea1aebc86231f
 +    }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
-index 6ea491f6308317059c4bc6735abbdce370df0f34..3dfb6ad1ed5fae773b88cbe9ad540fd2520b8b50 100644
+index 166d6d4507b477682689c3e7d45ee11621dfd48f..6911ad1eb8acccd1eddc21f761c79bc30ed25411 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
 @@ -19,6 +19,7 @@ import org.bukkit.scoreboard.Team;
@@ -64,7 +64,7 @@ index 6ea491f6308317059c4bc6735abbdce370df0f34..3dfb6ad1ed5fae773b88cbe9ad540fd2
 +        // Paper end
          ScoreboardObjective objective = board.registerObjective(name, craftCriteria.criteria, CraftChatMessage.fromStringOrNull(displayName), CraftScoreboardTranslations.fromBukkitRender(renderType));
          return new CraftObjective(this, objective);*/ // Paper
-         return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName), renderType); // Paper
+         return registerNewObjective(name, criteria, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(displayName), renderType); // Paper
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
 index 73663bcea163cda26f531902141a9ad3ad7eba57..9c30a79cc55c6455aa18e3798728deaacc3434ca 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java

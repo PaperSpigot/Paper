@@ -93,7 +93,7 @@ index 09ceac61f873ee0cb689c66a403c42677961011d..06e2b48ed6d6d52d0eb17301254ed07f
              if (entityplayer != null) {
                  this.g = LoginListener.EnumProtocolState.DELAY_ACCEPT;
 diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
-index f02ddd53df4674a2b5e0bb142db756d1f153d69b..443247b03b8352c4dd453270dccdbd7eb5f0944b 100644
+index c6eacaf5cda5f36eb9170805480eff003c1507a6..ad272d59a2904da9e202c4c5e964f86d822fc8c3 100644
 --- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
 @@ -222,6 +222,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -130,7 +130,7 @@ index f02ddd53df4674a2b5e0bb142db756d1f153d69b..443247b03b8352c4dd453270dccdbd7e
          this.minecraftServer.getMethodProfiler().enter("keepAlive");
          // Paper Start - give clients a longer time to respond to pings as per pre 1.12.2 timings
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c08ab10b4a 100644
+index abd54d5457309d6b245d8c43608e1bb4be417230..d988f680ba01552b57c96a1cd973541ba733d038 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -41,6 +41,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityStatus;
@@ -150,7 +150,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
  import net.minecraft.server.level.PlayerInteractManager;
  import net.minecraft.server.level.TicketType;
  import net.minecraft.server.level.WorldServer;
-@@ -128,11 +131,12 @@ public abstract class PlayerList {
+@@ -127,11 +130,12 @@ public abstract class PlayerList {
      private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
      private final MinecraftServer server;
      public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
@@ -164,7 +164,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
      // CraftBukkit start
      // private final Map<UUID, ServerStatisticManager> o;
      // private final Map<UUID, AdvancementDataPlayer> p;
-@@ -171,6 +175,11 @@ public abstract class PlayerList {
+@@ -170,6 +174,11 @@ public abstract class PlayerList {
      }
  
      public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
@@ -176,7 +176,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
          entityplayer.loginTime = System.currentTimeMillis(); // Paper
          GameProfile gameprofile = entityplayer.getProfile();
          UserCache usercache = this.server.getUserCache();
-@@ -184,7 +193,7 @@ public abstract class PlayerList {
+@@ -183,7 +192,7 @@ public abstract class PlayerList {
          if (nbttagcompound != null && nbttagcompound.hasKey("bukkit")) {
              NBTTagCompound bukkit = nbttagcompound.getCompound("bukkit");
              s = bukkit.hasKeyOfType("lastKnownName", 8) ? bukkit.getString("lastKnownName") : s;
@@ -185,7 +185,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
          // CraftBukkit end
  
          if (nbttagcompound != null) {
-@@ -259,6 +268,51 @@ public abstract class PlayerList {
+@@ -258,6 +267,51 @@ public abstract class PlayerList {
          entityplayer.getRecipeBook().a(entityplayer);
          this.sendScoreboard(worldserver1.getScoreboard(), entityplayer);
          this.server.invalidatePingSample();
@@ -237,7 +237,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
          ChatMessage chatmessage;
  
          if (entityplayer.getProfile().getName().equalsIgnoreCase(s)) {
-@@ -496,6 +550,7 @@ public abstract class PlayerList {
+@@ -495,6 +549,7 @@ public abstract class PlayerList {
  
      protected void savePlayerFile(EntityPlayer entityplayer) {
          if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
@@ -245,7 +245,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
          this.playerFileData.save(entityplayer);
          ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
  
-@@ -523,7 +578,7 @@ public abstract class PlayerList {
+@@ -522,7 +577,7 @@ public abstract class PlayerList {
          }
  
          PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, com.destroystokyo.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getName())));
@@ -254,7 +254,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
  
          if (server.isMainThread()) entityplayer.playerTick(); // SPIGOT-924 // Paper - don't tick during emergency shutdowns (Watchdog)
-@@ -576,6 +631,13 @@ public abstract class PlayerList {
+@@ -575,6 +630,13 @@ public abstract class PlayerList {
              // this.p.remove(uuid);
              // CraftBukkit end
          }
@@ -268,7 +268,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
  
          // CraftBukkit start
          // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, new EntityPlayer[]{entityplayer}));
-@@ -593,7 +655,7 @@ public abstract class PlayerList {
+@@ -592,7 +654,7 @@ public abstract class PlayerList {
          cserver.getScoreboardManager().removePlayer(entityplayer.getBukkitEntity());
          // CraftBukkit end
  
@@ -277,7 +277,7 @@ index 66c1a9ca392b29fe2191577d32c70b214fa7293d..c7e78d0626fa0dd18021c1a0827a10c0
      }
  
      // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
-@@ -612,6 +674,13 @@ public abstract class PlayerList {
+@@ -611,6 +673,13 @@ public abstract class PlayerList {
                  list.add(entityplayer);
              }
          }

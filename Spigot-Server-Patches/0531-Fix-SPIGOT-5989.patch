@@ -10,7 +10,7 @@ This fixes that by checking if the modified spawn location is
 still at a respawn anchor.
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 34b45a6818209245fa5692a83cf4143030057095..7f5311770f0a461f02039255fbbf1a48df4178f3 100644
+index 54a05a544cb38b8d575d27f626c4f82705201bf6..8d42075b0254705f7b1a973530c6937309e059a8 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -83,6 +83,7 @@ import net.minecraft.world.level.EnumGamemode;
@@ -21,7 +21,7 @@ index 34b45a6818209245fa5692a83cf4143030057095..7f5311770f0a461f02039255fbbf1a48
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.level.border.IWorldBorderListener;
-@@ -850,6 +851,7 @@ public abstract class PlayerList {
+@@ -849,6 +850,7 @@ public abstract class PlayerList {
          // Paper start
          boolean isBedSpawn = false;
          boolean isRespawn = false;
@@ -29,7 +29,7 @@ index 34b45a6818209245fa5692a83cf4143030057095..7f5311770f0a461f02039255fbbf1a48
          // Paper end
  
          // CraftBukkit start - fire PlayerRespawnEvent
-@@ -860,7 +862,7 @@ public abstract class PlayerList {
+@@ -859,7 +861,7 @@ public abstract class PlayerList {
                  Optional optional;
  
                  if (blockposition != null) {
@@ -38,7 +38,7 @@ index 34b45a6818209245fa5692a83cf4143030057095..7f5311770f0a461f02039255fbbf1a48
                  } else {
                      optional = Optional.empty();
                  }
-@@ -903,7 +905,12 @@ public abstract class PlayerList {
+@@ -902,7 +904,12 @@ public abstract class PlayerList {
              }
              // Spigot End
  
@@ -52,7 +52,7 @@ index 34b45a6818209245fa5692a83cf4143030057095..7f5311770f0a461f02039255fbbf1a48
              if (!flag) entityplayer.reset(); // SPIGOT-4785
              isRespawn = true; // Paper
          } else {
-@@ -941,8 +948,12 @@ public abstract class PlayerList {
+@@ -940,8 +947,12 @@ public abstract class PlayerList {
          }
          // entityplayer1.syncInventory();
          entityplayer1.setHealth(entityplayer1.getHealth());

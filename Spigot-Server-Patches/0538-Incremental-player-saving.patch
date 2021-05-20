@@ -25,7 +25,7 @@ index b67ba8f75e4a3358d7c2462918b85b0bf9b5a922..fdbd8b89bb8bf3b61f60b812b90483c9
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c3635577b1796e6ca84709469ecf95c815fe53a5..bd6b9c7be8951393e7ba731f4d6a9486f0743be7 100644
+index fc7be7e32c28f20913f5bfc7d23967d61f2b944f..70864f4c6530aa6669fd481f6840a9f73a241fdc 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1348,9 +1348,15 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -59,10 +59,10 @@ index 8055172c806f285aa9a9e6de681d03b008fbf785..3908dc27a5cf127ab3c3630da47318da
      public NetworkManager networkManager; // Paper
      public final MinecraftServer server;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 7f5311770f0a461f02039255fbbf1a48df4178f3..d3f3dc4ad2c758482b7a8d5c07caa526ce1e3424 100644
+index 8d42075b0254705f7b1a973530c6937309e059a8..be06810ee8dba96ace3de5d7d018acd407d38d3a 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -563,6 +563,7 @@ public abstract class PlayerList {
+@@ -562,6 +562,7 @@ public abstract class PlayerList {
      protected void savePlayerFile(EntityPlayer entityplayer) {
          if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
          if (!entityplayer.didPlayerJoinEvent) return; // Paper - If we never fired PJE, we disconnected during login. Data has not changed, and additionally, our saved vehicle is not loaded! If we save now, we will lose our vehicle (CraftBukkit bug)
@@ -70,7 +70,7 @@ index 7f5311770f0a461f02039255fbbf1a48df4178f3..d3f3dc4ad2c758482b7a8d5c07caa526
          this.playerFileData.save(entityplayer);
          ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
  
-@@ -1222,10 +1223,21 @@ public abstract class PlayerList {
+@@ -1221,10 +1222,21 @@ public abstract class PlayerList {
      }
  
      public void savePlayers() {

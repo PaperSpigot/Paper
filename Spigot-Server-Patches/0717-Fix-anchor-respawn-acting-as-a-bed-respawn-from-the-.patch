@@ -6,10 +6,10 @@ Subject: [PATCH] Fix anchor respawn acting as a bed respawn from the end
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index b257d58a298e82f255b09e9575ee42a56a4b7cee..a83d8cfac8c5ed84dd5224cc3f18f55dba4741af 100644
+index e12eb3d3636fdefa70e6a01265a84cd40c405a96..03eaa3738eab90381b918f9e595f777431a69eff 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -871,6 +871,7 @@ public abstract class PlayerList {
+@@ -870,6 +870,7 @@ public abstract class PlayerList {
  
          // Paper start
          boolean isBedSpawn = false;
@@ -17,7 +17,7 @@ index b257d58a298e82f255b09e9575ee42a56a4b7cee..a83d8cfac8c5ed84dd5224cc3f18f55d
          boolean isRespawn = false;
          boolean isLocAltered = false; // Paper - Fix SPIGOT-5989
          // Paper end
-@@ -891,6 +892,7 @@ public abstract class PlayerList {
+@@ -890,6 +891,7 @@ public abstract class PlayerList {
                  if (optional.isPresent()) {
                      IBlockData iblockdata = worldserver1.getType(blockposition);
                      boolean flag3 = iblockdata.a(Blocks.RESPAWN_ANCHOR);
@@ -25,7 +25,7 @@ index b257d58a298e82f255b09e9575ee42a56a4b7cee..a83d8cfac8c5ed84dd5224cc3f18f55d
                      Vec3D vec3d = (Vec3D) optional.get();
                      float f1;
  
-@@ -918,7 +920,7 @@ public abstract class PlayerList {
+@@ -917,7 +919,7 @@ public abstract class PlayerList {
              }
  
              Player respawnPlayer = cserver.getPlayer(entityplayer1);
