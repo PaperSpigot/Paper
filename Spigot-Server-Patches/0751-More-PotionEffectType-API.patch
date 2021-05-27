@@ -1,0 +1,148 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 27 May 2021 21:58:24 -0700
+Subject: [PATCH] More PotionEffectType API
+
+
+diff --git a/src/main/java/net/minecraft/world/effect/MobEffectInfo.java b/src/main/java/net/minecraft/world/effect/MobEffectInfo.java
+index 9c7b69ca3fab19c0a86a0a88ce28e1b7f7cc8094..e0b08e8bfcfceebae557feb0b9d1a06687351f9b 100644
+--- a/src/main/java/net/minecraft/world/effect/MobEffectInfo.java
++++ b/src/main/java/net/minecraft/world/effect/MobEffectInfo.java
+@@ -6,7 +6,7 @@ public enum MobEffectInfo {
+ 
+     BENEFICIAL(EnumChatFormat.BLUE), HARMFUL(EnumChatFormat.RED), NEUTRAL(EnumChatFormat.BLUE);
+ 
+-    private final EnumChatFormat d;
++    private final EnumChatFormat d; public final EnumChatFormat getColor() { return this.d; } // Paper - OBFHELPER
+ 
+     private MobEffectInfo(EnumChatFormat enumchatformat) {
+         this.d = enumchatformat;
+diff --git a/src/main/java/net/minecraft/world/effect/MobEffectList.java b/src/main/java/net/minecraft/world/effect/MobEffectList.java
+index 6dbd54c44ac88025464f78e72069c538d9f43dc3..17079d2c9ad37e8f06d7dea7a69800789a57a18d 100644
+--- a/src/main/java/net/minecraft/world/effect/MobEffectList.java
++++ b/src/main/java/net/minecraft/world/effect/MobEffectList.java
+@@ -28,8 +28,8 @@ import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+ 
+ public class MobEffectList {
+ 
+-    private final Map<AttributeBase, AttributeModifier> a = Maps.newHashMap();
+-    private final MobEffectInfo b;
++    private final Map<AttributeBase, AttributeModifier> a = Maps.newHashMap(); public final Map<AttributeBase, AttributeModifier> getAttributes() { return this.a; } // Paper - OBFHELPER
++    private final MobEffectInfo b; public final MobEffectInfo getCategory() { return this.b; } // Paper - OBFHELPER
+     private final int c;
+     @Nullable
+     private String d;
+@@ -136,6 +136,7 @@ public class MobEffectList {
+         return this.d;
+     }
+ 
++    public String getDescriptionId() { return this.c(); } // Paper - OBFHELPER
+     public String c() {
+         return this.b();
+     }
+@@ -186,6 +187,7 @@ public class MobEffectList {
+ 
+     }
+ 
++    public double getModifierAmount(int effectAmplifier, AttributeModifier attributeModifier) { return this.a(effectAmplifier, attributeModifier); } // Paper - OBFHELPER
+     public double a(int i, AttributeModifier attributemodifier) {
+         return attributemodifier.getAmount() * (double) (i + 1);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java b/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
+index bc11c564d7dfa64c6c9dc44140b97642a33685a2..decaba83bb8982cbed7ed3ec7bdf79881cb7e97f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
++++ b/src/main/java/org/bukkit/craftbukkit/potion/CraftPotionEffectType.java
+@@ -6,6 +6,7 @@ import org.bukkit.potion.PotionEffectType;
+ 
+ public class CraftPotionEffectType extends PotionEffectType {
+     private final MobEffectList handle;
++    private java.util.Map<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> attributeMap; // Paper
+ 
+     public CraftPotionEffectType(MobEffectList handle) {
+         super(MobEffectList.getId(handle));
+@@ -102,4 +103,51 @@ public class CraftPotionEffectType extends PotionEffectType {
+     public Color getColor() {
+         return Color.fromRGB(handle.getColor());
+     }
++    // Paper start
++    @Override
++    public org.bukkit.NamespacedKey getKey() {
++        return org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(net.minecraft.core.IRegistry.MOB_EFFECT.getKey(this.handle));
++    }
++
++    @Override
++    public java.util.Map<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> getEffectAttributes() {
++        if (this.attributeMap == null) {
++            com.google.common.collect.ImmutableMap.Builder<org.bukkit.attribute.Attribute, org.bukkit.attribute.AttributeModifier> builder = com.google.common.collect.ImmutableMap.builder();
++            this.handle.getAttributes().forEach((attributeBase, attributeModifier) -> {
++                builder.put(org.bukkit.Registry.ATTRIBUTE.get(org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(net.minecraft.core.IRegistry.ATTRIBUTE.getKey(attributeBase))), org.bukkit.craftbukkit.attribute.CraftAttributeInstance.convert(attributeModifier));
++            });
++            this.attributeMap = builder.build();
++        }
++        return this.attributeMap;
++    }
++
++    @Override
++    public double getAttributeModifierAmount(org.bukkit.attribute.AttributeModifier attributeModifier, int effectAmplifier) {
++        com.google.common.base.Preconditions.checkArgument(effectAmplifier >= 0, "effectAmplifier must be greater than or equal to 0");
++        return this.handle.getModifierAmount(effectAmplifier, org.bukkit.craftbukkit.attribute.CraftAttributeInstance.convert(attributeModifier));
++    }
++
++    @Override
++    public EffectCategory getEffectCategory() {
++        return fromNMS(handle.getCategory());
++    }
++
++    @Override
++    public String getTranslationKey() {
++        return this.handle.c();
++    }
++
++    public static EffectCategory fromNMS(net.minecraft.world.effect.MobEffectInfo mobEffectInfo) {
++        switch (mobEffectInfo) {
++            case BENEFICIAL:
++                return org.bukkit.potion.PotionEffectType.EffectCategory.BENEFICIAL;
++            case HARMFUL:
++                return org.bukkit.potion.PotionEffectType.EffectCategory.HARMFUL;
++            case NEUTRAL:
++                return org.bukkit.potion.PotionEffectType.EffectCategory.NEUTRAL;
++            default:
++                throw new IllegalArgumentException(mobEffectInfo + " is an unknown category of effect");
++        }
++    }
++    // Paper end
+ }
+diff --git a/src/test/java/io/papermc/paper/effects/EffectCategoryTest.java b/src/test/java/io/papermc/paper/effects/EffectCategoryTest.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c9c776641f716e7cef47cf6f2719c8cfa77edffc
+--- /dev/null
++++ b/src/test/java/io/papermc/paper/effects/EffectCategoryTest.java
+@@ -0,0 +1,28 @@
++package io.papermc.paper.effects;
++
++import io.papermc.paper.adventure.PaperAdventure;
++import net.minecraft.world.effect.MobEffectInfo;
++import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
++import org.bukkit.potion.PotionEffectType;
++import org.junit.Test;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNotNull;
++
++public class EffectCategoryTest {
++
++    @Test
++    public void testEffectCategoriesExist() {
++        for (MobEffectInfo mobEffectInfo : MobEffectInfo.values()) {
++            assertNotNull(mobEffectInfo + " is missing a bukkit equivalent", CraftPotionEffectType.fromNMS(mobEffectInfo));
++        }
++    }
++
++    @Test
++    public void testCategoryHasEquivalentColors() {
++        for (MobEffectInfo mobEffectInfo : MobEffectInfo.values()) {
++            PotionEffectType.EffectCategory bukkitEffectCategory = CraftPotionEffectType.fromNMS(mobEffectInfo);
++            assertEquals(mobEffectInfo.getColor().name() + " doesn't equal " + bukkitEffectCategory.getColor(), bukkitEffectCategory.getColor(), PaperAdventure.asAdventure(mobEffectInfo.getColor()));
++        }
++    }
++}
