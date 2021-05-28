@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Thu, 19 Nov 2020 02:07:10 +0000
+Subject: [PATCH] Skip TE break validation for some waterlogged TEs
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockCampfire.java b/src/main/java/net/minecraft/world/level/block/BlockCampfire.java
+index 21baa8fb99b0587da503e14e2b04abf3134d03bc..ba2385a876e7d77bc253d98307f1c75ec8aeb46c 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockCampfire.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockCampfire.java
+@@ -98,7 +98,7 @@ public class BlockCampfire extends BlockTileEntity implements IBlockWaterlogged
+     @Override
+     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
+         if (!iblockdata.a(iblockdata1.getBlock())) {
+-            TileEntity tileentity = world.getTileEntity(blockposition);
++            TileEntity tileentity = world.getTileEntity(blockposition, !iblockdata1.isSameInstance(Blocks.WATER)); // Don't validate TE when removing campfire in water
+ 
+             if (tileentity instanceof TileEntityCampfire) {
+                 InventoryUtils.a(world, blockposition, ((TileEntityCampfire) tileentity).getItems());
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockChest.java b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+index b2c29cff5883868cb56a4e376ab946ac929abc94..219950a446ef5811b113b32158852def964234a4 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockChest.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockChest.java
+@@ -239,7 +239,7 @@ public class BlockChest extends BlockChestAbstract<TileEntityChest> implements I
+     @Override
+     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
+         if (!iblockdata.a(iblockdata1.getBlock())) {
+-            TileEntity tileentity = world.getTileEntity(blockposition);
++            TileEntity tileentity = world.getTileEntity(blockposition, !iblockdata1.isSameInstance(Blocks.WATER)); // Paper - Don't validate TE - Fix console spam when removing chests in water
+ 
+             if (tileentity instanceof IInventory) {
+                 InventoryUtils.dropInventory(world, blockposition, (IInventory) tileentity);
