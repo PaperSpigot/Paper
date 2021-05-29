@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 28 May 2021 21:47:39 -0700
+Subject: [PATCH] More CommandBlock API
+
+
+diff --git a/src/main/java/io/papermc/paper/command/CommandBlockHolder.java b/src/main/java/io/papermc/paper/command/CommandBlockHolder.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..09e57f495e3cbf3c6f434d12ab34830862faeb88
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/command/CommandBlockHolder.java
+@@ -0,0 +1,58 @@
++package io.papermc.paper.command;
++
++import net.kyori.adventure.text.Component;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public interface CommandBlockHolder {
++
++    /**
++     * Gets the command that this CommandBlock will run when powered.
++     * This will never return null.  If the CommandBlock does not have a
++     * command, an empty String will be returned instead.
++     *
++     * @return Command that this CommandBlock will run when activated.
++     */
++    @NotNull
++    String getCommand();
++
++    /**
++     * Sets the command that this CommandBlock will run when powered.
++     * Setting the command to null is the same as setting it to an empty
++     * String.
++     *
++     * @param command Command that this CommandBlock will run when activated.
++     */
++    void setCommand(@Nullable String command);
++
++    /**
++     * Gets the last output from this command block.
++     *
++     * @return the last output
++     */
++    @NotNull
++    Component lastOutput();
++
++    /**
++     * Sets the last output from this command block.
++     *
++     * @param lastOutput the last output
++     */
++    void lastOutput(@Nullable Component lastOutput);
++
++    /**
++     * Gets the success count from this command block.
++     * @see <a href="https://minecraft.fandom.com/wiki/Command_Block#Success_count">Command_Block#Success_count</a>
++     *
++     * @return the success count
++     */
++    int getSuccessCount();
++
++    /**
++     * Sets the success count from this command block.
++     * @see <a href="https://minecraft.fandom.com/wiki/Command_Block#Success_count">Command_Block#Success_count</a>
++     *
++     * @param successCount the success count
++     */
++    void setSuccessCount(int successCount);
++}
+diff --git a/src/main/java/org/bukkit/block/CommandBlock.java b/src/main/java/org/bukkit/block/CommandBlock.java
+index 57d9648cd4b10bfff0fe084f3d489392fb228668..eca5d71c183450e25ce5d6bad071cd31fe23f253 100644
+--- a/src/main/java/org/bukkit/block/CommandBlock.java
++++ b/src/main/java/org/bukkit/block/CommandBlock.java
+@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
+ /**
+  * Represents a captured state of a command block.
+  */
+-public interface CommandBlock extends TileState {
++public interface CommandBlock extends TileState, io.papermc.paper.command.CommandBlockHolder { // Paper
+ 
+     /**
+      * Gets the command that this CommandBlock will run when powered.
+diff --git a/src/main/java/org/bukkit/entity/minecart/CommandMinecart.java b/src/main/java/org/bukkit/entity/minecart/CommandMinecart.java
+index 91cab8b13d5bba34007f124838b32a1df58c5ac7..6a6021ad3a0e6aaf51f5144fa126e81bada9cfcf 100644
+--- a/src/main/java/org/bukkit/entity/minecart/CommandMinecart.java
++++ b/src/main/java/org/bukkit/entity/minecart/CommandMinecart.java
+@@ -4,7 +4,7 @@ import org.bukkit.entity.Minecart;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+-public interface CommandMinecart extends Minecart {
++public interface CommandMinecart extends Minecart, io.papermc.paper.command.CommandBlockHolder { // Paper
+ 
+     /**
+      * Gets the command that this CommandMinecart will run when activated.
