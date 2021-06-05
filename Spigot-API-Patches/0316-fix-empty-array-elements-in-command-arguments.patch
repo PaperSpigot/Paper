@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Sat, 5 Jun 2021 10:29:39 +0200
+Subject: [PATCH] fix empty array elements in command arguments
+
+Adjacent spaces caused empty array elements due to how String#split works.
+This change removes those empty array elements without modifying anything else.
+Adjacent spaces sent by players are removed in PlayerConnection, so this change doesn't affect players.
+But it does affect the console, command blocks, Bukkit.dispatchCommand, etc.
+
+diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+index 460fda05a62b12db2edcfb7ea8b2a5dd8e4b110d..74252236b138969560e6513f24e7ecc6dc4a4127 100644
+--- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
++++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -134,7 +134,7 @@ public class SimpleCommandMap implements CommandMap {
+      */
+     @Override
+     public boolean dispatch(@NotNull CommandSender sender, @NotNull String commandLine) throws CommandException {
+-        String[] args = commandLine.split(" ");
++        String[] args = org.apache.commons.lang3.StringUtils.split(commandLine, ' '); // Paper - fix adjacent spaces (from console/plugins) causing empty array elements
+ 
+         if (args.length == 0) {
+             return false;
