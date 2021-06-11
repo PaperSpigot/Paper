@@ -1868,6 +1868,26 @@ index ae735836accc6bf6f0831f72ff882720b69df792..d3ae5cadd88f9012203d2c04cbe38af9
      @Override
      public String getCustomName() {
          TileEntityBeacon beacon = this.getSnapshot();
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
+index a99d79153ada6bf2aa6a8c357b915608b6771a70..93cc743b4dca74ff6417c014985d3c983c2ab242 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
+@@ -35,4 +35,15 @@ public class CraftCommandBlock extends CraftBlockEntityState<TileEntityCommand>
+     public void setName(String name) {
+         getSnapshot().getCommandBlock().setName(CraftChatMessage.fromStringOrNull(name != null ? name : "@"));
+     }
++    // Paper start
++    @Override
++    public void name(net.kyori.adventure.text.Component name) {
++        getSnapshot().getCommandBlock().setName(name == null ? new net.minecraft.network.chat.ChatComponentText("@") : io.papermc.paper.adventure.PaperAdventure.asVanilla(name));
++    }
++
++    @Override
++    public net.kyori.adventure.text.Component name() {
++        return io.papermc.paper.adventure.PaperAdventure.asAdventure(getSnapshot().getCommandBlock().getName());
++    }
++    // Paper end
+ }
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/block/CraftContainer.java
 index e8ce890c551c9b809e8ba3f7449dc33f3a3a6b80..c99a59573653ee5d14e780137c769116bf781ea7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftContainer.java

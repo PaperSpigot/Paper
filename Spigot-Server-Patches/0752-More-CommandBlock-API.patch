@@ -1,0 +1,131 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 28 May 2021 21:47:33 -0700
+Subject: [PATCH] More CommandBlock API
+
+
+diff --git a/src/main/java/io/papermc/paper/command/CraftCommandBlockHolder.java b/src/main/java/io/papermc/paper/command/CraftCommandBlockHolder.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6b4a46cb87ba42cbda05bd8850a72906fd36cb74
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/command/CraftCommandBlockHolder.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.command;
++
++import io.papermc.paper.adventure.PaperAdventure;
++import net.kyori.adventure.text.Component;
++import net.minecraft.world.level.CommandBlockListenerAbstract;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public interface CraftCommandBlockHolder extends CommandBlockHolder {
++
++    CommandBlockListenerAbstract getCommandBlockHandle();
++
++    @Override
++    default @NotNull Component lastOutput() {
++        return PaperAdventure.asAdventure(getCommandBlockHandle().getLastOutput());
++    }
++
++    @Override
++    default void lastOutput(@Nullable Component lastOutput) {
++        getCommandBlockHandle().setLastOutput(PaperAdventure.asVanilla(lastOutput));
++    }
++
++    @Override
++    default int getSuccessCount() {
++        return getCommandBlockHandle().getSuccessCount();
++    }
++
++    @Override
++    default void setSuccessCount(int successCount) {
++        getCommandBlockHandle().setSuccessCount(successCount);
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java b/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
+index 85e7957103d2b2e16e4d3a3ea0bd7de4935f61cd..39d659e84e0d217e1936105e2701eeaae988688d 100644
+--- a/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
++++ b/src/main/java/net/minecraft/world/level/CommandBlockListenerAbstract.java
+@@ -40,14 +40,17 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
+         this.customName = CommandBlockListenerAbstract.c;
+     }
+ 
++    public int getSuccessCount() { return this.i(); } // Paper - OBFHELPER
+     public int i() {
+         return this.successCount;
+     }
+ 
++    public void setSuccessCount(int successCount) { this.a(successCount); } // Paper - OBFHELPER
+     public void a(int i) {
+         this.successCount = i;
+     }
+ 
++    public IChatBaseComponent getLastOutput() { return this.j(); } // Paper - OBFHELPER
+     public IChatBaseComponent j() {
+         return this.lastOutput == null ? ChatComponentText.d : this.lastOutput;
+     }
+@@ -181,8 +184,10 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
+ 
+     public abstract WorldServer d();
+ 
++    public void onUpdate() { this.e(); } // Paper - OBFHELPER
+     public abstract void e();
+ 
++    public void setLastOutput(@Nullable IChatBaseComponent iChatBaseComponent) { this.b(iChatBaseComponent); } // Paper - OBFHELPER
+     public void b(@Nullable IChatBaseComponent ichatbasecomponent) {
+         this.lastOutput = ichatbasecomponent;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
+index 93cc743b4dca74ff6417c014985d3c983c2ab242..905d7b454248ae60fb1f257619f0b424add6b228 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCommandBlock.java
+@@ -6,7 +6,7 @@ import org.bukkit.block.Block;
+ import org.bukkit.block.CommandBlock;
+ import org.bukkit.craftbukkit.util.CraftChatMessage;
+ 
+-public class CraftCommandBlock extends CraftBlockEntityState<TileEntityCommand> implements CommandBlock {
++public class CraftCommandBlock extends CraftBlockEntityState<TileEntityCommand> implements CommandBlock, io.papermc.paper.command.CraftCommandBlockHolder {
+ 
+     public CraftCommandBlock(Block block) {
+         super(block, TileEntityCommand.class);
+@@ -45,5 +45,10 @@ public class CraftCommandBlock extends CraftBlockEntityState<TileEntityCommand>
+     public net.kyori.adventure.text.Component name() {
+         return io.papermc.paper.adventure.PaperAdventure.asAdventure(getSnapshot().getCommandBlock().getName());
+     }
++
++    @Override
++    public net.minecraft.world.level.CommandBlockListenerAbstract getCommandBlockHandle() {
++        return getSnapshot().getCommandBlock();
++    }
+     // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartCommand.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartCommand.java
+index 0590675b9f927dc7ae0f989b62a2f4e1bb63f827..e3a0cd04821e8e647141ec1a2cdcc159efb2d7bb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartCommand.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartCommand.java
+@@ -14,7 +14,7 @@ import org.bukkit.permissions.PermissionAttachment;
+ import org.bukkit.permissions.PermissionAttachmentInfo;
+ import org.bukkit.plugin.Plugin;
+ 
+-public class CraftMinecartCommand extends CraftMinecart implements CommandMinecart {
++public class CraftMinecartCommand extends CraftMinecart implements CommandMinecart, io.papermc.paper.command.CraftCommandBlockHolder { // Paper
+     private final PermissibleBase perm = new PermissibleBase(this);
+ 
+     public CraftMinecartCommand(CraftServer server, EntityMinecartCommandBlock entity) {
+@@ -134,4 +134,16 @@ public class CraftMinecartCommand extends CraftMinecart implements CommandMineca
+     public Server getServer() {
+         return Bukkit.getServer();
+     }
++    // Paper start
++    @Override
++    public net.minecraft.world.level.CommandBlockListenerAbstract getCommandBlockHandle() {
++        return getHandle().getCommandBlock();
++    }
++
++    @Override
++    public void lastOutput(net.kyori.adventure.text.@org.jetbrains.annotations.Nullable Component lastOutput) {
++        io.papermc.paper.command.CraftCommandBlockHolder.super.lastOutput(lastOutput);
++        getCommandBlockHandle().onUpdate();
++    }
++    // Paper end
+ }

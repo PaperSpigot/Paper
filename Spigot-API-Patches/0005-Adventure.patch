@@ -1411,6 +1411,51 @@ index bc4417d8ffa92a78f690bfa5705d3e42cdc11fd2..d3519fa5b99e2888a194c63824155377
      /**
       * Returns a list of entities within a bounding box centered around a
       * Location.
+diff --git a/src/main/java/org/bukkit/block/CommandBlock.java b/src/main/java/org/bukkit/block/CommandBlock.java
+index 372c0bd5a4d7800a11c24c95e39fe376a96232bf..57d9648cd4b10bfff0fe084f3d489392fb228668 100644
+--- a/src/main/java/org/bukkit/block/CommandBlock.java
++++ b/src/main/java/org/bukkit/block/CommandBlock.java
+@@ -33,8 +33,10 @@ public interface CommandBlock extends TileState {
+      * by default is "@".
+      *
+      * @return Name of this CommandBlock.
++     * @deprecated in favour of {@link #name()}
+      */
+     @NotNull
++    @Deprecated // Paper
+     public String getName();
+ 
+     /**
+@@ -43,6 +45,29 @@ public interface CommandBlock extends TileState {
+      * same as setting it to "@".
+      *
+      * @param name New name for this CommandBlock.
++     * @deprecated in favour of {@link #name(net.kyori.adventure.text.Component)}
+      */
++    @Deprecated // Paper
+     public void setName(@Nullable String name);
++
++    // Paper start
++    /**
++     * Sets the name of this CommandBlock.  The name is used with commands
++     * that this CommandBlock executes.  Setting the name to null is the
++     * same as setting it to "@".
++     *
++     * @param name New name for this CommandBlock.
++     */
++    public void name(@Nullable net.kyori.adventure.text.Component name);
++
++    /**
++     * Gets the name of this CommandBlock.  The name is used with commands
++     * that this CommandBlock executes.  This name will never be null, and
++     * by default is "@".
++     *
++     * @return Name of this CommandBlock.
++     */
++    @NotNull
++    public net.kyori.adventure.text.Component name();
++    // Paper end
+ }
 diff --git a/src/main/java/org/bukkit/block/Sign.java b/src/main/java/org/bukkit/block/Sign.java
 index 7e3cf00e49c66023bf46c298ef46c00e8c3c2caf..6ea9b54d95d80070c01a612c0ce2ab37f0b4ad41 100644
 --- a/src/main/java/org/bukkit/block/Sign.java
