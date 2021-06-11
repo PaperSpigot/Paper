@@ -106,10 +106,10 @@ index 9b8d7b176e288fa715177196e7aff92900d8567a..1e741158bbcc0991259436bec549b32d
      public Location getBedSpawnLocation() {
          NBTTagCompound data = getData();
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 6c5075ef2420131aa21b403623a5dfa485ee73e5..25e0d0dd7b114560896679f0314cea288d7a768c 100644
+index 57b7f983cf1569eb1573cd2a056eff93e5ec9f83..6041f7d1a80688e92c9a82641e53e527afe419f0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -147,6 +147,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -148,6 +148,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      private org.bukkit.event.player.PlayerResourcePackStatusEvent.Status resourcePackStatus;
      private String resourcePackHash;
      private static final boolean DISABLE_CHANNEL_LIMIT = System.getProperty("paper.disableChannelLimit") != null; // Paper - add a flag to disable the channel limit
@@ -117,7 +117,7 @@ index 6c5075ef2420131aa21b403623a5dfa485ee73e5..25e0d0dd7b114560896679f0314cea28
      // Paper end
  
      public CraftPlayer(CraftServer server, EntityPlayer entity) {
-@@ -1483,6 +1484,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1484,6 +1485,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          this.firstPlayed = firstPlayed;
      }
  
@@ -136,7 +136,7 @@ index 6c5075ef2420131aa21b403623a5dfa485ee73e5..25e0d0dd7b114560896679f0314cea28
      public void readExtraData(NBTTagCompound nbttagcompound) {
          hasPlayedBefore = true;
          if (nbttagcompound.hasKey("bukkit")) {
-@@ -1505,6 +1518,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1506,6 +1519,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
  
      public void setExtraData(NBTTagCompound nbttagcompound) {
@@ -145,7 +145,7 @@ index 6c5075ef2420131aa21b403623a5dfa485ee73e5..25e0d0dd7b114560896679f0314cea28
          if (!nbttagcompound.hasKey("bukkit")) {
              nbttagcompound.set("bukkit", new NBTTagCompound());
          }
-@@ -1519,6 +1534,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1520,6 +1535,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          data.setLong("firstPlayed", getFirstPlayed());
          data.setLong("lastPlayed", System.currentTimeMillis());
          data.setString("lastKnownName", handle.getName());

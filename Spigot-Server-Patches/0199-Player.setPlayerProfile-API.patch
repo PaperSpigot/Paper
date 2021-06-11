@@ -48,7 +48,7 @@ index 18b0020d184e46c8957e82100681c8c66b1c3b62..41dd46c6ef95f7dc41d9ca36a5f0b85f
      private final ItemCooldown bM;
      @Nullable
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index e00b33493208865c0bd1bd11a96dd2ed1348da7c..e1d1aaa278287214e2edac5f690d4f5257696ed0 100644
+index aac930e2c7ca50bc9e6612fd7c1a2e05051cf892..43fbec197acfaa350599ca42efa69649a26df625 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -70,6 +70,7 @@ import net.minecraft.world.item.EnumColor;
@@ -59,7 +59,7 @@ index e00b33493208865c0bd1bd11a96dd2ed1348da7c..e1d1aaa278287214e2edac5f690d4f52
  import net.minecraft.world.level.block.entity.TileEntitySign;
  import net.minecraft.world.level.saveddata.maps.MapIcon;
  import net.minecraft.world.phys.Vec3D;
-@@ -1310,8 +1311,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1311,8 +1312,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          hiddenPlayers.put(player.getUniqueId(), hidingPlugins);
  
          // Remove this player from the hidden player's EntityTrackerEntry
@@ -74,7 +74,7 @@ index e00b33493208865c0bd1bd11a96dd2ed1348da7c..e1d1aaa278287214e2edac5f690d4f52
          PlayerChunkMap.EntityTracker entry = tracker.trackedEntities.get(other.getId());
          if (entry != null) {
              entry.clear(getHandle());
-@@ -1352,8 +1358,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1353,8 +1359,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
          hiddenPlayers.remove(player.getUniqueId());
  
@@ -89,7 +89,7 @@ index e00b33493208865c0bd1bd11a96dd2ed1348da7c..e1d1aaa278287214e2edac5f690d4f52
  
          getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
  
-@@ -1362,6 +1373,50 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1363,6 +1374,50 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              entry.updatePlayer(getHandle());
          }
      }

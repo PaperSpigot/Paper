@@ -22,13 +22,13 @@ index 865d8efa2d480ae7edc286e3e79f2997a191ee5c..af0a7dc9464e1acf1451f45464bab854
      // CraftBukkit end
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index f2228933719a2325a518be15237fedf56c994d1f..ed5680e6e0fcfbaf948bdede98d206cff2b26467 100644
+index 700d06c874b9ce52c7e4b21f3112b497ba09a345..ae340469bf4e89851160bba357c11979e1c50f52 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -138,6 +138,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     private double health = 20;
+@@ -139,6 +139,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      private boolean scaledHealth = false;
      private double healthScale = 20;
+     private net.kyori.adventure.permission.PermissionChecker adventure$permissions; // Paper
 +    // Paper start
 +    private org.bukkit.event.player.PlayerResourcePackStatusEvent.Status resourcePackStatus;
 +    private String resourcePackHash;
@@ -36,7 +36,7 @@ index f2228933719a2325a518be15237fedf56c994d1f..ed5680e6e0fcfbaf948bdede98d206cf
  
      public CraftPlayer(CraftServer server, EntityPlayer entity) {
          super(server, entity);
-@@ -1874,6 +1878,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1875,6 +1879,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      public boolean getAffectsSpawning() {
          return this.getHandle().affectsSpawning;
      }

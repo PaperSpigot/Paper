@@ -2126,10 +2126,18 @@ index 816f2cbebe849a9d9533f985298bcd5d36f660eb..24e856473a0050c0b097c17977635037
          player.activeContainer.addSlotListener(player);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f652e0b42d 100644
+index b51a874e4665f977a154792e6216e03e04525f39..15754c93101eb7a289361bd7dc5f5d2ba70c9f1d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -240,14 +240,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -137,6 +137,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     private double health = 20;
+     private boolean scaledHealth = false;
+     private double healthScale = 20;
++    private net.kyori.adventure.permission.PermissionChecker adventure$permissions; // Paper
+ 
+     public CraftPlayer(CraftServer server, EntityPlayer entity) {
+         super(server, entity);
+@@ -240,14 +241,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public String getDisplayName() {
@@ -2169,7 +2177,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      @Override
      public String getPlayerListName() {
          return getHandle().listName == null ? getName() : CraftChatMessage.fromComponent(getHandle().listName);
-@@ -266,35 +291,35 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -266,35 +292,35 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -2213,7 +2221,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
          updatePlayerListHeaderFooter();
      }
  
-@@ -302,8 +327,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -302,8 +328,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          if (getHandle().playerConnection == null) return;
  
          PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
@@ -2224,7 +2232,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
          getHandle().playerConnection.sendPacket(packet);
      }
  
-@@ -335,6 +360,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -335,6 +361,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
@@ -2242,7 +2250,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      @Override
      public void setCompassTarget(Location loc) {
          if (getHandle().playerConnection == null) return;
-@@ -561,6 +597,37 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -561,6 +598,37 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.sendPacket(packet);
      }
  
@@ -2280,7 +2288,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      @Override
      public void sendSignChange(Location loc, String[] lines) {
         sendSignChange(loc, lines, DyeColor.BLACK);
-@@ -583,12 +650,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -583,12 +651,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
  
          IChatBaseComponent[] components = CraftSign.sanitizeLines(lines);
@@ -2296,7 +2304,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      }
  
      @Override
-@@ -1688,6 +1756,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1688,6 +1757,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          return (getHandle().clientViewDistance == null) ? Bukkit.getViewDistance() : getHandle().clientViewDistance;
      }
  
@@ -2309,7 +2317,7 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
      @Override
      public int getPing() {
          return getHandle().ping;
-@@ -1716,6 +1790,138 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1716,6 +1791,157 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getInventory().setItemInMainHand(hand);
      }
  
@@ -2323,6 +2331,25 @@ index b51a874e4665f977a154792e6216e03e04525f39..6ab14bccb1fcd108931bf7ec331e60f6
 +    public void displayName(final net.kyori.adventure.text.Component displayName) {
 +        this.getHandle().adventure$displayName = displayName != null ? displayName : net.kyori.adventure.text.Component.text(this.getName());
 +        this.getHandle().displayName = null;
++    }
++
++    @Override
++    @SuppressWarnings("unchecked") // safe casts
++    public <T> java.util.Optional<T> get(final net.kyori.adventure.pointer.Pointer<T> pointer) {
++        if (pointer == net.kyori.adventure.identity.Identity.NAME) {
++            return java.util.Optional.of((T) this.getProfile().getName());
++        } else if (pointer == net.kyori.adventure.identity.Identity.DISPLAY_NAME) {
++            return java.util.Optional.of((T) this.displayName());
++        } else if (pointer == net.kyori.adventure.identity.Identity.UUID) {
++            return java.util.Optional.of((T) this.getUniqueId());
++        } else if (pointer == net.kyori.adventure.permission.PermissionChecker.POINTER) {
++            if (this.adventure$permissions == null) {
++                // todo: allow properly returning NOT_SET?
++                this.adventure$permissions = permission -> this.hasPermission(permission) ? net.kyori.adventure.util.TriState.TRUE : net.kyori.adventure.util.TriState.FALSE;
++            }
++            return java.util.Optional.of((T) this.adventure$permissions);
++        }
++        return super.get(pointer);
 +    }
 +
 +    @Override
