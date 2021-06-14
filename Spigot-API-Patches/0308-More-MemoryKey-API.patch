@@ -1,0 +1,136 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 9 May 2021 19:35:09 -0700
+Subject: [PATCH] More MemoryKey API
+
+
+diff --git a/src/main/java/org/bukkit/entity/memory/MemoryKey.java b/src/main/java/org/bukkit/entity/memory/MemoryKey.java
+index 905d5f6d16a6e3f8eb9da91cbc3ba3286ad15e4b..56cab32304584a634c5b08303e54e0afd78daaa2 100644
+--- a/src/main/java/org/bukkit/entity/memory/MemoryKey.java
++++ b/src/main/java/org/bukkit/entity/memory/MemoryKey.java
+@@ -10,6 +10,23 @@ import org.bukkit.Location;
+ import org.bukkit.NamespacedKey;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
++// Paper start
++import java.util.Collection;
++import org.bukkit.util.Vector;
++import org.bukkit.entity.Hoglin;
++import org.bukkit.entity.Mob;
++import org.bukkit.entity.PiglinAbstract;
++import java.util.List;
++import java.lang.reflect.Type;
++import io.leangen.geantyref.GenericTypeReflector;
++import io.leangen.geantyref.TypeToken;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Ageable;
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.entity.Item;
++import static org.bukkit.NamespacedKey.minecraft;
++// Paper end
+ 
+ /**
+  * Represents a key used for accessing memory values of a
+@@ -21,12 +38,25 @@ public final class MemoryKey<T> implements Keyed {
+ 
+     private final NamespacedKey namespacedKey;
+     private final Class<T> tClass;
++    private final TypeToken<T> typeToken; // Paper
++    private final boolean isCollection; // Paper
+ 
+     private MemoryKey(NamespacedKey namespacedKey, Class<T> tClass) {
+         this.namespacedKey = namespacedKey;
+         this.tClass = tClass;
+         MEMORY_KEYS.put(namespacedKey, this);
++        this.typeToken = TypeToken.get(tClass); // Paper
++        this.isCollection = false; // Paper
+     }
++    // Paper start
++    private MemoryKey(NamespacedKey namespacedKey, TypeToken<T> typeToken) {
++        this.namespacedKey = namespacedKey;
++        this.tClass = (Class<T>) GenericTypeReflector.erase(typeToken.getType());
++        MEMORY_KEYS.put(namespacedKey, this);
++        this.typeToken = typeToken;
++        this.isCollection = Collection.class.isAssignableFrom(GenericTypeReflector.erase(this.tClass));
++    }
++    // Paper end
+ 
+     @NotNull
+     @Override
+@@ -59,6 +89,75 @@ public final class MemoryKey<T> implements Keyed {
+     public static final MemoryKey<Boolean> ADMIRING_ITEM = new MemoryKey<>(NamespacedKey.minecraft("admiring_item"), Boolean.class);
+     public static final MemoryKey<Boolean> ADMIRING_DISABLED = new MemoryKey<>(NamespacedKey.minecraft("admiring_disabled"), Boolean.class);
+     public static final MemoryKey<Boolean> HUNTED_RECENTLY = new MemoryKey<>(NamespacedKey.minecraft("hunted_recently"), Boolean.class);
++    // Paper start
++    public static final MemoryKey<Void> DUMMY = new MemoryKey<>(minecraft("dummy"), Void.class);
++    public static final MemoryKey<List<Location>> SECONDARY_JOB_SITE = new MemoryKey<>(minecraft("secondary_job_site"), new TypeToken<List<Location>>() {});
++    public static final MemoryKey<List<LivingEntity>> MOBS = new MemoryKey<>(minecraft("mobs"), new TypeToken<List<LivingEntity>>() {});
++    public static final MemoryKey<List<LivingEntity>> VISIBLE_MOBS = new MemoryKey<>(minecraft("visible_mobs"), new TypeToken<List<LivingEntity>>() {});
++    public static final MemoryKey<List<LivingEntity>> VISIBLE_VILLAGER_BABIES = new MemoryKey<>(minecraft("visible_villager_babies"), new TypeToken<List<LivingEntity>>() {});
++    public static final MemoryKey<List<HumanEntity>> NEAREST_PLAYERS = new MemoryKey<>(minecraft("nearest_players"), new TypeToken<List<HumanEntity>>() {});
++    public static final MemoryKey<HumanEntity> NEAREST_VISIBLE_PLAYER = new MemoryKey<>(minecraft("nearest_visible_player"), HumanEntity.class);
++    public static final MemoryKey<HumanEntity> NEAREST_VISIBLE_TARGETABLE_PLAYER = new MemoryKey<>(minecraft("nearest_visible_targetable_player"), HumanEntity.class);
++    // MemoryTarget
++    // BehaviorPosition
++    public static final MemoryKey<LivingEntity> ATTACK_TARGET = new MemoryKey<>(minecraft("attack_target"), LivingEntity.class);
++    public static final MemoryKey<Boolean> ATTACK_COOLING_DOWN = new MemoryKey<>(minecraft("attack_cooling_down"), Boolean.class);
++    public static final MemoryKey<LivingEntity> INTERACTION_TARGET = new MemoryKey<>(minecraft("interaction_target"), LivingEntity.class);
++    public static final MemoryKey<Ageable> BREED_TARGET = new MemoryKey<>(minecraft("breed_target"), Ageable.class);
++    public static final MemoryKey<Entity> RIDE_TARGET = new MemoryKey<>(minecraft("ride_target"), Entity.class);
++    // PathEntity
++    public static final MemoryKey<List<Location>> INTERACTABLE_DOORS = new MemoryKey<>(minecraft("interactable_doors"), new TypeToken<List<Location>>() {});
++    public static final MemoryKey<Set<Location>> DOORS_TO_CLOSE = new MemoryKey<>(minecraft("doors_to_close"), new TypeToken<Set<Location>>() {});
++    public static final MemoryKey<Vector> NEAREST_BED = new MemoryKey<>(minecraft("nearest_bed"), Vector.class);
++    // DamageSource
++    public static final MemoryKey<LivingEntity> HURT_BY_ENTITY = new MemoryKey<>(minecraft("hurt_by_entity"), LivingEntity.class);
++    public static final MemoryKey<LivingEntity> AVOID_TARGET = new MemoryKey<>(minecraft("avoid_target"), LivingEntity.class);
++    public static final MemoryKey<LivingEntity> NEAREST_HOSTILE = new MemoryKey<>(minecraft("nearest_hostile"), LivingEntity.class);
++    public static final MemoryKey<Location> HIDING_PLACE = new MemoryKey<>(minecraft("hiding_place"), Location.class);
++    public static final MemoryKey<Long> HEARD_BELL_TIME = new MemoryKey<>(minecraft("heard_bell_time"), Long.class);
++    public static final MemoryKey<Long> CANT_REACH_WALK_TARGET_SINCE = new MemoryKey<>(minecraft("cant_reach_walk_target_since"), Long.class);
++    public static final MemoryKey<Ageable> NEAREST_VISIBLE_ADULT = new MemoryKey<>(minecraft("nearest_visible_adult"), Ageable.class);
++    public static final MemoryKey<Item> NEAREST_VISIBLE_WANTED_ITEM = new MemoryKey<>(minecraft("nearest_visible_wanted_item"), Item.class);
++    public static final MemoryKey<Mob> NEAREST_VISIBLE_NEMESIS = new MemoryKey<>(minecraft("nearest_visible_nemesis"), Mob.class);
++    public static final MemoryKey<Integer> TIME_TRYING_TO_REACH_ADMIRE_ITEM = new MemoryKey<>(minecraft("time_trying_to_reach_admire_item"), Integer.class);
++    public static final MemoryKey<Boolean> DISABLE_WALK_TO_ADMIRE_ITEM = new MemoryKey<>(minecraft("disable_walk_to_admire_item"), Boolean.class);
++    public static final MemoryKey<Vector> CELEBRATE_LOCATION = new MemoryKey<>(minecraft("celebrate_location"), Vector.class);
++    public static final MemoryKey<Boolean> DANCING = new MemoryKey<>(minecraft("dancing"), Boolean.class);
++    public static final MemoryKey<Hoglin> NEAREST_VISIBLE_HUNTABLE_HOGLIN = new MemoryKey<>(minecraft("nearest_visible_huntable_hoglin"), Hoglin.class);
++    public static final MemoryKey<Hoglin> NEAREST_VISIBLE_BABY_HOGLIN = new MemoryKey<>(minecraft("nearest_visible_baby_hoglin"), Hoglin.class);
++    public static final MemoryKey<HumanEntity> NEAREST_TARGETABLE_PLAYER_NOT_WEARING_GOLD = new MemoryKey<>(minecraft("nearest_targetable_player_not_wearing_gold"), HumanEntity.class);
++    public static final MemoryKey<List<PiglinAbstract>> NEARBY_ADULT_PIGLINS = new MemoryKey<>(minecraft("nearby_adult_piglins"), new TypeToken<List<PiglinAbstract>>() {});
++    public static final MemoryKey<List<PiglinAbstract>> NEAREST_VISIBLE_ADULT_PIGLINS = new MemoryKey<>(minecraft("nearest_visible_adult_piglins"), new TypeToken<List<PiglinAbstract>>() {});
++    public static final MemoryKey<List<Hoglin>> NEAREST_VISIBLE_ADULT_HOGLINS = new MemoryKey<>(minecraft("nearest_visible_adult_hoglins"), new TypeToken<List<Hoglin>>() {});
++    public static final MemoryKey<PiglinAbstract> NEAREST_VISIBLE_ADULT_PIGLIN = new MemoryKey<>(minecraft("nearest_visible_adult_piglin"), new TypeToken<PiglinAbstract>() {});
++    public static final MemoryKey<LivingEntity> NEAREST_VISIBLE_ZOMBIFIED = new MemoryKey<>(minecraft("nearest_visible_zombified"), LivingEntity.class);
++    public static final MemoryKey<Integer> VISIBLE_ADULT_PIGLIN_COUNT = new MemoryKey<>(minecraft("visible_adult_piglin_count"), Integer.class);
++    public static final MemoryKey<Integer> VISIBLE_ADULT_HOGLIN_COUNT = new MemoryKey<>(minecraft("visible_adult_hoglin_count"), Integer.class);
++    public static final MemoryKey<HumanEntity> NEAREST_PLAYER_HOLDING_WANTED_ITEM = new MemoryKey<>(minecraft("nearest_player_holding_wanted_item"), HumanEntity.class);
++    public static final MemoryKey<Boolean> ATE_RECENTLY = new MemoryKey<>(minecraft("ate_recently"), Boolean.class);
++    public static final MemoryKey<Vector> NEAREST_REPELLENT = new MemoryKey<>(minecraft("nearest_repellent"), Vector.class);
++    public static final MemoryKey<Boolean> PACIFIED = new MemoryKey<>(minecraft("pacified"), Boolean.class);
++
++    /**
++     * Gets the exact type of this memory key.
++     *
++     * @return the type
++     */
++    @NotNull
++    public Type getType() {
++        return typeToken.getType();
++    }
++
++    /**
++     * Gets if this memory key holds a collection.
++     * A class that extends {@link Collection}.
++     *
++     * @return true if a collection
++     */
++    public boolean isCollection() {
++        return isCollection;
++    }
++    // Paper end
+ 
+     /**
+      * Returns a {@link MemoryKey} by a {@link NamespacedKey}.

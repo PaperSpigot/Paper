@@ -1,0 +1,461 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 9 May 2021 19:38:00 -0700
+Subject: [PATCH] More MemoryKey API
+
+
+diff --git a/src/main/java/io/papermc/paper/entity/memory/MemoryConverter.java b/src/main/java/io/papermc/paper/entity/memory/MemoryConverter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a82830109a205910a5a08b08b755b638e44bb529
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/entity/memory/MemoryConverter.java
+@@ -0,0 +1,219 @@
++package io.papermc.paper.entity.memory;
++
++import com.google.common.collect.Collections2;
++import com.google.common.collect.ImmutableList;
++import com.google.common.collect.ImmutableSet;
++import com.google.common.collect.Lists;
++import com.google.common.collect.Maps;
++import com.google.common.collect.Sets;
++import net.minecraft.core.BlockPosition;
++import net.minecraft.core.GlobalPos;
++import net.minecraft.server.MCUtil;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.EntityAgeable;
++import net.minecraft.world.entity.EntityInsentient;
++import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.item.EntityItem;
++import net.minecraft.world.entity.monster.hoglin.EntityHoglin;
++import net.minecraft.world.entity.monster.piglin.EntityPiglinAbstract;
++import net.minecraft.world.entity.player.EntityHuman;
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.entity.CraftAgeable;
++import org.bukkit.craftbukkit.entity.CraftEntity;
++import org.bukkit.craftbukkit.entity.CraftHoglin;
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.craftbukkit.entity.CraftItem;
++import org.bukkit.craftbukkit.entity.CraftLivingEntity;
++import org.bukkit.craftbukkit.entity.CraftMob;
++import org.bukkit.craftbukkit.entity.CraftPiglinAbstract;
++import org.bukkit.craftbukkit.util.CraftVector;
++import org.bukkit.entity.Ageable;
++import org.bukkit.entity.Hoglin;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.entity.Item;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Mob;
++import org.bukkit.entity.PiglinAbstract;
++import org.bukkit.entity.memory.MemoryKey;
++import org.bukkit.util.Vector;
++
++import java.lang.reflect.ParameterizedType;
++import java.lang.reflect.Type;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++import java.util.function.Function;
++
++public abstract class MemoryConverter<B, M> {
++
++    public static final Map<Type, MemoryConverter<?, ?>> BUKKIT_CONVERTER_MAP = Maps.newHashMap();
++
++    static void register(Class<?>...classes) {
++        for (Class<?> clazz : classes) {
++            register(clazz, new IdentityMemoryConverter<>(clazz));
++        }
++    }
++
++    static void register(MemoryConverter<?, ?> memoryConverter) {
++        register(((ParameterizedType) memoryConverter.getClass().getGenericSuperclass()).getActualTypeArguments()[0], memoryConverter);
++    }
++
++    static void register(Type type, MemoryConverter<?, ?> memoryConverter) {
++        BUKKIT_CONVERTER_MAP.put(type, memoryConverter);
++    }
++
++    static <B> Type getMemoryKeyInnerType(MemoryKey<B> memoryKey) {
++        if (!(memoryKey.getType() instanceof ParameterizedType)) {
++            throw new IllegalArgumentException(memoryKey + "'s generic type is not parameterized");
++        }
++        return ((ParameterizedType) memoryKey.getType()).getActualTypeArguments()[0];
++    }
++
++    static NonCollectionMemoryConverter getMemoryConverter(MemoryKey<?> memoryKey) {
++        if (!(memoryKey.getType() instanceof ParameterizedType)) {
++            throw new IllegalArgumentException(memoryKey + "'s generic type is not parameterized");
++        }
++        return (NonCollectionMemoryConverter) BUKKIT_CONVERTER_MAP.get(((ParameterizedType) memoryKey.getType()).getActualTypeArguments()[0]);
++    }
++
++    static {
++        register(Void.class, Long.class, Integer.class, Boolean.class, UUID.class);
++
++        register(new SimpleMemoryConverter<Location, GlobalPos>(MCUtil::toLocation, MCUtil::toGlobalPos){});
++        register(new SimpleMemoryConverter<Vector, BlockPosition>(CraftVector::toBukkit, CraftVector::toBlockPos){});
++
++        register(new EntityMemoryConverter<org.bukkit.entity.Entity, CraftEntity, Entity>(){});
++        register(new EntityMemoryConverter<LivingEntity, CraftLivingEntity, EntityLiving>(){});
++        register(new EntityMemoryConverter<Mob, CraftMob, EntityInsentient>(){});
++        register(new EntityMemoryConverter<Ageable, CraftAgeable, EntityAgeable>(){});
++        register(new EntityMemoryConverter<HumanEntity, CraftHumanEntity, EntityHuman>(){});
++
++        register(new EntityMemoryConverter<PiglinAbstract, CraftPiglinAbstract, EntityPiglinAbstract>(){});
++        register(new EntityMemoryConverter<Item, CraftItem, EntityItem>(){});
++        register(new EntityMemoryConverter<Hoglin, CraftHoglin, EntityHoglin>(){});
++
++        register(List.class, new MemoryConverter<List, List>() {
++            @Override
++            public List toBukkit(List nmsObject, MemoryKey<List> memoryKey) {
++                return ImmutableList.copyOf(Lists.transform(nmsObject, getMemoryConverter(memoryKey)::toBukkitNoKey));
++            }
++
++            @Override
++            public List toNms(List bukkitObject, MemoryKey<List> memoryKey) {
++                return Lists.newArrayList(Lists.transform(bukkitObject, getMemoryConverter(memoryKey)::toNmsNoKey));
++            }
++        });
++
++        register(Set.class, new MemoryConverter<Set, Set>() {
++            @Override
++            public Set toBukkit(Set nmsObject, MemoryKey<Set> memoryKey) {
++                return ImmutableSet.copyOf(Collections2.transform(nmsObject, getMemoryConverter(memoryKey)::toBukkitNoKey));
++            }
++
++            @Override
++            public Set toNms(Set bukkitObject, MemoryKey<Set> memoryKey) {
++                return Sets.newHashSet(Collections2.transform(bukkitObject, getMemoryConverter(memoryKey)::toNmsNoKey));
++            }
++        });
++    }
++
++    public abstract B toBukkit(M nmsObject, MemoryKey<B> memoryKey);
++
++    public abstract M toNms(B bukkitObject, MemoryKey<B> memoryKey);
++
++    static abstract class NonCollectionMemoryConverter<B, M> extends MemoryConverter<B, M> {
++
++        public abstract B toBukkitNoKey(M nmsObject);
++
++        public abstract M toNmsNoKey(B bukkitObject);
++
++        @Override
++        public final B toBukkit(M nmsObject, MemoryKey<B> memoryKey) {
++            return toBukkitNoKey(nmsObject);
++        }
++
++        @Override
++        public final M toNms(B bukkitObject, MemoryKey<B> memoryKey) {
++            return toNmsNoKey(bukkitObject);
++        }
++    }
++
++    static class IdentityMemoryConverter<T> extends NonCollectionMemoryConverter<T, T> {
++
++        private final Class<T> typeClass;
++
++        public IdentityMemoryConverter(Class<T> typeClass) {
++            this.typeClass = typeClass;
++            BUKKIT_CONVERTER_MAP.put(typeClass, this);
++        }
++
++        @Override
++        public T toBukkitNoKey(T nmsObject) {
++            return typeClass.cast(nmsObject);
++        }
++
++        @Override
++        public T toNmsNoKey(T bukkitObject) {
++            return typeClass.cast(bukkitObject);
++        }
++    }
++
++    static abstract class SimpleMemoryConverter<B, M> extends NonCollectionMemoryConverter<B, M> {
++
++        private final Function<M, B> toBukkit;
++        private final Function<B, M> toNms;
++
++        public SimpleMemoryConverter(Function<M, B> toBukkit, Function<B, M> toNms) {
++            this.toBukkit = toBukkit;
++            this.toNms = toNms;
++            Type superType = getClass().getGenericSuperclass();
++            if (!(superType instanceof ParameterizedType)) {
++                throw new IllegalStateException(superType + " is not an instance of ParamterizedType");
++            }
++            BUKKIT_CONVERTER_MAP.put(((ParameterizedType) superType).getActualTypeArguments()[0], this);
++        }
++
++        @Override
++        public B toBukkitNoKey(M nmsObject) {
++            return toBukkit.apply(nmsObject);
++        }
++
++        @Override
++        public M toNmsNoKey(B bukkitObject) {
++            return toNms.apply(bukkitObject);
++        }
++    }
++
++    static abstract class EntityMemoryConverter<BE extends org.bukkit.entity.Entity, CBE extends CraftEntity & org.bukkit.entity.Entity, ME extends Entity> extends NonCollectionMemoryConverter<BE, ME> {
++
++        private final Class<BE> bukkitEntityClass;
++        private final Class<CBE> craftBukkitEntityClass;
++        private final Class<ME> nmsEntityClass;
++
++        public EntityMemoryConverter() {
++            Type superType = getClass().getGenericSuperclass();
++            if (!(superType instanceof ParameterizedType)) {
++                throw new IllegalStateException(superType + " is not an instance of ParamterizedType");
++            }
++            ParameterizedType type = (ParameterizedType) superType;
++            this.bukkitEntityClass = (Class<BE>) type.getActualTypeArguments()[0];
++            this.craftBukkitEntityClass = (Class<CBE>) type.getActualTypeArguments()[1];
++            this.nmsEntityClass = (Class<ME>) type.getActualTypeArguments()[2];
++            if (this.craftBukkitEntityClass.isAssignableFrom(this.bukkitEntityClass)) {
++                throw new IllegalArgumentException(this.craftBukkitEntityClass + " must be assignable from " + this.bukkitEntityClass);
++            }
++            BUKKIT_CONVERTER_MAP.put(bukkitEntityClass, this);
++        }
++
++        @Override
++        public BE toBukkitNoKey(ME nmsObject) {
++            return bukkitEntityClass.cast(nmsObject.getBukkitEntity());
++        }
++
++        @Override
++        public ME toNmsNoKey(BE bukkitObject) {
++            return nmsEntityClass.cast(craftBukkitEntityClass.cast(bukkitObject).getHandle());
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/entity/ai/BehaviorController.java b/src/main/java/net/minecraft/world/entity/ai/BehaviorController.java
+index fc4216cafbd3a81cac319b11ee093bec38827742..c3c8f5313bdd1c70896a40bb60a4773a5da67a05 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/BehaviorController.java
++++ b/src/main/java/net/minecraft/world/entity/ai/BehaviorController.java
+@@ -83,9 +83,9 @@ public class BehaviorController<E extends EntityLiving> {
+                         return this.a(memorymoduletype, dynamicops, pair.getSecond());
+                     });
+ 
+-                    mutableobject1.setValue(((DataResult) mutableobject1.getValue()).apply2(Builder::add, dataresult1));
++                    mutableobject1.setValue((mutableobject1.getValue()).apply2(Builder::add, dataresult1)); // Paper - decompile fix
+                 });
+-                DataResult dataresult = (DataResult) mutableobject1.getValue();
++                DataResult<Builder<BehaviorController.a<?>>> dataresult = (DataResult) mutableobject1.getValue(); // Paper - decompile fix
+                 Logger logger = BehaviorController.LOGGER;
+ 
+                 logger.getClass();
+@@ -95,11 +95,11 @@ public class BehaviorController<E extends EntityLiving> {
+                 MutableObject mutableobject2 = mutableobject;
+ 
+                 mutableobject.getClass();
+-                return DataResult.success(new BehaviorController<>(collection2, collection3, immutablelist, mutableobject2::getValue));
++                return DataResult.success(new BehaviorController<>(collection, collection1, immutablelist, mutableobject::getValue)); // Paper - decompile fix
+             }
+ 
+             private <T, U> DataResult<BehaviorController.a<U>> a(MemoryModuleType<U> memorymoduletype, DynamicOps<T> dynamicops, T t0) {
+-                return ((DataResult) memorymoduletype.getSerializer().map(DataResult::success).orElseGet(() -> {
++                return (memorymoduletype.getSerializer().map(DataResult::success).orElseGet(() -> { // Paper - decompile fix
+                     return DataResult.error("No codec for memory: " + memorymoduletype);
+                 })).flatMap((codec) -> {
+                     return codec.parse(dynamicops, t0);
+@@ -208,7 +208,7 @@ public class BehaviorController<E extends EntityLiving> {
+     }
+ 
+     public <U> Optional<U> getMemory(MemoryModuleType<U> memorymoduletype) {
+-        return ((Optional) this.memories.get(memorymoduletype)).map(ExpirableMemory::c);
++        return ((Optional<? extends ExpirableMemory<U>>) this.memories.get(memorymoduletype)).map(ExpirableMemory::c); // Paper - decompile fix
+     }
+ 
+     public <U> boolean b(MemoryModuleType<U> memorymoduletype, U u0) {
+@@ -217,6 +217,7 @@ public class BehaviorController<E extends EntityLiving> {
+         }).isPresent();
+     }
+ 
++    public boolean hasMemory(MemoryModuleType<?> memoryModuleType, MemoryStatus memoryStatus) { return a(memoryModuleType, memoryStatus); } // Paper - OBFHELPER
+     public boolean a(MemoryModuleType<?> memorymoduletype, MemoryStatus memorystatus) {
+         Optional<? extends ExpirableMemory<?>> optional = (Optional) this.memories.get(memorymoduletype);
+ 
+@@ -547,7 +548,7 @@ public class BehaviorController<E extends EntityLiving> {
+         private final MemoryModuleType<U> a;
+         private final Optional<? extends ExpirableMemory<U>> b;
+ 
+-        private static <U> BehaviorController.a<U> b(MemoryModuleType<U> memorymoduletype, Optional<? extends ExpirableMemory<?>> optional) {
++        private static <U> BehaviorController.a<U> b(MemoryModuleType<U> memorymoduletype, Optional<? extends ExpirableMemory<U>> optional) { // Paper - decompile fix
+             return new BehaviorController.a<>(memorymoduletype, optional);
+         }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 4545bac9309f5a3aad617f48f7808d8ae829602d..bb693fa5830cc0c76c510bfb3acefbf989304cb2 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -728,12 +728,13 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+ 
+     @Override
+     public <T> T getMemory(MemoryKey<T> memoryKey) {
+-        return (T) getHandle().getBehaviorController().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
++        if (!getHandle().getBehaviorController().hasMemory(CraftMemoryKey.fromMemoryKey(memoryKey), net.minecraft.world.entity.ai.memory.MemoryStatus.REGISTERED)) { return null; } // Paper
++        return (T) getHandle().getBehaviorController().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(o -> CraftMemoryMapper.fromNms(o, memoryKey)).orElse(null); // Paper
+     }
+ 
+     @Override
+     public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
+-        getHandle().getBehaviorController().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), CraftMemoryMapper.toNms(t));
++        getHandle().getBehaviorController().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), (Object) CraftMemoryMapper.toNms(t, memoryKey)); // Paper
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/memory/CraftMemoryMapper.java b/src/main/java/org/bukkit/craftbukkit/entity/memory/CraftMemoryMapper.java
+index eae0f82bbc37f1924be742b5bf398aa51ce6b6f5..7a6186551e6e66f92f78b1e584e49ccc9036c7a5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/memory/CraftMemoryMapper.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/memory/CraftMemoryMapper.java
+@@ -49,4 +49,22 @@ public final class CraftMemoryMapper {
+     public static GlobalPos toNms(Location location) {
+         return GlobalPos.create(((CraftWorld) location.getWorld()).getHandle().getDimensionKey(), new BlockPosition(location.getX(), location.getY(), location.getZ()));
+     }
++    // Paper start
++    public static <B, M> M toNms(B object, org.bukkit.entity.memory.MemoryKey<B> memoryKey) {
++        if (io.papermc.paper.entity.memory.MemoryConverter.BUKKIT_CONVERTER_MAP.containsKey(memoryKey.getMemoryClass())) {
++            return ((io.papermc.paper.entity.memory.MemoryConverter<B, M>) io.papermc.paper.entity.memory.MemoryConverter.BUKKIT_CONVERTER_MAP.get(memoryKey.getMemoryClass())).toNms(object, memoryKey);
++
++        } else {
++            throw new UnsupportedOperationException("Do not know how to map " + object);
++        }
++    }
++
++    public static <B, M> B fromNms(M object, org.bukkit.entity.memory.MemoryKey<B> memoryKey) {
++        if (io.papermc.paper.entity.memory.MemoryConverter.BUKKIT_CONVERTER_MAP.containsKey(memoryKey.getMemoryClass())) {
++            return ((io.papermc.paper.entity.memory.MemoryConverter<B, M>) io.papermc.paper.entity.memory.MemoryConverter.BUKKIT_CONVERTER_MAP.get(memoryKey.getMemoryClass())).toBukkit(object, memoryKey);
++        } else {
++            throw new UnsupportedOperationException("Do not know how to map " + object);
++        }
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftVector.java b/src/main/java/org/bukkit/craftbukkit/util/CraftVector.java
+index fc63c87f1a002a36349ed6a4573521db05a7836f..9f04bffafdc8b60847456a249b781c9dbbb86ea5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftVector.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftVector.java
+@@ -12,4 +12,13 @@ public final class CraftVector {
+     public static net.minecraft.world.phys.Vec3D toNMS(org.bukkit.util.Vector bukkit) {
+         return new net.minecraft.world.phys.Vec3D(bukkit.getX(), bukkit.getY(), bukkit.getZ());
+     }
++    // Paper start
++    public static org.bukkit.util.Vector toBukkit(net.minecraft.core.BlockPosition blockPosition) {
++        return new org.bukkit.util.Vector(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
++    }
++
++    public static net.minecraft.core.BlockPosition toBlockPos(org.bukkit.util.Vector bukkit) {
++        return new net.minecraft.core.BlockPosition(bukkit.getX(), bukkit.getY(), bukkit.getZ());
++    }
++    // Paper end
+ }
+diff --git a/src/test/java/io/papermc/paper/entity/memory/MemoryKeyTest.java b/src/test/java/io/papermc/paper/entity/memory/MemoryKeyTest.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..446f2e061bf30e03d877211fed95b983abb0fa45
+--- /dev/null
++++ b/src/test/java/io/papermc/paper/entity/memory/MemoryKeyTest.java
+@@ -0,0 +1,68 @@
++package io.papermc.paper.entity.memory;
++
++import io.leangen.geantyref.GenericTypeReflector;
++import io.leangen.geantyref.TypeToken;
++import net.minecraft.core.IRegistry;
++import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.ai.memory.MemoryModuleType;
++import org.bukkit.Registry;
++import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
++import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.memory.MemoryKey;
++import org.junit.Before;
++import org.junit.Test;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collection;
++import java.util.List;
++
++import static org.junit.Assert.assertFalse;
++import static org.junit.Assert.assertNotNull;
++import static org.junit.Assert.assertTrue;
++
++public class MemoryKeyTest {
++
++    @Test
++    public void testIfCollection() {
++        assertTrue("Failed to recognize Set as a collection", MemoryKey.DOORS_TO_CLOSE.isCollection());
++        assertTrue("Failed to recognize List as a collection", MemoryKey.MOBS.isCollection());
++        assertFalse("Failed to recognize " + MemoryKey.HURT_BY_ENTITY.getMemoryClass() + " as not a collection", MemoryKey.HURT_BY_ENTITY.isCollection());
++    }
++
++    @Test
++    public void testGetCollectionConverter() {
++        MemoryConverter<List, List> listConverter = (MemoryConverter<List, List>) MemoryConverter.BUKKIT_CONVERTER_MAP.get(List.class);
++        assertNotNull(listConverter);
++
++        // Throws error if none found
++        List<EntityLiving> nmsList = new ArrayList<>();
++        CraftMemoryMapper.fromNms(nmsList, MemoryKey.MOBS);
++    }
++
++    @Test
++    public void testAllPresent() {
++        for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
++            if (memoryModuleType == MemoryModuleType.WALK_TARGET) continue;
++            if (memoryModuleType == MemoryModuleType.LOOK_TARGET) continue;
++            if (memoryModuleType == MemoryModuleType.PATH) continue;
++            if (memoryModuleType == MemoryModuleType.HURT_BY) continue;
++            assertNotNull("Missing MemoryKey for " + memoryModuleType, CraftMemoryKey.toMemoryKey(memoryModuleType));
++        }
++    }
++
++    @Test
++    public void testKeysHaveNmsEquivalent() {
++        for (MemoryKey memoryKey : Registry.MEMORY_MODULE_TYPE) {
++            assertNotNull(memoryKey.getKey() + " does not match an nms memory key", CraftMemoryKey.fromMemoryKey(memoryKey));
++        }
++    }
++
++    @Test
++    public void checkIfConverterExistsForAllMemoryKeys() {
++        for (MemoryKey memoryKey : Registry.MEMORY_MODULE_TYPE) {
++            assertNotNull(memoryKey.getKey() + " is missing a converter for " + memoryKey.getMemoryClass(), MemoryConverter.BUKKIT_CONVERTER_MAP.get(memoryKey.getMemoryClass()));
++        }
++    }
++}
+diff --git a/src/test/java/org/bukkit/entity/memory/CraftMemoryKeyTest.java b/src/test/java/org/bukkit/entity/memory/CraftMemoryKeyTest.java
+index afbbaa60d29eaf1544d025b225226936c68392da..35d3e4a1a470618346bc6dc004d1266eea374431 100644
+--- a/src/test/java/org/bukkit/entity/memory/CraftMemoryKeyTest.java
++++ b/src/test/java/org/bukkit/entity/memory/CraftMemoryKeyTest.java
+@@ -46,30 +46,4 @@ public class CraftMemoryKeyTest extends AbstractTestingBase {
+         MemoryKey<Location> bukkitHomeKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.MEETING_POINT);
+         Assert.assertEquals("MemoryKey should be MEETING_POINT", MemoryKey.MEETING_POINT, bukkitHomeKey);
+     }
+-
+-    @Test
+-    public void shouldReturnNullWhenBukkitRepresentationOfKeyisNotAvailable() {
+-        MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(MemoryModuleType.MOBS);
+-        Assert.assertNull("MemoryModuleType should be null", bukkitNoKey);
+-    }
+-
+-    @Test
+-    public void shouldReturnNullWhenBukkitRepresentationOfKeyisNotAvailableAndSerializerIsNotPresent() {
+-        for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
+-            if (!memoryModuleType.getSerializer().isPresent()) {
+-                MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(memoryModuleType);
+-                Assert.assertNull("MemoryModuleType should be null", bukkitNoKey);
+-            }
+-        }
+-    }
+-
+-    @Test
+-    public void shouldReturnAnInstanceOfMemoryKeyWhenBukkitRepresentationOfKeyisAvailableAndSerializerIsPresent() {
+-        for (MemoryModuleType<?> memoryModuleType : IRegistry.MEMORY_MODULE_TYPE) {
+-            if (memoryModuleType.getSerializer().isPresent()) {
+-                MemoryKey bukkitNoKey = CraftMemoryKey.toMemoryKey(memoryModuleType);
+-                Assert.assertNotNull("MemoryModuleType should not be null " + IRegistry.MEMORY_MODULE_TYPE.getKey(memoryModuleType), bukkitNoKey);
+-            }
+-        }
+-    }
+ }
