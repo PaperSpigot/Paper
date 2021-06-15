@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheFruxz <cedricspitzer@outlook.de>
+Date: Tue, 15 Jun 2021 12:20:55 +0200
+Subject: [PATCH] Add custom destroyerIdentity (int) parameter to the
+ sendBlockBreak(foo:bar) function
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index a4b236d75e77176a163094edd31f81725bbf4eca..5686bfe17fc6c9bbf5ecf8f164c9ea4112a54e91 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -526,6 +526,20 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     public void sendBlockDamage(@NotNull Location loc, float progress);
+ 
++    // Paper start
++    /**
++     * Send block damage. This fakes block break progress for a user at a
++     * certain location. This will not actually change the block's break
++     * progress in any way.
++     *
++     * @param loc the location of the damaged block
++     * @param destroyerIdentity the entity-id of the destroyer, can be custom to display multiple block-damages
++     * @param progress the progress from 0.0 - 1.0 where 0 is no damage and
++     * 1.0 is the most damaged
++     */
++    public void sendBlockDamage(@NotNull Location loc, int destroyerIdentity, float progress);
++    // Paper end
++
+     /**
+      * Send a chunk change. This fakes a chunk change packet for a user at a
+      * certain location. The updated cuboid must be entirely within a single

@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheFruxz <cedricspitzer@outlook.de>
+Date: Tue, 15 Jun 2021 12:20:44 +0200
+Subject: [PATCH] Add custom destroyerIdentity (int) parameter to the
+ sendBlockBreak(foo:bar) function
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index cfe6898dc373fe55a08acf5c90e200061aa7d0fc..98d5945140912e75c5a915823ea5e9c37cf6db10 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -137,6 +137,7 @@ import org.bukkit.plugin.messaging.StandardMessenger;
+ import org.bukkit.scoreboard.Scoreboard;
+ 
+ import net.md_5.bungee.api.chat.BaseComponent; // Spigot
++import org.jetbrains.annotations.NotNull;
+ 
+ @DelegateDeserialization(CraftOfflinePlayer.class)
+ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -745,6 +746,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     }
+ 
+     // Paper start
++    @Override
++    public void sendBlockDamage(@NotNull Location loc, int destroyerIdentity, float progress) {
++        Preconditions.checkArgument(loc != null, "loc must not be null");
++        Preconditions.checkArgument(progress >= 0.0 && progress <= 1.0, "progress must be between 0.0 and 1.0 (inclusive)");
++
++        if (getHandle().playerConnection == null) return;
++
++        int stage = (int) (9 * progress); // There are 0 - 9 damage states
++        PacketPlayOutBlockBreakAnimation packet = new PacketPlayOutBlockBreakAnimation(destroyerIdentity, new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), stage);
++        getHandle().playerConnection.sendPacket(packet);
++    }
++
+     @Override
+     public void sendSignChange(Location loc, List<net.kyori.adventure.text.Component> lines) {
+         this.sendSignChange(loc, lines, org.bukkit.DyeColor.BLACK);
