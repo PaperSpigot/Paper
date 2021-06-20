@@ -5,14 +5,14 @@ Subject: [PATCH] Add more Witch API
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index e26ce4d8b3a3af8d6347f8c8c36703aeb06da520..8c3e8c12d7405ad388342e304430834a5fad12a9 100644
+index 6570427b01118e55f6fed5de24c91add836e73f8..5d4756402bc631bc29e6ce10d6908a2c9fc95ec6 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
 @@ -1,5 +1,8 @@
  package net.minecraft.world.entity.monster;
  
 +// Paper start
-+import com.destroystokyo.paper.event.entity.WitchReadyPotionEvent;
++import io.papermc.paper.event.entity.WitchReadyPotionEvent;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
  import java.util.Iterator;
  import java.util.List;
@@ -23,11 +23,11 @@ index e26ce4d8b3a3af8d6347f8c8c36703aeb06da520..8c3e8c12d7405ad388342e304430834a
                  if (potionregistry != null) {
 -                    // Paper start
                      ItemStack potion = PotionUtils.setPotion(new ItemStack(Items.POTION), potionregistry);
--                    org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
+-                    org.bukkit.inventory.ItemStack bukkitStack = io.papermc.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
 -                    this.setItemSlot(EquipmentSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
 +                    // Paper start - logic moved into setDrinkingPotion, copy exact impl into the method and then comment out
 +                    this.setDrinkingPotion(potion);
-+//                    org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
++//                    org.bukkit.inventory.ItemStack bukkitStack = io.papermc.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
 +//                    this.setSlot(EnumItemSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
 +//                    // Paper end
 +//                    this.bq = this.getItemInMainHand().k();
@@ -60,7 +60,7 @@ index e26ce4d8b3a3af8d6347f8c8c36703aeb06da520..8c3e8c12d7405ad388342e304430834a
  
 +    // Paper start - moved to its own method
 +    public void setDrinkingPotion(ItemStack potion) {
-+        org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
++        org.bukkit.inventory.ItemStack bukkitStack = io.papermc.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
 +        this.setItemSlot(EquipmentSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
 +        // Paper end
 +        this.usingTime = this.getMainHandItem().getUseDuration();
@@ -80,7 +80,7 @@ index e26ce4d8b3a3af8d6347f8c8c36703aeb06da520..8c3e8c12d7405ad388342e304430834a
      public SoundEvent getCelebrateSound() {
          return SoundEvents.WITCH_CELEBRATE;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-index d4eeb071dbbfca3ecea256228853bcb5c11f49ee..8625d8d7ac94dca2acc348a4c3c912d39cd22b47 100644
+index 43d3f479320857fb4a8f0c0cdd794617e0c33e68..f71bbe84d4b54d463f802f926b9cc63e4b27a717 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 @@ -3,6 +3,13 @@ package org.bukkit.craftbukkit.entity;
@@ -88,16 +88,16 @@ index d4eeb071dbbfca3ecea256228853bcb5c11f49ee..8625d8d7ac94dca2acc348a4c3c912d3
  import org.bukkit.entity.EntityType;
  import org.bukkit.entity.Witch;
 +// Paper start
-+import com.destroystokyo.paper.entity.CraftRangedEntity;
++import io.papermc.paper.entity.CraftRangedEntity;
 +import com.google.common.base.Preconditions;
 +import org.bukkit.Material;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.inventory.ItemStack;
 +// Paper end
  
- public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Witch> { // Paper
+ public class CraftWitch extends CraftRaider implements Witch, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Witch> { // Paper
      public CraftWitch(CraftServer server, net.minecraft.world.entity.monster.Witch entity) {
-@@ -23,4 +30,28 @@ public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.
+@@ -23,4 +30,28 @@ public class CraftWitch extends CraftRaider implements Witch, io.papermc.paper.e
      public EntityType getType() {
          return EntityType.WITCH;
      }

@@ -8,10 +8,10 @@ through the encode/decode methods of the packet that causes the precision
 loss, which forces the server to lose the same precision as the client
 keeping them in sync.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 652d87fc5d566dba8018c81676329f0e0bca471b..c56e7fb18f9a56c8025eb70a524f028b5942da37 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 5659dc72274ff6cf49d1252e577b836b1254b014..d445c50efdf70c60a735b41f3d15c2dc96f367b3 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -474,4 +474,9 @@ public class PaperConfig {
      private static void trackPluginScoreboards() {
          trackPluginScoreboards = getBoolean("settings.track-plugin-scoreboards", false);
@@ -41,7 +41,7 @@ index b30c08bfb8c55161543a4ef09f2e462e0a1fe4ae..ec93f5300cc7d423ec0d292f0f8443f9
  
      public Vec3 updateEntityPosition(Vec3 orig) {
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 408d0f51353c745cbdc5c314dd25fa0c8a13441c..879cadfd1fe96059e621c625adef1673a41ac5dc 100644
+index a4c03576068652dc194b009dc4fa46c2ee40ea5f..843d6debfdca0f383730392134dc450dd6e4cbb2 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -3749,6 +3749,16 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
@@ -50,7 +50,7 @@ index 408d0f51353c745cbdc5c314dd25fa0c8a13441c..879cadfd1fe96059e621c625adef1673
      public final void setPosRaw(double x, double y, double z) {
 +        // Paper start - fix MC-4
 +        if (this instanceof ItemEntity) {
-+            if (com.destroystokyo.paper.PaperConfig.fixEntityPositionDesync) {
++            if (io.papermc.paper.PaperConfig.fixEntityPositionDesync) {
 +                // encode/decode from PacketPlayOutEntity
 +                x = Mth.lfloor(x * 4096.0D) * (1 / 4096.0D);
 +                y = Mth.lfloor(y * 4096.0D) * (1 / 4096.0D);

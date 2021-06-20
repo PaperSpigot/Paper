@@ -6,13 +6,13 @@ Subject: [PATCH] RangedEntity API
 Allows you to determine if an entity is capable of ranged attacks,
 and to perform an attack.
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/RangedEntity.java b/src/main/java/com/destroystokyo/paper/entity/RangedEntity.java
+diff --git a/src/main/java/io/papermc/paper/entity/RangedEntity.java b/src/main/java/io/papermc/paper/entity/RangedEntity.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f2e3233a3d1744e32fb76d3731b9858ef0067e30
+index 0000000000000000000000000000000000000000..77c1ab56d2c40f8d68efb737900fe171a70099e9
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/RangedEntity.java
++++ b/src/main/java/io/papermc/paper/entity/RangedEntity.java
 @@ -0,0 +1,31 @@
-+package com.destroystokyo.paper.entity;
++package io.papermc.paper.entity;
 +
 +import org.bukkit.entity.LivingEntity;
 +import org.bukkit.entity.Mob;
@@ -44,13 +44,13 @@ index 0000000000000000000000000000000000000000..f2e3233a3d1744e32fb76d3731b9858e
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/entity/Drowned.java b/src/main/java/org/bukkit/entity/Drowned.java
-index 1dee177ae6e21da000607dc8dd8fd76857f323b9..8d1ad9ef757cb1e8d72b145262df73612a76c746 100644
+index 1dee177ae6e21da000607dc8dd8fd76857f323b9..9effdbfb01fe84494138aec817a136238ccc94f1 100644
 --- a/src/main/java/org/bukkit/entity/Drowned.java
 +++ b/src/main/java/org/bukkit/entity/Drowned.java
 @@ -1,6 +1,8 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
  /**
   * Drowned zombie.
@@ -58,13 +58,13 @@ index 1dee177ae6e21da000607dc8dd8fd76857f323b9..8d1ad9ef757cb1e8d72b145262df7361
 -public interface Drowned extends Zombie { }
 +public interface Drowned extends Zombie, RangedEntity { } // Paper
 diff --git a/src/main/java/org/bukkit/entity/Illusioner.java b/src/main/java/org/bukkit/entity/Illusioner.java
-index 7c92c431b32754dca12b4d584bd6fa93ff73badf..14e6c5ee06ece3d1bbc1239afa67c847a479948f 100644
+index 7c92c431b32754dca12b4d584bd6fa93ff73badf..0c27ce2e2c79ce46bf28ff6188a365854ebdfc78 100644
 --- a/src/main/java/org/bukkit/entity/Illusioner.java
 +++ b/src/main/java/org/bukkit/entity/Illusioner.java
 @@ -1,6 +1,10 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
  /**
   * Represents an Illusioner "Illager".
@@ -74,13 +74,13 @@ index 7c92c431b32754dca12b4d584bd6fa93ff73badf..14e6c5ee06ece3d1bbc1239afa67c847
 +
 +}
 diff --git a/src/main/java/org/bukkit/entity/Llama.java b/src/main/java/org/bukkit/entity/Llama.java
-index c43854298548391679c1d280bd42edbeed7759b9..d23226ccb0f6c25028f000ce31346cd0a8898e6a 100644
+index c43854298548391679c1d280bd42edbeed7759b9..2b6430373b02a5170d11d23141861e5741811974 100644
 --- a/src/main/java/org/bukkit/entity/Llama.java
 +++ b/src/main/java/org/bukkit/entity/Llama.java
 @@ -1,12 +1,13 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
  import org.bukkit.inventory.LlamaInventory;
  import org.jetbrains.annotations.NotNull;
  
@@ -93,7 +93,7 @@ index c43854298548391679c1d280bd42edbeed7759b9..d23226ccb0f6c25028f000ce31346cd0
      /**
       * Represents the base color that the llama has.
 diff --git a/src/main/java/org/bukkit/entity/Piglin.java b/src/main/java/org/bukkit/entity/Piglin.java
-index b96e57552245e2c6d452755d4227c572266fcec7..6fdc0e0bb62189dbf3cf9ce7a87b7fbb995956a3 100644
+index b96e57552245e2c6d452755d4227c572266fcec7..d6e25ce72140d25ce56605ecec310e3a0444636b 100644
 --- a/src/main/java/org/bukkit/entity/Piglin.java
 +++ b/src/main/java/org/bukkit/entity/Piglin.java
 @@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
@@ -101,18 +101,18 @@ index b96e57552245e2c6d452755d4227c572266fcec7..6fdc0e0bb62189dbf3cf9ce7a87b7fbb
   * Represents a Piglin.
   */
 -public interface Piglin extends PiglinAbstract, InventoryHolder {
-+public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystokyo.paper.entity.RangedEntity { // Paper
++public interface Piglin extends PiglinAbstract, InventoryHolder, io.papermc.paper.entity.RangedEntity { // Paper
  
      /**
       * Get whether the piglin is able to hunt hoglins.
 diff --git a/src/main/java/org/bukkit/entity/Pillager.java b/src/main/java/org/bukkit/entity/Pillager.java
-index 9a2252fef56be1ed3ae2169aea46cb567e965c6c..11f38187fca830d974be01fea2966a31936184cb 100644
+index 9a2252fef56be1ed3ae2169aea46cb567e965c6c..caf4a317c2d0f1565a9aa9218599e3873d246ad5 100644
 --- a/src/main/java/org/bukkit/entity/Pillager.java
 +++ b/src/main/java/org/bukkit/entity/Pillager.java
 @@ -1,8 +1,10 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity; // Paper
++import io.papermc.paper.entity.RangedEntity; // Paper
 +
  import org.bukkit.inventory.InventoryHolder;
  
@@ -122,7 +122,7 @@ index 9a2252fef56be1ed3ae2169aea46cb567e965c6c..11f38187fca830d974be01fea2966a31
 -public interface Pillager extends Illager, InventoryHolder { }
 +public interface Pillager extends Illager, InventoryHolder, RangedEntity { } // Paper
 diff --git a/src/main/java/org/bukkit/entity/Skeleton.java b/src/main/java/org/bukkit/entity/Skeleton.java
-index 01d838a60d056bf4b4a8ef9d0ac18c6f91f412e6..b7e424ea8a282f45fb8b91c919e4e4526c00be8b 100644
+index 01d838a60d056bf4b4a8ef9d0ac18c6f91f412e6..b94f5b88f73a5158731b3ac394dd79abe16fd3af 100644
 --- a/src/main/java/org/bukkit/entity/Skeleton.java
 +++ b/src/main/java/org/bukkit/entity/Skeleton.java
 @@ -7,7 +7,7 @@ package org.bukkit.entity;
@@ -130,18 +130,18 @@ index 01d838a60d056bf4b4a8ef9d0ac18c6f91f412e6..b7e424ea8a282f45fb8b91c919e4e452
   * {@link Stray} are not related to this type.
   */
 -public interface Skeleton extends AbstractSkeleton {
-+public interface Skeleton extends AbstractSkeleton, com.destroystokyo.paper.entity.RangedEntity { // Paper
++public interface Skeleton extends AbstractSkeleton, io.papermc.paper.entity.RangedEntity { // Paper
  
      /**
       * Computes whether or not this skeleton is currently in the process of
 diff --git a/src/main/java/org/bukkit/entity/Snowman.java b/src/main/java/org/bukkit/entity/Snowman.java
-index 818efe2a4d1ac0c4d8dca6c757850d99cdc2cb4b..10f8f6d45ae9280651c3ebddd1f90acbd7d6ff29 100644
+index 818efe2a4d1ac0c4d8dca6c757850d99cdc2cb4b..f7a74d77526f08aa349c6c393e4caf7d0efaab0d 100644
 --- a/src/main/java/org/bukkit/entity/Snowman.java
 +++ b/src/main/java/org/bukkit/entity/Snowman.java
 @@ -1,9 +1,11 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
  /**
   * Represents a snowman entity
@@ -152,13 +152,13 @@ index 818efe2a4d1ac0c4d8dca6c757850d99cdc2cb4b..10f8f6d45ae9280651c3ebddd1f90acb
      /**
       * Gets whether this snowman is in "derp mode", meaning it is not wearing a
 diff --git a/src/main/java/org/bukkit/entity/Witch.java b/src/main/java/org/bukkit/entity/Witch.java
-index b4343903b66a7fb5250c1da2e09c9e5863c20daf..aa88aede6c4e66a608a63d07bc66d60357b0bee9 100644
+index b4343903b66a7fb5250c1da2e09c9e5863c20daf..8946b53f12efe1a063b703b8dd399170e63f332e 100644
 --- a/src/main/java/org/bukkit/entity/Witch.java
 +++ b/src/main/java/org/bukkit/entity/Witch.java
 @@ -1,7 +1,9 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
  /**
   * Represents a Witch
@@ -167,13 +167,13 @@ index b4343903b66a7fb5250c1da2e09c9e5863c20daf..aa88aede6c4e66a608a63d07bc66d603
 +public interface Witch extends Raider, RangedEntity { // Paper
  }
 diff --git a/src/main/java/org/bukkit/entity/Wither.java b/src/main/java/org/bukkit/entity/Wither.java
-index 3bc332ee7f7d428bef6e2566ddded8b941858e2e..426d3693317cd303d35d8203026b528d87e401d5 100644
+index 3bc332ee7f7d428bef6e2566ddded8b941858e2e..5635a9082f52d63a914d15bc142e71eb00d0a371 100644
 --- a/src/main/java/org/bukkit/entity/Wither.java
 +++ b/src/main/java/org/bukkit/entity/Wither.java
 @@ -1,7 +1,9 @@
  package org.bukkit.entity;
  
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
  /**
   * Represents a Wither boss

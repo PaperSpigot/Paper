@@ -5,10 +5,10 @@ Subject: [PATCH] Clear SyncLoadInfo
 
 This patch merely adds the extra argument "clear" after /paper syncloadinfo to clear currently stored syncload info.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index 847ff34a56b7477996901662c25f50b79262f4e1..ba8395435482fc4d6e02fc86794cdb0d35d4399c 100644
---- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
+diff --git a/src/main/java/io/papermc/paper/PaperCommand.java b/src/main/java/io/papermc/paper/PaperCommand.java
+index c09ef9a5de5465c15d5f352f4d2e90e699803d59..426237d168f00dd3426f8a4215dca89fba88aeb1 100644
+--- a/src/main/java/io/papermc/paper/PaperCommand.java
++++ b/src/main/java/io/papermc/paper/PaperCommand.java
 @@ -205,6 +205,13 @@ public class PaperCommand extends Command {
              sender.sendMessage(ChatColor.RED + "This command requires the server startup flag '-Dpaper.debug-sync-loads=true' to be set.");
              return;
@@ -23,10 +23,10 @@ index 847ff34a56b7477996901662c25f50b79262f4e1..ba8395435482fc4d6e02fc86794cdb0d
          File file = new File(new File(new File("."), "debug"),
              "sync-load-info" + DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss").format(LocalDateTime.now()) + ".txt");
          file.getParentFile().mkdirs();
-diff --git a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
-index 524f33371b9de1d4dd6972fe59ffbe1804d7c5f3..0bb4aaa546939b67a5d22865190f30478a9337c1 100644
---- a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
-+++ b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
+diff --git a/src/main/java/io/papermc/paper/io/SyncLoadFinder.java b/src/main/java/io/papermc/paper/io/SyncLoadFinder.java
+index 19255426a09839fb439dc795515d411c08e92692..9b3864d8dd21d7025dcfcf591c1ab228c0aa4898 100644
+--- a/src/main/java/io/papermc/paper/io/SyncLoadFinder.java
++++ b/src/main/java/io/papermc/paper/io/SyncLoadFinder.java
 @@ -26,6 +26,10 @@ public class SyncLoadFinder {
          public final Long2IntOpenHashMap coordinateTimes = new Long2IntOpenHashMap();
      }

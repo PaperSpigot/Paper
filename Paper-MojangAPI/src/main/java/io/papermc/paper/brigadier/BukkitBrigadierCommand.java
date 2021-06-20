@@ -1,4 +1,4 @@
-package com.destroystokyo.paper.brigadier;
+package io.papermc.paper.brigadier;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.suggestion.SuggestionProvider;

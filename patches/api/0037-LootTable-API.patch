@@ -10,13 +10,13 @@ auto replenish for a player.
 
 Provides methods to determine players looted state for an object
 
-diff --git a/src/main/java/com/destroystokyo/paper/loottable/LootableBlockInventory.java b/src/main/java/com/destroystokyo/paper/loottable/LootableBlockInventory.java
+diff --git a/src/main/java/io/papermc/paper/loottable/LootableBlockInventory.java b/src/main/java/io/papermc/paper/loottable/LootableBlockInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..92d7b853a2ccaae5afa8ac141bead840942944ef
+index 0000000000000000000000000000000000000000..dc91e9643bc8f41a909f6093151f5e1d3293655c
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/loottable/LootableBlockInventory.java
++++ b/src/main/java/io/papermc/paper/loottable/LootableBlockInventory.java
 @@ -0,0 +1,17 @@
-+package com.destroystokyo.paper.loottable;
++package io.papermc.paper.loottable;
 +
 +import org.bukkit.block.Block;
 +import org.jetbrains.annotations.NotNull;
@@ -33,13 +33,13 @@ index 0000000000000000000000000000000000000000..92d7b853a2ccaae5afa8ac141bead840
 +    @NotNull
 +    Block getBlock();
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/loottable/LootableEntityInventory.java b/src/main/java/com/destroystokyo/paper/loottable/LootableEntityInventory.java
+diff --git a/src/main/java/io/papermc/paper/loottable/LootableEntityInventory.java b/src/main/java/io/papermc/paper/loottable/LootableEntityInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b387894fe8001edb41ad2ad2b70ebabe065b682e
+index 0000000000000000000000000000000000000000..5424f2067aa9ddda011a2a7a29635233bfe94f04
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/loottable/LootableEntityInventory.java
++++ b/src/main/java/io/papermc/paper/loottable/LootableEntityInventory.java
 @@ -0,0 +1,17 @@
-+package com.destroystokyo.paper.loottable;
++package io.papermc.paper.loottable;
 +
 +import org.bukkit.entity.Entity;
 +import org.jetbrains.annotations.NotNull;
@@ -56,13 +56,13 @@ index 0000000000000000000000000000000000000000..b387894fe8001edb41ad2ad2b70ebabe
 +    @NotNull
 +    Entity getEntity();
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/loottable/LootableInventory.java b/src/main/java/com/destroystokyo/paper/loottable/LootableInventory.java
+diff --git a/src/main/java/io/papermc/paper/loottable/LootableInventory.java b/src/main/java/io/papermc/paper/loottable/LootableInventory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..97815eeb231cf0706b34fa47a4f7d1bb786305b4
+index 0000000000000000000000000000000000000000..26567d36784d5ba69bc50d6fa5db57d6ad410553
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/loottable/LootableInventory.java
++++ b/src/main/java/io/papermc/paper/loottable/LootableInventory.java
 @@ -0,0 +1,116 @@
-+package com.destroystokyo.paper.loottable;
++package io.papermc.paper.loottable;
 +
 +import org.bukkit.entity.Player;
 +import org.bukkit.loot.Lootable;
@@ -178,13 +178,13 @@ index 0000000000000000000000000000000000000000..97815eeb231cf0706b34fa47a4f7d1bb
 +     */
 +    long setNextRefill(long refillAt);
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/loottable/LootableInventoryReplenishEvent.java b/src/main/java/com/destroystokyo/paper/loottable/LootableInventoryReplenishEvent.java
+diff --git a/src/main/java/io/papermc/paper/loottable/LootableInventoryReplenishEvent.java b/src/main/java/io/papermc/paper/loottable/LootableInventoryReplenishEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..fd184f13f5e8ee5cf829fff4f44696e1f760430b
+index 0000000000000000000000000000000000000000..e3537846e6993d339cd81cdc6e0d0c16cdf6b075
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/loottable/LootableInventoryReplenishEvent.java
++++ b/src/main/java/io/papermc/paper/loottable/LootableInventoryReplenishEvent.java
 @@ -0,0 +1,45 @@
-+package com.destroystokyo.paper.loottable;
++package io.papermc.paper.loottable;
 +
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.Cancellable;
@@ -230,13 +230,13 @@ index 0000000000000000000000000000000000000000..fd184f13f5e8ee5cf829fff4f44696e1
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/block/Chest.java b/src/main/java/org/bukkit/block/Chest.java
-index b451191312e4fb19f2131c2d0a0c0337953f6c7c..db6affbc78106b2d93b41953b624a0bca0ca1d72 100644
+index b451191312e4fb19f2131c2d0a0c0337953f6c7c..abdcf6a40538aefd44ee0387ca2d3af7023e4257 100644
 --- a/src/main/java/org/bukkit/block/Chest.java
 +++ b/src/main/java/org/bukkit/block/Chest.java
 @@ -1,5 +1,7 @@
  package org.bukkit.block;
  
-+import com.destroystokyo.paper.loottable.LootableBlockInventory; // Paper
++import io.papermc.paper.loottable.LootableBlockInventory; // Paper
 +import org.bukkit.Nameable; // Paper
  import org.bukkit.inventory.Inventory;
  import org.bukkit.loot.Lootable;
@@ -251,13 +251,13 @@ index b451191312e4fb19f2131c2d0a0c0337953f6c7c..db6affbc78106b2d93b41953b624a0bc
      /**
       * Gets the inventory of the chest block represented by this block state.
 diff --git a/src/main/java/org/bukkit/block/Dispenser.java b/src/main/java/org/bukkit/block/Dispenser.java
-index 74cd194c9a98245dc52e7e352d7d6c046e1e5cf3..07af1a3f011d4b96275f919d302ac367198e923e 100644
+index 74cd194c9a98245dc52e7e352d7d6c046e1e5cf3..7a4b32f1af8622defa1be7aa5d1ed5c84b84e83e 100644
 --- a/src/main/java/org/bukkit/block/Dispenser.java
 +++ b/src/main/java/org/bukkit/block/Dispenser.java
 @@ -1,5 +1,6 @@
  package org.bukkit.block;
  
-+import com.destroystokyo.paper.loottable.LootableBlockInventory;
++import io.papermc.paper.loottable.LootableBlockInventory;
  import org.bukkit.Nameable;
  import org.bukkit.loot.Lootable;
  import org.bukkit.projectiles.BlockProjectileSource;
@@ -271,13 +271,13 @@ index 74cd194c9a98245dc52e7e352d7d6c046e1e5cf3..07af1a3f011d4b96275f919d302ac367
      /**
       * Gets the BlockProjectileSource object for the dispenser.
 diff --git a/src/main/java/org/bukkit/block/Dropper.java b/src/main/java/org/bukkit/block/Dropper.java
-index 424392fb5ed4628199b0e73689522aa3c90740cb..c76202321e29ad67597ca3017eb8d9baf6787383 100644
+index 424392fb5ed4628199b0e73689522aa3c90740cb..cb01aeba44f5ae324ab0b5bc3bf7cbf722d9a47d 100644
 --- a/src/main/java/org/bukkit/block/Dropper.java
 +++ b/src/main/java/org/bukkit/block/Dropper.java
 @@ -1,11 +1,12 @@
  package org.bukkit.block;
  
-+import com.destroystokyo.paper.loottable.LootableBlockInventory;
++import io.papermc.paper.loottable.LootableBlockInventory;
  import org.bukkit.loot.Lootable;
  
  /**
@@ -289,13 +289,13 @@ index 424392fb5ed4628199b0e73689522aa3c90740cb..c76202321e29ad67597ca3017eb8d9ba
      /**
       * Tries to drop a randomly selected item from the dropper's inventory,
 diff --git a/src/main/java/org/bukkit/block/Hopper.java b/src/main/java/org/bukkit/block/Hopper.java
-index 58e493099810fb8d4705ecd49b4a5e1e1949b87b..7ade312f180b7e30871d3a3240c76325cc369c26 100644
+index 58e493099810fb8d4705ecd49b4a5e1e1949b87b..eb62ca2e3b421585e2a964227124187eaeb4c76c 100644
 --- a/src/main/java/org/bukkit/block/Hopper.java
 +++ b/src/main/java/org/bukkit/block/Hopper.java
 @@ -1,8 +1,9 @@
  package org.bukkit.block;
  
-+import com.destroystokyo.paper.loottable.LootableBlockInventory;
++import io.papermc.paper.loottable.LootableBlockInventory;
  import org.bukkit.loot.Lootable;
  
  /**
@@ -304,13 +304,13 @@ index 58e493099810fb8d4705ecd49b4a5e1e1949b87b..7ade312f180b7e30871d3a3240c76325
 -public interface Hopper extends Container, Lootable { }
 +public interface Hopper extends Container, LootableBlockInventory { } // Paper
 diff --git a/src/main/java/org/bukkit/block/ShulkerBox.java b/src/main/java/org/bukkit/block/ShulkerBox.java
-index 387b2892886e1ccb2bd928e5111fb9bd41d777ab..5dc5318b0a451937228a8a059dfec1cd9de389a6 100644
+index 387b2892886e1ccb2bd928e5111fb9bd41d777ab..4df781bda60b168ffce719da195b2153f381a040 100644
 --- a/src/main/java/org/bukkit/block/ShulkerBox.java
 +++ b/src/main/java/org/bukkit/block/ShulkerBox.java
 @@ -1,5 +1,6 @@
  package org.bukkit.block;
  
-+import com.destroystokyo.paper.loottable.LootableBlockInventory;
++import io.papermc.paper.loottable.LootableBlockInventory;
  import org.bukkit.DyeColor;
  import org.bukkit.loot.Lootable;
  import org.jetbrains.annotations.Nullable;
@@ -324,13 +324,13 @@ index 387b2892886e1ccb2bd928e5111fb9bd41d777ab..5dc5318b0a451937228a8a059dfec1cd
      /**
       * Get the {@link DyeColor} corresponding to this ShulkerBox
 diff --git a/src/main/java/org/bukkit/entity/minecart/HopperMinecart.java b/src/main/java/org/bukkit/entity/minecart/HopperMinecart.java
-index 937b99f8734d71b2ad33af142afbc251b81d9745..db69687a7ad4b18d17ab1677cae5d8dd4dcd3678 100644
+index 937b99f8734d71b2ad33af142afbc251b81d9745..222859dc3058dee0bde9b0bd01ff83a0439d6ff2 100644
 --- a/src/main/java/org/bukkit/entity/minecart/HopperMinecart.java
 +++ b/src/main/java/org/bukkit/entity/minecart/HopperMinecart.java
 @@ -1,5 +1,6 @@
  package org.bukkit.entity.minecart;
  
-+import com.destroystokyo.paper.loottable.LootableEntityInventory;
++import io.papermc.paper.loottable.LootableEntityInventory;
  import org.bukkit.entity.Minecart;
  import org.bukkit.inventory.InventoryHolder;
  import org.bukkit.loot.Lootable;
@@ -344,13 +344,13 @@ index 937b99f8734d71b2ad33af142afbc251b81d9745..db69687a7ad4b18d17ab1677cae5d8dd
      /**
       * Checks whether or not this Minecart will pick up
 diff --git a/src/main/java/org/bukkit/entity/minecart/StorageMinecart.java b/src/main/java/org/bukkit/entity/minecart/StorageMinecart.java
-index 9ea403e6fd8e960d017660e0aec118abeda2c42b..238d118f7788b13cd86b7e9ea3a0fc38e2e09715 100644
+index 9ea403e6fd8e960d017660e0aec118abeda2c42b..be17ec56db7c45b40a909f9e8dd000a7ea6dad5a 100644
 --- a/src/main/java/org/bukkit/entity/minecart/StorageMinecart.java
 +++ b/src/main/java/org/bukkit/entity/minecart/StorageMinecart.java
 @@ -1,5 +1,6 @@
  package org.bukkit.entity.minecart;
  
-+import com.destroystokyo.paper.loottable.LootableEntityInventory;
++import io.papermc.paper.loottable.LootableEntityInventory;
  import org.bukkit.entity.Minecart;
  import org.bukkit.inventory.InventoryHolder;
  import org.bukkit.loot.Lootable;

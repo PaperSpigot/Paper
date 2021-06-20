@@ -6,10 +6,10 @@ Subject: [PATCH] Adventure
 Co-authored-by: zml <zml@stellardrift.ca>
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 1d03a79e9010bc514b72a81ba0ad4a62aeff1bb7..429b74474ced04d8dd8f038b8590b8dfe178bf4d 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 58dfdc58e811155001c4b0d23c4dbc29e06e1b4c..0ab6d1fdcb71713b1f6e3ef728c808935860ec82 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -217,4 +217,9 @@ public class PaperConfig {
                  " - Length: " + timeSummary(Timings.getHistoryLength() / 20) +
                  " - Server Name: " + timingsServerName);
@@ -1191,7 +1191,7 @@ index 762a9392ffac3042356709dddd15bb3516048bed..3544e2dc2522e9d6305d727d56e73490
          buf.writeComponent(this.footer);
      }
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 2b0d989119c9f69a68a6c1c69fb09dbbedd16716..172536147305f283bd14d356ff4f39531e8f3ad9 100644
+index d79571f6682609dc2c5d34cf3a78a5f93e7df850..72a348acafaf21bd730c58bbf6b9cba0b0c5b7aa 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -145,6 +145,7 @@ import net.minecraft.world.scores.Score;
@@ -1438,7 +1438,7 @@ index b632280e057ae6893bf5ebcde75cefac3ee62a09..9baa56d6da9c24706f1dbc8851fd68ca
  
                  @Override
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 34e386efda7ea52fb6f53333eda0f015b0666ff3..446dd8c15d4ccdced316deeaba379cb6937496ca 100644
+index 34e386efda7ea52fb6f53333eda0f015b0666ff3..bf9340e64149b4ee401afa971999eeed6985261d 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
@@ -1505,7 +1505,7 @@ index 34e386efda7ea52fb6f53333eda0f015b0666ff3..446dd8c15d4ccdced316deeaba379cb6
          }
  
 -        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getScoreboardName() + " left the game");
-+        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, com.destroystokyo.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getScoreboardName())));
++        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getScoreboardName())));
          this.cserver.getPluginManager().callEvent(playerQuitEvent);
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
  
@@ -1602,7 +1602,7 @@ index 7a0e7961df1e62b311ea2ecc76d7343a8646723b..6859fafa42527d45366018f737c19e6c
                  }
                  collection = icons;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index bcd056ac91775c72809284bbc20c366e1ca31350..e2564dee0603735d135d1de2af6801a0f2a93e7d 100644
+index 7e83e1ac6f6eef0a2d5e18a384e7c619b059f6d4..e343acdfc8e134ec98987b726d4f9618bda1216b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -564,8 +564,10 @@ public final class CraftServer implements Server {
@@ -3123,7 +3123,7 @@ index f9b7b8f7ccc95b73967a51420fd6ce88d80d75fe..0de5a46423ae0403dcbfca630dfd7c5a
  
          boolean hadFormat = false;
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 0f0ffedd2cc3cf1b30b338d8ae3a8ad388dfde53..409515c406f5b5cfac9872f925dbc67159a5d41f 100644
+index a5d6bbaf42ca2724e9883ad827bacb5923a5ed39..fc954752d77e854bf735ca31077a03248cb07809 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -57,6 +57,33 @@ public final class CraftMagicNumbers implements UnsafeValues {

@@ -4,13 +4,13 @@ Date: Mon, 27 May 2019 01:10:06 -0500
 Subject: [PATCH] Version Command 2.0
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java b/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java
+diff --git a/src/main/java/io/papermc/paper/util/VersionFetcher.java b/src/main/java/io/papermc/paper/util/VersionFetcher.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a736d7bcdc5861a01b66ba36158db1c716339346
+index 0000000000000000000000000000000000000000..c5a3b1bb73abe3d4218d5d26cbf1b4b84efd61ef
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/VersionFetcher.java
++++ b/src/main/java/io/papermc/paper/util/VersionFetcher.java
 @@ -0,0 +1,45 @@
-+package com.destroystokyo.paper.util;
++package io.papermc.paper.util;
 +
 +import net.kyori.adventure.text.Component;
 +import net.kyori.adventure.text.format.NamedTextColor;
@@ -56,7 +56,7 @@ index 0000000000000000000000000000000000000000..a736d7bcdc5861a01b66ba36158db1c7
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
-index 207c656c0a11a3a630bc70491efcf433b2681e18..195b6bb328de92c4d17d1cd14e13578226b1ac3c 100644
+index 207c656c0a11a3a630bc70491efcf433b2681e18..bdd85b38c73c2fd3832144b07197c3d19b3c5512 100644
 --- a/src/main/java/org/bukkit/UnsafeValues.java
 +++ b/src/main/java/org/bukkit/UnsafeValues.java
 @@ -84,5 +84,12 @@ public interface UnsafeValues {
@@ -67,19 +67,19 @@ index 207c656c0a11a3a630bc70491efcf433b2681e18..195b6bb328de92c4d17d1cd14e135782
 +    /**
 +     * Called once by the version command on first use, then cached.
 +     */
-+    default com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
-+        return new com.destroystokyo.paper.util.VersionFetcher.DummyVersionFetcher();
++    default io.papermc.paper.util.VersionFetcher getVersionFetcher() {
++        return new io.papermc.paper.util.VersionFetcher.DummyVersionFetcher();
 +    }
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index 2305eb40832a82159cd89162934870cf57e1aa0e..4c2ddc722a9dc4011906ad9530b13fa9be1d3ff9 100644
+index 2305eb40832a82159cd89162934870cf57e1aa0e..4533816f036328f37d82c0dab1ba9bef7cd45dd5 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 @@ -1,5 +1,6 @@
  package org.bukkit.command.defaults;
  
-+import com.destroystokyo.paper.util.VersionFetcher; // Paper - version supplier
++import io.papermc.paper.util.VersionFetcher; // Paper - version supplier
  import com.google.common.base.Charsets;
  import com.google.common.collect.ImmutableList;
  import com.google.common.io.Resources;

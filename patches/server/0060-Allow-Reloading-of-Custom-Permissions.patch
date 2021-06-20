@@ -6,7 +6,7 @@ Subject: [PATCH] Allow Reloading of Custom Permissions
 https://github.com/PaperMC/Paper/issues/49
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index a9ca1e44eca6691e41c6b443f8953e77dbde62b2..610af41f33a41bd0465eace2c3e2b6ed8eeceac7 100644
+index f63a196bc465b9847114231d7bc1df8d80fc5de7..6f77a2a18d4aa8642a7df89eb8597a983fdb75e6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2255,5 +2255,23 @@ public final class CraftServer implements Server {
@@ -17,7 +17,7 @@ index a9ca1e44eca6691e41c6b443f8953e77dbde62b2..610af41f33a41bd0465eace2c3e2b6ed
 +    @Override
 +    public void reloadPermissions() {
 +        pluginManager.clearPermissions();
-+        if (com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
++        if (io.papermc.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
 +        for (Plugin plugin : pluginManager.getPlugins()) {
 +            for (Permission perm : plugin.getDescription().getPermissions()) {
 +                try {
@@ -27,7 +27,7 @@ index a9ca1e44eca6691e41c6b443f8953e77dbde62b2..610af41f33a41bd0465eace2c3e2b6ed
 +                }
 +            }
 +        }
-+        if (!com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
++        if (!io.papermc.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
 +        DefaultPermissions.registerCorePermissions();
 +        CraftDefaultPermissions.registerCorePermissions();
 +    }

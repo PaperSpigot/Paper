@@ -5,7 +5,7 @@ Subject: [PATCH] Add Heightmap API
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index be4c05259f176e9ef5c25db2b1745df5ea4d5789..ea587597bfb205531c03eb0c0c9bde31ea6ab53b 100644
+index be4c05259f176e9ef5c25db2b1745df5ea4d5789..5e8f748f14cb2479ee07290bdc091010de80f770 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -342,6 +342,29 @@ public class CraftWorld implements World {
@@ -14,7 +14,7 @@ index be4c05259f176e9ef5c25db2b1745df5ea4d5789..ea587597bfb205531c03eb0c0c9bde31
  
 +    // Paper start - Implement heightmap api
 +    @Override
-+    public int getHighestBlockYAt(final int x, final int z, final com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
++    public int getHighestBlockYAt(final int x, final int z, final io.papermc.paper.HeightmapType heightmap) throws UnsupportedOperationException {
 +        this.getChunkAt(x >> 4, z >> 4); // heightmap will ret 0 on unloaded areas
 +
 +        switch (heightmap) {

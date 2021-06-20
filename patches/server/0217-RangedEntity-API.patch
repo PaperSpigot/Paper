@@ -6,13 +6,13 @@ Subject: [PATCH] RangedEntity API
 Allows you to determine if an entity is capable of ranged attacks,
 and to perform an attack.
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/CraftRangedEntity.java b/src/main/java/com/destroystokyo/paper/entity/CraftRangedEntity.java
+diff --git a/src/main/java/io/papermc/paper/entity/CraftRangedEntity.java b/src/main/java/io/papermc/paper/entity/CraftRangedEntity.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e75e1d0d833c96af139fd955b2585ec24281b294
+index 0000000000000000000000000000000000000000..c51b9753f6406d4607f6268f51f26b70d8bfb48b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/CraftRangedEntity.java
++++ b/src/main/java/io/papermc/paper/entity/CraftRangedEntity.java
 @@ -0,0 +1,19 @@
-+package com.destroystokyo.paper.entity;
++package io.papermc.paper.entity;
 +
 +import net.minecraft.world.entity.monster.RangedAttackMob;
 +import org.bukkit.craftbukkit.entity.CraftLivingEntity;
@@ -46,7 +46,7 @@ index 6c3162606ccf799e99d591da33fd649847db54b8..ad9a8198cec21ab766ad8a274937ecbb
 +    void setAggressive(boolean flag); default void setChargingAttack(boolean charging) { setAggressive(charging); }; // Paper
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftDrowned.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftDrowned.java
-index 34cb8062168258bfd168826ceeb2fde669f6d1a8..03e2acd4829da449a471b0fa1a311e74aee114d3 100644
+index 34cb8062168258bfd168826ceeb2fde669f6d1a8..e4ac8f9aeb6673c9d4fbfb7d260198d7b459fae3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftDrowned.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftDrowned.java
 @@ -4,7 +4,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -54,12 +54,12 @@ index 34cb8062168258bfd168826ceeb2fde669f6d1a8..03e2acd4829da449a471b0fa1a311e74
  import org.bukkit.entity.EntityType;
  
 -public class CraftDrowned extends CraftZombie implements Drowned {
-+public class CraftDrowned extends CraftZombie implements Drowned, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Drowned> { // Paper
++public class CraftDrowned extends CraftZombie implements Drowned, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Drowned> { // Paper
  
      public CraftDrowned(CraftServer server, net.minecraft.world.entity.monster.Drowned entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftIllusioner.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftIllusioner.java
-index 59b866e54e0d7e1dd8815ffa85275e36271113da..bbf7189a0fc9921e7a6007494f91229d9fba0846 100644
+index 59b866e54e0d7e1dd8815ffa85275e36271113da..7424f810485f22bbd82fdad690a937e012f8bbef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftIllusioner.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftIllusioner.java
 @@ -4,7 +4,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -67,12 +67,12 @@ index 59b866e54e0d7e1dd8815ffa85275e36271113da..bbf7189a0fc9921e7a6007494f91229d
  import org.bukkit.entity.Illusioner;
  
 -public class CraftIllusioner extends CraftSpellcaster implements Illusioner {
-+public class CraftIllusioner extends CraftSpellcaster implements Illusioner, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Illusioner> { // Paper
++public class CraftIllusioner extends CraftSpellcaster implements Illusioner, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Illusioner> { // Paper
  
      public CraftIllusioner(CraftServer server, net.minecraft.world.entity.monster.Illusioner entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLlama.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLlama.java
-index bda998c9e621bd9bca6642bfa86befed08f4902b..6ad12711a82d7be42ba41c0428779f86536fd900 100644
+index bda998c9e621bd9bca6642bfa86befed08f4902b..5d0693a4d1c6e2e91d25fc78a61e824cf433e919 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLlama.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLlama.java
 @@ -9,7 +9,7 @@ import org.bukkit.entity.Llama;
@@ -80,12 +80,12 @@ index bda998c9e621bd9bca6642bfa86befed08f4902b..6ad12711a82d7be42ba41c0428779f86
  import org.bukkit.inventory.LlamaInventory;
  
 -public class CraftLlama extends CraftChestedHorse implements Llama {
-+public class CraftLlama extends CraftChestedHorse implements Llama, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.animal.horse.Llama> { // Paper
++public class CraftLlama extends CraftChestedHorse implements Llama, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.animal.horse.Llama> { // Paper
  
      public CraftLlama(CraftServer server, net.minecraft.world.entity.animal.horse.Llama entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPiglin.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPiglin.java
-index 27763d1eca832abda76c8b3c22595cbaf9b1fe45..aeda5fc001fe4ce55ee467240b275b6050a29f98 100644
+index 27763d1eca832abda76c8b3c22595cbaf9b1fe45..83f906a20d946081478d81c3635e691fb5412c10 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPiglin.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPiglin.java
 @@ -13,7 +13,7 @@ import org.bukkit.entity.EntityType;
@@ -93,12 +93,12 @@ index 27763d1eca832abda76c8b3c22595cbaf9b1fe45..aeda5fc001fe4ce55ee467240b275b60
  import org.bukkit.inventory.Inventory;
  
 -public class CraftPiglin extends CraftPiglinAbstract implements Piglin {
-+public class CraftPiglin extends CraftPiglinAbstract implements Piglin, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.piglin.Piglin> { // Paper
++public class CraftPiglin extends CraftPiglinAbstract implements Piglin, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.piglin.Piglin> { // Paper
  
      public CraftPiglin(CraftServer server, net.minecraft.world.entity.monster.piglin.Piglin entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPillager.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPillager.java
-index 06786fba1fef36e8fc3d0f5650160123f728a6d1..beea227855f0b978e655efc298024120df8f4945 100644
+index 06786fba1fef36e8fc3d0f5650160123f728a6d1..f2dc4a3fed8f6bf8c6a7a73d089f192b5a08d023 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPillager.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPillager.java
 @@ -6,7 +6,7 @@ import org.bukkit.entity.EntityType;
@@ -106,12 +106,12 @@ index 06786fba1fef36e8fc3d0f5650160123f728a6d1..beea227855f0b978e655efc298024120
  import org.bukkit.inventory.Inventory;
  
 -public class CraftPillager extends CraftIllager implements Pillager {
-+public class CraftPillager extends CraftIllager implements Pillager, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Pillager> { // Paper
++public class CraftPillager extends CraftIllager implements Pillager, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Pillager> { // Paper
  
      public CraftPillager(CraftServer server, net.minecraft.world.entity.monster.Pillager entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftSkeleton.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftSkeleton.java
-index 7a73ada3d8b8085591308275ece4a9ce617314d3..3b19cd5a232f38d373359072925be12f6c075d4a 100644
+index 7a73ada3d8b8085591308275ece4a9ce617314d3..43cbe5956be37883951f18e6dc63bf293bde4855 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftSkeleton.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftSkeleton.java
 @@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -119,12 +119,12 @@ index 7a73ada3d8b8085591308275ece4a9ce617314d3..3b19cd5a232f38d373359072925be12f
  import org.bukkit.entity.Skeleton;
  
 -public class CraftSkeleton extends CraftAbstractSkeleton implements Skeleton {
-+public class CraftSkeleton extends CraftAbstractSkeleton implements Skeleton, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.AbstractSkeleton> { // Paper
++public class CraftSkeleton extends CraftAbstractSkeleton implements Skeleton, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.AbstractSkeleton> { // Paper
  
      public CraftSkeleton(CraftServer server, net.minecraft.world.entity.monster.Skeleton entity) {
          super(server, entity);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftSnowman.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftSnowman.java
-index 6a82d567d96a42bfea0e38afb4e8de13eb3ad5a2..659e2959c5330e4764ea1edc7f8de9f464f9ff52 100644
+index 6a82d567d96a42bfea0e38afb4e8de13eb3ad5a2..01247aacba383bb7e43c89f5995ee23b75b31e5e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftSnowman.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftSnowman.java
 @@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -132,12 +132,12 @@ index 6a82d567d96a42bfea0e38afb4e8de13eb3ad5a2..659e2959c5330e4764ea1edc7f8de9f4
  import org.bukkit.entity.Snowman;
  
 -public class CraftSnowman extends CraftGolem implements Snowman {
-+public class CraftSnowman extends CraftGolem implements Snowman, com.destroystokyo.paper.entity.CraftRangedEntity<SnowGolem> { // Paper
++public class CraftSnowman extends CraftGolem implements Snowman, io.papermc.paper.entity.CraftRangedEntity<SnowGolem> { // Paper
      public CraftSnowman(CraftServer server, SnowGolem entity) {
          super(server, entity);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
-index 60e00e539d214eb8854a53364c92c3cf55ca1062..d4eeb071dbbfca3ecea256228853bcb5c11f49ee 100644
+index 60e00e539d214eb8854a53364c92c3cf55ca1062..43d3f479320857fb4a8f0c0cdd794617e0c33e68 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWitch.java
 @@ -4,7 +4,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -145,12 +145,12 @@ index 60e00e539d214eb8854a53364c92c3cf55ca1062..d4eeb071dbbfca3ecea256228853bcb5
  import org.bukkit.entity.Witch;
  
 -public class CraftWitch extends CraftRaider implements Witch {
-+public class CraftWitch extends CraftRaider implements Witch, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Witch> { // Paper
++public class CraftWitch extends CraftRaider implements Witch, io.papermc.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.Witch> { // Paper
      public CraftWitch(CraftServer server, net.minecraft.world.entity.monster.Witch entity) {
          super(server, entity);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
-index 54a7defa85542765f3dd0d7ccb770dafd9c7d484..640b0860fbe3412da32d03187e6f355ba8f099ea 100644
+index 54a7defa85542765f3dd0d7ccb770dafd9c7d484..ee92767705bc6bfeff00458c699d9dcd90ea936a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftWither.java
 @@ -7,7 +7,7 @@ import org.bukkit.craftbukkit.boss.CraftBossBar;
@@ -158,7 +158,7 @@ index 54a7defa85542765f3dd0d7ccb770dafd9c7d484..640b0860fbe3412da32d03187e6f355b
  import org.bukkit.entity.Wither;
  
 -public class CraftWither extends CraftMonster implements Wither {
-+public class CraftWither extends CraftMonster implements Wither, com.destroystokyo.paper.entity.CraftRangedEntity<WitherBoss> { // Paper
++public class CraftWither extends CraftMonster implements Wither, io.papermc.paper.entity.CraftRangedEntity<WitherBoss> { // Paper
  
      private BossBar bossBar;
  

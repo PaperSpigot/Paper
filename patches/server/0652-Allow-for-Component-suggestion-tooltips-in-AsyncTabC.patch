@@ -6,21 +6,21 @@ Subject: [PATCH] Allow for Component suggestion tooltips in
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 6a40ce317bd0e5a0043cd156d4c32de95d5d2827..78ad9688a9acab75fb059f2a37528692faf71e86 100644
+index 133d661ee1cbbc0e391939aa4c12b9becd676946..7f050f217ba5783a1d3212d3fe680968337de260 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -758,12 +758,11 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
  
          // Paper start - async tab completion
-         com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
+         io.papermc.paper.event.server.AsyncTabCompleteEvent event;
 -        java.util.List<String> completions = new java.util.ArrayList<>();
          String buffer = packet.getCommand();
--        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(), completions,
-+        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(),
+-        event = new io.papermc.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(), completions,
++        event = new io.papermc.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(),
                  buffer, true, null);
          event.callEvent();
 -        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
-+        java.util.List<com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion> completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.completions();
++        java.util.List<io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion> completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.completions();
          // If the event isn't handled, we can assume that we have no completions, and so we'll ask the server
          if (!event.isHandled()) {
              if (!event.isCancelled()) {
@@ -42,38 +42,38 @@ index 6a40ce317bd0e5a0043cd156d4c32de95d5d2827..78ad9688a9acab75fb059f2a37528692
 +                }
 +            });
              com.mojang.brigadier.suggestion.Suggestions suggestions = builder.buildFuture().join();
-             com.destroystokyo.paper.event.brigadier.AsyncPlayerSendSuggestionsEvent suggestEvent = new com.destroystokyo.paper.event.brigadier.AsyncPlayerSendSuggestionsEvent(this.getCraftPlayer(), suggestions, buffer);
+             io.papermc.paper.event.brigadier.AsyncPlayerSendSuggestionsEvent suggestEvent = new io.papermc.paper.event.brigadier.AsyncPlayerSendSuggestionsEvent(this.getCraftPlayer(), suggestions, buffer);
              suggestEvent.setCancelled(suggestions.isEmpty());
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index e5af155d75f717d33c23e22ff8b96bb3ff87844d..14cd8ae69d9b25dc5edad4ff96ff4a9acb1f22cb 100644
+index 696449eea858c2457091bdb44f7eefb750941997..71f6dea67bb2f3574b522ef0f5101aad3eb1b8a7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -29,34 +29,56 @@ public class ConsoleCommandCompleter implements Completer {
          final CraftServer server = this.server.server;
          final String buffer = line.line();
          // Async Tab Complete
--        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
+-        io.papermc.paper.event.server.AsyncTabCompleteEvent event;
 -        java.util.List<String> completions = new java.util.ArrayList<>();
--        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), completions,
+-        event = new io.papermc.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), completions,
 -            buffer, true, null);
-+        final com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event =
-+            new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), buffer, true, null);
++        final io.papermc.paper.event.server.AsyncTabCompleteEvent event =
++            new io.papermc.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), buffer, true, null);
          event.callEvent();
 -        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
-+        final List<com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion> completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.completions();
++        final List<io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion> completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.completions();
  
          if (event.isCancelled() || event.isHandled()) {
              // Still fire sync event with the provided completions, if someone is listening
              if (!event.isCancelled() && TabCompleteEvent.getHandlerList().getRegisteredListeners().length > 0) {
 -                List<String> finalCompletions = completions;
-+                List<com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion> finalCompletions = new java.util.ArrayList<>(completions);
++                List<io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion> finalCompletions = new java.util.ArrayList<>(completions);
                  Waitable<List<String>> syncCompletions = new Waitable<List<String>>() {
                      @Override
                      protected List<String> evaluate() {
 -                        org.bukkit.event.server.TabCompleteEvent syncEvent = new org.bukkit.event.server.TabCompleteEvent(server.getConsoleSender(), buffer, finalCompletions);
 +                        org.bukkit.event.server.TabCompleteEvent syncEvent = new org.bukkit.event.server.TabCompleteEvent(server.getConsoleSender(), buffer,
 +                            finalCompletions.stream()
-+                                .map(com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion::suggestion)
++                                .map(io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion::suggestion)
 +                                .collect(java.util.stream.Collectors.toList()));
                          return syncEvent.callEvent() ? syncEvent.getCompletions() : com.google.common.collect.ImmutableList.of();
                      }
@@ -88,7 +88,7 @@ index e5af155d75f717d33c23e22ff8b96bb3ff87844d..14cd8ae69d9b25dc5edad4ff96ff4a9a
 +                        if (notNewSuggestion(completions, completion)) {
 +                            continue;
 +                        }
-+                        completions.add(com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion.completion(completion));
++                        completions.add(io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion.completion(completion));
 +                    }
                  } catch (InterruptedException | ExecutionException e1) {
                      e1.printStackTrace();
@@ -97,7 +97,7 @@ index e5af155d75f717d33c23e22ff8b96bb3ff87844d..14cd8ae69d9b25dc5edad4ff96ff4a9a
  
              if (!completions.isEmpty()) {
 -                candidates.addAll(completions.stream().map(Candidate::new).collect(java.util.stream.Collectors.toList()));
-+                for (final com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion completion : completions) {
++                for (final io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion completion : completions) {
 +                    if (completion.suggestion().isEmpty()) {
 +                        continue;
 +                    }
@@ -120,8 +120,8 @@ index e5af155d75f717d33c23e22ff8b96bb3ff87844d..14cd8ae69d9b25dc5edad4ff96ff4a9a
      }
 +
 +    // Paper start
-+    private boolean notNewSuggestion(final List<com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion> completions, final String completion) {
-+        for (final com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion it : completions) {
++    private boolean notNewSuggestion(final List<io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion> completions, final String completion) {
++        for (final io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion it : completions) {
 +            if (it.suggestion().equals(completion)) {
 +                return true;
 +            }

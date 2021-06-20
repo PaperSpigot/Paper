@@ -4,13 +4,13 @@ Date: Fri, 3 Jan 2020 16:24:46 +0100
 Subject: [PATCH] Add Mob Goal API
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/Goal.java b/src/main/java/com/destroystokyo/paper/entity/ai/Goal.java
+diff --git a/src/main/java/io/papermc/paper/entity/ai/Goal.java b/src/main/java/io/papermc/paper/entity/ai/Goal.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c57c5416c88e2070a082403ab0dda9d7f08d2a57
+index 0000000000000000000000000000000000000000..3f23277bf8e2459444557f732c0d0c04a74b2709
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/ai/Goal.java
++++ b/src/main/java/io/papermc/paper/entity/ai/Goal.java
 @@ -0,0 +1,66 @@
-+package com.destroystokyo.paper.entity.ai;
++package io.papermc.paper.entity.ai;
 +
 +import org.jetbrains.annotations.NotNull;
 +
@@ -76,13 +76,13 @@ index 0000000000000000000000000000000000000000..c57c5416c88e2070a082403ab0dda9d7
 +    @NotNull
 +    EnumSet<GoalType> getTypes();
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/GoalKey.java b/src/main/java/com/destroystokyo/paper/entity/ai/GoalKey.java
+diff --git a/src/main/java/io/papermc/paper/entity/ai/GoalKey.java b/src/main/java/io/papermc/paper/entity/ai/GoalKey.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9cd98c6fcfa3eb439d9013ef76ef4661175a0e5a
+index 0000000000000000000000000000000000000000..33d0ddf86d46845fa217359f0f2920349fd5fd35
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/ai/GoalKey.java
++++ b/src/main/java/io/papermc/paper/entity/ai/GoalKey.java
 @@ -0,0 +1,64 @@
-+package com.destroystokyo.paper.entity.ai;
++package io.papermc.paper.entity.ai;
 +
 +import com.google.common.base.Objects;
 +
@@ -146,13 +146,13 @@ index 0000000000000000000000000000000000000000..9cd98c6fcfa3eb439d9013ef76ef4661
 +        return new GoalKey<>(entityClass, namespacedKey);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/GoalType.java b/src/main/java/com/destroystokyo/paper/entity/ai/GoalType.java
+diff --git a/src/main/java/io/papermc/paper/entity/ai/GoalType.java b/src/main/java/io/papermc/paper/entity/ai/GoalType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7024c8f484d2460abf3abfe65a29771d814105ec
+index 0000000000000000000000000000000000000000..a57f6b930f5f2ae3e3d37dd9866f8f0a2008c66e
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/ai/GoalType.java
++++ b/src/main/java/io/papermc/paper/entity/ai/GoalType.java
 @@ -0,0 +1,17 @@
-+package com.destroystokyo.paper.entity.ai;
++package io.papermc.paper.entity.ai;
 +
 +/**
 + * Represents the subtype of a goal. Used by minecraft to disable certain types of goals if needed.
@@ -169,13 +169,13 @@ index 0000000000000000000000000000000000000000..7024c8f484d2460abf3abfe65a29771d
 +    UNKNOWN_BEHAVIOR,
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/MobGoals.java b/src/main/java/com/destroystokyo/paper/entity/ai/MobGoals.java
+diff --git a/src/main/java/io/papermc/paper/entity/ai/MobGoals.java b/src/main/java/io/papermc/paper/entity/ai/MobGoals.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e21f7574763dd4f13794f91bbef192ef66a8f5e9
+index 0000000000000000000000000000000000000000..599485446ef9b399e83eb1d8f68ee06303e90c75
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/ai/MobGoals.java
++++ b/src/main/java/io/papermc/paper/entity/ai/MobGoals.java
 @@ -0,0 +1,50 @@
-+package com.destroystokyo.paper.entity.ai;
++package io.papermc.paper.entity.ai;
 +
 +import org.jetbrains.annotations.NotNull;
 +import org.jetbrains.annotations.Nullable;
@@ -225,15 +225,15 @@ index 0000000000000000000000000000000000000000..e21f7574763dd4f13794f91bbef192ef
 +    @NotNull
 +    <T extends Mob> Collection<Goal<T>> getRunningGoalsWithout(@NotNull T mob, @NotNull GoalType type);
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
+diff --git a/src/main/java/io/papermc/paper/entity/ai/VanillaGoal.java b/src/main/java/io/papermc/paper/entity/ai/VanillaGoal.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a93d052e8
+index 0000000000000000000000000000000000000000..24068386e5a8c0c16e5f762d6a9108dfb4b412af
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
++++ b/src/main/java/io/papermc/paper/entity/ai/VanillaGoal.java
 @@ -0,0 +1,288 @@
-+package com.destroystokyo.paper.entity.ai;
++package io.papermc.paper.entity.ai;
 +
-+import com.destroystokyo.paper.entity.RangedEntity;
++import io.papermc.paper.entity.RangedEntity;
 +
 +import org.bukkit.NamespacedKey;
 +import org.bukkit.entity.*;
@@ -520,7 +520,7 @@ index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a
 +    @Deprecated GoalKey<Mob> UNIVERSAL_ANGER_RESET = GoalKey.of(Mob.class, NamespacedKey.minecraft("universal_anger_reset"));
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 847ba5143660d5c56ff8f2cae2169a51b8927757..17553703d6dcb0c7852cc35b08da05075af435f2 100644
+index 197629b02961b55455f2da4098aa502ae46a4f42..fa8b62f55c694900c8b827733bdc2b77b34565bf 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -1867,6 +1867,16 @@ public final class Bukkit {
@@ -529,19 +529,19 @@ index 847ba5143660d5c56ff8f2cae2169a51b8927757..17553703d6dcb0c7852cc35b08da0507
      }
 +
 +    /**
-+     * Returns the {@link com.destroystokyo.paper.entity.ai.MobGoals} manager
++     * Returns the {@link io.papermc.paper.entity.ai.MobGoals} manager
 +     *
 +     * @return the mob goals manager
 +     */
 +    @NotNull
-+    public static com.destroystokyo.paper.entity.ai.MobGoals getMobGoals() {
++    public static io.papermc.paper.entity.ai.MobGoals getMobGoals() {
 +        return server.getMobGoals();
 +    }
      // Paper end
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index e6b62ba32e089e2fd8563ec8430b72196f6680e0..0a109e9157d9a9f15f71d2fa96d31b7f8eb3fde2 100644
+index 6c71a363ce9b4cc8751d5a67384d8c981aeccf73..71241fefd80a14c4577ed12e55e8bfd125d24ca8 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1638,5 +1638,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
@@ -550,11 +550,11 @@ index e6b62ba32e089e2fd8563ec8430b72196f6680e0..0a109e9157d9a9f15f71d2fa96d31b7f
      boolean isStopping();
 +
 +    /**
-+     * Returns the {@link com.destroystokyo.paper.entity.ai.MobGoals} manager
++     * Returns the {@link io.papermc.paper.entity.ai.MobGoals} manager
 +     *
 +     * @return the mob goals manager
 +     */
 +    @NotNull
-+    com.destroystokyo.paper.entity.ai.MobGoals getMobGoals();
++    io.papermc.paper.entity.ai.MobGoals getMobGoals();
      // Paper end
  }

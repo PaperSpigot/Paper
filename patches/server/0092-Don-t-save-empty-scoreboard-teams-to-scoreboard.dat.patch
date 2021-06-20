@@ -4,10 +4,10 @@ Date: Sat, 7 May 2016 23:33:08 -0400
 Subject: [PATCH] Don't save empty scoreboard teams to scoreboard.dat
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 504efea7b6f50a0d17f4f353781953dfb18bdeca..1b8e5671c9dc8c15ce33d351c1bb20f28919b9a2 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 1ea8fa9aebcc04717a268806bb662cccb7477ef1..61b882933879e792593d36f8e45dec0df7f2a561 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -237,4 +237,9 @@ public class PaperConfig {
      private static void enablePlayerCollisions() {
          enablePlayerCollisions = getBoolean("settings.enable-player-collisions", true);
@@ -19,14 +19,14 @@ index 504efea7b6f50a0d17f4f353781953dfb18bdeca..1b8e5671c9dc8c15ce33d351c1bb20f2
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/scores/ScoreboardSaveData.java b/src/main/java/net/minecraft/world/scores/ScoreboardSaveData.java
-index 90a97a87fe67d8c3bbc60f08c9911faa4259349e..2153e7035535990b5307b85d8bc3dab50c0a3ae8 100644
+index 90a97a87fe67d8c3bbc60f08c9911faa4259349e..c7ae5f558a6eb7c1b43d493d1ddd81dea40bf88c 100644
 --- a/src/main/java/net/minecraft/world/scores/ScoreboardSaveData.java
 +++ b/src/main/java/net/minecraft/world/scores/ScoreboardSaveData.java
 @@ -144,6 +144,7 @@ public class ScoreboardSaveData extends SavedData {
          ListTag listTag = new ListTag();
  
          for(PlayerTeam playerTeam : this.scoreboard.getPlayerTeams()) {
-+            if (!com.destroystokyo.paper.PaperConfig.saveEmptyScoreboardTeams && playerTeam.getPlayers().isEmpty()) continue; // Paper
++            if (!io.papermc.paper.PaperConfig.saveEmptyScoreboardTeams && playerTeam.getPlayers().isEmpty()) continue; // Paper
              CompoundTag compoundTag = new CompoundTag();
              compoundTag.putString("Name", playerTeam.getName());
              compoundTag.putString("DisplayName", Component.Serializer.toJson(playerTeam.getDisplayName()));

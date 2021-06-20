@@ -5,7 +5,7 @@ Subject: [PATCH] Make targetSize more aggressive in the chunk unload queue
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index b20c1a772abdbadb72f141a751e954b126ab3de9..f4f0982aa11da0b5bf88a42c02e86f652f8ea615 100644
+index ce4ad5c714103903252868531d1cbc694c2c4a9f..c18927bbe403e39a614064636ccc1a35427bc35c 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -185,7 +185,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -13,7 +13,7 @@ index b20c1a772abdbadb72f141a751e954b126ab3de9..f4f0982aa11da0b5bf88a42c02e86f65
          this.entityMap = new Int2ObjectOpenHashMap();
          this.chunkTypeCache = new Long2ByteOpenHashMap();
 -        this.unloadQueue = Queues.newConcurrentLinkedQueue();
-+        this.unloadQueue = new com.destroystokyo.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Paper - need constant-time size()
++        this.unloadQueue = new io.papermc.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Paper - need constant-time size()
          this.structureManager = structureManager;
          this.storageFolder = session.getDimensionPath(world.dimension());
          this.level = world;

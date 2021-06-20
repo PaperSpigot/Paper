@@ -5,10 +5,10 @@ Subject: [PATCH] Add option to prevent players from moving into unloaded
  chunks #1551
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index c17c504acdc12b6ef37d6643eb98a57fa5ca40c9..13e730b18c346934c061fb570048623ad66e7344 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 9873867495758d772faf30a5eca4c86d6b34bc36..05b9b4a2959cc942a624f58e4f93c810dd32c176 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -390,4 +390,9 @@ public class PaperWorldConfig {
          waterOverLavaFlowSpeed = getInt("water-over-lava-flow-speed", 5);
          log("Water over lava flow speed: " + waterOverLavaFlowSpeed);
@@ -20,7 +20,7 @@ index c17c504acdc12b6ef37d6643eb98a57fa5ca40c9..13e730b18c346934c061fb570048623a
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 05d5d976c18149491124263b056224a384eee06d..5999417f4a357a895757e13f9b69fc970595be2e 100644
+index 3cc22ca5ae031388511cf6227b4edddd69a7bc6d..798da0e40589b5c7f7c8f48ba6777c20b84d2623 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -532,6 +532,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser

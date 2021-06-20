@@ -5,7 +5,7 @@ Subject: [PATCH] Fire event on GS4 query
 
 
 diff --git a/src/main/java/net/minecraft/server/rcon/NetworkDataOutputStream.java b/src/main/java/net/minecraft/server/rcon/NetworkDataOutputStream.java
-index 51cb2644aa516a59e19fecb308d519dbc7e5fb11..e548aa0ca4e1e94ab628614b44fc11568ca3beff 100644
+index 51cb2644aa516a59e19fecb308d519dbc7e5fb11..38124a09404f5a2dc1941a26ba048e1effa0bdd2 100644
 --- a/src/main/java/net/minecraft/server/rcon/NetworkDataOutputStream.java
 +++ b/src/main/java/net/minecraft/server/rcon/NetworkDataOutputStream.java
 @@ -22,6 +22,16 @@ public class NetworkDataOutputStream {
@@ -17,7 +17,7 @@ index 51cb2644aa516a59e19fecb308d519dbc7e5fb11..e548aa0ca4e1e94ab628614b44fc1156
 +        try {
 +            writeString(string);
 +        } catch (IOException e) {
-+            com.destroystokyo.paper.util.SneakyThrow.sneaky(e);
++            io.papermc.paper.util.SneakyThrow.sneaky(e);
 +        }
 +    }
 +    // Paper end
@@ -26,7 +26,7 @@ index 51cb2644aa516a59e19fecb308d519dbc7e5fb11..e548aa0ca4e1e94ab628614b44fc1156
          this.dataOutputStream.write(value);
      }
 diff --git a/src/main/java/net/minecraft/server/rcon/thread/QueryThreadGs4.java b/src/main/java/net/minecraft/server/rcon/thread/QueryThreadGs4.java
-index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1dc02b369d 100644
+index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..06578f1fb965dc9df9de2c84ffc39cb034fae6a0 100644
 --- a/src/main/java/net/minecraft/server/rcon/thread/QueryThreadGs4.java
 +++ b/src/main/java/net/minecraft/server/rcon/thread/QueryThreadGs4.java
 @@ -105,13 +105,32 @@ public class QueryThreadGs4 extends GenericThread {
@@ -35,9 +35,9 @@ index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1d
                      networkDataOutputStream.writeBytes(this.getIdentBytes(packet.getSocketAddress()));
 -                    networkDataOutputStream.writeString(this.serverName);
 +
-+                    com.destroystokyo.paper.event.server.GS4QueryEvent.QueryType queryType =
-+                        com.destroystokyo.paper.event.server.GS4QueryEvent.QueryType.BASIC;
-+                    com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse queryResponse = com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.builder()
++                    io.papermc.paper.event.server.GS4QueryEvent.QueryType queryType =
++                        io.papermc.paper.event.server.GS4QueryEvent.QueryType.BASIC;
++                    io.papermc.paper.event.server.GS4QueryEvent.QueryResponse queryResponse = io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.builder()
 +                        .motd(this.serverName)
 +                        .map(this.worldName)
 +                        .currentPlayers(this.serverInterface.getPlayerCount())
@@ -47,8 +47,8 @@ index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1d
 +                        .gameVersion(this.serverInterface.getServerVersion())
 +                        .serverVersion(org.bukkit.Bukkit.getServer().getName() + " on " + org.bukkit.Bukkit.getServer().getBukkitVersion())
 +                        .build();
-+                    com.destroystokyo.paper.event.server.GS4QueryEvent queryEvent =
-+                        new com.destroystokyo.paper.event.server.GS4QueryEvent(queryType, packet.getAddress(), queryResponse);
++                    io.papermc.paper.event.server.GS4QueryEvent queryEvent =
++                        new io.papermc.paper.event.server.GS4QueryEvent(queryType, packet.getAddress(), queryResponse);
 +                    queryEvent.callEvent();
 +                    queryResponse = queryEvent.getResponse();
 +
@@ -74,15 +74,15 @@ index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1d
              this.rulesResponse.write(0);
 +            // Paper start
 +            // Pack plugins
-+            java.util.List<com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation> plugins = java.util.Collections.emptyList();
++            java.util.List<io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation> plugins = java.util.Collections.emptyList();
 +            org.bukkit.plugin.Plugin[] bukkitPlugins;
 +            if (((net.minecraft.server.dedicated.DedicatedServer) this.serverInterface).server.getQueryPlugins() && (bukkitPlugins = org.bukkit.Bukkit.getPluginManager().getPlugins()).length > 0) {
 +                plugins = java.util.stream.Stream.of(bukkitPlugins)
-+                    .map(plugin -> com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation.of(plugin.getName(), plugin.getDescription().getVersion()))
++                    .map(plugin -> io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation.of(plugin.getName(), plugin.getDescription().getVersion()))
 +                    .collect(java.util.stream.Collectors.toList());
 +            }
 +
-+            com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse queryResponse = com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.builder()
++            io.papermc.paper.event.server.GS4QueryEvent.QueryResponse queryResponse = io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.builder()
 +                .motd(this.serverName)
 +                .map(this.worldName)
 +                .currentPlayers(this.serverInterface.getPlayerCount())
@@ -94,10 +94,10 @@ index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1d
 +                .gameVersion(this.serverInterface.getServerVersion())
 +                .serverVersion(org.bukkit.Bukkit.getServer().getName() + " on " + org.bukkit.Bukkit.getServer().getBukkitVersion())
 +                .build();
-+            com.destroystokyo.paper.event.server.GS4QueryEvent.QueryType queryType =
-+                com.destroystokyo.paper.event.server.GS4QueryEvent.QueryType.FULL;
-+            com.destroystokyo.paper.event.server.GS4QueryEvent queryEvent =
-+                new com.destroystokyo.paper.event.server.GS4QueryEvent(queryType, packet.getAddress(), queryResponse);
++            io.papermc.paper.event.server.GS4QueryEvent.QueryType queryType =
++                io.papermc.paper.event.server.GS4QueryEvent.QueryType.FULL;
++            io.papermc.paper.event.server.GS4QueryEvent queryEvent =
++                new io.papermc.paper.event.server.GS4QueryEvent(queryType, packet.getAddress(), queryResponse);
 +            queryEvent.callEvent();
 +            queryResponse = queryEvent.getResponse();
              this.rulesResponse.writeString("hostname");
@@ -116,9 +116,9 @@ index 02bb0b2df37ead741adfef38d7479ba6f691dc2d..25ae440839f1d286550a77d0a4c61e1d
 +            pluginsString.append(queryResponse.getServerVersion());
 +            if (!queryResponse.getPlugins().isEmpty()) {
 +                pluginsString.append(": ");
-+                java.util.Iterator<com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation> iter = queryResponse.getPlugins().iterator();
++                java.util.Iterator<io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation> iter = queryResponse.getPlugins().iterator();
 +                while (iter.hasNext()) {
-+                    com.destroystokyo.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation info = iter.next();
++                    io.papermc.paper.event.server.GS4QueryEvent.QueryResponse.PluginInformation info = iter.next();
 +                    pluginsString.append(info.getName());
 +                    if (info.getVersion() != null) {
 +                        pluginsString.append(' ').append(info.getVersion().replace(";", ","));

@@ -5,7 +5,7 @@ Subject: [PATCH] WitchReadyPotionEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index e2762c6c37975eb2da59d408998a5c0368c146d1..5e2e8cb5eba4ba36065f07abed954b2aad022321 100644
+index c48e0d4ce254c11a02d4586dfcebd4e9e02c9c92..6570427b01118e55f6fed5de24c91add836e73f8 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
 @@ -157,7 +157,11 @@ public class Witch extends Raider implements RangedAttackMob {
@@ -15,7 +15,7 @@ index e2762c6c37975eb2da59d408998a5c0368c146d1..5e2e8cb5eba4ba36065f07abed954b2a
 -                    this.setItemSlot(EquipmentSlot.MAINHAND, PotionUtils.setPotion(new ItemStack(Items.POTION), potionregistry));
 +                    // Paper start
 +                    ItemStack potion = PotionUtils.setPotion(new ItemStack(Items.POTION), potionregistry);
-+                    org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
++                    org.bukkit.inventory.ItemStack bukkitStack = io.papermc.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
 +                    this.setItemSlot(EquipmentSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
 +                    // Paper end
                      this.usingTime = this.getMainHandItem().getUseDuration();

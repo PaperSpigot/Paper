@@ -84,7 +84,7 @@ index 24d5a44cb81ec5f10bfcce002a193f4566de88fc..d8be2ad889f46491e50404916fb4ae0d
          }
  
 diff --git a/src/main/java/net/minecraft/world/level/chunk/DataLayer.java b/src/main/java/net/minecraft/world/level/chunk/DataLayer.java
-index 88a2a5c3d588c15989f7cf6df9d2afc3d2ed8ae9..25570730f376665ca6477263d3b3f94d725ecd21 100644
+index 88a2a5c3d588c15989f7cf6df9d2afc3d2ed8ae9..ca90245c6da97e18e05309fc7b064ceaf1956b16 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/DataLayer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/DataLayer.java
 @@ -12,11 +12,65 @@ public class DataLayer {
@@ -95,7 +95,7 @@ index 88a2a5c3d588c15989f7cf6df9d2afc3d2ed8ae9..25570730f376665ca6477263d3b3f94d
 +    public static byte[] EMPTY_NIBBLE = new byte[2048];
 +    private static final int nibbleBucketSizeMultiplier = Integer.getInteger("Paper.nibbleBucketSize", 3072);
 +    private static final int maxPoolSize = Integer.getInteger("Paper.maxNibblePoolSize", (int) Math.min(6, Math.max(1, Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024)) * (nibbleBucketSizeMultiplier * 8));
-+    public static final com.destroystokyo.paper.util.pooled.PooledObjects<byte[]> BYTE_2048 = new com.destroystokyo.paper.util.pooled.PooledObjects<>(() -> new byte[2048], maxPoolSize);
++    public static final io.papermc.paper.util.pooled.PooledObjects<byte[]> BYTE_2048 = new io.papermc.paper.util.pooled.PooledObjects<>(() -> new byte[2048], maxPoolSize);
 +    public static void releaseBytes(byte[] bytes) {
 +        if (bytes != null && bytes != EMPTY_NIBBLE && bytes.length == 2048) {
 +            System.arraycopy(EMPTY_NIBBLE, 0, bytes, 0, 2048);
@@ -217,7 +217,7 @@ index b875bf80181255117cdd2fdfc1d861220ac13a3a..e9043403c0bd3edc11f8a4f55f3a512a
  
                  nbttaglist.add(nbttagcompound2);
 diff --git a/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java b/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
-index f357a3473682c2d37a20fb862522c67b9979402a..52682471adc13dffc0383fc4abacbd3397f3bb10 100644
+index 5b2938b0ef6be049da1bbf5f85614b3bf6657396..6d67dc0002858eba7efb10e4adae39954ec7759c 100644
 --- a/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
 +++ b/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
 @@ -34,7 +34,9 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
@@ -282,7 +282,7 @@ index cc9eb8273d5157fb649d84a3ec589b0b923b5bc9..fd1cdb6e2023713f947b9497c605cf6f
  
      }
 diff --git a/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java b/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
-index f6df52403a1068a0779e4ff8c2ce5dc06176e061..7dc194b4f04b2d59dcb100b0a3b2ca0132f832cf 100644
+index a6f5aadc3507b655a36bc91e7a77d788da64f107..13e94a7eb5786ca0359490e7e32098d85633cc40 100644
 --- a/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
 +++ b/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
 @@ -161,9 +161,9 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec

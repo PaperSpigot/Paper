@@ -22,10 +22,10 @@ view distance holds on you.
 Chunks in front of the player have higher priority, to help with
 fast traveling players keep up with their movement.
 
-diff --git a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java
-index 18ae2e2b339d357fbe0f6f2b18bc14c0dfe4c222..3b7ba9c755c82a6f086d5542d32b3567c0f98b99 100644
---- a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java
-+++ b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java
+diff --git a/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java b/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java
+index 068e291e73d76da42f9cb48f949cb54afed621eb..b99243559439b494f75231adaed80636936e82d9 100644
+--- a/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java
++++ b/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java
 @@ -108,7 +108,7 @@ public final class ChunkTaskManager {
      }
  
@@ -68,7 +68,7 @@ index 18ae2e2b339d357fbe0f6f2b18bc14c0dfe4c222..3b7ba9c755c82a6f086d5542d32b3567
      }
  
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 2d5b8e35d52b0dfd075af81a3a936d8a21053b31..9ddedd310eb0323a5a09f51a61bfb7b36503be93 100644
+index 05d6fc646ea2c1595df5af3edc0b4571a2fd5b62..7684f0146fa522287d223d4b3cb1c999458b872e 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
 @@ -671,6 +671,7 @@ public final class MCUtil {
@@ -80,7 +80,7 @@ index 2d5b8e35d52b0dfd075af81a3a936d8a21053b31..9ddedd310eb0323a5a09f51a61bfb7b3
                  chunkData.addProperty("queued-for-unload", chunkMap.toDrop.contains(playerChunk.pos.longKey));
                  chunkData.addProperty("status", status == null ? "unloaded" : status.toString());
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index 87319eadeba490bdfd0783cacd33e3ec1dcba302..f9207e3661ba630ee1791d0842e0de684b22fd17 100644
+index df41b34d8106b55a00d048d8f8bafa74e9ff4411..735046644cd6a9b92c62d64ee0081bab81400898 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 @@ -60,7 +60,7 @@ public class ChunkHolder {
@@ -234,7 +234,7 @@ index 87319eadeba490bdfd0783cacd33e3ec1dcba302..f9207e3661ba630ee1791d0842e0de68
 +
      // Paper start - optimise isOutsideOfRange
      // cached here to avoid a map lookup
-     com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> playersInMobSpawnRange;
+     io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> playersInMobSpawnRange;
 @@ -485,7 +614,7 @@ public class ChunkHolder {
          // CraftBukkit start
          // ChunkUnloadEvent: Called before the chunk is unloaded: isChunkLoaded is still true and chunk can still be modified by plugins.
@@ -288,11 +288,11 @@ index 87319eadeba490bdfd0783cacd33e3ec1dcba302..f9207e3661ba630ee1791d0842e0de68
 +        priorityBoost = chunkMap.distanceManager.getChunkPriority(pos);
 +        int priority = getDemandedPriority();
 +        if (this.queueLevel > priority) {
-+            int ioPriority = com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY;
++            int ioPriority = io.papermc.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY;
 +            if (priority <= 10) {
-+                ioPriority = com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
++                ioPriority = io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
 +            } else if (priority <= 20) {
-+                ioPriority = com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY;
++                ioPriority = io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY;
 +            }
 +            chunkMap.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, ioPriority);
 +        }
@@ -312,7 +312,7 @@ index 87319eadeba490bdfd0783cacd33e3ec1dcba302..f9207e3661ba630ee1791d0842e0de68
                  if (chunk != null) {
                      chunkStorage.callbackExecutor.execute(() -> {
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9..15dba7f2e6a7c670b415f67345fad37873a1130c 100644
+index 90fe91e16add988b5a6960496b11fb3a57b8ab5c..6d2c087f9ca7d14e26278e02d4e0dd2b0647fd2e 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -149,6 +149,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -356,9 +356,9 @@ index 8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9..15dba7f2e6a7c670b415f67345fad378
  
          Objects.requireNonNull(mainThreadExecutor);
 @@ -446,6 +458,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
-         this.playerViewDistanceTickMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
+         this.playerViewDistanceTickMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
              (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
-              com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
+              io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
 +                checkHighPriorityChunks(player);
                  if (newState.size() != 1) {
                      return;
@@ -376,8 +376,8 @@ index 8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9..15dba7f2e6a7c670b415f67345fad378
 +            checkHighPriorityChunks(player);
 +        });
 +        // Paper end
-         this.playerViewDistanceNoTickMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets);
-         this.playerViewDistanceBroadcastMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
+         this.playerViewDistanceNoTickMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets);
+         this.playerViewDistanceBroadcastMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
              (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
 @@ -482,6 +502,116 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          // Paper end - no-tick view distance
@@ -526,23 +526,23 @@ index 8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9..15dba7f2e6a7c670b415f67345fad378
 +        // Paper start
 +        ChunkHolder playerChunk = getUpdatingChunkIfPresent(pos.toLong());
 +        int chunkPriority = playerChunk != null ? playerChunk.queueLevel : 33;
-+        int priority = com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY;
++        int priority = io.papermc.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY;
 +
 +        if (chunkPriority <= 10) {
-+            priority = com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
++            priority = io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
 +        } else if (chunkPriority <= 20) {
-+            priority = com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY;
++            priority = io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY;
 +        }
-+        boolean isHighestPriority = priority == com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
++        boolean isHighestPriority = priority == io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY;
 +        // Paper end
          if (chunkSaveFuture != null) {
 -            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z,
--                com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY, chunkHolderConsumer, false, chunkSaveFuture);
--            this.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY);
+-                io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY, chunkHolderConsumer, false, chunkSaveFuture);
+-            this.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY);
 +            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z, priority, chunkHolderConsumer, isHighestPriority, chunkSaveFuture); // Paper
          } else {
 -            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z,
--                com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY, chunkHolderConsumer, false);
+-                io.papermc.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY, chunkHolderConsumer, false);
 +            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z, priority, chunkHolderConsumer, isHighestPriority); // Paper
          }
 +        this.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, priority); // Paper
@@ -559,7 +559,7 @@ index 8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9..15dba7f2e6a7c670b415f67345fad378
      }
  
 diff --git a/src/main/java/net/minecraft/server/level/DistanceManager.java b/src/main/java/net/minecraft/server/level/DistanceManager.java
-index d94241bcca4f2fd5e464a860bd356af504dc68b7..1cc4e0a1f3d8235ef88b48e01ca8b78a263d2676 100644
+index d94241bcca4f2fd5e464a860bd356af504dc68b7..5a54adee1aafde71b4a673cb07acebfffc5406da 100644
 --- a/src/main/java/net/minecraft/server/level/DistanceManager.java
 +++ b/src/main/java/net/minecraft/server/level/DistanceManager.java
 @@ -98,6 +98,7 @@ public abstract class DistanceManager {
@@ -860,7 +860,7 @@ index d94241bcca4f2fd5e464a860bd356af504dc68b7..1cc4e0a1f3d8235ef88b48e01ca8b78a
 +
 +            int desireDelay = 0;
 +            double minDist = Double.MAX_VALUE;
-+            com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> players = chunkMap.playerViewDistanceNoTickMap.getObjectsInRange(i);
++            io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> players = chunkMap.playerViewDistanceNoTickMap.getObjectsInRange(i);
 +            if (elapsed == 0 && initialDistance <= 4) {
 +                // Aim for no delay on initial 6 chunk radius tickets save on performance of the below code to only > 6
 +                minDist = initialDistance;
@@ -941,7 +941,7 @@ index d94241bcca4f2fd5e464a860bd356af504dc68b7..1cc4e0a1f3d8235ef88b48e01ca8b78a
      }
  }
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 6c565751c36daa0084196dce5d2f82df64a0c77a..0b22fd8ac75146bc7b647cfbefc73ce890ccb033 100644
+index 69ee5ea06e9ab7907089d68f98e432c0512d61e8..e3604feae5435f047357c9a6524a7e14f7b5ee3d 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -446,6 +446,26 @@ public class ServerChunkCache extends ChunkSource {
@@ -977,12 +977,12 @@ index 6c565751c36daa0084196dce5d2f82df64a0c77a..0b22fd8ac75146bc7b647cfbefc73ce8
                  // Paper start - async chunk io/loading
 +                ChunkPos pair = new ChunkPos(x1, z1); // Paper - Chunk priority
 +                this.distanceManager.markUrgent(pair); // Paper - Chunk priority
-                 this.level.asyncChunkTaskManager.raisePriority(x1, z1, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
-                 com.destroystokyo.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
+                 this.level.asyncChunkTaskManager.raisePriority(x1, z1, io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
+                 io.papermc.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
                  // Paper end
 @@ -494,6 +516,8 @@ public class ServerChunkCache extends ChunkSource {
              chunkproviderserver_a.managedBlock(completablefuture::isDone);
-                 com.destroystokyo.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
+                 io.papermc.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
                  this.level.timings.syncChunkLoad.stopTiming(); // Paper
 +                this.distanceManager.clearPriorityTickets(pair); // Paper - Chunk priority
 +                this.distanceManager.clearUrgent(pair); // Paper - Chunk priority
@@ -1027,7 +1027,7 @@ index 6c565751c36daa0084196dce5d2f82df64a0c77a..0b22fd8ac75146bc7b647cfbefc73ce8
          boolean flag1 = this.chunkMap.promoteChunkMap();
  
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 1197322df389f9fdc891760230e18950f7295fc1..6acf0fb29261ba005562127894438797d5853573 100644
+index 60c1a9dc3b0b784c9a4b24747eb663be81dc2b25..783b6ee6394a48565bfddbe01f48350ad6453c50 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -183,6 +183,14 @@ public class ServerPlayer extends Player {
@@ -1047,7 +1047,7 @@ index 1197322df389f9fdc891760230e18950f7295fc1..6acf0fb29261ba005562127894438797
      private boolean lastFoodSaturationZero = true;
 @@ -324,6 +332,21 @@ public class ServerPlayer extends Player {
          this.maxHealthCache = this.getMaxHealth();
-         this.cachedSingleMobDistanceMap = new com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
+         this.cachedSingleMobDistanceMap = new io.papermc.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
      }
 +    // Paper start - Chunk priority
 +    public BlockPos getPointInFront(double inFront) {
@@ -1101,7 +1101,7 @@ index 8770fe0db46b01e8b608637df4f1a669a3f4cdde..3c1698ba0d3bc412ab957777d9b5211d
      private final String name;
      private final Comparator<T> comparator;
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index fb010fb253f490a79e9172d7a3d017ad51dac958..3e91275b318904ffa31183987fcbc7b28692781a 100644
+index 91b64adca5fb851f131c697c6a6815422289d333..81c4e13654289363b566d27fec5a60699ff23492 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1565,6 +1565,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -1113,7 +1113,7 @@ index fb010fb253f490a79e9172d7a3d017ad51dac958..3e91275b318904ffa31183987fcbc7b2
      }
  
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index cd31cc4f8d25e95792c4a2690e3a8df17edc406f..576541b061d792a24eaa30df57d00a2945a3ee1f 100644
+index 752a9ea27a4c3da258acc4ea65ff424f977e76da..a91c35eb20db207496754f442a56aa7d7864dfd5 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -283,8 +283,8 @@ public abstract class PlayerList {
@@ -1144,7 +1144,7 @@ index cd31cc4f8d25e95792c4a2690e3a8df17edc406f..576541b061d792a24eaa30df57d00a29
              entityplayer1.setPos(entityplayer1.getX(), entityplayer1.getY() + 1.0D, entityplayer1.getZ());
          }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index c0f7b78dbe8f9baf68aa48dd763ab51312e916c6..73c81f0883645dca0ce32efae914d7f40b265c3c 100644
+index 11587c9e4d5f62e40775d575c1d4d71ec0671e68..9a83ce9b46638861129cde264a3ed2f25d3eb64f 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -223,7 +223,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
@@ -1157,7 +1157,7 @@ index c0f7b78dbe8f9baf68aa48dd763ab51312e916c6..73c81f0883645dca0ce32efae914d7f4
      public float yRotO;
      public float xRotO;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index f72471ac82907a0d5112598b3289689495285944..6e1f8323d028790d1f55d51edb3214d0161a0072 100644
+index e5f2687423f1aa8af10599255884ad9ca3c2925b..c5d537a1e4939b44a89fb9957537f680d41ac141 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -2558,6 +2558,12 @@ public class CraftWorld implements World {
@@ -1174,7 +1174,7 @@ index f72471ac82907a0d5112598b3289689495285944..6e1f8323d028790d1f55d51edb3214d0
              net.minecraft.world.level.chunk.LevelChunk chunk = (net.minecraft.world.level.chunk.LevelChunk) either.left().orElse(null);
              if (chunk != null) addTicket(x, z); // Paper
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index a98394d9bab490c1bdb5817cb30806cab85de730..535fb8f029dc09862e42e239a0fc7326e31508ef 100644
+index b1f72c1c51474c4ab4b9778fad8eb219b55efd25..2cde07985d9c768f4b693f7a892caa4527c23dae 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -889,6 +889,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

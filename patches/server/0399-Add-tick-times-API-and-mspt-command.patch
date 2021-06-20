@@ -4,13 +4,13 @@ Date: Sun, 5 Apr 2020 22:23:14 -0500
 Subject: [PATCH] Add tick times API and /mspt command
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/MSPTCommand.java b/src/main/java/com/destroystokyo/paper/MSPTCommand.java
+diff --git a/src/main/java/io/papermc/paper/MSPTCommand.java b/src/main/java/io/papermc/paper/MSPTCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d0211d4f39f9d6af1d751ac66342b42cc6d7ba6d
+index 0000000000000000000000000000000000000000..4f3d1844f18ff5c987c76dccf1ccb350a6dc881c
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/MSPTCommand.java
++++ b/src/main/java/io/papermc/paper/MSPTCommand.java
 @@ -0,0 +1,64 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import net.minecraft.server.MinecraftServer;
 +import org.bukkit.ChatColor;
@@ -74,10 +74,10 @@ index 0000000000000000000000000000000000000000..d0211d4f39f9d6af1d751ac66342b42c
 +        return ChatColor.COLOR_CHAR + (avg >= 50 ? "c" : avg >= 40 ? "e" : "a") + DF.format(avg);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index ddbc8cb712c50038922eded75dd6ca85fe851078..78271b400c79578d043b20a5389a37b1bef9a70d 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 6ac76163a7393a5ffedd84905651c6b8c6859b64..86d481601f6959879c856f32b25bdb99f45525c6 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -69,6 +69,7 @@ public class PaperConfig {
  
          commands = new HashMap<String, Command>();
@@ -87,7 +87,7 @@ index ddbc8cb712c50038922eded75dd6ca85fe851078..78271b400c79578d043b20a5389a37b1
          version = getInt("config-version", 20);
          set("config-version", 20);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index f1c08a811c05a29eda4686c1143cc27fd91d7311..577681733454da4d62cae7199f494a56bab3cfa4 100644
+index 6f47703f3514fef8d05a2b35930eabe9cfee16a3..5cc7af5c76fc60bc17757016e56cd248767257c8 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -249,6 +249,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -146,7 +146,7 @@ index f1c08a811c05a29eda4686c1143cc27fd91d7311..577681733454da4d62cae7199f494a56
 +    // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 39e6db52421528f16ac4595faa8cfcf191771c77..bc5034eff1e9d41c97a210b3b53c188395cb2574 100644
+index 32bb1578f9645921a092189946ff6d62af38d5fb..277cb7c23f78447030c56e5d7a87a940ae7e7254 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2201,6 +2201,16 @@ public final class CraftServer implements Server {

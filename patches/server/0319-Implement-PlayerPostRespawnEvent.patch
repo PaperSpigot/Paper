@@ -5,7 +5,7 @@ Subject: [PATCH] Implement PlayerPostRespawnEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index da3100d6577166e222164c174b28020541dd8e3a..c7956664427ca97544d1b47992a62c95d2fc9690 100644
+index d7207800f7a57c6fdd7d7e0205ff954a5d93ce8f..0b661a314956663eb577c6acb1fdb6a120180789 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -715,9 +715,14 @@ public abstract class PlayerList {
@@ -39,7 +39,7 @@ index da3100d6577166e222164c174b28020541dd8e3a..c7956664427ca97544d1b47992a62c95
 +
 +        // Paper start
 +        if (isRespawn) {
-+            cserver.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerPostRespawnEvent(entityplayer.getBukkitEntity(), location, isBedSpawn));
++            cserver.getPluginManager().callEvent(new io.papermc.paper.event.player.PlayerPostRespawnEvent(entityplayer.getBukkitEntity(), location, isBedSpawn));
 +        }
 +        // Paper end
 +

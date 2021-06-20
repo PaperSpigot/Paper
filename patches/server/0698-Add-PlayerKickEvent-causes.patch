@@ -5,7 +5,7 @@ Subject: [PATCH] Add PlayerKickEvent causes
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 2b7b63ea08c8e4f43c9678671fb8d08628b48b36..3bf39c2d2aa3fc4fd0815dacea57e4899ec0da0e 100644
+index 954444e15e90f98d10d0e319eaf0e0dbe4802616..7e1ec8686e61ad2035be4dc693b01acf06bd750a 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -2124,7 +2124,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -57,15 +57,15 @@ index 708ac03d5a849bf09c49547306e4a8c5a5ef8d91..5a8df368a4a25839cd4ac9be6972da2e
          }
  
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 084b17d6496799fd49a9f81bb6bcbff512fd8f78..7d2ac8aa97805e8b022d3982b1332c5055fc8b90 100644
+index 278ab5e40a2f4b4a84c2fc5844f4bc9a1d352359..11597af04d5ef5b5aa55f8a372bb12562044e836 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -321,7 +321,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
          if (this.clientIsFloating && !this.player.isSleeping()) {
              if (++this.aboveGroundTickCount > 80) {
                  ServerGamePacketListenerImpl.LOGGER.warn("{} was kicked for floating too long!", this.player.getName().getString());
--                this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
-+                this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_PLAYER); // Paper - use configurable kick message & kick event cause
+-                this.disconnect(io.papermc.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
++                this.disconnect(io.papermc.paper.PaperConfig.flyingKickPlayerMessage, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_PLAYER); // Paper - use configurable kick message & kick event cause
                  return;
              }
          } else {
@@ -73,8 +73,8 @@ index 084b17d6496799fd49a9f81bb6bcbff512fd8f78..7d2ac8aa97805e8b022d3982b1332c50
              if (this.clientVehicleIsFloating && this.player.getRootVehicle().getControllingPassenger() == this.player) {
                  if (++this.aboveGroundVehicleTickCount > 80) {
                      ServerGamePacketListenerImpl.LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName().getString());
--                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
-+                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_VEHICLE); // Paper - use configurable kick message & kick event cause
+-                    this.disconnect(io.papermc.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
++                    this.disconnect(io.papermc.paper.PaperConfig.flyingKickVehicleMessage, org.bukkit.event.player.PlayerKickEvent.Cause.FLYING_VEHICLE); // Paper - use configurable kick message & kick event cause
                      return;
                  }
              } else {
@@ -143,7 +143,7 @@ index 084b17d6496799fd49a9f81bb6bcbff512fd8f78..7d2ac8aa97805e8b022d3982b1332c50
 @@ -739,13 +747,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
          // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
          // CraftBukkit start
-         if (this.chatSpamTickCount.addAndGet(com.destroystokyo.paper.PaperConfig.tabSpamIncrement) > com.destroystokyo.paper.PaperConfig.tabSpamLimit && !this.server.getPlayerList().isOp(this.player.getGameProfile())) { // Paper start - split and make configurable
+         if (this.chatSpamTickCount.addAndGet(io.papermc.paper.PaperConfig.tabSpamIncrement) > io.papermc.paper.PaperConfig.tabSpamLimit && !this.server.getPlayerList().isOp(this.player.getGameProfile())) { // Paper start - split and make configurable
 -            server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]))); // Paper
 +            server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]), org.bukkit.event.player.PlayerKickEvent.Cause.SPAM)); // Paper - kick event cause
              return;
@@ -284,7 +284,7 @@ index 084b17d6496799fd49a9f81bb6bcbff512fd8f78..7d2ac8aa97805e8b022d3982b1332c50
 @@ -2805,7 +2813,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
          // Paper start
          if (!org.bukkit.Bukkit.isPrimaryThread()) {
-             if (recipeSpamPackets.addAndGet(com.destroystokyo.paper.PaperConfig.autoRecipeIncrement) > com.destroystokyo.paper.PaperConfig.autoRecipeLimit) {
+             if (recipeSpamPackets.addAndGet(io.papermc.paper.PaperConfig.autoRecipeIncrement) > io.papermc.paper.PaperConfig.autoRecipeLimit) {
 -                server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]))); // Paper
 +                server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]), org.bukkit.event.player.PlayerKickEvent.Cause.SPAM)); // Paper - kick event cause
                  return;
@@ -327,7 +327,7 @@ index 084b17d6496799fd49a9f81bb6bcbff512fd8f78..7d2ac8aa97805e8b022d3982b1332c50
          }
  
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 1e2ad223ae9c3270548de89acc91f1e6780af539..d76d8d8db7921d16f87dd162ccd115e351cde106 100644
+index 20aa100a9e23dffc394cd920e265fb3518bf66e9..0fdcc6a87bdba08532bcab5fc56677e38e04c004 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -708,7 +708,7 @@ public abstract class PlayerList {
@@ -351,7 +351,7 @@ index 1e2ad223ae9c3270548de89acc91f1e6780af539..d76d8d8db7921d16f87dd162ccd115e3
          // CraftBukkit end
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index f50772b5c07d5aa7dcd0ed015507c3f6440328c8..76e2ae09855e0efaaa0856d2f49e4968adbccbdc 100644
+index c897b8d9e3e57304314f3e5da95c6fed232f50be..7648f329322effabaed7762cdd93ec60447c7f82 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -498,16 +498,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

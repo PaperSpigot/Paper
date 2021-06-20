@@ -35,10 +35,10 @@ This change will result in some major changes to fishing formulas.
 
 I would love to see this change in Vanilla, so Mojang please pull :)
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 05a5abb951abe37f30a719cb75376d2d43c0d252..77a03abd59db4a43f6f2d59d4c7ef176e782f205 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 68f08e36174f8127e4b0717274b20fa92e686a25..9561343755dc5be9eff2102ad7b31d0722090e8f 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -288,4 +288,12 @@ public class PaperConfig {
              SpigotConfig.save();
          }
@@ -53,7 +53,7 @@ index 05a5abb951abe37f30a719cb75376d2d43c0d252..77a03abd59db4a43f6f2d59d4c7ef176
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
-index 710a66e9aafe8bd622f9f37789c281aba98d030e..558f43580d976d7bde32779e47e24c9ad388892d 100644
+index 710a66e9aafe8bd622f9f37789c281aba98d030e..3b9e375dae7444bd03ea0af7e02d07ba5329d8fa 100644
 --- a/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
 +++ b/src/main/java/net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer.java
 @@ -113,9 +113,35 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer
@@ -69,7 +69,7 @@ index 710a66e9aafe8bd622f9f37789c281aba98d030e..558f43580d976d7bde32779e47e24c9a
 +            // This is vanilla
 +            float qualityModifer = (float) LootPoolSingletonContainer.this.quality * luck;
 +            double baseWeight = (LootPoolSingletonContainer.this.weight + qualityModifer);
-+            if (com.destroystokyo.paper.PaperConfig.useAlternativeLuckFormula) {
++            if (io.papermc.paper.PaperConfig.useAlternativeLuckFormula) {
 +                // Random boost to avoid losing precision in the final int cast on return
 +                final int weightBoost = 100;
 +                baseWeight *= weightBoost;

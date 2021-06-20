@@ -5,10 +5,10 @@ Subject: [PATCH] Add configuration option to prevent player names from being
  suggested
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 4e2f243faa209925dcb7c3ef89df3ed875c5ff78..48319aaf1c525c6fb7bdee5c2f570a0d056d4eae 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index a3b8149b27fcc37429334f8c4697e9b1003f9186..f01186f8d771ebb9490876e7085c17fcdfc47090 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -268,4 +268,9 @@ public class PaperConfig {
          flyingKickPlayerMessage = getString("messages.kick.flying-player", flyingKickPlayerMessage);
          flyingKickVehicleMessage = getString("messages.kick.flying-vehicle", flyingKickVehicleMessage);
@@ -20,7 +20,7 @@ index 4e2f243faa209925dcb7c3ef89df3ed875c5ff78..48319aaf1c525c6fb7bdee5c2f570a0d
 +    }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 25cdff21377fdd9d3daf6af8da1f3db4ed65dab6..8bd458b8995c9019b5ae85eab062df44e9424703 100644
+index 279eaf3cc06cd3814a44f7cde18fb6938df01552..cd6ae492ded5eeeee9f99217e8f71c847f12b439 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2300,5 +2300,10 @@ public final class CraftServer implements Server {
@@ -30,7 +30,7 @@ index 25cdff21377fdd9d3daf6af8da1f3db4ed65dab6..8bd458b8995c9019b5ae85eab062df44
 +
 +    @Override
 +    public boolean suggestPlayerNamesWhenNullTabCompletions() {
-+        return com.destroystokyo.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
++        return io.papermc.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
 +    }
      // Paper end
  }

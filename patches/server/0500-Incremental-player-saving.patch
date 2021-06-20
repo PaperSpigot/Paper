@@ -4,10 +4,10 @@ Date: Sun, 9 Aug 2020 08:59:25 +0300
 Subject: [PATCH] Incremental player saving
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index b67ba8f75e4a3358d7c2462918b85b0bf9b5a922..fdbd8b89bb8bf3b61f60b812b90483c98a3d5ccb 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index dc0ce41de540ddcb407b53f83c1c294f31a42333..ceaa21f9d3c7fc47f5b9a6d2edd6781e6125ee2f 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -440,4 +440,15 @@ public class PaperConfig {
          allowPistonDuplication = getBoolean("settings.unsupported-settings.allow-piston-duplication", config.getBoolean("settings.unsupported-settings.allow-tnt-duplication", false));
          set("settings.unsupported-settings.allow-tnt-duplication", null);
@@ -25,7 +25,7 @@ index b67ba8f75e4a3358d7c2462918b85b0bf9b5a922..fdbd8b89bb8bf3b61f60b812b90483c9
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 21c16bf341e846f90a24fe2395ff89f1ace70d73..a962209749c7cc7f6d304073f5f2bce55014a29e 100644
+index c8fed665fd6ead2e433f9025a98acda5a1757351..e264519875e5035607fda449357cfcd46f9e8608 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -955,7 +955,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -41,7 +41,7 @@ index 21c16bf341e846f90a24fe2395ff89f1ace70d73..a962209749c7cc7f6d304073f5f2bce5
          //     MinecraftServer.LOGGER.debug("Autosave started"); // Paper
          serverAutoSave = (autosavePeriod > 0 && this.tickCount % autosavePeriod == 0); // Paper
 +        // Paper start
-+        int playerSaveInterval = com.destroystokyo.paper.PaperConfig.playerAutoSaveRate;
++        int playerSaveInterval = io.papermc.paper.PaperConfig.playerAutoSaveRate;
 +        if (playerSaveInterval < 0) {
 +            playerSaveInterval = autosavePeriod;
 +        }
@@ -55,7 +55,7 @@ index 21c16bf341e846f90a24fe2395ff89f1ace70d73..a962209749c7cc7f6d304073f5f2bce5
          } // Paper start
          for (ServerLevel level : this.getAllLevels()) {
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 6acf0fb29261ba005562127894438797d5853573..88a7f2e69ad74303cbb779d06903d34a5ff40a6c 100644
+index 783b6ee6394a48565bfddbe01f48350ad6453c50..9734866baf04e584df5e8e57ffb65cca4d033e0f 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -169,6 +169,7 @@ public class ServerPlayer extends Player {
@@ -67,7 +67,7 @@ index 6acf0fb29261ba005562127894438797d5853573..88a7f2e69ad74303cbb779d06903d34a
      private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
      public ServerGamePacketListenerImpl connection;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 7acf01ee407555862ad2483eee4543e0284c2199..8bedc2cad5faf621ac5515fafcd093e3bd180126 100644
+index 0894fc9cc26824b7d79e38b35a52c5329e302b87..37b6c4fdacbe28b7f2a7b47711565382dd7a690a 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -561,6 +561,7 @@ public abstract class PlayerList {
@@ -96,7 +96,7 @@ index 7acf01ee407555862ad2483eee4543e0284c2199..8bedc2cad5faf621ac5515fafcd093e3
 +            ServerPlayer entityplayer = this.players.get(i);
 +            if (interval == null || now - entityplayer.lastSave >= interval) {
 +                this.save(entityplayer);
-+                if (interval != null && ++numSaved <= com.destroystokyo.paper.PaperConfig.maxPlayerAutoSavePerTick) { break; }
++                if (interval != null && ++numSaved <= io.papermc.paper.PaperConfig.maxPlayerAutoSavePerTick) { break; }
 +            }
 +            // Paper end
          }

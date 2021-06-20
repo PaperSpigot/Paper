@@ -41,10 +41,10 @@ and -Dpaper.ticklist-excessive-delay-threshold=ticks which
 sets the excessive tick delay to the specified ticks (defaults to
 60 * 20 ticks, aka 60 seconds)
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 8bf4d2b8c38c02d6a5b2fea37113689a252f1571..da93d38fe63035e4ff198ada84a4431f52d97c01 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 5fc570ef1dd137777b9cf23088cb0ec0c4094749..a4858be16e09b264ee0e52027a6836cf3927c23a 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -354,6 +354,13 @@ public class PaperConfig {
          maxBookTotalSizeMultiplier = getDouble("settings.book-size.total-multiplier", maxBookTotalSizeMultiplier);
      }
@@ -59,13 +59,13 @@ index 8bf4d2b8c38c02d6a5b2fea37113689a252f1571..da93d38fe63035e4ff198ada84a4431f
      public static boolean asyncChunks = false;
      private static void asyncChunks() {
          ConfigurationSection section;
-diff --git a/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java b/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java
+diff --git a/src/main/java/io/papermc/paper/server/ticklist/PaperTickList.java b/src/main/java/io/papermc/paper/server/ticklist/PaperTickList.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..da13ff17609b7bc8076d9297edf8decf01a2ed88
+index 0000000000000000000000000000000000000000..a5c95f19aa3932b98df194f99f4c6bb3927a416c
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java
++++ b/src/main/java/io/papermc/paper/server/ticklist/PaperTickList.java
 @@ -0,0 +1,628 @@
-+package com.destroystokyo.paper.server.ticklist;
++package io.papermc.paper.server.ticklist;
 +
 +import java.util.function.Function;
 +import net.minecraft.CrashReport;
@@ -693,15 +693,15 @@ index 0000000000000000000000000000000000000000..da13ff17609b7bc8076d9297edf8decf
 +        return ret;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/server/ticklist/TickListServerInterval.java b/src/main/java/com/destroystokyo/paper/server/ticklist/TickListServerInterval.java
+diff --git a/src/main/java/io/papermc/paper/server/ticklist/TickListServerInterval.java b/src/main/java/io/papermc/paper/server/ticklist/TickListServerInterval.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a1e6f49274a7ae8057a9112e0dd6597a8e58e6da
+index 0000000000000000000000000000000000000000..e1d48b8ef83fd136123e82825ee4940516bf532b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/server/ticklist/TickListServerInterval.java
++++ b/src/main/java/io/papermc/paper/server/ticklist/TickListServerInterval.java
 @@ -0,0 +1,41 @@
-+package com.destroystokyo.paper.server.ticklist;
++package io.papermc.paper.server.ticklist;
 +
-+import com.destroystokyo.paper.util.set.LinkedSortedSet;
++import io.papermc.paper.util.set.LinkedSortedSet;
 +import java.util.Comparator;
 +import net.minecraft.world.level.TickNextTickData;
 +import net.minecraft.world.level.TickPriority;
@@ -740,13 +740,13 @@ index 0000000000000000000000000000000000000000..a1e6f49274a7ae8057a9112e0dd6597a
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/set/LinkedSortedSet.java b/src/main/java/com/destroystokyo/paper/util/set/LinkedSortedSet.java
+diff --git a/src/main/java/io/papermc/paper/util/set/LinkedSortedSet.java b/src/main/java/io/papermc/paper/util/set/LinkedSortedSet.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..118988c39e58f28e8a2851792b9c014f341f06fc
+index 0000000000000000000000000000000000000000..bbd5154f823c21de0568c2a6642b1d2af363f1d6
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/set/LinkedSortedSet.java
++++ b/src/main/java/io/papermc/paper/util/set/LinkedSortedSet.java
 @@ -0,0 +1,142 @@
-+package com.destroystokyo.paper.util.set;
++package io.papermc.paper.util.set;
 +
 +import java.util.Comparator;
 +import java.util.Iterator;
@@ -889,7 +889,7 @@ index 0000000000000000000000000000000000000000..118988c39e58f28e8a2851792b9c014f
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index edf0432967c4621e101611924c4ce826f54e3e34..413743bc1bf82c07f85192924e4783b08dbcee79 100644
+index 3d97a4a13b68147264038f9bc842856d67ef5b39..d514678f5b98a1d78d689dab990c4b840a5c1285 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 @@ -86,6 +86,19 @@ public class ChunkHolder {
@@ -924,7 +924,7 @@ index edf0432967c4621e101611924c4ce826f54e3e34..413743bc1bf82c07f85192924e4783b0
              });
              // Paper end
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index d2d0350bd16cd818be328afcc2c07f4381dac169..0d948d4d247a12a49fae99e68874a9e65bf76a68 100644
+index 3fd2126d968c2bd48c427b7a70dd08f17b1326df..35a97367085cc85baf96edfde5e2cc57fd0dabf6 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -220,6 +220,12 @@ public class ServerChunkCache extends ChunkSource {
@@ -941,7 +941,7 @@ index d2d0350bd16cd818be328afcc2c07f4381dac169..0d948d4d247a12a49fae99e68874a9e6
      public ServerChunkCache(ServerLevel world, LevelStorageSource.LevelStorageAccess session, DataFixer dataFixer, StructureManager structureManager, Executor workerExecutor, ChunkGenerator chunkGenerator, int viewDistance, boolean flag, ChunkProgressListener worldGenerationProgressListener, ChunkStatusUpdateListener chunkstatusupdatelistener, Supplier<DimensionDataStorage> supplier) {
          this.level = world;
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 87a18dcbfbb55410f04e99e84958f22f21193066..cb1efab5c5cfd47cfbdab609009cc6a5cd6f1dc4 100644
+index 683ac7066ad51376b6c7b0175069a2d6e43bbceb..166f5f9be93ff18ae0be35df6d5d24aa20f9e97d 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -295,6 +295,15 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -950,9 +950,9 @@ index 87a18dcbfbb55410f04e99e84958f22f21193066..cb1efab5c5cfd47cfbdab609009cc6a5
  
 +    // Paper start - rewrite ticklistserver
 +    void onChunkSetTicking(int chunkX, int chunkZ) {
-+        if (com.destroystokyo.paper.PaperConfig.useOptimizedTickList) {
-+            ((com.destroystokyo.paper.server.ticklist.PaperTickList) this.blockTicks).onChunkSetTicking(chunkX, chunkZ);
-+            ((com.destroystokyo.paper.server.ticklist.PaperTickList) this.liquidTicks).onChunkSetTicking(chunkX, chunkZ);
++        if (io.papermc.paper.PaperConfig.useOptimizedTickList) {
++            ((io.papermc.paper.server.ticklist.PaperTickList) this.blockTicks).onChunkSetTicking(chunkX, chunkZ);
++            ((io.papermc.paper.server.ticklist.PaperTickList) this.liquidTicks).onChunkSetTicking(chunkX, chunkZ);
 +        }
 +    }
 +    // Paper end - rewrite ticklistserver
@@ -971,9 +971,9 @@ index 87a18dcbfbb55410f04e99e84958f22f21193066..cb1efab5c5cfd47cfbdab609009cc6a5
          };
          registryblocks = Registry.FLUID;
          Objects.requireNonNull(registryblocks);
-+        if (com.destroystokyo.paper.PaperConfig.useOptimizedTickList) {
-+            this.blockTicks = new com.destroystokyo.paper.server.ticklist.PaperTickList<>(this, predicate, Registry.BLOCK::getKey, this::tickBlock, "Blocks"); // Paper - Timings
-+            this.liquidTicks = new com.destroystokyo.paper.server.ticklist.PaperTickList<>(this, predicate2, Registry.FLUID::getKey, this::tickLiquid, "Fluids"); // Paper timings
++        if (io.papermc.paper.PaperConfig.useOptimizedTickList) {
++            this.blockTicks = new io.papermc.paper.server.ticklist.PaperTickList<>(this, predicate, Registry.BLOCK::getKey, this::tickBlock, "Blocks"); // Paper - Timings
++            this.liquidTicks = new io.papermc.paper.server.ticklist.PaperTickList<>(this, predicate2, Registry.FLUID::getKey, this::tickLiquid, "Fluids"); // Paper timings
 +        } else {
 +            this.blockTicks = new ServerTickList<>(this, predicate, Registry.BLOCK::getKey, this::tickBlock, "Blocks"); // CraftBukkit - decompile error // Paper - Timings & copied from above
          this.liquidTicks = new ServerTickList<>(this, predicate2, Registry.FLUID::getKey, this::tickLiquid, "Fluids"); // CraftBukkit - decompile error // Paper - Timings

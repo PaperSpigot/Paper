@@ -6,20 +6,20 @@ Subject: [PATCH] Chunk Save Reattempt
 We commonly have "Stream Closed" errors on chunk saving, so this code should re-try to save the chunk in the event of failure and hopefully prevent rollbacks.
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index f514c29e64a9c7a66ff4edd5ba8c2a3dfbba2ad9..84327c8fe1dc62c7b99950261a344042b4456616 100644
+index 5392dac6e208b1d12d4fb8f0e63afeeca9ae40ff..435bf9ed176fa05f6898e95a4d05724e980da9b1 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -277,7 +277,7 @@ public class RegionFile implements AutoCloseable {
                      return true;
                  }
              } catch (IOException ioexception) {
--                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
-+                com.destroystokyo.paper.util.SneakyThrow.sneaky(ioexception); // Paper - we want the upper try/catch to retry this
+-                io.papermc.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
++                io.papermc.paper.util.SneakyThrow.sneaky(ioexception); // Paper - we want the upper try/catch to retry this
                  return false;
              }
          }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index ef1d64ebdc3150596cbc5efc36d6acc52dddafee..e506fa1153cabfb93c7bece73e6fe0fafbb958c9 100644
+index ef1d64ebdc3150596cbc5efc36d6acc52dddafee..8c8c5903ed94b3cd4237a10a23d11ca921a1a29c 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -11,6 +11,7 @@ import java.io.IOException;
@@ -50,7 +50,7 @@ index ef1d64ebdc3150596cbc5efc36d6acc52dddafee..e506fa1153cabfb93c7bece73e6fe0fa
 +        }
 +
 +        if (laste != null) {
-+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(laste);
++            io.papermc.paper.exception.ServerInternalException.reportInternalException(laste);
 +            MinecraftServer.LOGGER.error("Failed to save chunk", laste);
 +        }
 +        // Paper end

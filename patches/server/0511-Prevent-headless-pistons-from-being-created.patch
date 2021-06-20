@@ -5,10 +5,10 @@ Subject: [PATCH] Prevent headless pistons from being created
 
 Prevent headless pistons from being created by explosions or tree/mushroom growth.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index fdbd8b89bb8bf3b61f60b812b90483c98a3d5ccb..faa1b775e45563b93ac1d5b904938b1f5ad8d80c 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index ceaa21f9d3c7fc47f5b9a6d2edd6781e6125ee2f..47acc628119c62ff39f30c9e29650bb9adbc92a8 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -441,6 +441,12 @@ public class PaperConfig {
          set("settings.unsupported-settings.allow-tnt-duplication", null);
      }
@@ -23,7 +23,7 @@ index fdbd8b89bb8bf3b61f60b812b90483c98a3d5ccb..faa1b775e45563b93ac1d5b904938b1f
      public static int maxPlayerAutoSavePerTick = 10;
      private static void playerAutoSaveRate() {
 diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
-index a12af10e28f2d023ba6f916b5e7a53539416713f..d4785160c1477ed13343e30c913b08175011d048 100644
+index a12af10e28f2d023ba6f916b5e7a53539416713f..b1cf8b1482e724e3c1d41f645a87769043eea664 100644
 --- a/src/main/java/net/minecraft/world/level/Explosion.java
 +++ b/src/main/java/net/minecraft/world/level/Explosion.java
 @@ -15,6 +15,7 @@ import java.util.Random;
@@ -48,7 +48,7 @@ index a12af10e28f2d023ba6f916b5e7a53539416713f..d4785160c1477ed13343e30c913b0817
                              if (f > 0.0F && this.damageCalculator.shouldBlockExplode(this, this.level, blockposition, iblockdata, f) && blockposition.getY() < 256 && blockposition.getY() >= 0) { // CraftBukkit - don't wrap explosions
                                  set.add(blockposition);
 +                                // Paper start - prevent headless pistons from forming
-+                                if (!com.destroystokyo.paper.PaperConfig.allowHeadlessPistons && iblockdata.getBlock() == Blocks.MOVING_PISTON) {
++                                if (!io.papermc.paper.PaperConfig.allowHeadlessPistons && iblockdata.getBlock() == Blocks.MOVING_PISTON) {
 +                                    BlockEntity extension = this.level.getBlockEntity(blockposition);
 +                                    if (extension instanceof PistonMovingBlockEntity && ((PistonMovingBlockEntity) extension).isSourcePiston()) {
 +                                       Direction direction = iblockdata.getValue(PistonHeadBlock.FACING);

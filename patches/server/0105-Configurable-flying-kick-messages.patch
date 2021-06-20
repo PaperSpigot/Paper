@@ -4,10 +4,10 @@ Date: Tue, 20 Sep 2016 00:58:01 +0000
 Subject: [PATCH] Configurable flying kick messages
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 64d7c9058ee757a6d3cf3b648596092a810e105c..4e2f243faa209925dcb7c3ef89df3ed875c5ff78 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 5a3c69ee3febd00d19576643453d032254abd169..a3b8149b27fcc37429334f8c4697e9b1003f9186 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -261,4 +261,11 @@ public class PaperConfig {
          }
          packetInSpamThreshold = getInt("settings.incoming-packet-spam-threshold", 300);
@@ -21,7 +21,7 @@ index 64d7c9058ee757a6d3cf3b648596092a810e105c..4e2f243faa209925dcb7c3ef89df3ed8
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 13077dcc0ce4e7cfa8146ee71db4c2cce9e36f4a..d05f284b943340fef24481adaa4da4e6d9e0169d 100644
+index ff71dc83a47c501d4987b8d32ecd14b0a5368a88..bd40aeedfd17adfc14478980b1ba00a987627e70 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -302,7 +302,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -29,7 +29,7 @@ index 13077dcc0ce4e7cfa8146ee71db4c2cce9e36f4a..d05f284b943340fef24481adaa4da4e6
              if (++this.aboveGroundTickCount > 80) {
                  ServerGamePacketListenerImpl.LOGGER.warn("{} was kicked for floating too long!", this.player.getName().getString());
 -                this.disconnect(new TranslatableComponent("multiplayer.disconnect.flying"));
-+                this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
++                this.disconnect(io.papermc.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
                  return;
              }
          } else {
@@ -38,7 +38,7 @@ index 13077dcc0ce4e7cfa8146ee71db4c2cce9e36f4a..d05f284b943340fef24481adaa4da4e6
                  if (++this.aboveGroundVehicleTickCount > 80) {
                      ServerGamePacketListenerImpl.LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName().getString());
 -                    this.disconnect(new TranslatableComponent("multiplayer.disconnect.flying"));
-+                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
++                    this.disconnect(io.papermc.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
                      return;
                  }
              } else {

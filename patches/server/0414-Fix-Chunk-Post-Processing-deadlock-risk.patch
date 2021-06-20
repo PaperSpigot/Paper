@@ -25,7 +25,7 @@ This successfully fixed a reoccurring and highly reproduceable crash
 for heightmaps.
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 538bb603b1a516f33bbe8c4e1974efc902c4bc85..7ef52d0ae501312590802acb5f54fcf6f7cdac9e 100644
+index 9acd250ae861e3270f82396f3bd387f8da576822..af9242c4b5ac9f0813f76dad141b7eb2a7e7762c 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -195,6 +195,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -34,7 +34,7 @@ index 538bb603b1a516f33bbe8c4e1974efc902c4bc85..7ef52d0ae501312590802acb5f54fcf6
  
 +    final CallbackExecutor chunkLoadConversionCallbackExecutor = new CallbackExecutor(); // Paper
      // Paper start - distance maps
-     private final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
+     private final io.papermc.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new io.papermc.paper.util.misc.PooledLinkedHashSets<>();
      // Paper start - no-tick view distance
 @@ -1090,7 +1091,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                  return Either.left(chunk);
@@ -46,7 +46,7 @@ index 538bb603b1a516f33bbe8c4e1974efc902c4bc85..7ef52d0ae501312590802acb5f54fcf6
  
          completablefuture1.thenAcceptAsync((either) -> {
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 0c76218134bdf8d80e3680227934ff5f70c26df2..0bb931ae8faa8e1fe36895d8321a9b36d325c3ed 100644
+index 7bed9bcb933c228aad79f026d3a897f8701bad2d..73506892f8c3f540f149368d4bf20d5977827aa4 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -1001,6 +1001,7 @@ public class ServerChunkCache extends ChunkSource {

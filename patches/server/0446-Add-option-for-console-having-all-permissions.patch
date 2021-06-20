@@ -4,10 +4,10 @@ Date: Sat, 16 May 2020 10:12:15 +0200
 Subject: [PATCH] Add option for console having all permissions
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 5f3b0d95cc7e6a0434d78ea7305a70689c41c71c..7f140333c2e62012fa572c1a061d84432426997f 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 1cef7f4d0f1964019254e906317d247a930ed89e..14c5b667fc181285d13cb56d1a860ce2db4f5013 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -429,4 +429,9 @@ public class PaperConfig {
  
      }
@@ -19,7 +19,7 @@ index 5f3b0d95cc7e6a0434d78ea7305a70689c41c71c..7f140333c2e62012fa572c1a061d8443
 +
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
-index a885eb537d6475eefe7d06f8312ecf0a278c5a00..4d95d4f4b354fc22c29c55bb70010282a4d3c5d9 100644
+index a885eb537d6475eefe7d06f8312ecf0a278c5a00..36311485f30faa95ead46aa79f1057bbfb9617ff 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
 @@ -86,5 +86,15 @@ public class CraftConsoleCommandSender extends ServerCommandSender implements Co
@@ -29,17 +29,17 @@ index a885eb537d6475eefe7d06f8312ecf0a278c5a00..4d95d4f4b354fc22c29c55bb70010282
 +
 +    @Override
 +    public boolean hasPermission(String name) {
-+        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
++        return io.papermc.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
 +    }
 +
 +    @Override
 +    public boolean hasPermission(org.bukkit.permissions.Permission perm) {
-+        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
++        return io.papermc.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
 +    }
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
-index c2d163c078b569e3e97ee01d149c5c3e87f55513..d1ce98ca68690542c6864c189bc114f1f715b2b5 100644
+index c2d163c078b569e3e97ee01d149c5c3e87f55513..75d58d4cf1ce4f44111cba3027960f331aac5e40 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
 @@ -39,4 +39,16 @@ public class CraftRemoteConsoleCommandSender extends ServerCommandSender impleme
@@ -50,12 +50,12 @@ index c2d163c078b569e3e97ee01d149c5c3e87f55513..d1ce98ca68690542c6864c189bc114f1
 +    // Paper start
 +    @Override
 +    public boolean hasPermission(String name) {
-+        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
++        return io.papermc.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(name);
 +    }
 +
 +    @Override
 +    public boolean hasPermission(org.bukkit.permissions.Permission perm) {
-+        return com.destroystokyo.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
++        return io.papermc.paper.PaperConfig.consoleHasAllPermissions || super.hasPermission(perm);
 +    }
 +    // Paper end
  }

@@ -13,7 +13,7 @@ contention situations.
 And this is extremely a low contention situation.
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
-index 4a6981f8bacdeca1069e1ddfe44ac9c4217ce624..f2307f81c399867585ffdefc0db835c6f5e2f42a 100644
+index e81ea256104a8a9bfe3d5b31c2c693e4c768c2ae..950c688e648b67b62001bc789045304c52499000 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
 @@ -37,16 +37,18 @@ public class PalettedContainer<T> implements PaletteResize<T> {
@@ -67,8 +67,8 @@ index 4a6981f8bacdeca1069e1ddfe44ac9c4217ce624..f2307f81c399867585ffdefc0db835c6
      @Deprecated public void write(FriendlyByteBuf buf) {
          write(buf, null, 0);
      }
--    public void write(FriendlyByteBuf buf, com.destroystokyo.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) {
-+    public synchronized void write(FriendlyByteBuf buf, com.destroystokyo.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) { // Paper - synchronize
+-    public void write(FriendlyByteBuf buf, io.papermc.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) {
++    public synchronized void write(FriendlyByteBuf buf, io.papermc.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) { // Paper - synchronize
          // Paper end
          try {
              this.acquire();

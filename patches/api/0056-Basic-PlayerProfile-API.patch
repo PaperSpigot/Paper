@@ -5,13 +5,13 @@ Subject: [PATCH] Basic PlayerProfile API
 
 Provides basic elements of a PlayerProfile to be used by future API/events
 
-diff --git a/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java
+diff --git a/src/main/java/io/papermc/paper/profile/PlayerProfile.java b/src/main/java/io/papermc/paper/profile/PlayerProfile.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2ef9a7bd55e2c9cf8cb20d5f77282676ae11181f
+index 0000000000000000000000000000000000000000..ae8e4a76a03c0f9a717565305f802e10e4c390da
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/profile/PlayerProfile.java
++++ b/src/main/java/io/papermc/paper/profile/PlayerProfile.java
 @@ -0,0 +1,177 @@
-+package com.destroystokyo.paper.profile;
++package io.papermc.paper.profile;
 +
 +import java.util.Collection;
 +import java.util.Set;
@@ -188,13 +188,13 @@ index 0000000000000000000000000000000000000000..2ef9a7bd55e2c9cf8cb20d5f77282676
 +        return hasProperty("textures");
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/profile/ProfileProperty.java b/src/main/java/com/destroystokyo/paper/profile/ProfileProperty.java
+diff --git a/src/main/java/io/papermc/paper/profile/ProfileProperty.java b/src/main/java/io/papermc/paper/profile/ProfileProperty.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7b3b6ef533d32169fbeca389bd61cfc6b0e0faee
+index 0000000000000000000000000000000000000000..e1425584ba9385b7af8cc373c89db54ca749436d
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/profile/ProfileProperty.java
++++ b/src/main/java/io/papermc/paper/profile/ProfileProperty.java
 @@ -0,0 +1,72 @@
-+package com.destroystokyo.paper.profile;
++package io.papermc.paper.profile;
 +
 +import com.google.common.base.Preconditions;
 +
@@ -267,7 +267,7 @@ index 0000000000000000000000000000000000000000..7b3b6ef533d32169fbeca389bd61cfc6
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 14786ce10f43cd203544750a073c5efaf8b21348..c9f00ffe05c8624619b23ad22cf61233cede440e 100644
+index 14786ce10f43cd203544750a073c5efaf8b21348..2b0225e22c3fc98f9703abe6915c175b6375861c 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -1778,6 +1778,40 @@ public final class Bukkit {
@@ -281,7 +281,7 @@ index 14786ce10f43cd203544750a073c5efaf8b21348..c9f00ffe05c8624619b23ad22cf61233
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    public static com.destroystokyo.paper.profile.PlayerProfile createProfile(@NotNull UUID uuid) {
++    public static io.papermc.paper.profile.PlayerProfile createProfile(@NotNull UUID uuid) {
 +        return server.createProfile(uuid);
 +    }
 +
@@ -291,7 +291,7 @@ index 14786ce10f43cd203544750a073c5efaf8b21348..c9f00ffe05c8624619b23ad22cf61233
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    public static com.destroystokyo.paper.profile.PlayerProfile createProfile(@NotNull String name) {
++    public static io.papermc.paper.profile.PlayerProfile createProfile(@NotNull String name) {
 +        return server.createProfile(name);
 +    }
 +
@@ -305,14 +305,14 @@ index 14786ce10f43cd203544750a073c5efaf8b21348..c9f00ffe05c8624619b23ad22cf61233
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    public static com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name) {
++    public static io.papermc.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name) {
 +        return server.createProfile(uuid, name);
 +    }
      // Paper end
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 7c44e23a5c370537d5163fd6ea6a1dea4d19d2b7..f2448c6dc8ef64393127a13c33eb14b0d5cd92c0 100644
+index 7c44e23a5c370537d5163fd6ea6a1dea4d19d2b7..f2ef1265d50d7895b2fdc802c7e5c0978fd2d249 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1562,5 +1562,33 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
@@ -326,7 +326,7 @@ index 7c44e23a5c370537d5163fd6ea6a1dea4d19d2b7..f2448c6dc8ef64393127a13c33eb14b0
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    com.destroystokyo.paper.profile.PlayerProfile createProfile(@NotNull UUID uuid);
++    io.papermc.paper.profile.PlayerProfile createProfile(@NotNull UUID uuid);
 +
 +    /**
 +     * Creates a PlayerProfile for the specified name, with UUID as null
@@ -334,7 +334,7 @@ index 7c44e23a5c370537d5163fd6ea6a1dea4d19d2b7..f2448c6dc8ef64393127a13c33eb14b0
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    com.destroystokyo.paper.profile.PlayerProfile createProfile(@NotNull String name);
++    io.papermc.paper.profile.PlayerProfile createProfile(@NotNull String name);
 +
 +    /**
 +     * Creates a PlayerProfile for the specified name/uuid
@@ -346,6 +346,6 @@ index 7c44e23a5c370537d5163fd6ea6a1dea4d19d2b7..f2448c6dc8ef64393127a13c33eb14b0
 +     * @return A PlayerProfile object
 +     */
 +    @NotNull
-+    com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name);
++    io.papermc.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name);
      // Paper end
  }

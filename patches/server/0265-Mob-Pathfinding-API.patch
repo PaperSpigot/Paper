@@ -5,13 +5,13 @@ Subject: [PATCH] Mob Pathfinding API
 
 Implements Pathfinding API for mobs
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
+diff --git a/src/main/java/io/papermc/paper/entity/PaperPathfinder.java b/src/main/java/io/papermc/paper/entity/PaperPathfinder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8c9f0c6c38627beded373ca29f1989ae3ba6f873
+index 0000000000000000000000000000000000000000..28c278719bf96b02842406165a05bb1540a49b7b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/PaperPathfinder.java
++++ b/src/main/java/io/papermc/paper/entity/PaperPathfinder.java
 @@ -0,0 +1,139 @@
-+package com.destroystokyo.paper.entity;
++package io.papermc.paper.entity;
 +
 +import org.apache.commons.lang.Validate;
 +import org.bukkit.Location;
@@ -25,7 +25,7 @@ index 0000000000000000000000000000000000000000..8c9f0c6c38627beded373ca29f1989ae
 +import java.util.ArrayList;
 +import java.util.List;
 +
-+public class PaperPathfinder implements com.destroystokyo.paper.entity.Pathfinder {
++public class PaperPathfinder implements io.papermc.paper.entity.Pathfinder {
 +
 +    private final net.minecraft.world.entity.Mob entity;
 +
@@ -108,7 +108,7 @@ index 0000000000000000000000000000000000000000..8c9f0c6c38627beded373ca29f1989ae
 +        entity.getNavigation().pathFinder.nodeEvaluator.setCanFloat(canFloat);
 +    }
 +
-+    public class PaperPathResult implements com.destroystokyo.paper.entity.PaperPathfinder.PathResult {
++    public class PaperPathResult implements io.papermc.paper.entity.PaperPathfinder.PathResult {
 +
 +        private final Path path;
 +        PaperPathResult(Path path) {
@@ -163,18 +163,18 @@ index 31d4431a60e742e2ca3b1a2abcce33954f599488..f4b6c2bf74884c0b53956788dcfcca78
      public Path(List<Node> nodes, BlockPos target, boolean reachesTarget) {
          this.nodes = nodes;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
-index 71872fdfafca82cf745eecee4bf984726d49f5a4..9c9fa83615cd06539ce5e4e3d4feaa69f65b7931 100644
+index 71872fdfafca82cf745eecee4bf984726d49f5a4..281a0697c829cdb497edc60f6c2708a1e7429036 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
 @@ -11,8 +11,11 @@ import org.bukkit.loot.LootTable;
  public abstract class CraftMob extends CraftLivingEntity implements Mob {
      public CraftMob(CraftServer server, net.minecraft.world.entity.Mob entity) {
          super(server, entity);
-+         paperPathfinder = new com.destroystokyo.paper.entity.PaperPathfinder(entity); // Paper
++         paperPathfinder = new io.papermc.paper.entity.PaperPathfinder(entity); // Paper
      }
  
-+    private final com.destroystokyo.paper.entity.PaperPathfinder paperPathfinder; // Paper
-+    @Override public com.destroystokyo.paper.entity.Pathfinder getPathfinder() { return paperPathfinder; } // Paper
++    private final io.papermc.paper.entity.PaperPathfinder paperPathfinder; // Paper
++    @Override public io.papermc.paper.entity.Pathfinder getPathfinder() { return paperPathfinder; } // Paper
      @Override
      public void setTarget(LivingEntity target) {
          net.minecraft.world.entity.Mob entity = this.getHandle();

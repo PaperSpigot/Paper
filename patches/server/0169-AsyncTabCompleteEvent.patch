@@ -14,7 +14,7 @@ completion, such as offline players.
 Also adds isCommand and getLocation to the sync TabCompleteEvent
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index a679b30076cec74976cd04a7fab737fe88a83329..92f6f51d3642e1e8bcdb400da87f96ecf20c3218 100644
+index 8f86970a8df0c7745bee4133b0b1bdae3bbd81f7..fc64a902088dc76b36709310f928ce93ed574936 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -703,10 +703,10 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -36,10 +36,10 @@ index a679b30076cec74976cd04a7fab737fe88a83329..92f6f51d3642e1e8bcdb400da87f96ec
  
 -        ParseResults<CommandSourceStack> parseresults = this.server.getCommands().getDispatcher().parse(stringreader, this.player.createCommandSourceStack());
 +        // Paper start - async tab completion
-+        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
++        io.papermc.paper.event.server.AsyncTabCompleteEvent event;
 +        java.util.List<String> completions = new java.util.ArrayList<>();
 +        String buffer = packet.getCommand();
-+        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(), completions,
++        event = new io.papermc.paper.event.server.AsyncTabCompleteEvent(this.getCraftPlayer(), completions,
 +                buffer, true, null);
 +        event.callEvent();
 +        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
@@ -72,7 +72,7 @@ index a679b30076cec74976cd04a7fab737fe88a83329..92f6f51d3642e1e8bcdb400da87f96ec
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 46972308cf399ed02c450bc2d45b4dc88b234ab0..c7dbe127e30cc6830794c3a81686908f076160ac 100644
+index 12eafde6143dff274640c0cabbfee30c44e49a32..1e7640f02f325a3d8bc5313da026370268156429 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1850,7 +1850,7 @@ public final class CraftServer implements Server {
@@ -85,7 +85,7 @@ index 46972308cf399ed02c450bc2d45b4dc88b234ab0..c7dbe127e30cc6830794c3a81686908f
  
          return tabEvent.isCancelled() ? Collections.EMPTY_LIST : tabEvent.getCompletions();
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index b996fde481cebbbcce80a6c267591136db7cc0bc..e5af155d75f717d33c23e22ff8b96bb3ff87844d 100644
+index b996fde481cebbbcce80a6c267591136db7cc0bc..696449eea858c2457091bdb44f7eefb750941997 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -28,6 +28,39 @@ public class ConsoleCommandCompleter implements Completer {
@@ -93,9 +93,9 @@ index b996fde481cebbbcce80a6c267591136db7cc0bc..e5af155d75f717d33c23e22ff8b96bb3
          final CraftServer server = this.server.server;
          final String buffer = line.line();
 +        // Async Tab Complete
-+        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
++        io.papermc.paper.event.server.AsyncTabCompleteEvent event;
 +        java.util.List<String> completions = new java.util.ArrayList<>();
-+        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), completions,
++        event = new io.papermc.paper.event.server.AsyncTabCompleteEvent(server.getConsoleSender(), completions,
 +            buffer, true, null);
 +        event.callEvent();
 +        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();

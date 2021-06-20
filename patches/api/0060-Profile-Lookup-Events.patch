@@ -6,15 +6,15 @@ Subject: [PATCH] Profile Lookup Events
 Adds a Pre Lookup Event and a Post Lookup Event so that plugins may prefill in profile data, and cache the responses from
 profiles that had to be looked up.
 
-diff --git a/src/main/java/com/destroystokyo/paper/event/profile/LookupProfileEvent.java b/src/main/java/com/destroystokyo/paper/event/profile/LookupProfileEvent.java
+diff --git a/src/main/java/io/papermc/paper/event/profile/LookupProfileEvent.java b/src/main/java/io/papermc/paper/event/profile/LookupProfileEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8df37c07cd55ddf110d1dd68183d7b697f7a6756
+index 0000000000000000000000000000000000000000..f8d09bd0278ef28711a81ad7dc6fcf773fe6bc2e
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/event/profile/LookupProfileEvent.java
++++ b/src/main/java/io/papermc/paper/event/profile/LookupProfileEvent.java
 @@ -0,0 +1,46 @@
-+package com.destroystokyo.paper.event.profile;
++package io.papermc.paper.event.profile;
 +
-+import com.destroystokyo.paper.profile.PlayerProfile;
++import io.papermc.paper.profile.PlayerProfile;
 +import org.bukkit.Bukkit;
 +import org.bukkit.event.Event;
 +import org.bukkit.event.HandlerList;
@@ -58,16 +58,16 @@ index 0000000000000000000000000000000000000000..8df37c07cd55ddf110d1dd68183d7b69
 +        return handlers;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/event/profile/PreLookupProfileEvent.java b/src/main/java/com/destroystokyo/paper/event/profile/PreLookupProfileEvent.java
+diff --git a/src/main/java/io/papermc/paper/event/profile/PreLookupProfileEvent.java b/src/main/java/io/papermc/paper/event/profile/PreLookupProfileEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4dcf6242c9acc62d030a94f67b78729ed29f8c85
+index 0000000000000000000000000000000000000000..67e451211282667f6e50399014f56e599975894a
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/event/profile/PreLookupProfileEvent.java
++++ b/src/main/java/io/papermc/paper/event/profile/PreLookupProfileEvent.java
 @@ -0,0 +1,108 @@
-+package com.destroystokyo.paper.event.profile;
++package io.papermc.paper.event.profile;
 +
-+import com.destroystokyo.paper.profile.PlayerProfile;
-+import com.destroystokyo.paper.profile.ProfileProperty;
++import io.papermc.paper.profile.PlayerProfile;
++import io.papermc.paper.profile.ProfileProperty;
 +import com.google.common.collect.ArrayListMultimap;
 +import org.bukkit.Bukkit;
 +import org.bukkit.event.Event;

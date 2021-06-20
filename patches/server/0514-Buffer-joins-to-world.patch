@@ -7,10 +7,10 @@ This patch buffers the number of logins which will attempt to join
 the world per tick, this attempts to reduce the impact that join floods
 has on the server
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index faa1b775e45563b93ac1d5b904938b1f5ad8d80c..545948f20efd6c8dd42140b565af94cd6b52b661 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 47acc628119c62ff39f30c9e29650bb9adbc92a8..ce56b717399111f8ec8c3d3eb1fb68ce94ea0d77 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -457,4 +457,9 @@ public class PaperConfig {
              maxPlayerAutoSavePerTick = (playerAutoSaveRate == -1 || playerAutoSaveRate > 100) ? 10 : 20;
          }
@@ -22,7 +22,7 @@ index faa1b775e45563b93ac1d5b904938b1f5ad8d80c..545948f20efd6c8dd42140b565af94cd
 +    }
  }
 diff --git a/src/main/java/net/minecraft/network/Connection.java b/src/main/java/net/minecraft/network/Connection.java
-index 34c642a9439faec095c58c6017a0dfd4b35a2401..01b9c360c6d687c6a774bf3375802be487cb0e0c 100644
+index a04070580d720f19acd7cb18400c1b52a7a637ba..ecf19fdee03f6bc25ae80b30b9cda91b26b49831 100644
 --- a/src/main/java/net/minecraft/network/Connection.java
 +++ b/src/main/java/net/minecraft/network/Connection.java
 @@ -37,6 +37,7 @@ import net.minecraft.network.protocol.Packet;
@@ -37,7 +37,7 @@ index 34c642a9439faec095c58c6017a0dfd4b35a2401..01b9c360c6d687c6a774bf3375802be4
      }
      // Paper end
  
-+    private static final int MAX_PER_TICK = com.destroystokyo.paper.PaperConfig.maxJoinsPerTick; // Paper
++    private static final int MAX_PER_TICK = io.papermc.paper.PaperConfig.maxJoinsPerTick; // Paper
 +    private static int joinAttemptsThisTick; // Paper
 +    private static int currTick; // Paper
      public void tick() {

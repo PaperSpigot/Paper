@@ -4,19 +4,19 @@ Date: Wed, 12 Sep 2018 18:53:35 +0300
 Subject: [PATCH] Add an API for CanPlaceOn and CanDestroy NBT values
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/Namespaced.java b/src/main/java/com/destroystokyo/paper/Namespaced.java
+diff --git a/src/main/java/io/papermc/paper/Namespaced.java b/src/main/java/io/papermc/paper/Namespaced.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..cd1a34b82870684e09e18c47169bd472ecbbb91f
+index 0000000000000000000000000000000000000000..a139349fcc698228fedf8544249d943b204f1cb7
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/Namespaced.java
++++ b/src/main/java/io/papermc/paper/Namespaced.java
 @@ -0,0 +1,40 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import org.jetbrains.annotations.NotNull;
 +
 +/**
 + * Represents a namespaced resource, see {@link org.bukkit.NamespacedKey} for single elements
-+ * or {@link com.destroystokyo.paper.NamespacedTag} for a collection of elements
++ * or {@link io.papermc.paper.NamespacedTag} for a collection of elements
 + *
 + * Namespaces may only contain lowercase alphanumeric characters, periods,
 + * underscores, and hyphens.
@@ -25,7 +25,7 @@ index 0000000000000000000000000000000000000000..cd1a34b82870684e09e18c47169bd472
 + * underscores, hyphens, and forward slashes.
 + * <p>
 + * You should not be implementing this interface yourself, use {@link org.bukkit.NamespacedKey}
-+ * or {@link com.destroystokyo.paper.NamespacedTag} as needed instead.
++ * or {@link io.papermc.paper.NamespacedTag} as needed instead.
 + */
 +public interface Namespaced {
 +    /**
@@ -50,13 +50,13 @@ index 0000000000000000000000000000000000000000..cd1a34b82870684e09e18c47169bd472
 +    @NotNull
 +    String getKey();
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/NamespacedTag.java b/src/main/java/com/destroystokyo/paper/NamespacedTag.java
+diff --git a/src/main/java/io/papermc/paper/NamespacedTag.java b/src/main/java/io/papermc/paper/NamespacedTag.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..28f3fda950999a9c964a3608042ca60567ae1d6a
+index 0000000000000000000000000000000000000000..22fdfc6490a21d98ebb552e866a9cbfa8ed9c526
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/NamespacedTag.java
++++ b/src/main/java/io/papermc/paper/NamespacedTag.java
 @@ -0,0 +1,142 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.base.Preconditions;
 +import java.util.Locale;
@@ -77,7 +77,7 @@ index 0000000000000000000000000000000000000000..28f3fda950999a9c964a3608042ca605
 + *
 + */
 +// Paper - entire class, based on org.bukkit.NamespacedKey
-+public final class NamespacedTag implements com.destroystokyo.paper.Namespaced {
++public final class NamespacedTag implements io.papermc.paper.Namespaced {
 +
 +    /**
 +     * The namespace representing all inbuilt keys.
@@ -199,7 +199,7 @@ index 0000000000000000000000000000000000000000..28f3fda950999a9c964a3608042ca605
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/NamespacedKey.java b/src/main/java/org/bukkit/NamespacedKey.java
-index c65f0d6569c130b4920a9e71ad24af6427f1f030..01bcb3a1bdb5accdf844d0178cec3d25746b3eaa 100644
+index c65f0d6569c130b4920a9e71ad24af6427f1f030..295e5c64b7c1994af2845611f0241f32dfd1a7d4 100644
 --- a/src/main/java/org/bukkit/NamespacedKey.java
 +++ b/src/main/java/org/bukkit/NamespacedKey.java
 @@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
@@ -207,7 +207,7 @@ index c65f0d6569c130b4920a9e71ad24af6427f1f030..01bcb3a1bdb5accdf844d0178cec3d25
   *
   */
 -public final class NamespacedKey implements net.kyori.adventure.key.Key { // Paper - implement Key
-+public final class NamespacedKey implements net.kyori.adventure.key.Key, com.destroystokyo.paper.Namespaced { // Paper - implement Key and Namespaced
++public final class NamespacedKey implements net.kyori.adventure.key.Key, io.papermc.paper.Namespaced { // Paper - implement Key and Namespaced
  
      /**
       * The namespace representing all inbuilt keys.
@@ -226,7 +226,7 @@ index c65f0d6569c130b4920a9e71ad24af6427f1f030..01bcb3a1bdb5accdf844d0178cec3d25
          return key;
      }
 diff --git a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
-index 1c362636c56db0e6c118171ba367c43c4f7cff33..01b462fccce71cef3398dd43944046f322b8e57e 100644
+index 1c362636c56db0e6c118171ba367c43c4f7cff33..3dcc264af54791da151af6ed4f49f8307b097e55 100644
 --- a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
 @@ -432,4 +432,87 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
@@ -274,33 +274,33 @@ index 1c362636c56db0e6c118171ba367c43c4f7cff33..01b462fccce71cef3398dd43944046f3
 +    /**
 +     * Gets the collection of namespaced keys that the item can destroy in {@link org.bukkit.GameMode#ADVENTURE}
 +     *
-+     * @return Set of {@link com.destroystokyo.paper.Namespaced}
++     * @return Set of {@link io.papermc.paper.Namespaced}
 +     */
 +    @NotNull
-+    Set<com.destroystokyo.paper.Namespaced> getDestroyableKeys();
++    Set<io.papermc.paper.Namespaced> getDestroyableKeys();
 +
 +    /**
 +     * Sets the collection of namespaced keys that the item can destroy in {@link org.bukkit.GameMode#ADVENTURE}
 +     *
-+     * @param canDestroy Collection of {@link com.destroystokyo.paper.Namespaced}
++     * @param canDestroy Collection of {@link io.papermc.paper.Namespaced}
 +     */
-+    void setDestroyableKeys(@NotNull Collection<com.destroystokyo.paper.Namespaced> canDestroy);
++    void setDestroyableKeys(@NotNull Collection<io.papermc.paper.Namespaced> canDestroy);
 +
 +    /**
 +     * Gets the collection of namespaced keys that the item can be placed on in {@link org.bukkit.GameMode#ADVENTURE}
 +     *
-+     * @return Set of {@link com.destroystokyo.paper.Namespaced}
++     * @return Set of {@link io.papermc.paper.Namespaced}
 +     */
 +    @NotNull
-+    Set<com.destroystokyo.paper.Namespaced> getPlaceableKeys();
++    Set<io.papermc.paper.Namespaced> getPlaceableKeys();
 +
 +    /**
 +     * Sets the set of namespaced keys that the item can be placed on in {@link org.bukkit.GameMode#ADVENTURE}
 +     *
-+     * @param canPlaceOn Collection of {@link com.destroystokyo.paper.Namespaced}
++     * @param canPlaceOn Collection of {@link io.papermc.paper.Namespaced}
 +     */
 +    @NotNull
-+    void setPlaceableKeys(@NotNull Collection<com.destroystokyo.paper.Namespaced> canPlaceOn);
++    void setPlaceableKeys(@NotNull Collection<io.papermc.paper.Namespaced> canPlaceOn);
 +
 +    /**
 +     * Checks for the existence of any keys that the item can be placed on

@@ -10,7 +10,7 @@ Also optimise the stream.anyMatch statement to move to a bitset
 where we can replace the call with a single bitwise operation.
 
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/Goal.java b/src/main/java/net/minecraft/world/entity/ai/goal/Goal.java
-index d92ddc8a4c0f5249b7ff4f97af1ea3db413b2983..8c2ec30a35e86f2b30863045b586a67e485c624b 100644
+index d92ddc8a4c0f5249b7ff4f97af1ea3db413b2983..7d2648c421769044595a350da9897346cadc518e 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/Goal.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/goal/Goal.java
 @@ -3,7 +3,8 @@ package net.minecraft.world.entity.ai.goal;
@@ -19,7 +19,7 @@ index d92ddc8a4c0f5249b7ff4f97af1ea3db413b2983..8c2ec30a35e86f2b30863045b586a67e
  public abstract class Goal {
 -    private final EnumSet<Goal.Flag> flags = EnumSet.noneOf(Goal.Flag.class);
 +    private final EnumSet<Goal.Flag> flags = EnumSet.noneOf(Goal.Flag.class); // Paper unused, but dummy to prevent plugins from crashing as hard. Theyll need to support paper in a special case if this is super important, but really doesn't seem like it would be.
-+    private final com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> goalTypes = new com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<>(Goal.Flag.class); // Paper - remove streams from pathfindergoalselector
++    private final io.papermc.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> goalTypes = new io.papermc.paper.util.set.OptimizedSmallEnumSet<>(Goal.Flag.class); // Paper - remove streams from pathfindergoalselector
  
      public abstract boolean canUse();
  
@@ -43,14 +43,14 @@ index d92ddc8a4c0f5249b7ff4f97af1ea3db413b2983..8c2ec30a35e86f2b30863045b586a67e
 -    public EnumSet<Goal.Flag> getFlags() {
 -        return this.flags;
 +    // Paper start - remove streams from pathfindergoalselector
-+    public com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<Goal.Flag> getGoalTypes() {
++    public io.papermc.paper.util.set.OptimizedSmallEnumSet<Goal.Flag> getGoalTypes() {
 +        return this.goalTypes;
 +        // Paper end - remove streams from pathfindergoalselector
      }
  
      public static enum Flag {
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/GoalSelector.java b/src/main/java/net/minecraft/world/entity/ai/goal/GoalSelector.java
-index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3f498ffe7 100644
+index 69bf112655615337e0df3ea56b9e42fa5ff70430..53586c9626aaf503a12ca5eb526f3db01c014bdc 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/GoalSelector.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/goal/GoalSelector.java
 @@ -28,10 +28,12 @@ public class GoalSelector {
@@ -59,7 +59,7 @@ index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3
      private final Supplier<ProfilerFiller> profiler;
 -    private final EnumSet<Goal.Flag> disabledFlags = EnumSet.noneOf(Goal.Flag.class);
 +    private final EnumSet<Goal.Flag> disabledFlags = EnumSet.noneOf(Goal.Flag.class); // Paper unused, but dummy to prevent plugins from crashing as hard. Theyll need to support paper in a special case if this is super important, but really doesn't seem like it would be.
-+    private final com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> goalTypes = new com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<>(Goal.Flag.class); // Paper - remove streams from pathfindergoalselector
++    private final io.papermc.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> goalTypes = new io.papermc.paper.util.set.OptimizedSmallEnumSet<>(Goal.Flag.class); // Paper - remove streams from pathfindergoalselector
      private int tickCount;
      private int newGoalRate = 3;
      private int curRate;
@@ -141,7 +141,7 @@ index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3
 +                continue;
 +            }
 +
-+            com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> wrappedGoalSet = wrappedGoal.getGoalTypes();
++            io.papermc.paper.util.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> wrappedGoalSet = wrappedGoal.getGoalTypes();
 +
 +            if (this.goalTypes.hasCommonElements(wrappedGoalSet)) {
 +                continue;
@@ -151,7 +151,7 @@ index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3
 +            int wrappedGoalSize = wrappedGoalSet.size();
 +            for (int i = 0; i < wrappedGoalSize; ++i) {
 +                Goal.Flag type = PATHFINDER_GOAL_TYPES[Long.numberOfTrailingZeros(iterator1)];
-+                iterator1 ^= com.destroystokyo.paper.util.math.IntegerUtil.getTrailingBit(iterator1);
++                iterator1 ^= io.papermc.paper.util.math.IntegerUtil.getTrailingBit(iterator1);
 +                WrappedGoal wrapped = this.lockedFlags.getOrDefault(type, GoalSelector.NO_GOAL);
 +                if (!wrapped.canBeReplacedBy(wrappedGoal)) {
 +                    continue goal_update_loop;
@@ -166,7 +166,7 @@ index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3
 +            wrappedGoalSize = wrappedGoalSet.size();
 +            for (int i = 0; i < wrappedGoalSize; ++i) {
 +                Goal.Flag type = PATHFINDER_GOAL_TYPES[Long.numberOfTrailingZeros(iterator1)];
-+                iterator1 ^= com.destroystokyo.paper.util.math.IntegerUtil.getTrailingBit(iterator1);
++                iterator1 ^= io.papermc.paper.util.math.IntegerUtil.getTrailingBit(iterator1);
 +                WrappedGoal wrapped = this.lockedFlags.getOrDefault(type, GoalSelector.NO_GOAL);
 +
 +                wrapped.stop();
@@ -205,7 +205,7 @@ index 69bf112655615337e0df3ea56b9e42fa5ff70430..faa53d08a12cc7441c670cae6d301de3
  
      public void setControlFlag(Goal.Flag control, boolean enabled) {
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/WrappedGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/WrappedGoal.java
-index 1e915b999f4261fb27846a0e559ea22e4b09b4db..037cc5d2b41161e040fc9b264a0dd04827c29681 100644
+index 1e915b999f4261fb27846a0e559ea22e4b09b4db..f6916a4f9b8cbb48bcc0f9606400c9045102890e 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/WrappedGoal.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/goal/WrappedGoal.java
 @@ -58,9 +58,10 @@ public class WrappedGoal extends Goal {
@@ -216,7 +216,7 @@ index 1e915b999f4261fb27846a0e559ea22e4b09b4db..037cc5d2b41161e040fc9b264a0dd048
 -    public EnumSet<Goal.Flag> getFlags() {
 -        return this.goal.getFlags();
 +    // Paper start - remove streams from pathfindergoalselector
-+    public com.destroystokyo.paper.util.set.OptimizedSmallEnumSet<Goal.Flag> getGoalTypes() {
++    public io.papermc.paper.util.set.OptimizedSmallEnumSet<Goal.Flag> getGoalTypes() {
 +        return this.goal.getGoalTypes();
 +        // Paper end - remove streams from pathfindergoalselector
      }

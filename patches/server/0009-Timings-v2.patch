@@ -668,10 +668,10 @@ index 0000000000000000000000000000000000000000..0fda52841b5e1643efeda92106124998
 +        return Timings.ofSafe(((PrimaryLevelData) worldserver.getLevelData()).getLevelName() + " - Scheduled " + timingsType);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index da922f395f0fff0881ead893c900c5b2623f48f0..1d03a79e9010bc514b72a81ba0ad4a62aeff1bb7 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 8420b42f20efaf897db1938bbab2bd13c7055f7c..58dfdc58e811155001c4b0d23c4dbc29e06e1b4c 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -14,12 +14,15 @@ import java.util.concurrent.TimeUnit;
  import java.util.logging.Level;
  import java.util.regex.Pattern;
@@ -963,7 +963,7 @@ index b0ff982603e61805e3a0426aa8376330c73d9cf4..cf711f7fecdab70ff2ee48c87a3a1f08
                  i = this.context.runTopCommand(function, source);
              } finally {
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index fe83f13d71f84591f5506e1c6b9dfbf9fba680bd..844d3b910cfb1c073b8b58b0eff3f28af5453701 100644
+index 8cc7c22d5c0b1a07ebc7a1c1c3ef62ac9c17b46f..38144fbd084ded03111a91d21bef6e7b5b61f8a8 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -66,8 +66,9 @@ import org.apache.logging.log4j.Logger;
@@ -1044,7 +1044,7 @@ index fe83f13d71f84591f5506e1c6b9dfbf9fba680bd..844d3b910cfb1c073b8b58b0eff3f28a
      }
  
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 33d17e69fac035c421345e1a8c6eb214a54efc46..3b1565309165e10b147d08b8245ea0bce50dc3c2 100644
+index 5cc8f924a61664d0c6347ea29db9075b0220b161..5e90fc8286b8f21837b6ebe16da178202c634e44 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -1,7 +1,9 @@
@@ -1130,7 +1130,7 @@ index 33d17e69fac035c421345e1a8c6eb214a54efc46..3b1565309165e10b147d08b8245ea0bc
  
      public void broadcast(Entity entity, Packet<?> packet) {
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 508adf5df266365992f9ee64f6592465e879deaa..eeb43a243bfab978e17fd4f2f052029eefdbb090 100644
+index d904d9ecc349399e3b2a65c77a0e73b774262f80..aedb6485d68acf19252bfdf4e32d0c337afad7a4 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -349,13 +349,15 @@ public class ServerChunkCache extends ChunkSource {
@@ -1616,7 +1616,7 @@ index 9f68aa235949520b445b368782ccde6b0e26859d..67bc396d880771a135b1b95ffad79952
          if (!this.level.isClientSide && this.isSensitiveToWater() && this.isInWaterRainOrBubble()) {
              this.hurt(DamageSource.DROWN, 1.0F);
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index e9dc71fb74698b2f11220e4eb379f21610899d97..b73b40e8f55a6f9e671878b81ef513b9416c9c8c 100644
+index f18b2918c0a157f327165ca8ac0b583609b17f38..91bf933b3def628d9d1365e5d706fc61616210a5 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -82,7 +82,6 @@ import org.bukkit.Bukkit;
@@ -1629,7 +1629,7 @@ index e9dc71fb74698b2f11220e4eb379f21610899d97..b73b40e8f55a6f9e671878b81ef513b9
  import org.bukkit.craftbukkit.block.data.CraftBlockData;
 @@ -149,7 +148,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
  
-     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
+     public final io.papermc.paper.PaperWorldConfig paperConfig; // Paper
  
 -    public final SpigotTimings.WorldTimingsHandler timings; // Spigot
 +    public final co.aikar.timings.WorldTimingsHandler timings; // Paper
@@ -1754,7 +1754,7 @@ index 92b042080f06fb95958ff5e824830a84f2d1f2a6..7b333e2d6884b272abefbc820bcce802
      private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
      public CraftPersistentDataContainer persistentDataContainer;
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 0d0f721fe80c52d92d91843ae9970c5fd55ca143..3e2bc640a06667f0d4f3c2367ac794514a1be35c 100644
+index f5eb68e9071bbc060826db1e39fff9c766fba200..01400b77b219667c31e84751afe7e9749dbe7dab 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -725,6 +725,7 @@ public class LevelChunk implements ChunkAccess {
@@ -1812,7 +1812,7 @@ index 468b67babc628f7ff7c6fa138ed7944a8d77f0a6..22d5c4cc3aea19cbf53ea320765ecceb
  
      private static CompoundTag packStructureData(ServerLevel world, ChunkPos chunkcoordintpair, Map<StructureFeature<?>, StructureStart<?>> map, Map<StructureFeature<?>, LongSet> map1) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 933d5bd4b5871af83d2db5b52edac217fdf87188..bcd056ac91775c72809284bbc20c366e1ca31350 100644
+index 9e50728ea5df4cc17482543411bf37555bde158a..7e83e1ac6f6eef0a2d5e18a384e7c619b059f6d4 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2077,12 +2077,31 @@ public final class CraftServer implements Server {
@@ -1841,7 +1841,7 @@ index 933d5bd4b5871af83d2db5b52edac217fdf87188..bcd056ac91775c72809284bbc20c366e
 +        @Override
 +        public YamlConfiguration getPaperConfig()
 +        {
-+            return com.destroystokyo.paper.PaperConfig.config;
++            return io.papermc.paper.PaperConfig.config;
 +        }
 +
          @Override
@@ -2212,7 +2212,7 @@ index e52ef47b783785dc214746b678e7b549aea9a274..3d90b3426873a3528af14f7f1ab0adae
          this.value = value;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index 456f0e9e827f61ebdcb42dbc00f5d374e318597f..0f0ffedd2cc3cf1b30b338d8ae3a8ad388dfde53 100644
+index 456f0e9e827f61ebdcb42dbc00f5d374e318597f..a5d6bbaf42ca2724e9883ad827bacb5923a5ed39 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -156,6 +156,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
@@ -2235,7 +2235,7 @@ index 456f0e9e827f61ebdcb42dbc00f5d374e318597f..0f0ffedd2cc3cf1b30b338d8ae3a8ad3
 +    // Paper start
 +    @Override
 +    public String getTimingsServerName() {
-+        return com.destroystokyo.paper.PaperConfig.timingsServerName;
++        return io.papermc.paper.PaperConfig.timingsServerName;
 +    }
 +    // Paper end
 +

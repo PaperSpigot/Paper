@@ -11,7 +11,7 @@ Tested-by: Mariell Hoversholm <proximyst@proximyst.com>
 Reviewed-by: Mariell Hoversholm <proximyst@proximyst.com>
 
 diff --git a/src/main/java/net/minecraft/network/Connection.java b/src/main/java/net/minecraft/network/Connection.java
-index 35a03d15f87be8eb86d65e1863a3e0cb2dd201ee..c203a78a28e6457bd25b34b5c5ecaa35e3f9211e 100644
+index 2fb236cf0210d0842e5744db97e05db44c8e4847..02b1aaed1836cf60ef6c3e4cbdd99cf43f636d54 100644
 --- a/src/main/java/net/minecraft/network/Connection.java
 +++ b/src/main/java/net/minecraft/network/Connection.java
 @@ -614,6 +614,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -27,7 +27,7 @@ index 35a03d15f87be8eb86d65e1863a3e0cb2dd201ee..c203a78a28e6457bd25b34b5c5ecaa35
      }
      // Spigot End
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index f5cb59aa72dfd22ec143360a131818bef4f1b701..eeefbb86cb88bd1b132bb6e22b4a4572cfb5e22c 100644
+index 4face4f2399e53aa73ab10ca2ff9297099d1ca9b..fd84348a7915912e3a15cb3f71a3f03ceba4f0b8 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -230,6 +230,20 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -41,7 +41,7 @@ index f5cb59aa72dfd22ec143360a131818bef4f1b701..eeefbb86cb88bd1b132bb6e22b4a4572
 +                DedicatedServer.LOGGER.fatal("**** INVALID CONFIGURATION!");
 +                DedicatedServer.LOGGER.fatal("You are trying to use a Unix domain socket but you're not on a supported OS.");
 +                return false;
-+            } else if (!com.destroystokyo.paper.PaperConfig.velocitySupport && !org.spigotmc.SpigotConfig.bungee) {
++            } else if (!io.papermc.paper.PaperConfig.velocitySupport && !org.spigotmc.SpigotConfig.bungee) {
 +                DedicatedServer.LOGGER.fatal("**** INVALID CONFIGURATION!");
 +                DedicatedServer.LOGGER.fatal("Unix domain sockets require IPs to be forwarded from a proxy.");
 +                return false;
@@ -107,7 +107,7 @@ index 5baf51571398d6af626dfa6be3b2e42d6dd29059..961660f6f9e00b93252519e38b74c66c
      }
  
 diff --git a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
-index 4c44f06ba18cfa2d889d0dd57fdd7eb79971c8c6..e0cd786f130e34b3401d40663e1548fc0076f74a 100644
+index e13e946a73c36f2a592012b57b08fbbb8aaf0efa..490aea41b631f148cb851b90baeb21597eaefa6e 100644
 --- a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 @@ -44,6 +44,7 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL

@@ -4,13 +4,13 @@ Date: Tue, 10 Oct 2017 18:45:20 +0200
 Subject: [PATCH] Expose client protocol version and virtual host
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
+diff --git a/src/main/java/io/papermc/paper/network/PaperNetworkClient.java b/src/main/java/io/papermc/paper/network/PaperNetworkClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a5a7624f1f372a26b982836cd31cff15e2589e9b
+index 0000000000000000000000000000000000000000..507606f19e88519622da2c97996211941d506ba8
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
++++ b/src/main/java/io/papermc/paper/network/PaperNetworkClient.java
 @@ -0,0 +1,49 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
 +import java.net.InetSocketAddress;
 +
@@ -75,7 +75,7 @@ index 242f76a2ee2ca3d67851647bbb14cd123c378e0b..1d46187969b5792c255d0bf1966b427b
      public Connection(PacketFlow side) {
          this.receiving = side;
 diff --git a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
-index c4ba069f5124ec151e05813beddf293fddc3b804..484221e5a9c246aa91e0eacef3911b0e9ecff401 100644
+index ba58f4b960b5446394a93954c204aabb4d409696..a0ccee807f1b40a2d25dd44151afcd9f49522fc0 100644
 --- a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 @@ -150,6 +150,10 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
@@ -84,13 +84,13 @@ index c4ba069f5124ec151e05813beddf293fddc3b804..484221e5a9c246aa91e0eacef3911b0e
  
 +        // Paper start - NetworkClient implementation
 +        this.connection.protocolVersion = packet.getProtocolVersion();
-+        this.connection.virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(packet.hostName, packet.port);
++        this.connection.virtualHost = io.papermc.paper.network.PaperNetworkClient.prepareVirtualHost(packet.hostName, packet.port);
 +        // Paper end
      }
  
      @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 08be81ecd34fa2f0289b10179ccc788307a09813..6549ffa087f9955849024fa62cfca9e91cbecf30 100644
+index 69ad2194e4485245aa4edf173261d5ac4b69e8c6..f5f6c4172ba4651fef4abb42094a7e2dcc59b5a6 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -192,6 +192,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

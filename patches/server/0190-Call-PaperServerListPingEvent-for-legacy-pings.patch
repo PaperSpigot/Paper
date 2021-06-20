@@ -4,15 +4,15 @@ Date: Wed, 11 Oct 2017 19:30:51 +0200
 Subject: [PATCH] Call PaperServerListPingEvent for legacy pings
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
+diff --git a/src/main/java/io/papermc/paper/network/PaperLegacyStatusClient.java b/src/main/java/io/papermc/paper/network/PaperLegacyStatusClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..74c012fd40491f1d870fbc1aa8c318a2197eb106
+index 0000000000000000000000000000000000000000..64784ac085cf9b3e4efaf18f94fdd0e2a719f368
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
++++ b/src/main/java/io/papermc/paper/network/PaperLegacyStatusClient.java
 @@ -0,0 +1,73 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
-+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import io.papermc.paper.event.server.PaperServerListPingEvent;
 +import net.minecraft.server.MinecraftServer;
 +import org.apache.commons.lang3.StringUtils;
 +import org.bukkit.ChatColor;
@@ -84,13 +84,13 @@ index 0000000000000000000000000000000000000000..74c012fd40491f1d870fbc1aa8c318a2
 +
 +}
 diff --git a/src/main/java/net/minecraft/server/network/LegacyQueryHandler.java b/src/main/java/net/minecraft/server/network/LegacyQueryHandler.java
-index 6a759cfd0c2df4daaf126d12d20ac8d701e41f9d..3962e82d4e4c5f792a37e825891e6960e737452d 100644
+index 6a759cfd0c2df4daaf126d12d20ac8d701e41f9d..0a6536a150d769bd19b9bacf9baa4d86d9487132 100644
 --- a/src/main/java/net/minecraft/server/network/LegacyQueryHandler.java
 +++ b/src/main/java/net/minecraft/server/network/LegacyQueryHandler.java
 @@ -1,5 +1,7 @@
  package net.minecraft.server.network;
  
-+import com.destroystokyo.paper.network.PaperLegacyStatusClient;
++import io.papermc.paper.network.PaperLegacyStatusClient;
 +
  import io.netty.buffer.ByteBuf;
  import io.netty.buffer.Unpooled;
@@ -101,7 +101,7 @@ index 6a759cfd0c2df4daaf126d12d20ac8d701e41f9d..3962e82d4e4c5f792a37e825891e6960
              String s;
 -            org.bukkit.event.server.ServerListPingEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callServerListPingEvent(minecraftserver.server, inetsocketaddress.getAddress(), minecraftserver.getMotd(), minecraftserver.getPlayerCount(), minecraftserver.getMaxPlayers()); // CraftBukkit
 +            //org.bukkit.event.server.ServerListPingEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callServerListPingEvent(minecraftserver.server, inetsocketaddress.getAddress(), minecraftserver.getMotd(), minecraftserver.getPlayerCount(), minecraftserver.getMaxPlayers()); // CraftBukkit // Paper
-+            com.destroystokyo.paper.event.server.PaperServerListPingEvent event; // Paper
++            io.papermc.paper.event.server.PaperServerListPingEvent event; // Paper
  
              switch (i) {
                  case 0:
@@ -139,8 +139,8 @@ index 6a759cfd0c2df4daaf126d12d20ac8d701e41f9d..3962e82d4e4c5f792a37e825891e6960
  
 -        String response = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d",
 -                Byte.MAX_VALUE, server.getServerVersion(), server.getMotd(), server.getPlayerCount(), server.getMaxPlayers());
-+        InetSocketAddress virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(host, port);
-+        com.destroystokyo.paper.event.server.PaperServerListPingEvent event = PaperLegacyStatusClient.processRequest(
++        InetSocketAddress virtualHost = io.papermc.paper.network.PaperNetworkClient.prepareVirtualHost(host, port);
++        io.papermc.paper.event.server.PaperServerListPingEvent event = PaperLegacyStatusClient.processRequest(
 +                server, (InetSocketAddress) ctx.channel().remoteAddress(), protocolVersion, virtualHost);
 +        if (event == null) {
 +            ctx.close();

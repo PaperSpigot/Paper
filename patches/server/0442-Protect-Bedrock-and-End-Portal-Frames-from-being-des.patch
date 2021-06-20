@@ -12,10 +12,10 @@ So protect them from a multitude of methods of destroying them.
 A config is provided if you rather let players use these exploits, and let
 them destroy the worlds End Portals and get on top of the nether easy.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 78271b400c79578d043b20a5389a37b1bef9a70d..5f3b0d95cc7e6a0434d78ea7305a70689c41c71c 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 86d481601f6959879c856f32b25bdb99f45525c6..1cef7f4d0f1964019254e906317d247a930ed89e 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -416,4 +416,17 @@ public class PaperConfig {
      private static void midTickChunkTasks() {
          midTickChunkTasks = getInt("settings.chunk-tasks-per-tick", midTickChunkTasks);
@@ -56,7 +56,7 @@ index cdf214fca3b0055efa56702470d9d2f890a8aead..a12af10e28f2d023ba6f916b5e7a5353
  
                      this.level.getProfiler().push("explosion_blocks");
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index c84070d05d325a8f49c3918cc112087b9c1074e9..81c107edb59b2068bdc78617a5ca54aa15f15c0f 100644
+index c5a696ea71f0c8a6811814d0182f57fb95c66f00..73a0721307a5f9bf4014158bcac662bec4e52007 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -424,6 +424,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
@@ -71,7 +71,7 @@ index c84070d05d325a8f49c3918cc112087b9c1074e9..81c107edb59b2068bdc78617a5ca54aa
              if (blockstate == null) {
                  blockstate = CapturedBlockState.getTreeBlockState(this, pos, flags);
 diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
-index 27016f964d2f6458298a9052d031a44b3d9f5f4b..878cdfc49253e7916d038495f79fec7cce75aa50 100644
+index 27016f964d2f6458298a9052d031a44b3d9f5f4b..4904008a96e3c754850ca51e6faec37f79e26b9d 100644
 --- a/src/main/java/net/minecraft/world/level/block/Block.java
 +++ b/src/main/java/net/minecraft/world/level/block/Block.java
 @@ -91,6 +91,19 @@ public class Block extends BlockBehaviour implements ItemLike {
@@ -79,7 +79,7 @@ index 27016f964d2f6458298a9052d031a44b3d9f5f4b..878cdfc49253e7916d038495f79fec7c
      private BlockState defaultBlockState;
      // Paper start
 +    public final boolean isDestroyable() {
-+        return com.destroystokyo.paper.PaperConfig.allowBlockPermanentBreakingExploits ||
++        return io.papermc.paper.PaperConfig.allowBlockPermanentBreakingExploits ||
 +            this != Blocks.BEDROCK &&
 +            this != Blocks.END_PORTAL_FRAME &&
 +            this != Blocks.END_PORTAL &&
@@ -95,7 +95,7 @@ index 27016f964d2f6458298a9052d031a44b3d9f5f4b..878cdfc49253e7916d038495f79fec7c
      public co.aikar.timings.Timing getTiming() {
          if (timing == null) {
 diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index c345bd7542f3ffa09719864887e1516f1182e7e3..4eac07022a7d896ee8921afa6d35cba7f0c89941 100644
+index c345bd7542f3ffa09719864887e1516f1182e7e3..a94a21bbf88f84112ee54e8bb6a0ed842a5f8fef 100644
 --- a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -200,6 +200,12 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -104,7 +104,7 @@ index c345bd7542f3ffa09719864887e1516f1182e7e3..4eac07022a7d896ee8921afa6d35cba7
          Direction enumdirection = (Direction) state.getValue(PistonBaseBlock.FACING);
 +        // Paper start - prevent retracting when we're facing the wrong way (we were replaced before retraction could occur)
 +        Direction directionQueuedAs = Direction.from3DDataValue(data & 7); // Paper - copied from below
-+        if (!com.destroystokyo.paper.PaperConfig.allowBlockPermanentBreakingExploits && enumdirection != directionQueuedAs) {
++        if (!io.papermc.paper.PaperConfig.allowBlockPermanentBreakingExploits && enumdirection != directionQueuedAs) {
 +            return false;
 +        }
 +        // Paper end - prevent retracting when we're facing the wrong way
@@ -127,7 +127,7 @@ index c345bd7542f3ffa09719864887e1516f1182e7e3..4eac07022a7d896ee8921afa6d35cba7
 -                world.removeBlock(pos.relative(enumdirection), false);
 +                // Paper start - fix headless pistons breaking blocks
 +                BlockPos headPos = pos.relative(enumdirection);
-+                if (com.destroystokyo.paper.PaperConfig.allowBlockPermanentBreakingExploits || world.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, enumdirection)) { // double check to make sure we're not a headless piston.
++                if (io.papermc.paper.PaperConfig.allowBlockPermanentBreakingExploits || world.getBlockState(headPos) == Blocks.PISTON_HEAD.defaultBlockState().setValue(FACING, enumdirection)) { // double check to make sure we're not a headless piston.
 +                    world.removeBlock(headPos, false);
 +                } else {
 +                    ((ServerLevel)world).getChunkSource().blockChanged(headPos); // ... fix client desync

@@ -6,12 +6,12 @@ Subject: [PATCH] Add a way to get translation keys for blocks, entities and
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 64c304cab8c7c4c9c29f73465f99c11f224a72bd..b31eaa1459690d7f54989ba7a01f96a3f0d8d3b9 100644
+index afaefc31371d2c30b0819fd111be432258a036d4..30d1e7e060d9599c3d8cb13ea94358b7053dd59c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -777,5 +777,10 @@ public class CraftBlock implements Block {
-     public com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup() {
-         return new com.destroystokyo.paper.block.CraftBlockSoundGroup(getNMSBlock().defaultBlockState().getSoundType());
+     public io.papermc.paper.block.BlockSoundGroup getSoundGroup() {
+         return new io.papermc.paper.block.CraftBlockSoundGroup(getNMSBlock().defaultBlockState().getSoundType());
      }
 +
 +    @Override
@@ -21,7 +21,7 @@ index 64c304cab8c7c4c9c29f73465f99c11f224a72bd..b31eaa1459690d7f54989ba7a01f96a3
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index d18f8d7c699893740fa709ef1f0caa4390e7eb20..736cbdc118b7a19b724a3afd433927e8e8316d23 100644
+index 7291bd8392e7bcdd1bbdf63a609c678e0a4b4840..16bcc7367ea7bd46b5564e4f57d67b189a8d2946 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -43,6 +43,7 @@ import org.bukkit.Registry;

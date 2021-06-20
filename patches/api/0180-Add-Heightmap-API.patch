@@ -5,13 +5,13 @@ Subject: [PATCH] Add Heightmap API
 
 Changed to use upstream's heightmap API - Machine_Maker
 
-diff --git a/src/main/java/com/destroystokyo/paper/HeightmapType.java b/src/main/java/com/destroystokyo/paper/HeightmapType.java
+diff --git a/src/main/java/io/papermc/paper/HeightmapType.java b/src/main/java/io/papermc/paper/HeightmapType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..709e44ea1b14ab6917501c928e689cc6cbdf4bb4
+index 0000000000000000000000000000000000000000..a6ec379be71eebcab1d840f15b574cdaed8765f4
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/HeightmapType.java
++++ b/src/main/java/io/papermc/paper/HeightmapType.java
 @@ -0,0 +1,39 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import org.bukkit.*;
 +
@@ -51,7 +51,7 @@ index 0000000000000000000000000000000000000000..709e44ea1b14ab6917501c928e689cc6
 +    SOLID_OR_LIQUID_NO_LEAVES;
 +}
 diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
-index d5d67b3d84cd88ed0f858497e68535ec0162c700..432d5711b7ec34eafeb27df82d367612dfe1fe54 100644
+index d5d67b3d84cd88ed0f858497e68535ec0162c700..52a4a5a372224a2f6de68d25dab6b6febf34a824 100644
 --- a/src/main/java/org/bukkit/Location.java
 +++ b/src/main/java/org/bukkit/Location.java
 @@ -638,6 +638,47 @@ public class Location implements Cloneable, ConfigurationSerializable {
@@ -75,12 +75,12 @@ index d5d67b3d84cd88ed0f858497e68535ec0162c700..432d5711b7ec34eafeb27df82d367612
 +     * @param heightmap The heightmap to use for finding the highest y location.
 +     * @return A copy of this location except with y = getWorld().getHighestBlockYAt(this.getBlockX(), this.getBlockZ(), heightmap)
 +     * @throws NullPointerException if {{@link #getWorld()}} is {@code null}
-+     * @throws UnsupportedOperationException if {@link World#getHighestBlockYAt(int, int, com.destroystokyo.paper.HeightmapType)} does not support the specified heightmap
++     * @throws UnsupportedOperationException if {@link World#getHighestBlockYAt(int, int, io.papermc.paper.HeightmapType)} does not support the specified heightmap
 +     * @deprecated Use {@link org.bukkit.Location#toHighestLocation(HeightMap)}
 +     */
 +    @NotNull
 +    @Deprecated
-+    public Location toHighestLocation(@NotNull final com.destroystokyo.paper.HeightmapType heightmap) {
++    public Location toHighestLocation(@NotNull final io.papermc.paper.HeightmapType heightmap) {
 +        final Location ret = this.clone();
 +        ret.setY(this.getWorld().getHighestBlockYAt(this, heightmap));
 +        return ret;
@@ -103,7 +103,7 @@ index d5d67b3d84cd88ed0f858497e68535ec0162c700..432d5711b7ec34eafeb27df82d367612
       * Creates explosion at this location with given power
       *
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index b80a2fe9eb6824d986126e451900a62244d3a8e7..6fe2875f95bb600606d66e2f7113d325d10a9b9c 100644
+index b80a2fe9eb6824d986126e451900a62244d3a8e7..515a5ea79158c8ccb1787b9070aeb48da205e4b0 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -160,6 +160,87 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
@@ -120,15 +120,15 @@ index b80a2fe9eb6824d986126e451900a62244d3a8e7..6fe2875f95bb600606d66e2f7113d325
 +     *
 +     * @param x The block's x-coordinate.
 +     * @param z The block's z-coordinate.
-+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
++     * @param heightmap The specified heightmap to use. See {@link io.papermc.paper.HeightmapType}
 +     * @return The highest block's y-coordinate at (x, z) that matches the specified heightmap's conditions.
 +     * @throws UnsupportedOperationException If the heightmap type is not supported.
 +     * @deprecated Upstream has added support for this, use {@link World#getHighestBlockYAt(int, int, HeightMap)}
 +     *
-+     * @see com.destroystokyo.paper.HeightmapType
++     * @see io.papermc.paper.HeightmapType
 +     */
 +    @Deprecated
-+    public int getHighestBlockYAt(int x, int z, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException;
++    public int getHighestBlockYAt(int x, int z, @NotNull io.papermc.paper.HeightmapType heightmap) throws UnsupportedOperationException;
 +
 +    /**
 +     * Returns the highest block's y-coordinate at the specified block coordinates that match the specified heightmap's conditions.
@@ -139,14 +139,14 @@ index b80a2fe9eb6824d986126e451900a62244d3a8e7..6fe2875f95bb600606d66e2f7113d325
 +     * </p>
 +     *
 +     * @param location The specified block coordinates.
-+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
++     * @param heightmap The specified heightmap to use. See {@link io.papermc.paper.HeightmapType}
 +     * @return The highest block's y-coordinate at {@code location} that matches the specified heightmap's conditions.
 +     * @throws UnsupportedOperationException If the heightmap type is not supported.
 +     * @deprecated Upstream has added support for this, use {@link World#getHighestBlockYAt(Location, HeightMap)}
-+     * @see com.destroystokyo.paper.HeightmapType
++     * @see io.papermc.paper.HeightmapType
 +     */
 +    @Deprecated
-+    default int getHighestBlockYAt(@NotNull Location location, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
++    default int getHighestBlockYAt(@NotNull Location location, @NotNull io.papermc.paper.HeightmapType heightmap) throws UnsupportedOperationException {
 +        return this.getHighestBlockYAt(location.getBlockX(), location.getBlockZ(), heightmap);
 +    }
 +
@@ -158,15 +158,15 @@ index b80a2fe9eb6824d986126e451900a62244d3a8e7..6fe2875f95bb600606d66e2f7113d325
 +     * </p>
 +     * @param x The block's x-coordinate.
 +     * @param z The block's z-coordinate.
-+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
++     * @param heightmap The specified heightmap to use. See {@link io.papermc.paper.HeightmapType}
 +     * @return The highest {@link Block} at (x, z) that matches the specified heightmap's conditions.
 +     * @throws UnsupportedOperationException If the heightmap type is not supported.
 +     * @deprecated Upstream has added support for this, use {@link World#getHighestBlockAt(int, int, HeightMap)}
-+     * @see com.destroystokyo.paper.HeightmapType
++     * @see io.papermc.paper.HeightmapType
 +     */
 +    @Deprecated
 +    @NotNull
-+    default Block getHighestBlockAt(int x, int z, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
++    default Block getHighestBlockAt(int x, int z, @NotNull io.papermc.paper.HeightmapType heightmap) throws UnsupportedOperationException {
 +        return this.getBlockAt(x, this.getHighestBlockYAt(x, z, heightmap), z);
 +    }
 +
@@ -178,15 +178,15 @@ index b80a2fe9eb6824d986126e451900a62244d3a8e7..6fe2875f95bb600606d66e2f7113d325
 +     * throwing an {@code UnsupportedOperationException}.
 +     * </p>
 +     * @param location The specified block coordinates.
-+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
++     * @param heightmap The specified heightmap to use. See {@link io.papermc.paper.HeightmapType}
 +     * @return The highest {@link Block} at {@code location} that matches the specified heightmap's conditions.
 +     * @throws UnsupportedOperationException If the heightmap type is not supported.
 +     * @deprecated Upstream has added support for this, use {@link World#getHighestBlockAt(Location, HeightMap)}
-+     * @see com.destroystokyo.paper.HeightmapType
++     * @see io.papermc.paper.HeightmapType
 +     */
 +    @Deprecated
 +    @NotNull
-+    default Block getHighestBlockAt(@NotNull Location location, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
++    default Block getHighestBlockAt(@NotNull Location location, @NotNull io.papermc.paper.HeightmapType heightmap) throws UnsupportedOperationException {
 +        return this.getHighestBlockAt(location.getBlockX(), location.getBlockZ(), heightmap);
 +    }
 +    // Paper end

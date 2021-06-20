@@ -5,7 +5,7 @@ Subject: [PATCH] Add PlayerJumpEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 98640f6000067b49e1c15740d45dc29e62b7f249..9255e3d89385fac82a1a2f27bd915cbbd19f69e7 100644
+index 4e389f31ee8caa1ec0a1c22a546f10b9c0753100..f08e3054139633956b7ba2da9d3dd1e9232e1393 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1187,7 +1187,34 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -31,7 +31,7 @@ index 98640f6000067b49e1c15740d45dc29e62b7f249..9255e3d89385fac82a1a2f27bd915cbb
 +                                    to.setPitch(packet.xRot);
 +                                }
 +
-+                                com.destroystokyo.paper.event.player.PlayerJumpEvent event = new com.destroystokyo.paper.event.player.PlayerJumpEvent(player, from, to);
++                                io.papermc.paper.event.player.PlayerJumpEvent event = new io.papermc.paper.event.player.PlayerJumpEvent(player, from, to);
 +
 +                                if (event.callEvent()) {
 +                                    this.player.jumpFromGround();

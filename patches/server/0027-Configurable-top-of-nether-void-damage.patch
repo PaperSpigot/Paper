@@ -4,10 +4,10 @@ Date: Tue, 1 Mar 2016 23:58:50 -0600
 Subject: [PATCH] Configurable top of nether void damage
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index d16ae924bcbe31c964f7fb448757c748e5c4418c..4bba6977a0287837b8927718c040ac61463f0469 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index e02228bddb2a7fa4a18c2066619b025818ca3cf6..70129e408f1756046353bfde2f7c18d4dffa2190 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -134,4 +134,19 @@ public class PaperWorldConfig {
          if (fallingBlockHeightNerf != 0) log("Falling Block Height Limit set to Y: " + fallingBlockHeightNerf);
          if (entityTNTHeightNerf != 0) log("TNT Entity Height Limit set to Y: " + entityTNTHeightNerf);
@@ -29,7 +29,7 @@ index d16ae924bcbe31c964f7fb448757c748e5c4418c..4bba6977a0287837b8927718c040ac61
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index e61f3decd7fa30c67acb4b2e4cb9c9c3ce2c9d7a..dbe30ad6a729c5a99f7ff977134738e509dcadad 100644
+index 5d4d5628e5c0d82301f988691eac363758af6a4b..43ebe01b6b19870cdc130292fe69e6943fc745df 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -622,7 +622,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n

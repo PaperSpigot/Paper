@@ -6,10 +6,10 @@ Subject: [PATCH] Fix Light Command
 This lets you run /paper fixlight <chunkRadius> (max 5) to automatically
 fix all light data in the chunks.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index 71ffa66973d8994e2a480435ac1ada3fe61600a4..7b5afc5d34b78e6404c1a5c6bb823d9589471f13 100644
---- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
+diff --git a/src/main/java/io/papermc/paper/PaperCommand.java b/src/main/java/io/papermc/paper/PaperCommand.java
+index 131d2cba64278bf622e9c1f82b67a6f6048545cc..03dee3763802ead5c76da6b37d00ebefeda53677 100644
+--- a/src/main/java/io/papermc/paper/PaperCommand.java
++++ b/src/main/java/io/papermc/paper/PaperCommand.java
 @@ -10,7 +10,8 @@ import net.minecraft.server.MinecraftServer;
  import net.minecraft.server.level.ChunkHolder;
  import net.minecraft.server.level.ServerChunkCache;
@@ -134,7 +134,7 @@ index 71ffa66973d8994e2a480435ac1ada3fe61600a4..7b5afc5d34b78e6404c1a5c6bb823d95
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index e6c42a52d687a418c92e8f628d589ac31ae90626..513876fc53fe5790e5bc6271a1a9ec345a614b98 100644
+index 48d0780b3e9f96358d8c77175e4d6a6d9ebdf7fd..81fa64ea7b28fcc02f9560747a575768d2d7f656 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -128,6 +128,12 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider

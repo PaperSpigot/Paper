@@ -5,14 +5,14 @@ Subject: [PATCH] Entity AddTo/RemoveFrom World Events
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index d0e92ed344cb5f7b673b4a1c777828dae1393fb8..e847abaac06d22337f2764021ab32feea4894332 100644
+index d0e92ed344cb5f7b673b4a1c777828dae1393fb8..55b990d8e7acd5363ce9e61a4d94ae1238297ebf 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -1900,6 +1900,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
                  entity.setOrigin(entity.getBukkitEntity().getLocation());
              }
              // Paper end
-+            new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
++            new io.papermc.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
          }
  
          public void onTrackingEnd(Entity entity) {
@@ -20,7 +20,7 @@ index d0e92ed344cb5f7b673b4a1c777828dae1393fb8..e847abaac06d22337f2764021ab32fee
              }
  
              entity.valid = false; // CraftBukkit
-+            new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
++            new io.papermc.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
          }
      }
  }

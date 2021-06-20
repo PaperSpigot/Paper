@@ -6,18 +6,18 @@ Subject: [PATCH] Add extended PaperServerListPingEvent
 Add a new event that extends the original ServerListPingEvent
 and allows full control of the response sent to the client.
 
-diff --git a/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
+diff --git a/src/main/java/io/papermc/paper/event/server/PaperServerListPingEvent.java b/src/main/java/io/papermc/paper/event/server/PaperServerListPingEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..baac2e4f090a490372ef4aed92c8a5771955e921
+index 0000000000000000000000000000000000000000..c25c15ca9b22e81dc0aaac210d8ab7139e7d5691
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
++++ b/src/main/java/io/papermc/paper/event/server/PaperServerListPingEvent.java
 @@ -0,0 +1,334 @@
-+package com.destroystokyo.paper.event.server;
++package io.papermc.paper.event.server;
 +
 +import static java.util.Objects.requireNonNull;
 +
-+import com.destroystokyo.paper.network.StatusClient;
-+import com.destroystokyo.paper.profile.PlayerProfile;
++import io.papermc.paper.network.StatusClient;
++import io.papermc.paper.profile.PlayerProfile;
 +import org.bukkit.Bukkit;
 +import org.bukkit.entity.Player;
 +import org.bukkit.event.Cancellable;
@@ -346,15 +346,15 @@ index 0000000000000000000000000000000000000000..baac2e4f090a490372ef4aed92c8a577
 +    }
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/network/StatusClient.java b/src/main/java/com/destroystokyo/paper/network/StatusClient.java
+diff --git a/src/main/java/io/papermc/paper/network/StatusClient.java b/src/main/java/io/papermc/paper/network/StatusClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..517d15238ed117f38bbd39f570874014cecf7bb5
+index 0000000000000000000000000000000000000000..d83ef3aea6c900b4d5929f41ef4e57b514fdf239
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/StatusClient.java
++++ b/src/main/java/io/papermc/paper/network/StatusClient.java
 @@ -0,0 +1,13 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
-+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import io.papermc.paper.event.server.PaperServerListPingEvent;
 +
 +/**
 + * Represents a client requesting the current status from the server (e.g. from

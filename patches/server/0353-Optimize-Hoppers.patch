@@ -12,10 +12,10 @@ Subject: [PATCH] Optimize Hoppers
 * Don't check for Entities with Inventories if the block above us is also occluding (not just Inventoried)
 * Remove Streams from Item Suck In and restore restore 1.12 AABB checks which is simpler and no voxel allocations (was doing TWO Item Suck ins)
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 9860f5a0ddff83f1393ee13a96b38c3b14077512..bf704993d0abd50dba91682a7fbb575e3696be62 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 1241eb2dc705393e2fbd54723dc8a0d60e81cbc5..99fd6dd3bdbdc66380305322bd96bc74e1980bef 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -470,5 +470,14 @@ public class PaperWorldConfig {
      private void entitiesTargetWithFollowRange() {
          entitiesTargetWithFollowRange = getBoolean("entities-target-with-follow-range", entitiesTargetWithFollowRange);
@@ -32,7 +32,7 @@ index 9860f5a0ddff83f1393ee13a96b38c3b14077512..bf704993d0abd50dba91682a7fbb575e
  }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 38b92db7591c060a45c4bf8bb7e4a25bb649a742..670b4687c660526f806dd5e8214af1113912199b 100644
+index c5fbe06f5f6669a00f0731fe6df4ce6e984d90f7..8b57f07b4b50ded868962120f33616a650fd70aa 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1422,6 +1422,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -62,7 +62,7 @@ index 449d2e7b18608ca36282f1a29e69457fc525307e..c738cb0433ea4a86d82372bf66e29c01
      public double getLevelX() {
          return this.getX();
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index d402b73e5876600f09c509c837c77b597da988bb..2fd3d56768f9121c1e5de3f193258bb360bb103b 100644
+index aea2baa69cb6628724d23e305abf34522dc5be1d..1496035b925b47c45fa3a9d4f68060d2e0408a9c 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
 @@ -601,11 +601,12 @@ public final class ItemStack {
@@ -473,7 +473,7 @@ index 0ec16d554c2b51a64614c73783505c7b06ff02c7..3b1442bf4c83650369e925d76f07dc67
  
              if (!list.isEmpty()) {
 diff --git a/src/main/java/net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity.java
-index f23fff80d07ac7d06715efe67cb49ebbe704967b..ed3518fe7c841d9e1a9c97626acaa3d765a6d76f 100644
+index a8ef9f93e9d360a04b7fded0bf3079fd9b3050ff..e74eafac93da367f2be0b7111c89922328f54424 100644
 --- a/src/main/java/net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity.java
 @@ -95,12 +95,19 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc

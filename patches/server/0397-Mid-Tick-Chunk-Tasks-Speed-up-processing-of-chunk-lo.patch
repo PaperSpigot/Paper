@@ -41,10 +41,10 @@ index b47b7dce26805badd422c1867733ff4bfd00e9f4..b9cdbf8acccfd6b207a0116f068168f3
      public static final Timing playerListTimer = Timings.ofSafe("Player List");
      public static final Timing commandFunctionsTimer = Timings.ofSafe("Command Functions");
      public static final Timing connectionTimer = Timings.ofSafe("Connection Handler");
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index da93d38fe63035e4ff198ada84a4431f52d97c01..ddbc8cb712c50038922eded75dd6ca85fe851078 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index a4858be16e09b264ee0e52027a6836cf3927c23a..6ac76163a7393a5ffedd84905651c6b8c6859b64 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -410,4 +410,9 @@ public class PaperConfig {
              log("Async Chunks: Enabled - Chunks will be loaded much faster, without lag.");
          }
@@ -56,7 +56,7 @@ index da93d38fe63035e4ff198ada84a4431f52d97c01..ddbc8cb712c50038922eded75dd6ca85
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ac53eb7bc69e1566d20df3b7cba33034c344952a..f1c08a811c05a29eda4686c1143cc27fd91d7311 100644
+index aa012cc96c62c34566405fd821855d1cf0f5e188..6f47703f3514fef8d05a2b35930eabe9cfee16a3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1112,6 +1112,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -147,7 +147,7 @@ index ac53eb7bc69e1566d20df3b7cba33034c344952a..f1c08a811c05a29eda4686c1143cc27f
                  // Spigot Start
                  CrashReport crashreport;
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 6d999e0de0497114e46445981c64ee70f882c782..0c76218134bdf8d80e3680227934ff5f70c26df2 100644
+index 84833669c1c98b89520ef651ee683244b5111aeb..7bed9bcb933c228aad79f026d3a897f8701bad2d 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -704,6 +704,7 @@ public class ServerChunkCache extends ChunkSource {
@@ -190,7 +190,7 @@ index 6d999e0de0497114e46445981c64ee70f882c782..0c76218134bdf8d80e3680227934ff5f
 +        // Paper start
 +        private long lastMidTickChunkTask = 0;
 +        public boolean pollChunkLoadTasks() {
-+            if (com.destroystokyo.paper.io.chunk.ChunkTaskManager.pollChunkWaitQueue() || ServerChunkCache.this.level.asyncChunkTaskManager.pollNextChunkTask()) {
++            if (io.papermc.paper.io.chunk.ChunkTaskManager.pollChunkWaitQueue() || ServerChunkCache.this.level.asyncChunkTaskManager.pollNextChunkTask()) {
 +                try {
 +                    ServerChunkCache.this.runDistanceManagerUpdates();
 +                } finally {
@@ -211,7 +211,7 @@ index 6d999e0de0497114e46445981c64ee70f882c782..0c76218134bdf8d80e3680227934ff5f
 +                return;
 +            }
 +
-+            for (;server.midTickChunksTasksRan < com.destroystokyo.paper.PaperConfig.midTickChunkTasks && server.haveTime();) {
++            for (;server.midTickChunksTasksRan < io.papermc.paper.PaperConfig.midTickChunkTasks && server.haveTime();) {
 +                if (this.pollTask()) {
 +                    server.midTickChunksTasksRan++;
 +                    lastMidTickChunkTask = System.nanoTime();
@@ -226,7 +226,7 @@ index 6d999e0de0497114e46445981c64ee70f882c782..0c76218134bdf8d80e3680227934ff5f
          // CraftBukkit start - process pending Chunk loadCallback() and unloadCallback() after each run task
          public boolean pollTask() {
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index fca0453ee83f7592e7ad7c572e238202247a93a1..16ff687d16bef0a485aacbcd80a3bcfa1bb08224 100644
+index f6b03637322570faa6d62a72a5945b17e8940cbf..dc2d894e32dd1fe42449c795670a811b5ef66cd8 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -587,6 +587,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl

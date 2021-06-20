@@ -4,13 +4,13 @@ Date: Mon, 3 Sep 2018 18:13:53 -0500
 Subject: [PATCH] Add ray tracing methods to LivingEntity
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/block/TargetBlockInfo.java b/src/main/java/com/destroystokyo/paper/block/TargetBlockInfo.java
+diff --git a/src/main/java/io/papermc/paper/block/TargetBlockInfo.java b/src/main/java/io/papermc/paper/block/TargetBlockInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..18a96dbb01d3b34476652264b2d6be3782a154ec
+index 0000000000000000000000000000000000000000..5f96a87af53d1669801488f288856f5197e0c977
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/block/TargetBlockInfo.java
++++ b/src/main/java/io/papermc/paper/block/TargetBlockInfo.java
 @@ -0,0 +1,54 @@
-+package com.destroystokyo.paper.block;
++package io.papermc.paper.block;
 +
 +import org.bukkit.block.Block;
 +import org.bukkit.block.BlockFace;
@@ -65,7 +65,7 @@ index 0000000000000000000000000000000000000000..18a96dbb01d3b34476652264b2d6be37
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
-index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b89986d89c5a 100644
+index 6d8d96976bcef4e176453fede81a529478f11234..440589d6592ee1ee8581b54d6c9671018bd59b26 100644
 --- a/src/main/java/org/bukkit/entity/LivingEntity.java
 +++ b/src/main/java/org/bukkit/entity/LivingEntity.java
 @@ -82,6 +82,77 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
@@ -82,7 +82,7 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     */
 +    @Nullable
 +    public default Block getTargetBlock(int maxDistance) {
-+        return getTargetBlock(maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode.NEVER);
++        return getTargetBlock(maxDistance, io.papermc.paper.block.TargetBlockInfo.FluidMode.NEVER);
 +    }
 +
 +    /**
@@ -94,7 +94,7 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     *     or null if no block is within maxDistance
 +     */
 +    @Nullable
-+    public Block getTargetBlock(int maxDistance, @NotNull com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode);
++    public Block getTargetBlock(int maxDistance, @NotNull io.papermc.paper.block.TargetBlockInfo.FluidMode fluidMode);
 +
 +    /**
 +     * Gets the blockface of that block that the living entity has targeted, ignoring fluids
@@ -105,7 +105,7 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     */
 +    @Nullable
 +    public default org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance) {
-+        return getTargetBlockFace(maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode.NEVER);
++        return getTargetBlockFace(maxDistance, io.papermc.paper.block.TargetBlockInfo.FluidMode.NEVER);
 +    }
 +
 +    /**
@@ -117,7 +117,7 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     *     or null if no block is targeted
 +     */
 +    @Nullable
-+    public org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance, @NotNull com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode);
++    public org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance, @NotNull io.papermc.paper.block.TargetBlockInfo.FluidMode fluidMode);
 +
 +    /**
 +     * Gets information about the block the living entity has targeted, ignoring fluids
@@ -127,8 +127,8 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     *     or null if no block is targeted
 +     */
 +    @Nullable
-+    public default com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance) {
-+        return getTargetBlockInfo(maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode.NEVER);
++    public default io.papermc.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance) {
++        return getTargetBlockInfo(maxDistance, io.papermc.paper.block.TargetBlockInfo.FluidMode.NEVER);
 +    }
 +
 +    /**
@@ -140,7 +140,7 @@ index 4f62a49e7b0538f0ce9cecd2c1b645f40ce17b3d..05992ade1bca42a6233373b44513b899
 +     *     or null if no block is targeted
 +     */
 +    @Nullable
-+    public com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, @NotNull com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode);
++    public io.papermc.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, @NotNull io.papermc.paper.block.TargetBlockInfo.FluidMode fluidMode);
 +    // Paper end
 +
      /**

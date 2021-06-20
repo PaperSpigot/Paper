@@ -4,13 +4,13 @@ Date: Mon, 20 Jan 2020 21:38:15 +0100
 Subject: [PATCH] Implement Player Client Options API
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperSkinParts.java b/src/main/java/com/destroystokyo/paper/PaperSkinParts.java
+diff --git a/src/main/java/io/papermc/paper/PaperSkinParts.java b/src/main/java/io/papermc/paper/PaperSkinParts.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b6f4400df3d8ec7e06a996de54f8cabba57885e1
+index 0000000000000000000000000000000000000000..900e56c6e8418a8aa41ad7204e13319a78e43b2b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/PaperSkinParts.java
++++ b/src/main/java/io/papermc/paper/PaperSkinParts.java
 @@ -0,0 +1,74 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.base.Objects;
 +
@@ -85,19 +85,19 @@ index 0000000000000000000000000000000000000000..b6f4400df3d8ec7e06a996de54f8cabb
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 6a715a5dfc109efd2904e6392c7769cff80b7a4c..c2dd937938e120472d0a2609c1afef693a342682 100644
+index 0d7db36991a68b81a3e4f10cde75b4cbf1a62be9..dd8e46c99a689d7df228d3b8fc8e84949b1927b2 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -1802,6 +1802,7 @@ public class ServerPlayer extends Player {
      public String locale = null; // CraftBukkit - add, lowercase // Paper - default to null
      public java.util.Locale adventure$locale = java.util.Locale.US; // Paper
      public void updateOptions(ServerboundClientInformationPacket packet) {
-+        new com.destroystokyo.paper.event.player.PlayerClientOptionsChangeEvent(getBukkitEntity(), packet.language, packet.viewDistance, com.destroystokyo.paper.ClientOption.ChatVisibility.valueOf(packet.getChatVisibility().name()), packet.getChatColors(), new com.destroystokyo.paper.PaperSkinParts(packet.getModelCustomisation()), packet.getMainHand() == HumanoidArm.LEFT ? MainHand.LEFT : MainHand.RIGHT).callEvent(); // Paper - settings event
++        new io.papermc.paper.event.player.PlayerClientOptionsChangeEvent(getBukkitEntity(), packet.language, packet.viewDistance, io.papermc.paper.ClientOption.ChatVisibility.valueOf(packet.getChatVisibility().name()), packet.getChatColors(), new io.papermc.paper.PaperSkinParts(packet.getModelCustomisation()), packet.getMainHand() == HumanoidArm.LEFT ? MainHand.LEFT : MainHand.RIGHT).callEvent(); // Paper - settings event
          // CraftBukkit start
          if (getMainArm() != packet.getMainHand()) {
              PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(this.getBukkitEntity(), getMainArm() == HumanoidArm.LEFT ? MainHand.LEFT : MainHand.RIGHT);
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 8c19f5b79fd846bea4eb5c4776eb9a4a282b24c1..a98394d9bab490c1bdb5817cb30806cab85de730 100644
+index 97d32e0cfa4bb32cceac1b0e07e02f8da5e0b426..b1f72c1c51474c4ab4b9778fad8eb219b55efd25 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -520,6 +520,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -106,18 +106,18 @@ index 8c19f5b79fd846bea4eb5c4776eb9a4a282b24c1..a98394d9bab490c1bdb5817cb30806ca
      }
 +
 +    @Override
-+    public <T> T getClientOption(com.destroystokyo.paper.ClientOption<T> type) {
-+        if(com.destroystokyo.paper.ClientOption.SKIN_PARTS.equals(type)) {
-+            return type.getType().cast(new com.destroystokyo.paper.PaperSkinParts(getHandle().getEntityData().get(net.minecraft.world.entity.player.Player.DATA_PLAYER_MODE_CUSTOMISATION)));
-+        } else if(com.destroystokyo.paper.ClientOption.CHAT_COLORS_ENABLED.equals(type)) {
++    public <T> T getClientOption(io.papermc.paper.ClientOption<T> type) {
++        if(io.papermc.paper.ClientOption.SKIN_PARTS.equals(type)) {
++            return type.getType().cast(new io.papermc.paper.PaperSkinParts(getHandle().getEntityData().get(net.minecraft.world.entity.player.Player.DATA_PLAYER_MODE_CUSTOMISATION)));
++        } else if(io.papermc.paper.ClientOption.CHAT_COLORS_ENABLED.equals(type)) {
 +            return type.getType().cast(getHandle().canChatInColor());
-+        } else if(com.destroystokyo.paper.ClientOption.CHAT_VISIBILITY.equals(type)) {
-+            return type.getType().cast(getHandle().getChatVisibility() == null ? com.destroystokyo.paper.ClientOption.ChatVisibility.UNKNOWN : com.destroystokyo.paper.ClientOption.ChatVisibility.valueOf(getHandle().getChatVisibility().name()));
-+        } else if(com.destroystokyo.paper.ClientOption.LOCALE.equals(type)) {
++        } else if(io.papermc.paper.ClientOption.CHAT_VISIBILITY.equals(type)) {
++            return type.getType().cast(getHandle().getChatVisibility() == null ? io.papermc.paper.ClientOption.ChatVisibility.UNKNOWN : io.papermc.paper.ClientOption.ChatVisibility.valueOf(getHandle().getChatVisibility().name()));
++        } else if(io.papermc.paper.ClientOption.LOCALE.equals(type)) {
 +            return type.getType().cast(getLocale());
-+        } else if(com.destroystokyo.paper.ClientOption.MAIN_HAND.equals(type)) {
++        } else if(io.papermc.paper.ClientOption.MAIN_HAND.equals(type)) {
 +            return type.getType().cast(getMainHand());
-+        } else if(com.destroystokyo.paper.ClientOption.VIEW_DISTANCE.equals(type)) {
++        } else if(io.papermc.paper.ClientOption.VIEW_DISTANCE.equals(type)) {
 +            return type.getType().cast(getClientViewDistance());
 +        }
 +        throw new RuntimeException("Unknown settings type");

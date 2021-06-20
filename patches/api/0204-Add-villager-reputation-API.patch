@@ -4,13 +4,13 @@ Date: Wed, 22 Apr 2020 23:13:49 +0200
 Subject: [PATCH] Add villager reputation API
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/villager/Reputation.java b/src/main/java/com/destroystokyo/paper/entity/villager/Reputation.java
+diff --git a/src/main/java/io/papermc/paper/entity/villager/Reputation.java b/src/main/java/io/papermc/paper/entity/villager/Reputation.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1cc9ef255df888cb7dd7f7f2c5014e818d1be613
+index 0000000000000000000000000000000000000000..633058006ab6badde2bf28244987f3fd7c6df6a8
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/villager/Reputation.java
++++ b/src/main/java/io/papermc/paper/entity/villager/Reputation.java
 @@ -0,0 +1,54 @@
-+package com.destroystokyo.paper.entity.villager;
++package io.papermc.paper.entity.villager;
 +
 +import com.google.common.base.Preconditions;
 +import java.util.Map;
@@ -64,13 +64,13 @@ index 0000000000000000000000000000000000000000..1cc9ef255df888cb7dd7f7f2c5014e81
 +        reputation[type.ordinal()] = value;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/entity/villager/ReputationType.java b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationType.java
+diff --git a/src/main/java/io/papermc/paper/entity/villager/ReputationType.java b/src/main/java/io/papermc/paper/entity/villager/ReputationType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5600fcdc9795a9f49091db48d73bbd4964b8b737
+index 0000000000000000000000000000000000000000..52ea1fb50269620e63f4652950c61983aba3f26c
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationType.java
++++ b/src/main/java/io/papermc/paper/entity/villager/ReputationType.java
 @@ -0,0 +1,36 @@
-+package com.destroystokyo.paper.entity.villager;
++package io.papermc.paper.entity.villager;
 +
 +/**
 + * A type of reputation gained with a {@link org.bukkit.entity.Villager Villager}.
@@ -107,7 +107,7 @@ index 0000000000000000000000000000000000000000..5600fcdc9795a9f49091db48d73bbd49
 +    TRADING,
 +}
 diff --git a/src/main/java/org/bukkit/entity/Villager.java b/src/main/java/org/bukkit/entity/Villager.java
-index ef8a81c4857bd06be19264580bf3a7e087118f5c..511b96841f7342d0a6b38d7cff56252ea8ef9bfe 100644
+index ef8a81c4857bd06be19264580bf3a7e087118f5c..b28868a22922fbc7b1e5f3bc7e47f12b37b8a98d 100644
 --- a/src/main/java/org/bukkit/entity/Villager.java
 +++ b/src/main/java/org/bukkit/entity/Villager.java
 @@ -1,10 +1,13 @@
@@ -131,42 +131,42 @@ index ef8a81c4857bd06be19264580bf3a7e087118f5c..511b96841f7342d0a6b38d7cff56252e
 +
 +    // Paper start - Add villager reputation API
 +    /**
-+     * Get the {@link com.destroystokyo.paper.entity.villager.Reputation reputation}
++     * Get the {@link io.papermc.paper.entity.villager.Reputation reputation}
 +     * for a specific player by {@link UUID}.
 +     *
 +     * @param uniqueId The {@link UUID} of the player to get the reputation of.
 +     * @return The player's copied reputation with this villager.
 +     */
 +    @Nullable
-+    public com.destroystokyo.paper.entity.villager.Reputation getReputation(@NotNull UUID uniqueId);
++    public io.papermc.paper.entity.villager.Reputation getReputation(@NotNull UUID uniqueId);
 +
 +    /**
-+     * Get all {@link com.destroystokyo.paper.entity.villager.Reputation reputations}
++     * Get all {@link io.papermc.paper.entity.villager.Reputation reputations}
 +     * for all players mapped by their {@link UUID unique IDs}.
 +     *
-+     * @return All {@link com.destroystokyo.paper.entity.villager.Reputation reputations} for all players
++     * @return All {@link io.papermc.paper.entity.villager.Reputation reputations} for all players
 +     * in a copied map.
 +     */
 +    @NotNull
-+    public Map<UUID, com.destroystokyo.paper.entity.villager.Reputation> getReputations();
++    public Map<UUID, io.papermc.paper.entity.villager.Reputation> getReputations();
 +
 +    /**
-+     * Set the {@link com.destroystokyo.paper.entity.villager.Reputation reputation}
++     * Set the {@link io.papermc.paper.entity.villager.Reputation reputation}
 +     * for a specific player by {@link UUID}.
 +     *
 +     * @param uniqueId The {@link UUID} of the player to set the reputation of.
-+     * @param reputation The {@link com.destroystokyo.paper.entity.villager.Reputation reputation} to set.
++     * @param reputation The {@link io.papermc.paper.entity.villager.Reputation reputation} to set.
 +     */
-+    public void setReputation(@NotNull UUID uniqueId, @NotNull com.destroystokyo.paper.entity.villager.Reputation reputation);
++    public void setReputation(@NotNull UUID uniqueId, @NotNull io.papermc.paper.entity.villager.Reputation reputation);
 +
 +    /**
-+     * Set all {@link com.destroystokyo.paper.entity.villager.Reputation reputations}
++     * Set all {@link io.papermc.paper.entity.villager.Reputation reputations}
 +     * for all players mapped by their {@link UUID unique IDs}.
 +     *
-+     * @param reputations All {@link com.destroystokyo.paper.entity.villager.Reputation reputations}
++     * @param reputations All {@link io.papermc.paper.entity.villager.Reputation reputations}
 +     * for all players mapped by their {@link UUID unique IDs}.
 +     */
-+    public void setReputations(@NotNull Map<UUID, com.destroystokyo.paper.entity.villager.Reputation> reputations);
++    public void setReputations(@NotNull Map<UUID, io.papermc.paper.entity.villager.Reputation> reputations);
 +
 +    /**
 +     * Clear all reputations from this villager. This removes every single

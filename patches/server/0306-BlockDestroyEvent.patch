@@ -11,7 +11,7 @@ floating in the air.
 This can replace many uses of BlockPhysicsEvent
 
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 81ca3bf1a8f43b7c31cdb8dbba5fd234c28373ad..c85f6fedfaf756f8b17b554bcb2d94d0f00f01f1 100644
+index eb5e2190f3435751b68fcb8153edbbeaa5f850dd..3358dce98efe2085883e0a4ecb527241545423a2 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -28,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
@@ -30,8 +30,8 @@ index 81ca3bf1a8f43b7c31cdb8dbba5fd234c28373ad..c85f6fedfaf756f8b17b554bcb2d94d0
 +            // they are NOT used with same intent and the above should not fire this event. The above method is more of a BlockSetToAirEvent,
 +            // it doesn't imply destruction of a block that plays a sound effect / drops an item.
 +            boolean playEffect = true;
-+            if (com.destroystokyo.paper.event.block.BlockDestroyEvent.getHandlerList().getRegisteredListeners().length > 0) {
-+                com.destroystokyo.paper.event.block.BlockDestroyEvent event = new com.destroystokyo.paper.event.block.BlockDestroyEvent(MCUtil.toBukkitBlock(this, pos), fluid.createLegacyBlock().createCraftBlockData(), drop);
++            if (io.papermc.paper.event.block.BlockDestroyEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                io.papermc.paper.event.block.BlockDestroyEvent event = new io.papermc.paper.event.block.BlockDestroyEvent(MCUtil.toBukkitBlock(this, pos), fluid.createLegacyBlock().createCraftBlockData(), drop);
 +                if (!event.callEvent()) {
 +                    return false;
 +                }

@@ -6,7 +6,7 @@ Subject: [PATCH] Player.setPlayerProfile API
 This can be useful for changing name or skins after a player has logged in.
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 94b1ec73f2039c83203045db42bf0270c985d995..dbdd320eca27e82d5b058a7e6596b0a5fbc2631f 100644
+index 19a64f95f09a3c9edf4bdd87550357caed50fb78..1a0109f16a81c3c563457488238f42966bd5d590 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -340,12 +340,12 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener
@@ -39,7 +39,7 @@ index 278416af649425890ad00ca6f47d459ebab08e0b..91f96f5718f7a7f2e0ce56f4dbf894d8
      private ItemStack lastItemInMainHand;
      private final ItemCooldowns cooldowns;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index f1c56823e1e89251c518d9d51ab7442b30a85336..8f7807409a21369bad1515af9c1ebac778924aec 100644
+index 90176dce416abc8e41adec156e97cad770273332..5b809085c98cb1eb750a97c1b8d2e2e0d76e4cde 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -71,6 +71,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -91,9 +91,9 @@ index f1c56823e1e89251c518d9d51ab7442b30a85336..8f7807409a21369bad1515af9c1ebac7
 +            registerPlayer(player);
 +        }
 +    }
-+    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
++    public void setPlayerProfile(io.papermc.paper.profile.PlayerProfile profile) {
 +        ServerPlayer self = getHandle();
-+        self.gameProfile = com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile);
++        self.gameProfile = io.papermc.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile);
 +        if (!self.sentListPacket) {
 +            return;
 +        }
@@ -103,8 +103,8 @@ index f1c56823e1e89251c518d9d51ab7442b30a85336..8f7807409a21369bad1515af9c1ebac7
 +        }
 +        refreshPlayer();
 +    }
-+    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
-+        return new com.destroystokyo.paper.profile.CraftPlayerProfile(this).clone();
++    public io.papermc.paper.profile.PlayerProfile getPlayerProfile() {
++        return new io.papermc.paper.profile.CraftPlayerProfile(this).clone();
 +    }
 +
 +    private void refreshPlayer() {

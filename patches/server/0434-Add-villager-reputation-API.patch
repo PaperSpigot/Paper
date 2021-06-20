@@ -4,13 +4,13 @@ Date: Wed, 22 Apr 2020 23:29:20 +0200
 Subject: [PATCH] Add villager reputation API
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java
+diff --git a/src/main/java/io/papermc/paper/entity/villager/ReputationConstructor.java b/src/main/java/io/papermc/paper/entity/villager/ReputationConstructor.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0f10c333d88f2e1c56a6c7f22d421084adfd3789
+index 0000000000000000000000000000000000000000..5a63e85a72de872c612f5f0bed61df8bbbd32ccf
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/villager/ReputationConstructor.java
++++ b/src/main/java/io/papermc/paper/entity/villager/ReputationConstructor.java
 @@ -0,0 +1,9 @@
-+package com.destroystokyo.paper.entity.villager;
++package io.papermc.paper.entity.villager;
 +// Must have own package due to package-level constructor.
 +
 +public final class ReputationConstructor {
@@ -20,7 +20,7 @@ index 0000000000000000000000000000000000000000..0f10c333d88f2e1c56a6c7f22d421084
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-index 2e342e1c258180dc02080f76385351c0a65eade2..39c0fbae8b94dabd27ee8687015557c6a9279813 100644
+index 2e342e1c258180dc02080f76385351c0a65eade2..f8192f6f1973a4f7221d3739135564c214ac76e2 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 @@ -29,7 +29,7 @@ import net.minecraft.util.VisibleForDebug;
@@ -38,31 +38,31 @@ index 2e342e1c258180dc02080f76385351c0a65eade2..39c0fbae8b94dabd27ee8687015557c6
          }
 +
 +        // Paper start - Add villager reputation API
-+        private static final com.destroystokyo.paper.entity.villager.ReputationType[] REPUTATION_TYPES = com.destroystokyo.paper.entity.villager.ReputationType.values();
-+        public com.destroystokyo.paper.entity.villager.Reputation getPaperReputation() {
++        private static final io.papermc.paper.entity.villager.ReputationType[] REPUTATION_TYPES = io.papermc.paper.entity.villager.ReputationType.values();
++        public io.papermc.paper.entity.villager.Reputation getPaperReputation() {
 +            int[] reputation = new int[REPUTATION_TYPES.length];
-+            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_NEGATIVE.ordinal()] = entries.getOrDefault(GossipType.MAJOR_NEGATIVE, 0);
-+            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_POSITIVE.ordinal()] = entries.getOrDefault(GossipType.MAJOR_POSITIVE, 0);
-+            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MINOR_NEGATIVE.ordinal()] = entries.getOrDefault(GossipType.MINOR_NEGATIVE, 0);
-+            reputation[com.destroystokyo.paper.entity.villager.ReputationType.MINOR_POSITIVE.ordinal()] = entries.getOrDefault(GossipType.MINOR_POSITIVE, 0);
-+            reputation[com.destroystokyo.paper.entity.villager.ReputationType.TRADING.ordinal()] = entries.getOrDefault(GossipType.TRADING, 0);
-+            return com.destroystokyo.paper.entity.villager.ReputationConstructor.construct(reputation);
++            reputation[io.papermc.paper.entity.villager.ReputationType.MAJOR_NEGATIVE.ordinal()] = entries.getOrDefault(GossipType.MAJOR_NEGATIVE, 0);
++            reputation[io.papermc.paper.entity.villager.ReputationType.MAJOR_POSITIVE.ordinal()] = entries.getOrDefault(GossipType.MAJOR_POSITIVE, 0);
++            reputation[io.papermc.paper.entity.villager.ReputationType.MINOR_NEGATIVE.ordinal()] = entries.getOrDefault(GossipType.MINOR_NEGATIVE, 0);
++            reputation[io.papermc.paper.entity.villager.ReputationType.MINOR_POSITIVE.ordinal()] = entries.getOrDefault(GossipType.MINOR_POSITIVE, 0);
++            reputation[io.papermc.paper.entity.villager.ReputationType.TRADING.ordinal()] = entries.getOrDefault(GossipType.TRADING, 0);
++            return io.papermc.paper.entity.villager.ReputationConstructor.construct(reputation);
 +        }
 +
-+        public void assignFromPaperReputation(com.destroystokyo.paper.entity.villager.Reputation rep) {
++        public void assignFromPaperReputation(io.papermc.paper.entity.villager.Reputation rep) {
 +            int val;
-+            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_NEGATIVE)) != 0) this.entries.put(GossipType.MAJOR_NEGATIVE, val);
-+            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MAJOR_POSITIVE)) != 0) this.entries.put(GossipType.MAJOR_POSITIVE, val);
-+            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MINOR_NEGATIVE)) != 0) this.entries.put(GossipType.MINOR_NEGATIVE, val);
-+            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.MINOR_POSITIVE)) != 0) this.entries.put(GossipType.MINOR_POSITIVE, val);
-+            if ((val = rep.getReputation(com.destroystokyo.paper.entity.villager.ReputationType.TRADING)) != 0) this.entries.put(GossipType.TRADING, val);
++            if ((val = rep.getReputation(io.papermc.paper.entity.villager.ReputationType.MAJOR_NEGATIVE)) != 0) this.entries.put(GossipType.MAJOR_NEGATIVE, val);
++            if ((val = rep.getReputation(io.papermc.paper.entity.villager.ReputationType.MAJOR_POSITIVE)) != 0) this.entries.put(GossipType.MAJOR_POSITIVE, val);
++            if ((val = rep.getReputation(io.papermc.paper.entity.villager.ReputationType.MINOR_NEGATIVE)) != 0) this.entries.put(GossipType.MINOR_NEGATIVE, val);
++            if ((val = rep.getReputation(io.papermc.paper.entity.villager.ReputationType.MINOR_POSITIVE)) != 0) this.entries.put(GossipType.MINOR_POSITIVE, val);
++            if ((val = rep.getReputation(io.papermc.paper.entity.villager.ReputationType.TRADING)) != 0) this.entries.put(GossipType.TRADING, val);
 +        }
 +        // Paper end
      }
  
      static class GossipEntry {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
-index fe3a73e9cdb85fdf8385f0a0d096a991541cbf60..aa6d3ff2abc9f0c65dd51b2a30d327fea827bb42 100644
+index fe3a73e9cdb85fdf8385f0a0d096a991541cbf60..2133f68997789669b616014005633c8cc29010e7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftVillager.java
 @@ -16,6 +16,13 @@ import org.bukkit.entity.Villager;
@@ -70,7 +70,7 @@ index fe3a73e9cdb85fdf8385f0a0d096a991541cbf60..aa6d3ff2abc9f0c65dd51b2a30d327fe
  import org.bukkit.entity.Villager.Type;
  
 +// Paper start
-+import com.destroystokyo.paper.entity.villager.Reputation;
++import io.papermc.paper.entity.villager.Reputation;
 +import com.google.common.collect.Maps;
 +import java.util.Map;
 +import java.util.UUID;

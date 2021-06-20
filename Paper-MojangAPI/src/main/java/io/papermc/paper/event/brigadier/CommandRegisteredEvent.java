@@ -1,7 +1,7 @@
-package com.destroystokyo.paper.event.brigadier;
+package io.papermc.paper.event.brigadier;
 
-import com.destroystokyo.paper.brigadier.BukkitBrigadierCommand;
-import com.destroystokyo.paper.brigadier.BukkitBrigadierCommandSource;
+import io.papermc.paper.brigadier.BukkitBrigadierCommand;
+import io.papermc.paper.brigadier.BukkitBrigadierCommandSource;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;

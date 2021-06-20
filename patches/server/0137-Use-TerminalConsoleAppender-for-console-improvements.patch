@@ -41,13 +41,13 @@ index 74bde15e021f306a2f1247678f92becbdce313b8..168728c96f8a8aaf5912f4d70cb5939d
      implementation("org.apache.logging.log4j:log4j-iostreams:2.14.1") // Paper
      implementation("org.apache.logging.log4j:log4j-api:2.14.1") // Paper
      implementation("org.ow2.asm:asm:9.1")
-diff --git a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
+diff --git a/src/main/java/io/papermc/paper/console/PaperConsole.java b/src/main/java/io/papermc/paper/console/PaperConsole.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a4070b59e261f0f1ac4beec47b11492f4724bf27
+index 0000000000000000000000000000000000000000..54c4da88547ea5804581837ba42c63ec17aca8f6
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
++++ b/src/main/java/io/papermc/paper/console/PaperConsole.java
 @@ -0,0 +1,41 @@
-+package com.destroystokyo.paper.console;
++package io.papermc.paper.console;
 +
 +import net.minecraft.server.dedicated.DedicatedServer;
 +import net.minecrell.terminalconsole.SimpleTerminalConsole;
@@ -88,13 +88,13 @@ index 0000000000000000000000000000000000000000..a4070b59e261f0f1ac4beec47b11492f
 +    }
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/console/TerminalConsoleCommandSender.java b/src/main/java/com/destroystokyo/paper/console/TerminalConsoleCommandSender.java
+diff --git a/src/main/java/io/papermc/paper/console/TerminalConsoleCommandSender.java b/src/main/java/io/papermc/paper/console/TerminalConsoleCommandSender.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..685deaa0e5d1ddc13e3a7c0471b1cfcf1710c869
+index 0000000000000000000000000000000000000000..e850463de9690d0867614e1dfc00a904a02be9ae
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/console/TerminalConsoleCommandSender.java
++++ b/src/main/java/io/papermc/paper/console/TerminalConsoleCommandSender.java
 @@ -0,0 +1,17 @@
-+package com.destroystokyo.paper.console;
++package io.papermc.paper.console;
 +
 +import org.apache.logging.log4j.LogManager;
 +import org.apache.logging.log4j.Logger;
@@ -112,7 +112,7 @@ index 0000000000000000000000000000000000000000..685deaa0e5d1ddc13e3a7c0471b1cfcf
 +
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3875a2902c6a737fed4e2df3f7aee8fbe6ddda15..cedf31670e65bd7f7ed62e8f622715343348cdf4 100644
+index cb3c105d3306fa512950c088f63bbd2b83507a6a..084af654e1c0ef3b71571f2b529e61b44e2b4418 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -12,6 +12,7 @@ import com.mojang.datafixers.DataFixer;
@@ -179,7 +179,7 @@ index 3875a2902c6a737fed4e2df3f7aee8fbe6ddda15..cedf31670e65bd7f7ed62e8f62271534
  
      public KeyPair getKeyPair() {
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index e2095308a8ec8471b04acce929d314fd828bc3de..45ae21718df16e16b5a3835a92afbf714959950e 100644
+index d9e6e83c960b3f31ebe9acca59406ad71c28b5fa..16ae349ebed912ff7ba2a8a61ce53608bd2a378d 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -108,6 +108,9 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -187,7 +187,7 @@ index e2095308a8ec8471b04acce929d314fd828bc3de..45ae21718df16e16b5a3835a92afbf71
                      return;
                  }
 +                // Paper start - Use TerminalConsoleAppender
-+                new com.destroystokyo.paper.console.PaperConsole(DedicatedServer.this).start();
++                new io.papermc.paper.console.PaperConsole(DedicatedServer.this).start();
 +                /*
                  jline.console.ConsoleReader bufferedreader = reader;
  
@@ -230,7 +230,7 @@ index e2095308a8ec8471b04acce929d314fd828bc3de..45ae21718df16e16b5a3835a92afbf71
          System.setOut(IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
          System.setErr(IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 79ebb15bed6eec80c12c1020b2b6b07c758332aa..bf6c3ac7ae37067f345568fb6656cf6b4d864be2 100644
+index 1ff1ebf219e1ef3f1ffdcb9d0a52d3cada674752..b8fe42d7c768793fcb868962669f1411069ef1c1 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -151,8 +151,7 @@ public abstract class PlayerList {
@@ -239,12 +239,12 @@ index 79ebb15bed6eec80c12c1020b2b6b07c758332aa..bf6c3ac7ae37067f345568fb6656cf6b
          this.cserver = server.server = new CraftServer((DedicatedServer) server, this);
 -        server.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
 -        server.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(server.server));
-+        server.console = new com.destroystokyo.paper.console.TerminalConsoleCommandSender(); // Paper
++        server.console = new io.papermc.paper.console.TerminalConsoleCommandSender(); // Paper
          // CraftBukkit end
  
          this.bans = new UserBanList(PlayerList.USERBANLIST_FILE);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8bd458b8995c9019b5ae85eab062df44e9424703..79fe58b09c9e0870a5ab55bc21b8ab933450a1d7 100644
+index cd6ae492ded5eeeee9f99217e8f71c847f12b439..89ff553947a989d2460027497c6d4e715863bb8c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -46,7 +46,6 @@ import java.util.function.Consumer;

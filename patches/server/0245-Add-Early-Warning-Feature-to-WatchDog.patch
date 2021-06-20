@@ -8,10 +8,10 @@ thread dumps at an interval until the point of crash.
 
 This will help diagnose what was going on in that time before the crash.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index bd508025b771424c942fd856c31d520b6f548082..62621562137cba4804f0465c58d25ca2786328e5 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 64adebc778c98249fc343d0c7f295d7af5c193d0..df3c046d6f7187e63dc10dd95334e73931ccce1a 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -25,6 +25,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
  import co.aikar.timings.Timings;
  import co.aikar.timings.TimingsManager;
@@ -36,7 +36,7 @@ index bd508025b771424c942fd856c31d520b6f548082..62621562137cba4804f0465c58d25ca2
      public static int tabSpamLimit = 500;
      private static void tabSpamLimiters() {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 80f8e994d4a85f5d240854ec492adba0633263b2..537efec03939b0f5640dfd974bb0bd68e93b4325 100644
+index 7c5c259aca713ec668372325e0a78ff50ab06489..48208792790a36b0135bcd8769935fde1f570c6c 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1076,6 +1076,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -48,7 +48,7 @@ index 80f8e994d4a85f5d240854ec492adba0633263b2..537efec03939b0f5640dfd974bb0bd68
                  long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
                  lastTick = start - TICK_TIME; // Paper
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8f2c7ca033a7c162395b6e5114895836e10534ab..e22b073a7a5f35a8edf58946144d1f1e9d94b6e3 100644
+index e6dff3051aee580f7561fb10f3ae28deccef7218..824083fce7d66e0eb4bca262f9fd64a806ca0417 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -810,6 +810,7 @@ public final class CraftServer implements Server {
@@ -81,14 +81,14 @@ index 314fa148fe783a0558ba00b068e0bf69a91577e1..66a3395a7a0cc8eb1b3cd24761bed9d8
  
      public static boolean bungee;
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..a01a266a25e3267c94c20f8597b4b596efe20faa 100644
+index 6e1fa4f0616ccfd258acd1b4f5b08fc0ad4c9529..cfdd6254627c4f1c7ab4c1eace1de5bb883eb728 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -5,6 +5,7 @@ import java.lang.management.MonitorInfo;
  import java.lang.management.ThreadInfo;
  import java.util.logging.Level;
  import java.util.logging.Logger;
-+import com.destroystokyo.paper.PaperConfig;
++import io.papermc.paper.PaperConfig;
  import net.minecraft.server.MinecraftServer;
  import org.bukkit.Bukkit;
  

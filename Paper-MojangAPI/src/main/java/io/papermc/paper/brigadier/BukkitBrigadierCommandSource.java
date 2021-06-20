@@ -1,4 +1,4 @@
-package com.destroystokyo.paper.brigadier;
+package io.papermc.paper.brigadier;
 
 import org.bukkit.Location;
 import org.bukkit.World;

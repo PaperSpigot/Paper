@@ -13,10 +13,10 @@ of messages, is packed into a binary format that is smaller than BungeeCord's
 forwarding, and is integrated into the Minecraft login process by using the 1.13
 login plugin message packet.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 585be2fcbd63a59f911df69136eae07ce665053c..9768c591e72ce2ef5fdb43e2fc63378c57773216 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 3c9fc06e6251e3f92a07e9bb39a6cd4b375f4002..afa9f61ab258419e9c8cb3e6d4860ab4d9eac8e6 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -9,6 +9,7 @@ import java.io.IOException;
  import java.lang.reflect.InvocationTargetException;
  import java.lang.reflect.Method;
@@ -55,15 +55,15 @@ index 585be2fcbd63a59f911df69136eae07ce665053c..9768c591e72ce2ef5fdb43e2fc63378c
      public static boolean asyncChunks = false;
      private static void asyncChunks() {
          ConfigurationSection section;
-diff --git a/src/main/java/com/destroystokyo/paper/proxy/VelocityProxy.java b/src/main/java/com/destroystokyo/paper/proxy/VelocityProxy.java
+diff --git a/src/main/java/io/papermc/paper/proxy/VelocityProxy.java b/src/main/java/io/papermc/paper/proxy/VelocityProxy.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..41d73aa91fb401612e087aa1b7278ba61d28bf3a
+index 0000000000000000000000000000000000000000..dccbe294a75ea9e174cd32fdc6ef67fa04340a12
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/proxy/VelocityProxy.java
++++ b/src/main/java/io/papermc/paper/proxy/VelocityProxy.java
 @@ -0,0 +1,66 @@
-+package com.destroystokyo.paper.proxy;
++package io.papermc.paper.proxy;
 +
-+import com.destroystokyo.paper.PaperConfig;
++import io.papermc.paper.PaperConfig;
 +import com.google.common.net.InetAddresses;
 +import com.mojang.authlib.GameProfile;
 +import com.mojang.authlib.properties.Property;
@@ -128,7 +128,7 @@ index 0000000000000000000000000000000000000000..41d73aa91fb401612e087aa1b7278ba6
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e6406ba28b6 100644
+index 1a0109f16a81c3c563457488238f42966bd5d590..1f6f6d8e96b6a606bdf2d419e7528bf5f7376f0b 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -18,6 +18,7 @@ import javax.crypto.Cipher;
@@ -160,9 +160,9 @@ index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e64
              this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.nonce));
          } else {
 +            // Paper start - Velocity support
-+            if (com.destroystokyo.paper.PaperConfig.velocitySupport) {
++            if (io.papermc.paper.PaperConfig.velocitySupport) {
 +                this.velocityLoginMessageId = java.util.concurrent.ThreadLocalRandom.current().nextInt();
-+                net.minecraft.network.protocol.login.ClientboundCustomQueryPacket packet1 = new net.minecraft.network.protocol.login.ClientboundCustomQueryPacket(this.velocityLoginMessageId, com.destroystokyo.paper.proxy.VelocityProxy.PLAYER_INFO_CHANNEL, new FriendlyByteBuf(Unpooled.EMPTY_BUFFER));
++                net.minecraft.network.protocol.login.ClientboundCustomQueryPacket packet1 = new net.minecraft.network.protocol.login.ClientboundCustomQueryPacket(this.velocityLoginMessageId, io.papermc.paper.proxy.VelocityProxy.PLAYER_INFO_CHANNEL, new FriendlyByteBuf(Unpooled.EMPTY_BUFFER));
 +                this.connection.send(packet1);
 +                return;
 +            }
@@ -175,7 +175,7 @@ index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e64
  
          public void fireEvents() throws Exception {
 +                            // Paper start - Velocity support
-+                            if (ServerLoginPacketListenerImpl.this.velocityLoginMessageId == -1 && com.destroystokyo.paper.PaperConfig.velocitySupport) {
++                            if (ServerLoginPacketListenerImpl.this.velocityLoginMessageId == -1 && io.papermc.paper.PaperConfig.velocitySupport) {
 +                                disconnect("This server requires you to connect with Velocity.");
 +                                return;
 +                            }
@@ -188,14 +188,14 @@ index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e64
  
      public void handleCustomQueryPacket(ServerboundCustomQueryPacket packet) {
 +        // Paper start - Velocity support
-+        if (com.destroystokyo.paper.PaperConfig.velocitySupport && packet.getTransactionId() == this.velocityLoginMessageId) {
++        if (io.papermc.paper.PaperConfig.velocitySupport && packet.getTransactionId() == this.velocityLoginMessageId) {
 +            FriendlyByteBuf buf = packet.getData();
 +            if (buf == null) {
 +                this.disconnect("This server requires you to connect with Velocity.");
 +                return;
 +            }
 +
-+            if (!com.destroystokyo.paper.proxy.VelocityProxy.checkIntegrity(buf)) {
++            if (!io.papermc.paper.proxy.VelocityProxy.checkIntegrity(buf)) {
 +                this.disconnect("Unable to verify player details");
 +                return;
 +            }
@@ -205,9 +205,9 @@ index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e64
 +            if (listening instanceof java.net.InetSocketAddress) {
 +                port = ((java.net.InetSocketAddress) listening).getPort();
 +            }
-+            this.connection.address = new java.net.InetSocketAddress(com.destroystokyo.paper.proxy.VelocityProxy.readAddress(buf), port);
++            this.connection.address = new java.net.InetSocketAddress(io.papermc.paper.proxy.VelocityProxy.readAddress(buf), port);
 +
-+            this.gameProfile = com.destroystokyo.paper.proxy.VelocityProxy.createProfile(buf);
++            this.gameProfile = io.papermc.paper.proxy.VelocityProxy.createProfile(buf);
 +
 +            // Proceed with login
 +            authenticatorPool.execute(() -> {
@@ -225,7 +225,7 @@ index dbdd320eca27e82d5b058a7e6596b0a5fbc2631f..3d97f76f14b8c22c78c46a34c2da2e64
      }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index e22b073a7a5f35a8edf58946144d1f1e9d94b6e3..7f1d5725e156b9cf3273aa0f66c1e0d486df6a51 100644
+index 824083fce7d66e0eb4bca262f9fd64a806ca0417..e199ed8963d19d9bd55578d1633cdfce0203c155 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -683,7 +683,7 @@ public final class CraftServer implements Server {
@@ -233,7 +233,7 @@ index e22b073a7a5f35a8edf58946144d1f1e9d94b6e3..7f1d5725e156b9cf3273aa0f66c1e0d4
      public long getConnectionThrottle() {
          // Spigot Start - Automatically set connection throttle for bungee configurations
 -        if (org.spigotmc.SpigotConfig.bungee) {
-+        if (org.spigotmc.SpigotConfig.bungee || com.destroystokyo.paper.PaperConfig.velocitySupport) { // Paper - Velocity support
++        if (org.spigotmc.SpigotConfig.bungee || io.papermc.paper.PaperConfig.velocitySupport) { // Paper - Velocity support
              return -1;
          } else {
              return this.configuration.getInt("settings.connection-throttle");

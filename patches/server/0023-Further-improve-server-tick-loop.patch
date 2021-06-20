@@ -12,7 +12,7 @@ Previous implementation did not calculate TPS correctly.
 Switch to a realistic rolling average and factor in std deviation as an extra reporting variable
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3a9d77a190ef96c06717ee00bcfba52b8f984c14..ca439ac2a09a2ce4e019282c0b75f2f5d41a2208 100644
+index 26f6a3d2d70078f300412a5076afb8a19818cd25..65b2fa69fd36addc9534f069cce8ec95cf1122a2 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -285,7 +285,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -143,7 +143,7 @@ index 3a9d77a190ef96c06717ee00bcfba52b8f984c14..ca439ac2a09a2ce4e019282c0b75f2f5
                      this.startMetricsRecordingTick();
                      this.profiler.push("tick");
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index f00844d2953e6ead58bfd383a214695b3dbe5086..477097955ad36b2639f6304f762a529a1989ba5e 100644
+index a726753f7d790ce84fdd564514543a64f1e28802..d1a60d44d50c09adfda81cedf78795086d721513 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2125,6 +2125,17 @@ public final class CraftServer implements Server {

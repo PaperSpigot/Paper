@@ -4,18 +4,18 @@ Date: Thu, 3 Mar 2016 03:15:41 -0600
 Subject: [PATCH] Add exception reporting event
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/ServerSchedulerReportingWrapper.java b/src/main/java/com/destroystokyo/paper/ServerSchedulerReportingWrapper.java
+diff --git a/src/main/java/io/papermc/paper/ServerSchedulerReportingWrapper.java b/src/main/java/io/papermc/paper/ServerSchedulerReportingWrapper.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f699ce18ca044f813e194ef2786b7ea853ea86e7
+index 0000000000000000000000000000000000000000..188efad1ee6b8c343715751319d8391f5563b57b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/ServerSchedulerReportingWrapper.java
++++ b/src/main/java/io/papermc/paper/ServerSchedulerReportingWrapper.java
 @@ -0,0 +1,38 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.base.Preconditions;
 +import org.bukkit.craftbukkit.scheduler.CraftTask;
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-+import com.destroystokyo.paper.exception.ServerSchedulerException;
++import io.papermc.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.exception.ServerSchedulerException;
 +
 +/**
 + * Reporting wrapper to catch exceptions not natively
@@ -49,25 +49,25 @@ index 0000000000000000000000000000000000000000..f699ce18ca044f813e194ef2786b7ea8
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 3b1565309165e10b147d08b8245ea0bce50dc3c2..4ebb839076a2d1f5e2acc6d5a8dfcf3545b37721 100644
+index 5e90fc8286b8f21837b6ebe16da178202c634e44..ce4ad5c714103903252868531d1cbc694c2c4a9f 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -825,6 +825,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                  return true;
              } catch (Exception exception) {
                  ChunkMap.LOGGER.error("Failed to save chunk {},{}", chunkcoordintpair.x, chunkcoordintpair.z, exception);
-+                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
++                io.papermc.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
                  return false;
              }
          }
 diff --git a/src/main/java/net/minecraft/server/players/OldUsersConverter.java b/src/main/java/net/minecraft/server/players/OldUsersConverter.java
-index 741bc569617c66f90ded58a28dd3ad0e4e8b1e8c..8e27b43e2f6ce4d7f5007fe02db1722e73c30a58 100644
+index 741bc569617c66f90ded58a28dd3ad0e4e8b1e8c..70e1f7a43efd8cb2b00ccaac1be4b0ddc23d2568 100644
 --- a/src/main/java/net/minecraft/server/players/OldUsersConverter.java
 +++ b/src/main/java/net/minecraft/server/players/OldUsersConverter.java
 @@ -1,5 +1,6 @@
  package net.minecraft.server.players;
  
-+import com.destroystokyo.paper.exception.ServerInternalException;
++import io.papermc.paper.exception.ServerInternalException;
  import com.google.common.collect.Lists;
  import com.google.common.collect.Maps;
  import com.google.common.io.Files;
@@ -88,13 +88,13 @@ index 741bc569617c66f90ded58a28dd3ad0e4e8b1e8c..8e27b43e2f6ce4d7f5007fe02db1722e
                         }
                          // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java b/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
-index 08c5f6fd1a307c89cf8365f56314a0c6d3e89e4b..26e0f03f2e736ed6ba86e2510a7962deee180ef3 100644
+index 08c5f6fd1a307c89cf8365f56314a0c6d3e89e4b..59b6a45a937da324f1d02d52ed4efb600edc41c3 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/village/VillageSiege.java
 @@ -1,5 +1,7 @@
  package net.minecraft.world.entity.ai.village;
  
-+import com.destroystokyo.paper.exception.ServerInternalException;
++import io.papermc.paper.exception.ServerInternalException;
 +
  import java.util.Iterator;
  import javax.annotation.Nullable;
@@ -108,7 +108,7 @@ index 08c5f6fd1a307c89cf8365f56314a0c6d3e89e4b..26e0f03f2e736ed6ba86e2510a7962de
              }
  
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index da8e6f5b48a83ca4178c0de439200b7952f409d9..969a5ed2484036103834dc23b57b33c11896d72f 100644
+index ac7d841d8014e2bc824c3a7990f176331479703d..3b65fbd6683d669ce78635568caba3f046a26a6f 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -1,5 +1,10 @@
@@ -116,8 +116,8 @@ index da8e6f5b48a83ca4178c0de439200b7952f409d9..969a5ed2484036103834dc23b57b33c1
  
 +import co.aikar.timings.Timing;
 +import co.aikar.timings.Timings;
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-+import com.destroystokyo.paper.exception.ServerInternalException;
++import io.papermc.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.exception.ServerInternalException;
 +import com.google.common.base.MoreObjects;
  import com.google.common.collect.Lists;
  import com.mojang.serialization.Codec;
@@ -135,14 +135,14 @@ index da8e6f5b48a83ca4178c0de439200b7952f409d9..969a5ed2484036103834dc23b57b33c1
              // Paper end
          }
 diff --git a/src/main/java/net/minecraft/world/level/NaturalSpawner.java b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
-index b4a7776ba9486bbca42ffb596c8a8bcdf6471ce3..59fae60116167baf989e85596334824e9004e6fb 100644
+index b4a7776ba9486bbca42ffb596c8a8bcdf6471ce3..82b47fca879f6b29fd3c87cbd277dbba26a74707 100644
 --- a/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 @@ -308,6 +308,7 @@ public final class NaturalSpawner {
              }
          } catch (Exception exception) {
              NaturalSpawner.LOGGER.warn("Failed to create mob", exception);
-+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
++            io.papermc.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
              return null;
          }
      }
@@ -150,19 +150,19 @@ index b4a7776ba9486bbca42ffb596c8a8bcdf6471ce3..59fae60116167baf989e85596334824e
                                      entity = biomesettingsmobs_c.type.create((Level) world.getLevel());
                                  } catch (Exception exception) {
                                      NaturalSpawner.LOGGER.warn("Failed to create mob", exception);
-+                                    com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
++                                    io.papermc.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
                                      continue;
                                  }
  
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 21f613b8d7785b996866b5059f3cb1bc87533d2e..249f39bc0c5820e313cad7813bd1087cb2e09ed6 100644
+index 4973955451277310cb3a6bd813684faeda4a08e4..f2bf9a2f747a1cea51c6645f2a24b829763fb494 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -1,6 +1,7 @@
  package net.minecraft.world.level.chunk;
  
  import com.google.common.collect.ImmutableList;
-+import com.destroystokyo.paper.exception.ServerInternalException;
++import io.papermc.paper.exception.ServerInternalException;
  import com.google.common.collect.Maps;
  import com.google.common.collect.Sets;
  import com.google.common.collect.UnmodifiableIterator;
@@ -194,19 +194,19 @@ index 21f613b8d7785b996866b5059f3cb1bc87533d2e..249f39bc0c5820e313cad7813bd1087c
 +                        String msg = "TileEntity threw exception at " + LevelChunk.this.getLevel().getWorld().getName() + ":" + this.getPos().getX() + "," + this.getPos().getY() + "," + this.getPos().getZ();
 +                        System.err.println(msg);
                          throwable.printStackTrace();
-+                        net.minecraft.world.level.chunk.LevelChunk.this.level.getCraftServer().getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerExceptionEvent(new ServerInternalException(msg, throwable)));
++                        net.minecraft.world.level.chunk.LevelChunk.this.level.getCraftServer().getPluginManager().callEvent(new io.papermc.paper.event.server.ServerExceptionEvent(new ServerInternalException(msg, throwable)));
                          LevelChunk.this.removeBlockEntity(this.getPos());
                          // Paper end
                          // Spigot start
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 1441888430687b9de2a67f21ed426f16d5b30538..f514c29e64a9c7a66ff4edd5ba8c2a3dfbba2ad9 100644
+index 1441888430687b9de2a67f21ed426f16d5b30538..5392dac6e208b1d12d4fb8f0e63afeeca9ae40ff 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -277,6 +277,7 @@ public class RegionFile implements AutoCloseable {
                      return true;
                  }
              } catch (IOException ioexception) {
-+                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
++                io.papermc.paper.exception.ServerInternalException.reportInternalException(ioexception); // Paper
                  return false;
              }
          }
@@ -214,33 +214,33 @@ index 1441888430687b9de2a67f21ed426f16d5b30538..f514c29e64a9c7a66ff4edd5ba8c2a3d
              ((java.nio.Buffer) bytebuffer).position(5); // CraftBukkit - decompile error
              filechannel.write(bytebuffer);
          } catch (Throwable throwable) {
-+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(throwable); // Paper
++            io.papermc.paper.exception.ServerInternalException.reportInternalException(throwable); // Paper
              if (filechannel != null) {
                  try {
                      filechannel.close();
 diff --git a/src/main/java/net/minecraft/world/level/storage/DimensionDataStorage.java b/src/main/java/net/minecraft/world/level/storage/DimensionDataStorage.java
-index 2fdb313e8eaed868c36f68c9b7f6a6f9f4864575..c8ed0673ff819cb88d0ee6f53f2a2b9b46b203d4 100644
+index 2fdb313e8eaed868c36f68c9b7f6a6f9f4864575..a425d25c0cae4e0ad7ff9821bd8aad6d0a31a3ec 100644
 --- a/src/main/java/net/minecraft/world/level/storage/DimensionDataStorage.java
 +++ b/src/main/java/net/minecraft/world/level/storage/DimensionDataStorage.java
 @@ -120,6 +120,7 @@ public class DimensionDataStorage {
  
              pushbackInputStream.close();
          } catch (Throwable var15) {
-+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(var15); // Paper
++            io.papermc.paper.exception.ServerInternalException.reportInternalException(var15); // Paper
              try {
                  fileInputStream.close();
              } catch (Throwable var10) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
-index e6a09ed5db245eaecd787503dbfb1ef5fea5bb70..0735c2fe139ce8d47a04fdba045fe462492723eb 100644
+index e6a09ed5db245eaecd787503dbfb1ef5fea5bb70..dd1a694c20c3eb05768b13f10cc45ebf7f771ee7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftScheduler.java
 @@ -16,6 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  import java.util.concurrent.atomic.AtomicReference;
  import java.util.function.Consumer;
  import java.util.logging.Level;
-+import com.destroystokyo.paper.ServerSchedulerReportingWrapper;
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-+import com.destroystokyo.paper.exception.ServerSchedulerException;
++import io.papermc.paper.ServerSchedulerReportingWrapper;
++import io.papermc.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.exception.ServerSchedulerException;
  import org.apache.commons.lang.Validate;
  import org.bukkit.plugin.IllegalPluginAccessException;
  import org.bukkit.plugin.Plugin;

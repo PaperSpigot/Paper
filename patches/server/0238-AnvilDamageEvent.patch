@@ -5,7 +5,7 @@ Subject: [PATCH] AnvilDamageEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/inventory/AnvilMenu.java b/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
-index 6a9597572714706052103677bfb6142a5be2e134..1dad9577370bb58b27b32b997a505ce5145a6769 100644
+index 6a9597572714706052103677bfb6142a5be2e134..dc50c9c83757a527b959e068c6531b106a61b0f1 100644
 --- a/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
 +++ b/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
 @@ -90,6 +90,16 @@ public class AnvilMenu extends ItemCombinerMenu {
@@ -13,10 +13,10 @@ index 6a9597572714706052103677bfb6142a5be2e134..1dad9577370bb58b27b32b997a505ce5
                  BlockState iblockdata1 = AnvilBlock.damage(iblockdata);
  
 +                // Paper start
-+                com.destroystokyo.paper.event.block.AnvilDamagedEvent event = new com.destroystokyo.paper.event.block.AnvilDamagedEvent(getBukkitView(), iblockdata1 != null ? org.bukkit.craftbukkit.block.data.CraftBlockData.fromData(iblockdata1) : null);
++                io.papermc.paper.event.block.AnvilDamagedEvent event = new io.papermc.paper.event.block.AnvilDamagedEvent(getBukkitView(), iblockdata1 != null ? org.bukkit.craftbukkit.block.data.CraftBlockData.fromData(iblockdata1) : null);
 +                if (!event.callEvent()) {
 +                    return;
-+                } else if (event.getDamageState() == com.destroystokyo.paper.event.block.AnvilDamagedEvent.DamageState.BROKEN) {
++                } else if (event.getDamageState() == io.papermc.paper.event.block.AnvilDamagedEvent.DamageState.BROKEN) {
 +                    iblockdata1 = null;
 +                } else {
 +                    iblockdata1 = ((org.bukkit.craftbukkit.block.data.CraftBlockData) event.getDamageState().getMaterial().createBlockData()).getState().setValue(AnvilBlock.FACING, iblockdata.getValue(AnvilBlock.FACING));

@@ -5,14 +5,14 @@ Subject: [PATCH] EnderDragon Events
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonSittingFlamingPhase.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonSittingFlamingPhase.java
-index df44bfce8cc492cd901dfa86331b9be7f1e13837..7490674d59d152a70e24a790bdbc717998ed2c52 100644
+index df44bfce8cc492cd901dfa86331b9be7f1e13837..76dd4d366149dc2a894023cac3dd158f1ea3fe5b 100644
 --- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonSittingFlamingPhase.java
 +++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonSittingFlamingPhase.java
 @@ -81,7 +81,13 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
              this.flame.setDuration(200);
              this.flame.setParticle(ParticleTypes.DRAGON_BREATH);
              this.flame.addEffect(new MobEffectInstance(MobEffects.HARM));
-+            if (new com.destroystokyo.paper.event.entity.EnderDragonFlameEvent((org.bukkit.entity.EnderDragon) this.dragon.getBukkitEntity(), (org.bukkit.entity.AreaEffectCloud) this.flame.getBukkitEntity()).callEvent()) { // Paper
++            if (new io.papermc.paper.event.entity.EnderDragonFlameEvent((org.bukkit.entity.EnderDragon) this.dragon.getBukkitEntity(), (org.bukkit.entity.AreaEffectCloud) this.flame.getBukkitEntity()).callEvent()) { // Paper
              this.dragon.level.addFreshEntity(this.flame);
 +            // Paper start
 +            } else {
@@ -23,28 +23,28 @@ index df44bfce8cc492cd901dfa86331b9be7f1e13837..7490674d59d152a70e24a790bdbc7179
  
      }
 diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonStrafePlayerPhase.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonStrafePlayerPhase.java
-index 974895ef23e9d2b8c520abd262a2e80d28be5860..318a288a9170254b682955d96a150e99ca89b345 100644
+index 974895ef23e9d2b8c520abd262a2e80d28be5860..041491a02f0a3b3c55c2057700a0b1edb02be62f 100644
 --- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonStrafePlayerPhase.java
 +++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/phases/DragonStrafePlayerPhase.java
 @@ -71,7 +71,9 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
  
                          DragonFireball dragonFireball = new DragonFireball(this.dragon.level, this.dragon, r, s, t);
                          dragonFireball.moveTo(o, p, q, 0.0F, 0.0F);
-+                        if (new com.destroystokyo.paper.event.entity.EnderDragonShootFireballEvent((org.bukkit.entity.EnderDragon) dragon.getBukkitEntity(), (org.bukkit.entity.DragonFireball) dragonFireball.getBukkitEntity()).callEvent()) // Paper
++                        if (new io.papermc.paper.event.entity.EnderDragonShootFireballEvent((org.bukkit.entity.EnderDragon) dragon.getBukkitEntity(), (org.bukkit.entity.DragonFireball) dragonFireball.getBukkitEntity()).callEvent()) // Paper
                          this.dragon.level.addFreshEntity(dragonFireball);
 +                        else dragonFireball.discard(); // Paper
                          this.fireballCharge = 0;
                          if (this.currentPath != null) {
                              while(!this.currentPath.isDone()) {
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java b/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
-index a7935042497a108a21814c28b01a0ab27aefbbc4..6afe37e42d88701af38df5793a9ea9d7d2cda5c5 100644
+index a7935042497a108a21814c28b01a0ab27aefbbc4..6fdfe95eab00ad8724bef620a9b106bee79cbd10 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
 @@ -52,8 +52,10 @@ public class DragonFireball extends AbstractHurtingProjectile {
                      }
                  }
  
-+                if (new com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent((org.bukkit.entity.DragonFireball) this.getBukkitEntity(), list.stream().map(LivingEntity::getBukkitLivingEntity).collect(java.util.stream.Collectors.toList()), (org.bukkit.entity.AreaEffectCloud) areaEffectCloud.getBukkitEntity()).callEvent()) { // Paper
++                if (new io.papermc.paper.event.entity.EnderDragonFireballHitEvent((org.bukkit.entity.DragonFireball) this.getBukkitEntity(), list.stream().map(LivingEntity::getBukkitLivingEntity).collect(java.util.stream.Collectors.toList()), (org.bukkit.entity.AreaEffectCloud) areaEffectCloud.getBukkitEntity()).callEvent()) { // Paper
                  this.level.levelEvent(2006, this.blockPosition(), this.isSilent() ? -1 : 1);
                  this.level.addFreshEntity(areaEffectCloud);
 +                } else areaEffectCloud.discard(); // Paper

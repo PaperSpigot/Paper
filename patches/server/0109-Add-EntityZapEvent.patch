@@ -21,7 +21,7 @@ index d414b111386e18dec8992b510b93c19ece8d60dd..2c95b6eddfe46e5d2ad495bfc86ccc24
              if (CraftEventFactory.callPigZapEvent(this, lightning, entitypigzombie).isCancelled()) {
                  return;
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index e61abd923cc1ca469f01249563da7ff31ead7bdd..f7b3b11bd6b395d199e725bc0c0192c28cc3cd86 100644
+index c5a8edf426e79b8746c7a5a5a5de3e3df1708740..a8820e811be1adecf864541400dc6907d3c2f0bb 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
 @@ -826,9 +826,17 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
@@ -44,7 +44,7 @@ index e61abd923cc1ca469f01249563da7ff31ead7bdd..f7b3b11bd6b395d199e725bc0c0192c2
              entitywitch.finalizeSpawn(world, world.getCurrentDifficultyAt(entitywitch.blockPosition()), MobSpawnType.CONVERSION, (SpawnGroupData) null, (CompoundTag) null);
              entitywitch.setNoAi(this.isNoAi());
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index ae12d4a7b56ec70ac5f529e0f336019e97f667ce..8e9ae16441057fb5e42154c081f8677f4575587d 100644
+index ae12d4a7b56ec70ac5f529e0f336019e97f667ce..c10702f9ae7de71c6deed5ea715a1c408378cbc3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1098,6 +1098,14 @@ public class CraftEventFactory {
@@ -52,8 +52,8 @@ index ae12d4a7b56ec70ac5f529e0f336019e97f667ce..8e9ae16441057fb5e42154c081f8677f
      }
  
 +    // Paper start
-+    public static com.destroystokyo.paper.event.entity.EntityZapEvent callEntityZapEvent (Entity entity, Entity lightning, Entity changedEntity) {
-+        com.destroystokyo.paper.event.entity.EntityZapEvent event = new com.destroystokyo.paper.event.entity.EntityZapEvent(entity.getBukkitEntity(), (LightningStrike) lightning.getBukkitEntity(), changedEntity.getBukkitEntity());
++    public static io.papermc.paper.event.entity.EntityZapEvent callEntityZapEvent (Entity entity, Entity lightning, Entity changedEntity) {
++        io.papermc.paper.event.entity.EntityZapEvent event = new io.papermc.paper.event.entity.EntityZapEvent(entity.getBukkitEntity(), (LightningStrike) lightning.getBukkitEntity(), changedEntity.getBukkitEntity());
 +        entity.getBukkitEntity().getServer().getPluginManager().callEvent(event);
 +        return event;
 +    }

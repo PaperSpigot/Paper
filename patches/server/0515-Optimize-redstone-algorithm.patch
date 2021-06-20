@@ -18,10 +18,10 @@ A lot of this code is self-contained in a helper class.
 Aside from making the obvious class/function renames and obfhelpers I didn't need to modify much.
 Just added Bukkit's event system and took a few liberties with dead code and comment misspellings.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 2252b9f36ea22a655592c6f176d18b70b7440e4e..8504f4dcfca35c8fe8e266af59762edde76bec77 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index c230a6a61a77a54dbc195f680b4039d3ae7397ce..e9beec1f183849562689e582d81876d0053347f7 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -43,6 +43,16 @@ public class PaperWorldConfig {
          zombiesTargetTurtleEggs = getBoolean("zombies-target-turtle-eggs", zombiesTargetTurtleEggs);
      }
@@ -39,13 +39,13 @@ index 2252b9f36ea22a655592c6f176d18b70b7440e4e..8504f4dcfca35c8fe8e266af59762edd
      public short keepLoadedRange;
      private void keepLoadedRange() {
          keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 10)) * 16);
-diff --git a/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java b/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java
+diff --git a/src/main/java/io/papermc/paper/util/RedstoneWireTurbo.java b/src/main/java/io/papermc/paper/util/RedstoneWireTurbo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d4273df8124d9d6d4a122f5ecef6f3d011da5860
+index 0000000000000000000000000000000000000000..4889efc64b6596ceb18d9d70b1286223e8881aa9
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/RedstoneWireTurbo.java
++++ b/src/main/java/io/papermc/paper/util/RedstoneWireTurbo.java
 @@ -0,0 +1,913 @@
-+package com.destroystokyo.paper.util;
++package io.papermc.paper.util;
 +
 +import java.util.List;
 +import java.util.Map;
@@ -959,14 +959,14 @@ index 0000000000000000000000000000000000000000..d4273df8124d9d6d4a122f5ecef6f3d0
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/world/level/block/RedStoneWireBlock.java b/src/main/java/net/minecraft/world/level/block/RedStoneWireBlock.java
-index 4698b567ced720946b14bd3e03a5b6e0dcf401fb..cdc040c657bfc70bd5b2a2d8251d2b2a2e94ab55 100644
+index 4698b567ced720946b14bd3e03a5b6e0dcf401fb..0c47298a1e5f8c34771fa824679495436bf57189 100644
 --- a/src/main/java/net/minecraft/world/level/block/RedStoneWireBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/RedStoneWireBlock.java
 @@ -1,5 +1,7 @@
  package net.minecraft.world.level.block;
  
-+import com.destroystokyo.paper.PaperConfig;
-+import com.destroystokyo.paper.util.RedstoneWireTurbo;
++import io.papermc.paper.PaperConfig;
++import io.papermc.paper.util.RedstoneWireTurbo;
  import com.google.common.collect.ImmutableMap;
  import com.google.common.collect.Maps;
  import com.google.common.collect.Sets;

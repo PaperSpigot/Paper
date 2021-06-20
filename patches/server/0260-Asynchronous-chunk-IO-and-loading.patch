@@ -158,14 +158,14 @@ index 0fda52841b5e1643efeda92106124998abc4e0aa..fe79c0add4f7cb18d487c5bb9415c40c
      }
  
      public static Timing getTickList(ServerLevel worldserver, String timingsType) {
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 62621562137cba4804f0465c58d25ca2786328e5..ee8ead249d89bc81f87bfff6a1f594a9aeb21250 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index df3c046d6f7187e63dc10dd95334e73931ccce1a..855875c92e729f0f86682dfe81e4fa8224a96e8b 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -1,5 +1,6 @@
- package com.destroystokyo.paper;
+ package io.papermc.paper;
  
-+import com.destroystokyo.paper.io.chunk.ChunkTaskManager;
++import io.papermc.paper.io.chunk.ChunkTaskManager;
  import com.google.common.base.Strings;
  import com.google.common.base.Throwables;
  
@@ -224,13 +224,13 @@ index 62621562137cba4804f0465c58d25ca2786328e5..ee8ead249d89bc81f87bfff6a1f594a9
 +        }
 +    }
  }
-diff --git a/src/main/java/com/destroystokyo/paper/io/IOUtil.java b/src/main/java/com/destroystokyo/paper/io/IOUtil.java
+diff --git a/src/main/java/io/papermc/paper/io/IOUtil.java b/src/main/java/io/papermc/paper/io/IOUtil.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5af0ac3d9e87c06053e65433060f15779c156c2a
+index 0000000000000000000000000000000000000000..de0d049439f56c5bc801b69eea1af9cd5f2650b7
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/IOUtil.java
++++ b/src/main/java/io/papermc/paper/io/IOUtil.java
 @@ -0,0 +1,62 @@
-+package com.destroystokyo.paper.io;
++package io.papermc.paper.io;
 +
 +import org.bukkit.Bukkit;
 +
@@ -292,13 +292,13 @@ index 0000000000000000000000000000000000000000..5af0ac3d9e87c06053e65433060f1577
 +    }
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/PaperFileIOThread.java b/src/main/java/com/destroystokyo/paper/io/PaperFileIOThread.java
+diff --git a/src/main/java/io/papermc/paper/io/PaperFileIOThread.java b/src/main/java/io/papermc/paper/io/PaperFileIOThread.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a630a84b60b4517e3bc330d4983b914bd064efa4
+index 0000000000000000000000000000000000000000..98b6d661aaeacd04717ec20dd34548e2d9665314
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/PaperFileIOThread.java
++++ b/src/main/java/io/papermc/paper/io/PaperFileIOThread.java
 @@ -0,0 +1,606 @@
-+package com.destroystokyo.paper.io;
++package io.papermc.paper.io;
 +
 +import net.minecraft.nbt.CompoundTag;
 +import net.minecraft.server.MinecraftServer;
@@ -904,13 +904,13 @@ index 0000000000000000000000000000000000000000..a630a84b60b4517e3bc330d4983b914b
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/PrioritizedTaskQueue.java b/src/main/java/com/destroystokyo/paper/io/PrioritizedTaskQueue.java
+diff --git a/src/main/java/io/papermc/paper/io/PrioritizedTaskQueue.java b/src/main/java/io/papermc/paper/io/PrioritizedTaskQueue.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..97f2e433c483f1ebd7500ae142269e144ef5fda4
+index 0000000000000000000000000000000000000000..bbcda131698dc2ecd6709cf7a3e95fafa588099d
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/PrioritizedTaskQueue.java
++++ b/src/main/java/io/papermc/paper/io/PrioritizedTaskQueue.java
 @@ -0,0 +1,277 @@
-+package com.destroystokyo.paper.io;
++package io.papermc.paper.io;
 +
 +import java.util.concurrent.ConcurrentLinkedQueue;
 +import java.util.concurrent.atomic.AtomicBoolean;
@@ -1187,13 +1187,13 @@ index 0000000000000000000000000000000000000000..97f2e433c483f1ebd7500ae142269e14
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/QueueExecutorThread.java b/src/main/java/com/destroystokyo/paper/io/QueueExecutorThread.java
+diff --git a/src/main/java/io/papermc/paper/io/QueueExecutorThread.java b/src/main/java/io/papermc/paper/io/QueueExecutorThread.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ee906b594b306906c170180a29a8b61997d05168
+index 0000000000000000000000000000000000000000..ae8c93d2f392440321cb2dd88d4b3153e36b234d
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/QueueExecutorThread.java
++++ b/src/main/java/io/papermc/paper/io/QueueExecutorThread.java
 @@ -0,0 +1,241 @@
-+package com.destroystokyo.paper.io;
++package io.papermc.paper.io;
 +
 +import net.minecraft.server.MinecraftServer;
 +import org.apache.logging.log4j.Logger;
@@ -1434,17 +1434,17 @@ index 0000000000000000000000000000000000000000..ee906b594b306906c170180a29a8b619
 +        return ret;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkLoadTask.java b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkLoadTask.java
+diff --git a/src/main/java/io/papermc/paper/io/chunk/ChunkLoadTask.java b/src/main/java/io/papermc/paper/io/chunk/ChunkLoadTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0eaa4f3cd476c64feab358879eee3d67f46092f4
+index 0000000000000000000000000000000000000000..21d378a87df1e9dc7f5c12c65419cc97f1aa165e
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkLoadTask.java
++++ b/src/main/java/io/papermc/paper/io/chunk/ChunkLoadTask.java
 @@ -0,0 +1,138 @@
-+package com.destroystokyo.paper.io.chunk;
++package io.papermc.paper.io.chunk;
 +
 +import co.aikar.timings.Timing;
-+import com.destroystokyo.paper.io.PaperFileIOThread;
-+import com.destroystokyo.paper.io.IOUtil;
++import io.papermc.paper.io.PaperFileIOThread;
++import io.papermc.paper.io.IOUtil;
 +import java.util.ArrayDeque;
 +import java.util.function.Consumer;
 +import net.minecraft.server.level.ChunkMap;
@@ -1578,18 +1578,18 @@ index 0000000000000000000000000000000000000000..0eaa4f3cd476c64feab358879eee3d67
 +        });
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkSaveTask.java b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkSaveTask.java
+diff --git a/src/main/java/io/papermc/paper/io/chunk/ChunkSaveTask.java b/src/main/java/io/papermc/paper/io/chunk/ChunkSaveTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..69ebbfa171385c46a84d1a0d241d168a8c2af145
+index 0000000000000000000000000000000000000000..369a0b1970312caf65617e3ae042c6007e67bb01
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkSaveTask.java
++++ b/src/main/java/io/papermc/paper/io/chunk/ChunkSaveTask.java
 @@ -0,0 +1,111 @@
-+package com.destroystokyo.paper.io.chunk;
++package io.papermc.paper.io.chunk;
 +
 +import co.aikar.timings.Timing;
-+import com.destroystokyo.paper.io.PaperFileIOThread;
-+import com.destroystokyo.paper.io.IOUtil;
-+import com.destroystokyo.paper.io.PrioritizedTaskQueue;
++import io.papermc.paper.io.PaperFileIOThread;
++import io.papermc.paper.io.IOUtil;
++import io.papermc.paper.io.PrioritizedTaskQueue;
 +
 +import java.util.concurrent.CompletableFuture;
 +import java.util.concurrent.atomic.AtomicInteger;
@@ -1695,16 +1695,16 @@ index 0000000000000000000000000000000000000000..69ebbfa171385c46a84d1a0d241d168a
 +        });
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTask.java b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTask.java
+diff --git a/src/main/java/io/papermc/paper/io/chunk/ChunkTask.java b/src/main/java/io/papermc/paper/io/chunk/ChunkTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..058fb5a41565e6ce2acbd1f4d071a1b8be449f5d
+index 0000000000000000000000000000000000000000..c316794167baab5046046ebe90a74718791c46ba
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTask.java
++++ b/src/main/java/io/papermc/paper/io/chunk/ChunkTask.java
 @@ -0,0 +1,40 @@
-+package com.destroystokyo.paper.io.chunk;
++package io.papermc.paper.io.chunk;
 +
-+import com.destroystokyo.paper.io.PaperFileIOThread;
-+import com.destroystokyo.paper.io.PrioritizedTaskQueue;
++import io.papermc.paper.io.PaperFileIOThread;
++import io.papermc.paper.io.PrioritizedTaskQueue;
 +import net.minecraft.server.level.ServerLevel;
 +
 +abstract class ChunkTask extends PrioritizedTaskQueue.PrioritizedTask implements Runnable {
@@ -1741,18 +1741,18 @@ index 0000000000000000000000000000000000000000..058fb5a41565e6ce2acbd1f4d071a1b8
 +        return super.updatePriority(priority);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java
+diff --git a/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java b/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..18ae2e2b339d357fbe0f6f2b18bc14c0dfe4c222
+index 0000000000000000000000000000000000000000..068e291e73d76da42f9cb48f949cb54afed621eb
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/chunk/ChunkTaskManager.java
++++ b/src/main/java/io/papermc/paper/io/chunk/ChunkTaskManager.java
 @@ -0,0 +1,513 @@
-+package com.destroystokyo.paper.io.chunk;
++package io.papermc.paper.io.chunk;
 +
-+import com.destroystokyo.paper.io.PaperFileIOThread;
-+import com.destroystokyo.paper.io.IOUtil;
-+import com.destroystokyo.paper.io.PrioritizedTaskQueue;
-+import com.destroystokyo.paper.io.QueueExecutorThread;
++import io.papermc.paper.io.PaperFileIOThread;
++import io.papermc.paper.io.IOUtil;
++import io.papermc.paper.io.PrioritizedTaskQueue;
++import io.papermc.paper.io.QueueExecutorThread;
 +import net.minecraft.nbt.CompoundTag;
 +import net.minecraft.server.MinecraftServer;
 +import net.minecraft.server.level.ChunkHolder;
@@ -2274,7 +2274,7 @@ index a5e438a834826161c52ca9db57d234d9ff80a591..b8bc1b9b8e8a33df90a963f9f9769292
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 966f0951832040c38fdd2caa58f7eae372aa0f59..49fd3486a6c595749f33bbe1c1bec0454e4725c5 100644
+index 7631271c37e51fe0ac2d9f35217ef062c3698928..8d9500b5c60fe11adc4c2bdffff76d11c955e645 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
 @@ -500,4 +500,8 @@ public final class MCUtil {
@@ -2287,7 +2287,7 @@ index 966f0951832040c38fdd2caa58f7eae372aa0f59..49fd3486a6c595749f33bbe1c1bec045
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
-index fb0b3c5770f66cc3590f5ac4e690a33cb6179be3..7ce854edba32ffcafaa5268d4bb2822a5233e40b 100644
+index 4a27353c813e5ca241a902ff01d1509d1d755636..0364bd08d8022480a528b076e7b09c7ff6a1f7fd 100644
 --- a/src/main/java/net/minecraft/server/Main.java
 +++ b/src/main/java/net/minecraft/server/Main.java
 @@ -217,6 +217,7 @@ public class Main {
@@ -2299,7 +2299,7 @@ index fb0b3c5770f66cc3590f5ac4e690a33cb6179be3..7ce854edba32ffcafaa5268d4bb2822a
                  DedicatedServer dedicatedserver1 = new DedicatedServer(optionset, datapackconfiguration1, thread, iregistrycustom_dimension, convertable_conversionsession, resourcepackrepository, datapackresources, null, dedicatedserversettings, DataFixers.getDataFixer(), minecraftsessionservice, gameprofilerepository, usercache, LoggerChunkProgressListener::new);
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a7244e66b7bbf2b474304ab41ad31a606ab6ba9c..bd892f477a04172aaae3925d81cb30cda74abfdc 100644
+index 48208792790a36b0135bcd8769935fde1f570c6c..c921fdb9c44d1a5d2e2b3e272923e618c23d81c1 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -976,7 +976,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -2307,7 +2307,7 @@ index a7244e66b7bbf2b474304ab41ad31a606ab6ba9c..bd892f477a04172aaae3925d81cb30cd
          }
          // Spigot end
 -
-+        com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.close(true, true); // Paper
++        io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.close(true, true); // Paper
      }
  
      public String getLocalIp() {
@@ -2357,7 +2357,7 @@ index 24f72050229031898fd9da585ad2ceec835f83f9..828e885baf2d47962cdd4188c66d8345
                  completablefuture = (CompletableFuture) this.futures.get(i);
                  if (completablefuture == null) {
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1a6336728 100644
+index a1cfc09068f91f202fedd80d3ec12377b3ec2d33..7d2c5eaeb92870edc7af93c488bb709f34eb155e 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -406,6 +406,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -2430,8 +2430,8 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +            poiData = this.getVillagePlace().getData(chunk.getPos());
 +        }
 +
-+        com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.level, chunkPos.x, chunkPos.z,
-+            poiData, null, com.destroystokyo.paper.io.PrioritizedTaskQueue.LOW_PRIORITY);
++        io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.level, chunkPos.x, chunkPos.z,
++            poiData, null, io.papermc.paper.io.PrioritizedTaskQueue.LOW_PRIORITY);
 +
 +        if (!chunk.isUnsaved()) {
 +            return;
@@ -2452,7 +2452,7 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +            asyncSaveData = ChunkSerializer.getAsyncSaveData(this.level, chunk);
 +        }
 +
-+        this.level.asyncChunkTaskManager.scheduleChunkSave(chunkPos.x, chunkPos.z, com.destroystokyo.paper.io.PrioritizedTaskQueue.LOW_PRIORITY,
++        this.level.asyncChunkTaskManager.scheduleChunkSave(chunkPos.x, chunkPos.z, io.papermc.paper.io.PrioritizedTaskQueue.LOW_PRIORITY,
 +            asyncSaveData, chunk);
 +
 +        chunk.setUnsaved(false);
@@ -2495,7 +2495,7 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 -                } // Paper end
 +                // Paper start
 +                if (ioThrowable != null) {
-+                    com.destroystokyo.paper.util.SneakyThrow.sneaky(ioThrowable);
++                    io.papermc.paper.util.SneakyThrow.sneaky(ioThrowable);
 +                }
 +
 +                this.getVillagePlace().loadInData(pos, chunkHolder.poiData);
@@ -2524,7 +2524,7 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +
 +        Consumer<ChunkSerializer.InProgressChunkHolder> chunkHolderConsumer = (ChunkSerializer.InProgressChunkHolder holder) -> {
 +            // Go into the chunk load queue and not server task queue so we can be popped out even faster.
-+            com.destroystokyo.paper.io.chunk.ChunkTaskManager.queueChunkWaitTask(() -> {
++            io.papermc.paper.io.chunk.ChunkTaskManager.queueChunkWaitTask(() -> {
 +                try {
 +                    ret.complete(syncLoadComplete.apply(holder, null));
 +                } catch (Exception e) {
@@ -2536,11 +2536,11 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +        CompletableFuture<CompoundTag> chunkSaveFuture = this.level.asyncChunkTaskManager.getChunkSaveFuture(pos.x, pos.z);
 +        if (chunkSaveFuture != null) {
 +            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z,
-+                com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY, chunkHolderConsumer, false, chunkSaveFuture);
-+            this.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY);
++                io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY, chunkHolderConsumer, false, chunkSaveFuture);
++            this.level.asyncChunkTaskManager.raisePriority(pos.x, pos.z, io.papermc.paper.io.PrioritizedTaskQueue.HIGH_PRIORITY);
 +        } else {
 +            this.level.asyncChunkTaskManager.scheduleChunkLoad(pos.x, pos.z,
-+                com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY, chunkHolderConsumer, false);
++                io.papermc.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY, chunkHolderConsumer, false);
 +        }
 +        return ret;
 +        // Paper end
@@ -2577,8 +2577,8 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 -                this.write(chunkcoordintpair, nbttagcompound);
 +
 +                // Paper start - async chunk io
-+                com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.level, chunkcoordintpair.x, chunkcoordintpair.z,
-+                    null, nbttagcompound, com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY);
++                io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.level, chunkcoordintpair.x, chunkcoordintpair.z,
++                    null, nbttagcompound, io.papermc.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY);
 +                // Paper end - async chunk io
                  this.markPosition(chunkcoordintpair, chunkstatus.getChunkType());
                  return true;
@@ -2599,12 +2599,12 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +    @Nullable
 +    @Override
 +    public CompoundTag read(ChunkPos chunkcoordintpair) throws IOException {
-+        if (Thread.currentThread() != com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE) {
-+            CompoundTag ret = com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE
-+                .loadChunkDataAsyncFuture(this.level, chunkcoordintpair.x, chunkcoordintpair.z, com.destroystokyo.paper.io.IOUtil.getPriorityForCurrentThread(),
++        if (Thread.currentThread() != io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE) {
++            CompoundTag ret = io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE
++                .loadChunkDataAsyncFuture(this.level, chunkcoordintpair.x, chunkcoordintpair.z, io.papermc.paper.io.IOUtil.getPriorityForCurrentThread(),
 +                    false, true, true).join().chunkData;
 +
-+            if (ret == com.destroystokyo.paper.io.PaperFileIOThread.FAILURE_VALUE) {
++            if (ret == io.papermc.paper.io.PaperFileIOThread.FAILURE_VALUE) {
 +                throw new IOException("See logs for further detail");
 +            }
 +            return ret;
@@ -2614,10 +2614,10 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
 +
 +    @Override
 +    public void write(ChunkPos chunkcoordintpair, CompoundTag nbttagcompound) throws IOException {
-+        if (Thread.currentThread() != com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE) {
-+            com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(
++        if (Thread.currentThread() != io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE) {
++            io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(
 +                this.level, chunkcoordintpair.x, chunkcoordintpair.z, null, nbttagcompound,
-+                com.destroystokyo.paper.io.IOUtil.getPriorityForCurrentThread());
++                io.papermc.paper.io.IOUtil.getPriorityForCurrentThread());
 +            return;
 +        }
 +        super.write(chunkcoordintpair, nbttagcompound);
@@ -2636,7 +2636,7 @@ index b794922eeccc845632f2442a3ed923f1d826a9e1..36bc19cbb5242207ff019f62f59205e1
          return this.poiManager;
      }
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 03c90069e8fca2291e66f5d99175f029530a4434..1176dd8ebd59c5bda1b74c532ca21ae335078805 100644
+index e18eb79f3c261452bea4bc9dce1481e1828cc57a..9217a9af35f9f40a628de5341924ed8da683a8e8 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -323,10 +323,128 @@ public class ServerChunkCache extends ChunkSource {
@@ -2779,12 +2779,12 @@ index 03c90069e8fca2291e66f5d99175f029530a4434..1176dd8ebd59c5bda1b74c532ca21ae3
              Objects.requireNonNull(completablefuture);
              if (!completablefuture.isDone()) { // Paper
 +                // Paper start - async chunk io/loading
-+                this.level.asyncChunkTaskManager.raisePriority(x1, z1, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
-+                com.destroystokyo.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
++                this.level.asyncChunkTaskManager.raisePriority(x1, z1, io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
++                io.papermc.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
 +                // Paper end
                  this.level.timings.syncChunkLoad.startTiming(); // Paper
              chunkproviderserver_a.managedBlock(completablefuture::isDone);
-+                com.destroystokyo.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
++                io.papermc.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
                  this.level.timings.syncChunkLoad.stopTiming(); // Paper
              } // Paper
              ichunkaccess = (ChunkAccess) ((Either) completablefuture.join()).map((ichunkaccess1) -> {
@@ -2804,7 +2804,7 @@ index 03c90069e8fca2291e66f5d99175f029530a4434..1176dd8ebd59c5bda1b74c532ca21ae3
          // CraftBukkit start - process pending Chunk loadCallback() and unloadCallback() after each run task
          public boolean pollTask() {
          try {
-+            boolean execChunkTask = com.destroystokyo.paper.io.chunk.ChunkTaskManager.pollChunkWaitQueue() || ServerChunkCache.this.level.asyncChunkTaskManager.pollNextChunkTask(); // Paper
++            boolean execChunkTask = io.papermc.paper.io.chunk.ChunkTaskManager.pollChunkWaitQueue() || ServerChunkCache.this.level.asyncChunkTaskManager.pollNextChunkTask(); // Paper
              if (ServerChunkCache.this.runDistanceManagerUpdates()) {
                  return true;
              } else {
@@ -2815,7 +2815,7 @@ index 03c90069e8fca2291e66f5d99175f029530a4434..1176dd8ebd59c5bda1b74c532ca21ae3
          } finally {
              chunkMap.callbackExecutor.run();
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 1ddf92d4a70243217181efd477e01e34d55a1291..b60f035394c9c0949e4cc68d895918510e3c67cf 100644
+index 261f8d3e7fcb02ec264657e1ed45f1d6fb2196d9..938afc536c4722fdfc65afb922e6016ea8372e96 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -210,6 +210,79 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -2823,7 +2823,7 @@ index 1ddf92d4a70243217181efd477e01e34d55a1291..b60f035394c9c0949e4cc68d89591851
      }
  
 +    // Paper start - Asynchronous IO
-+    public final com.destroystokyo.paper.io.PaperFileIOThread.ChunkDataController poiDataController = new com.destroystokyo.paper.io.PaperFileIOThread.ChunkDataController() {
++    public final io.papermc.paper.io.PaperFileIOThread.ChunkDataController poiDataController = new io.papermc.paper.io.PaperFileIOThread.ChunkDataController() {
 +        @Override
 +        public void writeData(int x, int z, net.minecraft.nbt.CompoundTag compound) throws java.io.IOException {
 +            ServerLevel.this.getChunkSource().chunkMap.getVillagePlace().write(new ChunkPos(x, z), compound);
@@ -2858,7 +2858,7 @@ index 1ddf92d4a70243217181efd477e01e34d55a1291..b60f035394c9c0949e4cc68d89591851
 +        }
 +    };
 +
-+    public final com.destroystokyo.paper.io.PaperFileIOThread.ChunkDataController chunkDataController = new com.destroystokyo.paper.io.PaperFileIOThread.ChunkDataController() {
++    public final io.papermc.paper.io.PaperFileIOThread.ChunkDataController chunkDataController = new io.papermc.paper.io.PaperFileIOThread.ChunkDataController() {
 +        @Override
 +        public void writeData(int x, int z, net.minecraft.nbt.CompoundTag compound) throws java.io.IOException {
 +            ServerLevel.this.getChunkSource().chunkMap.write(new ChunkPos(x, z), compound);
@@ -2892,7 +2892,7 @@ index 1ddf92d4a70243217181efd477e01e34d55a1291..b60f035394c9c0949e4cc68d89591851
 +            }
 +        }
 +    };
-+    public final com.destroystokyo.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
++    public final io.papermc.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
 +    // Paper end
 +
      // Add env and gen to constructor, WorldData -> WorldDataServer
@@ -2903,7 +2903,7 @@ index 1ddf92d4a70243217181efd477e01e34d55a1291..b60f035394c9c0949e4cc68d89591851
          this.sleepStatus = new SleepStatus();
          this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
 +
-+        this.asyncChunkTaskManager = new com.destroystokyo.paper.io.chunk.ChunkTaskManager(this); // Paper
++        this.asyncChunkTaskManager = new io.papermc.paper.io.chunk.ChunkTaskManager(this); // Paper
      }
  
      // CraftBukkit start
@@ -2920,7 +2920,7 @@ index 0d536d72ac918fbd403397ff369d10143ee9c204..be677d437d17b74c6188ce1bd5fc6fdc
      private final String name;
      private final Comparator<T> comparator;
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index eb52ca159e895608a6a662821f14910970759dd2..05d5d976c18149491124263b056224a384eee06d 100644
+index 8bf913492fd3bb95923bb91f236564f9f75e8cca..3cc22ca5ae031388511cf6227b4edddd69a7bc6d 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -712,6 +712,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -2938,7 +2938,7 @@ index eb52ca159e895608a6a662821f14910970759dd2..05d5d976c18149491124263b056224a3
          StringReader stringreader = new StringReader(packet.getCommand());
  
 diff --git a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiManager.java b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiManager.java
-index 3ca8b13744b406c3e563747f0cb69647c94103df..6c3455823f996e0421975b7f4a00f4e333e9f514 100644
+index 3ca8b13744b406c3e563747f0cb69647c94103df..efdcc0784dba1dacfb4ccbaae9a05e8cafb952f5 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiManager.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/village/poi/PoiManager.java
 @@ -37,9 +37,11 @@ public class PoiManager extends SectionStorage<PoiSection> {
@@ -2966,8 +2966,8 @@ index 3ca8b13744b406c3e563747f0cb69647c94103df..6c3455823f996e0421975b7f4a00f4e3
 +            try (co.aikar.timings.Timing ignored1 = this.world.timings.poiSaveDataSerialization.startTiming()) {
 +                data = this.getData(chunkcoordintpair);
 +            }
-+            com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.world,
-+                chunkcoordintpair.x, chunkcoordintpair.z, data, null, com.destroystokyo.paper.io.PrioritizedTaskQueue.LOW_PRIORITY);
++            io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.world,
++                chunkcoordintpair.x, chunkcoordintpair.z, data, null, io.papermc.paper.io.PrioritizedTaskQueue.LOW_PRIORITY);
 +        }
 +        // Paper end
          this.distanceTracker.runAllUpdates();
@@ -2981,12 +2981,12 @@ index 3ca8b13744b406c3e563747f0cb69647c94103df..6c3455823f996e0421975b7f4a00f4e3
 +    @javax.annotation.Nullable
 +    @Override
 +    public net.minecraft.nbt.CompoundTag read(ChunkPos chunkcoordintpair) throws java.io.IOException {
-+        if (this.world != null && Thread.currentThread() != com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE) {
-+            net.minecraft.nbt.CompoundTag ret = com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE
-+                .loadChunkDataAsyncFuture(this.world, chunkcoordintpair.x, chunkcoordintpair.z, com.destroystokyo.paper.io.IOUtil.getPriorityForCurrentThread(),
++        if (this.world != null && Thread.currentThread() != io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE) {
++            net.minecraft.nbt.CompoundTag ret = io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE
++                .loadChunkDataAsyncFuture(this.world, chunkcoordintpair.x, chunkcoordintpair.z, io.papermc.paper.io.IOUtil.getPriorityForCurrentThread(),
 +                    true, false, true).join().poiData;
 +
-+            if (ret == com.destroystokyo.paper.io.PaperFileIOThread.FAILURE_VALUE) {
++            if (ret == io.papermc.paper.io.PaperFileIOThread.FAILURE_VALUE) {
 +                throw new java.io.IOException("See logs for further detail");
 +            }
 +            return ret;
@@ -2996,10 +2996,10 @@ index 3ca8b13744b406c3e563747f0cb69647c94103df..6c3455823f996e0421975b7f4a00f4e3
 +
 +    @Override
 +    public void write(ChunkPos chunkcoordintpair, net.minecraft.nbt.CompoundTag nbttagcompound) throws java.io.IOException {
-+        if (this.world != null && Thread.currentThread() != com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE) {
-+            com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(
++        if (this.world != null && Thread.currentThread() != io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE) {
++            io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(
 +                this.world, chunkcoordintpair.x, chunkcoordintpair.z, nbttagcompound, null,
-+                com.destroystokyo.paper.io.IOUtil.getPriorityForCurrentThread());
++                io.papermc.paper.io.IOUtil.getPriorityForCurrentThread());
 +            return;
 +        }
 +        super.write(chunkcoordintpair, nbttagcompound);
@@ -3283,7 +3283,7 @@ index 22d5c4cc3aea19cbf53ea320765ecceb4daf7428..d126c038ae56312acc2e8be2726065d4
              nbttagcompound1.put("LiquidTicks", world.getLiquidTicks().save(chunkcoordintpair));
          }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
-index 00470d96be2500a0516125771304e76dfd4268a4..6f13c7adce7d4b3d170045ea5ef2a841d34ae7b0 100644
+index 00470d96be2500a0516125771304e76dfd4268a4..ce1d2f3bab57ff83ac3add0b7c4e01472df5cb87 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 @@ -21,27 +21,38 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -3325,8 +3325,8 @@ index 00470d96be2500a0516125771304e76dfd4268a4..6f13c7adce7d4b3d170045ea5ef2a841
 -        CompoundTag nbt = this.read(pos);
 +        // Paper start - prioritize
 +        CompoundTag nbt = cps == null ? read(pos) :
-+            com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.loadChunkData((ServerLevel)cps.getLevel(), x, z,
-+                com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHER_PRIORITY, false, true).chunkData;
++            io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.loadChunkData((ServerLevel)cps.getLevel(), x, z,
++                io.papermc.paper.io.PrioritizedTaskQueue.HIGHER_PRIORITY, false, true).chunkData;
 +        // Paper end
          if (nbt != null) {
              CompoundTag level = nbt.getCompound("Level");
@@ -3369,7 +3369,7 @@ index 00470d96be2500a0516125771304e76dfd4268a4..6f13c7adce7d4b3d170045ea5ef2a841
  
      public void flushWorker() {
 -        this.worker.synchronize().join();
-+        com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.flush(); // Paper - nuke IO worker
++        io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.flush(); // Paper - nuke IO worker
      }
  
      public void close() throws IOException {
@@ -3378,7 +3378,7 @@ index 00470d96be2500a0516125771304e76dfd4268a4..6f13c7adce7d4b3d170045ea5ef2a841
      }
  }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 84327c8fe1dc62c7b99950261a344042b4456616..298b5abbc792dd33be38acbd1c572c9778c4d2d2 100644
+index 435bf9ed176fa05f6898e95a4d05724e980da9b1..989e370f75911d547a402ed68aa4893ff35f6568 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -47,6 +47,7 @@ public class RegionFile implements AutoCloseable {
@@ -3422,7 +3422,7 @@ index 84327c8fe1dc62c7b99950261a344042b4456616..298b5abbc792dd33be38acbd1c572c97
      }
  
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index f973792c8ee4523eb4efdf31d0a97cb3358e1b3b..ebb1a050beab9530942c4498335f084c89faef06 100644
+index fafc4951048b9d329afffa9426595d5a56632f65..164cb20859d7b0e192536f01adae027286446534 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -28,11 +28,32 @@ public class RegionFileStorage implements AutoCloseable {
@@ -3458,7 +3458,7 @@ index f973792c8ee4523eb4efdf31d0a97cb3358e1b3b..ebb1a050beab9530942c4498335f084c
 +            // Paper end
              return regionfile;
          } else {
-             if (this.regionCache.size() >= com.destroystokyo.paper.PaperConfig.regionFileCacheSize) { // Paper - configurable
+             if (this.regionCache.size() >= io.papermc.paper.PaperConfig.regionFileCacheSize) { // Paper - configurable
 @@ -50,6 +71,12 @@ public class RegionFileStorage implements AutoCloseable {
              RegionFile regionfile1 = new RegionFile(file1, this.folder, this.sync);
  
@@ -3712,14 +3712,14 @@ index 16e8cfb21f090e0c17e55c1b45ff56bed01839eb..bcb616ade47b445dd6faec0fd938ee4d
      public boolean teleport(Location location) {
          return this.teleport(location, TeleportCause.PLUGIN);
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index a01a266a25e3267c94c20f8597b4b596efe20faa..1ffb208094f521883ef0e23baf5fb29380b14273 100644
+index cfdd6254627c4f1c7ab4c1eace1de5bb883eb728..60544038c01879c240864ed98ad17578205eef26 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -117,6 +117,7 @@ public class WatchdogThread extends Thread
                  // Paper end - Different message for short timeout
                  log.log( Level.SEVERE, "------------------------------" );
                  log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):" ); // Paper
-+                com.destroystokyo.paper.io.chunk.ChunkTaskManager.dumpAllChunkLoadInfo(); // Paper
++                io.papermc.paper.io.chunk.ChunkTaskManager.dumpAllChunkLoadInfo(); // Paper
                  WatchdogThread.dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( MinecraftServer.getServer().serverThread.getId(), Integer.MAX_VALUE ), log );
                  log.log( Level.SEVERE, "------------------------------" );
                  //

@@ -9,7 +9,7 @@ as this is how Vanilla teleports entities.
 Cancel any pending motion when teleported.
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 10126fccdfde8acdb55bbe9c9bfc57435ed13677..32106de96d13b4d5be08c3c85b1e57d3552e9429 100644
+index cc1bf70fa0a53a9bd62d4a464f5b0334029114a2..a5f3271876495f1eb31559f59f212a32d7906b17 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -682,7 +682,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -31,7 +31,7 @@ index 10126fccdfde8acdb55bbe9c9bfc57435ed13677..32106de96d13b4d5be08c3c85b1e57d3
          this.player.connection.send(new ClientboundPlayerPositionPacket(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.awaitingTeleport, flag));
      }
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 73c81f0883645dca0ce32efae914d7f40b265c3c..3bf989fe94d53088ae058c19adde652267a231d0 100644
+index 9a83ce9b46638861129cde264a3ed2f25d3eb64f..bc08da6bf1784037caec517387c8f053216cc902 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -152,6 +152,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
@@ -57,7 +57,7 @@ index 73c81f0883645dca0ce32efae914d7f40b265c3c..3bf989fe94d53088ae058c19adde6522
          this.setYRot(yaw);
          this.setXRot(pitch);
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index a87531f4669c7947e02764b5ceb098385ad99159..9228c0bc797fb95c8ac949bdc568eadafee84a80 100644
+index 2690e5a013a036984b736506e408edd3c2b29cb1..eaa66634baf253da8bb04365f3890947d230f9f1 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
 @@ -170,6 +170,7 @@ public abstract class BaseSpawner {

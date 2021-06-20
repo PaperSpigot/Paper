@@ -8,17 +8,17 @@ are related to each other by a trait.
 
 Co-authored-by: Jake Potrebic <jake.m.potrebic@gmail.com>
 
-diff --git a/src/main/java/com/destroystokyo/paper/MaterialSetTag.java b/src/main/java/com/destroystokyo/paper/MaterialSetTag.java
+diff --git a/src/main/java/io/papermc/paper/MaterialSetTag.java b/src/main/java/io/papermc/paper/MaterialSetTag.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a02a02aa0c87e0f0ed9e509e4dcab01565b3d92a
+index 0000000000000000000000000000000000000000..77037cd87ec1fbb5fde11338f67cd545b605c4b4
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/MaterialSetTag.java
++++ b/src/main/java/io/papermc/paper/MaterialSetTag.java
 @@ -0,0 +1,97 @@
 +/*
 + * Copyright (c) 2018 Daniel Ennis (Aikar) MIT License
 + */
 +
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.collect.Lists;
 +import io.papermc.paper.tag.BaseTag;
@@ -111,11 +111,11 @@ index 0000000000000000000000000000000000000000..a02a02aa0c87e0f0ed9e509e4dcab015
 +        return this.tagged.contains(material);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/MaterialTags.java b/src/main/java/com/destroystokyo/paper/MaterialTags.java
+diff --git a/src/main/java/io/papermc/paper/MaterialTags.java b/src/main/java/io/papermc/paper/MaterialTags.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e8e6b2156b72bc5c115ac522a36efeeff8acd557
+index 0000000000000000000000000000000000000000..d4ab7d3a163397b79b7bee9442635aa3ee6256da
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/MaterialTags.java
++++ b/src/main/java/io/papermc/paper/MaterialTags.java
 @@ -0,0 +1,558 @@
 +/*
 + * Copyright (c) 2018 Daniel Ennis (Aikar) MIT License
@@ -140,7 +140,7 @@ index 0000000000000000000000000000000000000000..e8e6b2156b72bc5c115ac522a36efeef
 + *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 + */
 +
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import org.bukkit.Material;
 +import org.bukkit.NamespacedKey;
@@ -946,7 +946,7 @@ index 0000000000000000000000000000000000000000..9266c9d77e2eef7cd717dc729834a190
 +        .ensureSize("WATER_BASED", 9);
 +}
 diff --git a/src/main/java/org/bukkit/Tag.java b/src/main/java/org/bukkit/Tag.java
-index 53b66c28f0fed97664d0886683731e94ca59bdd2..88ea8b6c5c2c4d2116f646341de62590718bc28c 100644
+index 53b66c28f0fed97664d0886683731e94ca59bdd2..bee81b51d1e2ee3bc4cd6fdfa435c19734a5079c 100644
 --- a/src/main/java/org/bukkit/Tag.java
 +++ b/src/main/java/org/bukkit/Tag.java
 @@ -10,6 +10,10 @@ import org.jetbrains.annotations.NotNull;
@@ -954,23 +954,23 @@ index 53b66c28f0fed97664d0886683731e94ca59bdd2..88ea8b6c5c2c4d2116f646341de62590
   * implementations, their existence is not guaranteed across future versions.
   *
 + * <p>Custom tags defined by Paper are not present (as constants) in this class.
-+ * To access them please refer to {@link com.destroystokyo.paper.MaterialTags}
++ * To access them please refer to {@link io.papermc.paper.MaterialTags}
 + * and {@link io.papermc.paper.tag.EntityTags}.</p>
 + *
   * @param <T> the type of things grouped by this tag
   */
  public interface Tag<T extends Keyed> extends Keyed {
-diff --git a/src/test/java/com/destroystokyo/paper/MaterialTagsTest.java b/src/test/java/com/destroystokyo/paper/MaterialTagsTest.java
+diff --git a/src/test/java/io/papermc/paper/MaterialTagsTest.java b/src/test/java/io/papermc/paper/MaterialTagsTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..328c51471dc12e81c1a1b643455337b3fef4d14a
+index 0000000000000000000000000000000000000000..251cb473dfea479e51b1eb96a04e04f248f08ca0
 --- /dev/null
-+++ b/src/test/java/com/destroystokyo/paper/MaterialTagsTest.java
++++ b/src/test/java/io/papermc/paper/MaterialTagsTest.java
 @@ -0,0 +1,25 @@
 +/*
 + * Copyright (c) 2018 Daniel Ennis (Aikar) MIT License
 + */
 +
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import org.bukkit.Bukkit;
 +import org.bukkit.TestServer;
@@ -993,13 +993,13 @@ index 0000000000000000000000000000000000000000..328c51471dc12e81c1a1b643455337b3
 +}
 diff --git a/src/test/java/io/papermc/paper/EntityTagsTest.java b/src/test/java/io/papermc/paper/EntityTagsTest.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..06bb9d1180361d3d00c699796bbacbce5bef2177
+index 0000000000000000000000000000000000000000..57c6420cfee488edca0e08acc0b33bf968584e71
 --- /dev/null
 +++ b/src/test/java/io/papermc/paper/EntityTagsTest.java
 @@ -0,0 +1,24 @@
 +package io.papermc.paper;
 +
-+import com.destroystokyo.paper.MaterialTags;
++import io.papermc.paper.MaterialTags;
 +import io.papermc.paper.tag.EntityTags;
 +import org.bukkit.Bukkit;
 +import org.bukkit.TestServer;
@@ -1022,7 +1022,7 @@ index 0000000000000000000000000000000000000000..06bb9d1180361d3d00c699796bbacbce
 +    }
 +}
 diff --git a/src/test/java/org/bukkit/TestServer.java b/src/test/java/org/bukkit/TestServer.java
-index 61993528e6975c38d82213e9b5caf996fe777328..5f9d348241210689eaf41a39ace5948e7a237b12 100644
+index 61993528e6975c38d82213e9b5caf996fe777328..51b6b5bf3fb287402ef4f859b4c63ef4c31ca938 100644
 --- a/src/test/java/org/bukkit/TestServer.java
 +++ b/src/test/java/org/bukkit/TestServer.java
 @@ -29,6 +29,16 @@ public final class TestServer implements InvocationHandler {
@@ -1034,7 +1034,7 @@ index 61993528e6975c38d82213e9b5caf996fe777328..5f9d348241210689eaf41a39ace5948e
 +                Server.class.getMethod("getTag", String.class, NamespacedKey.class, Class.class),
 +                new MethodHandler() {
 +                    public Object handle(TestServer server, Object[] args) {
-+                        return new com.destroystokyo.paper.MaterialSetTag();
++                        return new io.papermc.paper.MaterialSetTag();
 +                    }
 +                }
 +            );

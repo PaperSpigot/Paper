@@ -4,13 +4,13 @@ Date: Sun, 2 Feb 2020 04:00:40 -0600
 Subject: [PATCH] Make the GUI graph fancier
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphColor.java b/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
+diff --git a/src/main/java/io/papermc/paper/gui/GraphColor.java b/src/main/java/io/papermc/paper/gui/GraphColor.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a4e641fdcccd3efcd1a2865dc6dc28d50671b995
+index 0000000000000000000000000000000000000000..b7861686d4be14aa492687d7bdf41ea0ce030cd2
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/gui/GraphColor.java
++++ b/src/main/java/io/papermc/paper/gui/GraphColor.java
 @@ -0,0 +1,44 @@
-+package com.destroystokyo.paper.gui;
++package io.papermc.paper.gui;
 +
 +import java.awt.Color;
 +
@@ -54,13 +54,13 @@ index 0000000000000000000000000000000000000000..a4e641fdcccd3efcd1a2865dc6dc28d5
 +        return new Color(red, green, 0);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/gui/GraphData.java b/src/main/java/com/destroystokyo/paper/gui/GraphData.java
+diff --git a/src/main/java/io/papermc/paper/gui/GraphData.java b/src/main/java/io/papermc/paper/gui/GraphData.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..186fc722965e403f76b1480e1c2381fc34e29049
+index 0000000000000000000000000000000000000000..c68c3c5a19a5f1fe41f8eea1d16e0d5010849c65
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/gui/GraphData.java
++++ b/src/main/java/io/papermc/paper/gui/GraphData.java
 @@ -0,0 +1,47 @@
-+package com.destroystokyo.paper.gui;
++package io.papermc.paper.gui;
 +
 +import java.awt.Color;
 +
@@ -107,13 +107,13 @@ index 0000000000000000000000000000000000000000..186fc722965e403f76b1480e1c2381fc
 +        return GraphColor.getLineColor(usedPercent);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java b/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
+diff --git a/src/main/java/io/papermc/paper/gui/GuiStatsComponent.java b/src/main/java/io/papermc/paper/gui/GuiStatsComponent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..537bc6213545e8ff1b7b51bc4b27fd5b2a740883
+index 0000000000000000000000000000000000000000..b2add54c7b5ea1f960788ae4f9f9f246401ca405
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/gui/GuiStatsComponent.java
++++ b/src/main/java/io/papermc/paper/gui/GuiStatsComponent.java
 @@ -0,0 +1,41 @@
-+package com.destroystokyo.paper.gui;
++package io.papermc.paper.gui;
 +
 +import net.minecraft.server.MinecraftServer;
 +
@@ -154,13 +154,13 @@ index 0000000000000000000000000000000000000000..537bc6213545e8ff1b7b51bc4b27fd5b
 +        ramGraph.stop();
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
+diff --git a/src/main/java/io/papermc/paper/gui/RAMDetails.java b/src/main/java/io/papermc/paper/gui/RAMDetails.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..23239679d6584f1088b2b94c46eb9a5c1f9ad91d
+index 0000000000000000000000000000000000000000..253d0254baaac4bf578d2a1795c617241096a081
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/gui/RAMDetails.java
++++ b/src/main/java/io/papermc/paper/gui/RAMDetails.java
 @@ -0,0 +1,73 @@
-+package com.destroystokyo.paper.gui;
++package io.papermc.paper.gui;
 +
 +import net.minecraft.Util;
 +import net.minecraft.server.MinecraftServer;
@@ -233,13 +233,13 @@ index 0000000000000000000000000000000000000000..23239679d6584f1088b2b94c46eb9a5c
 +        return ((double) total / (double) tickTimes.length) * 1.0E-6D;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java b/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
+diff --git a/src/main/java/io/papermc/paper/gui/RAMGraph.java b/src/main/java/io/papermc/paper/gui/RAMGraph.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c3e54da4ab6440811aab2f9dd1e218802ac13285
+index 0000000000000000000000000000000000000000..8b557f0fc1684d3630a2f80134e9fc25dc2f1eee
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/gui/RAMGraph.java
++++ b/src/main/java/io/papermc/paper/gui/RAMGraph.java
 @@ -0,0 +1,144 @@
-+package com.destroystokyo.paper.gui;
++package io.papermc.paper.gui;
 +
 +import javax.swing.JComponent;
 +import javax.swing.SwingUtilities;
@@ -384,7 +384,7 @@ index 0000000000000000000000000000000000000000..c3e54da4ab6440811aab2f9dd1e21880
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/gui/MinecraftServerGui.java b/src/main/java/net/minecraft/server/gui/MinecraftServerGui.java
-index 737ae68ab486a324628e994586862ef7397ae278..703d2bb93d6ab76fc117a320f155570addcc543c 100644
+index 737ae68ab486a324628e994586862ef7397ae278..6b059a2a4ee771700078c0f69ca78fdc63992f06 100644
 --- a/src/main/java/net/minecraft/server/gui/MinecraftServerGui.java
 +++ b/src/main/java/net/minecraft/server/gui/MinecraftServerGui.java
 @@ -95,7 +95,7 @@ public class MinecraftServerGui extends JComponent {
@@ -392,7 +392,7 @@ index 737ae68ab486a324628e994586862ef7397ae278..703d2bb93d6ab76fc117a320f155570a
      private JComponent buildInfoPanel() {
          JPanel jpanel = new JPanel(new BorderLayout());
 -        StatsComponent guistatscomponent = new StatsComponent(this.server);
-+        com.destroystokyo.paper.gui.GuiStatsComponent guistatscomponent = new com.destroystokyo.paper.gui.GuiStatsComponent(this.server); // Paper
++        io.papermc.paper.gui.GuiStatsComponent guistatscomponent = new io.papermc.paper.gui.GuiStatsComponent(this.server); // Paper
          Collection<Runnable> collection = this.finalizers; // CraftBukkit - decompile error
  
          Objects.requireNonNull(guistatscomponent);

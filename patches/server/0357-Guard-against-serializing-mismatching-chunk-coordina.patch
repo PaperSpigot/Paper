@@ -6,7 +6,7 @@ Subject: [PATCH] Guard against serializing mismatching chunk coordinate
 Should help if something dumb happens
 
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
-index 34a026dbeafff07401187d22ef8fd537c17fc615..c131f6093c395b4d9e401d3c447e7fb13c631ecf 100644
+index a487abfdfa1e5d0ef3cea10af19dc0c4f8e291cf..abd02d88911cbbbe6f770039aa0649cff85d85ee 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 @@ -69,6 +69,13 @@ public class ChunkSerializer {
@@ -35,7 +35,7 @@ index 34a026dbeafff07401187d22ef8fd537c17fc615..c131f6093c395b4d9e401d3c447e7fb1
          if (!Objects.equals(pos, chunkcoordintpair1)) {
              ChunkSerializer.LOGGER.error("Chunk file at {} is in the wrong location; relocating. (Expected {}, got {})", pos, pos, chunkcoordintpair1);
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
-index 6f13c7adce7d4b3d170045ea5ef2a841d34ae7b0..176610b31f66b890afe61f4de46c412382bb8d22 100644
+index ce1d2f3bab57ff83ac3add0b7c4e01472df5cb87..39a0142d95cb7cb0e763d8d5f2d4b672eab58df2 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkStorage.java
 @@ -117,6 +117,13 @@ public class ChunkStorage implements AutoCloseable {

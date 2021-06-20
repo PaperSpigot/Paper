@@ -5,7 +5,7 @@ Subject: [PATCH] Fix stuck in sneak when changing worlds (MC-10657)
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 943516cbf4829b16dfb2631d526a65ace78da10d..e1d70824fd200c93848d5bec9cecad773f387765 100644
+index 58e6b2082a5dcd7b74fa0ac833bfc1df41230997..29d02082a7bcf047ea612dd0027ef60f2cb6ad17 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -1101,6 +1101,8 @@ public class ServerPlayer extends Player {
@@ -18,7 +18,7 @@ index 943516cbf4829b16dfb2631d526a65ace78da10d..e1d70824fd200c93848d5bec9cecad77
                  PlayerChangedWorldEvent changeEvent = new PlayerChangedWorldEvent(this.getBukkitEntity(), worldserver1.getWorld());
                  this.level.getCraftServer().getPluginManager().callEvent(changeEvent);
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 6f9bd5da1504af296e7ee2a69d8afdd3bc4cfd5e..bcc946d2747443c34ee8ac2485a5ab41773c93af 100644
+index c58a27e7d0028ed32246eb3a509fc87ff8337894..02f36aa9c718569c9ab82efe5b0eceee3098d9d9 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -820,6 +820,8 @@ public abstract class PlayerList {

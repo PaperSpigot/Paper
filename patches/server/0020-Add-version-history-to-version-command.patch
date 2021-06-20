@@ -4,10 +4,10 @@ Date: Thu, 1 Mar 2018 19:37:52 -0600
 Subject: [PATCH] Add version history to version command
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
-index 1a1b50e475b9ede544b2f6d0d36632b24b68898c..580bae0d414d371a07a6bfeefc41fdd989dc0083 100644
---- a/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperVersionFetcher.java
+diff --git a/src/main/java/io/papermc/paper/PaperVersionFetcher.java b/src/main/java/io/papermc/paper/PaperVersionFetcher.java
+index d55c71b0e78528f603c62859b43cf533786b730c..3ae862000ee74df9b21eb6601977ed1072ed6a4f 100644
+--- a/src/main/java/io/papermc/paper/PaperVersionFetcher.java
++++ b/src/main/java/io/papermc/paper/PaperVersionFetcher.java
 @@ -5,7 +5,9 @@ import com.google.common.base.Charsets;
  import com.google.common.io.Resources;
  import com.google.gson.*;
@@ -50,13 +50,13 @@ index 1a1b50e475b9ede544b2f6d0d36632b24b68898c..580bae0d414d371a07a6bfeefc41fdd9
 +        return Component.text("Previous version: " + oldVersion, NamedTextColor.GRAY, TextDecoration.ITALIC);
 +    }
  }
-diff --git a/src/main/java/com/destroystokyo/paper/VersionHistoryManager.java b/src/main/java/com/destroystokyo/paper/VersionHistoryManager.java
+diff --git a/src/main/java/io/papermc/paper/VersionHistoryManager.java b/src/main/java/io/papermc/paper/VersionHistoryManager.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..aac3f66cb23d260729c2a48d8710a9de2346aa22
+index 0000000000000000000000000000000000000000..6175f61e4c9b89799a1cc3e5519cd5b54afd4ee6
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/VersionHistoryManager.java
++++ b/src/main/java/io/papermc/paper/VersionHistoryManager.java
 @@ -0,0 +1,145 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.base.MoreObjects;
 +import com.google.gson.Gson;
@@ -202,14 +202,14 @@ index 0000000000000000000000000000000000000000..aac3f66cb23d260729c2a48d8710a9de
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 844d3b910cfb1c073b8b58b0eff3f28af5453701..566390d02b2af4a0f2c867b7ff8116a8301e8497 100644
+index 38144fbd084ded03111a91d21bef6e7b5b61f8a8..a87981d5c4fc57b482bc3b083869df91930fa7da 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -202,6 +202,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
              return false;
          }
-         com.destroystokyo.paper.PaperConfig.registerCommands();
-+        com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
+         io.papermc.paper.PaperConfig.registerCommands();
++        io.papermc.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
          // Paper end
  
          this.setPvpAllowed(dedicatedserverproperties.pvp);

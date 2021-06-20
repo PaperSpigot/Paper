@@ -4,13 +4,13 @@ Date: Mon, 28 Mar 2016 20:55:47 -0400
 Subject: [PATCH] MC Utils
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/util/concurrent/WeakSeqLock.java b/src/main/java/com/destroystokyo/paper/util/concurrent/WeakSeqLock.java
+diff --git a/src/main/java/io/papermc/paper/util/concurrent/WeakSeqLock.java b/src/main/java/io/papermc/paper/util/concurrent/WeakSeqLock.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4029dc68cf35d63aa70c4a76c35bf65a7fc6358f
+index 0000000000000000000000000000000000000000..6615b8cab744a3ac6c3b7c44b762c83f0fa1c32e
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/concurrent/WeakSeqLock.java
++++ b/src/main/java/io/papermc/paper/util/concurrent/WeakSeqLock.java
 @@ -0,0 +1,68 @@
-+package com.destroystokyo.paper.util.concurrent;
++package io.papermc.paper.util.concurrent;
 +
 +import java.util.concurrent.atomic.AtomicLong;
 +
@@ -78,15 +78,15 @@ index 0000000000000000000000000000000000000000..4029dc68cf35d63aa70c4a76c35bf65a
 +        return this.lock.get();
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Int.java b/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Int.java
+diff --git a/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Int.java b/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Int.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..59868f37d14bbc0ece0836095cdad148778995e6
+index 0000000000000000000000000000000000000000..c2540b53d564b8ccbf73b0d0d2b629c9bc93e188
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Int.java
++++ b/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Int.java
 @@ -0,0 +1,162 @@
-+package com.destroystokyo.paper.util.map;
++package io.papermc.paper.util.map;
 +
-+import com.destroystokyo.paper.util.concurrent.WeakSeqLock;
++import io.papermc.paper.util.concurrent.WeakSeqLock;
 +import it.unimi.dsi.fastutil.longs.Long2IntMap;
 +import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 +import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -246,15 +246,15 @@ index 0000000000000000000000000000000000000000..59868f37d14bbc0ece0836095cdad148
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Object.java b/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Object.java
+diff --git a/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Object.java b/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Object.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7bab31a312463cc963d9621cdc543a281459bd32
+index 0000000000000000000000000000000000000000..e0b7d0879dbbe210c02392fddd9d7f0c2f5e6935
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/map/QueuedChangesMapLong2Object.java
++++ b/src/main/java/io/papermc/paper/util/map/QueuedChangesMapLong2Object.java
 @@ -0,0 +1,202 @@
-+package com.destroystokyo.paper.util.map;
++package io.papermc.paper.util.map;
 +
-+import com.destroystokyo.paper.util.concurrent.WeakSeqLock;
++import io.papermc.paper.util.concurrent.WeakSeqLock;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 +import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
@@ -454,13 +454,13 @@ index 0000000000000000000000000000000000000000..7bab31a312463cc963d9621cdc543a28
 +        return true;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/maplist/ChunkList.java b/src/main/java/com/destroystokyo/paper/util/maplist/ChunkList.java
+diff --git a/src/main/java/io/papermc/paper/util/maplist/ChunkList.java b/src/main/java/io/papermc/paper/util/maplist/ChunkList.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..554f4d4e63c1431721989e6f502a32ccc53a8807
+index 0000000000000000000000000000000000000000..17b4f5e0e2ca90b4cb1687be2cb872eff79bf666
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/maplist/ChunkList.java
++++ b/src/main/java/io/papermc/paper/util/maplist/ChunkList.java
 @@ -0,0 +1,128 @@
-+package com.destroystokyo.paper.util.maplist;
++package io.papermc.paper.util.maplist;
 +
 +import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 +import java.util.Arrays;
@@ -588,13 +588,13 @@ index 0000000000000000000000000000000000000000..554f4d4e63c1431721989e6f502a32cc
 +        };
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/maplist/EntityList.java b/src/main/java/com/destroystokyo/paper/util/maplist/EntityList.java
+diff --git a/src/main/java/io/papermc/paper/util/maplist/EntityList.java b/src/main/java/io/papermc/paper/util/maplist/EntityList.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0133ea6feb1ab88f021f66855669f58367e7420b
+index 0000000000000000000000000000000000000000..b401c6c12d52f3411807581283e66c7d026e08f5
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/maplist/EntityList.java
++++ b/src/main/java/io/papermc/paper/util/maplist/EntityList.java
 @@ -0,0 +1,128 @@
-+package com.destroystokyo.paper.util.maplist;
++package io.papermc.paper.util.maplist;
 +
 +import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 +import net.minecraft.world.entity.Entity;
@@ -722,13 +722,13 @@ index 0000000000000000000000000000000000000000..0133ea6feb1ab88f021f66855669f583
 +        };
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/maplist/IBlockDataList.java b/src/main/java/com/destroystokyo/paper/util/maplist/IBlockDataList.java
+diff --git a/src/main/java/io/papermc/paper/util/maplist/IBlockDataList.java b/src/main/java/io/papermc/paper/util/maplist/IBlockDataList.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4a21ec2397f57c7c2ac3659f7de96cda9182fea0
+index 0000000000000000000000000000000000000000..a933986234ef23c5ca94db687addb6531686b136
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/maplist/IBlockDataList.java
++++ b/src/main/java/io/papermc/paper/util/maplist/IBlockDataList.java
 @@ -0,0 +1,128 @@
-+package com.destroystokyo.paper.util.maplist;
++package io.papermc.paper.util.maplist;
 +
 +import it.unimi.dsi.fastutil.longs.LongIterator;
 +import it.unimi.dsi.fastutil.shorts.Short2LongOpenHashMap;
@@ -856,13 +856,13 @@ index 0000000000000000000000000000000000000000..4a21ec2397f57c7c2ac3659f7de96cda
 +        return this.map.values().iterator();
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/math/IntegerUtil.java b/src/main/java/com/destroystokyo/paper/util/math/IntegerUtil.java
+diff --git a/src/main/java/io/papermc/paper/util/math/IntegerUtil.java b/src/main/java/io/papermc/paper/util/math/IntegerUtil.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c3b936f54b3fff418c265639ef223292ccc89356
+index 0000000000000000000000000000000000000000..36d013123310a533668a54bfae292ae1229670b0
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/math/IntegerUtil.java
++++ b/src/main/java/io/papermc/paper/util/math/IntegerUtil.java
 @@ -0,0 +1,230 @@
-+package com.destroystokyo.paper.util.math;
++package io.papermc.paper.util.math;
 +
 +/**
 + * @author Spottedleaf <Spottedleaf@users.noreply.github.com>
@@ -1092,15 +1092,15 @@ index 0000000000000000000000000000000000000000..c3b936f54b3fff418c265639ef223292
 +        throw new RuntimeException();
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
+diff --git a/src/main/java/io/papermc/paper/util/misc/AreaMap.java b/src/main/java/io/papermc/paper/util/misc/AreaMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c601f04b9c6dff76606763ea6f4a9a89b7e83203
+index 0000000000000000000000000000000000000000..441c8d6feb3a3b872bb23b0ef6f1c91a3fec55d9
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
++++ b/src/main/java/io/papermc/paper/util/misc/AreaMap.java
 @@ -0,0 +1,453 @@
-+package com.destroystokyo.paper.util.misc;
++package io.papermc.paper.util.misc;
 +
-+import com.destroystokyo.paper.util.math.IntegerUtil;
++import io.papermc.paper.util.math.IntegerUtil;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -1551,15 +1551,15 @@ index 0000000000000000000000000000000000000000..c601f04b9c6dff76606763ea6f4a9a89
 +        void accept(final E object, final long prevPos, final long newPos);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/misc/DistanceTrackingAreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/DistanceTrackingAreaMap.java
+diff --git a/src/main/java/io/papermc/paper/util/misc/DistanceTrackingAreaMap.java b/src/main/java/io/papermc/paper/util/misc/DistanceTrackingAreaMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9b8cb361767fbcf5f592db32a12186f0bd6373bd
+index 0000000000000000000000000000000000000000..5b1159fa42d1185bbd7160a8280a7f80c5f564bc
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/misc/DistanceTrackingAreaMap.java
++++ b/src/main/java/io/papermc/paper/util/misc/DistanceTrackingAreaMap.java
 @@ -0,0 +1,175 @@
-+package com.destroystokyo.paper.util.misc;
++package io.papermc.paper.util.misc;
 +
-+import com.destroystokyo.paper.util.math.IntegerUtil;
++import io.papermc.paper.util.math.IntegerUtil;
 +import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 +import net.minecraft.server.MCUtil;
 +import net.minecraft.world.level.ChunkPos;
@@ -1732,13 +1732,13 @@ index 0000000000000000000000000000000000000000..9b8cb361767fbcf5f592db32a12186f0
 +
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/misc/PlayerAreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/PlayerAreaMap.java
+diff --git a/src/main/java/io/papermc/paper/util/misc/PlayerAreaMap.java b/src/main/java/io/papermc/paper/util/misc/PlayerAreaMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..46954db7ecd35ac4018fdf476df7c8020d7ce6c8
+index 0000000000000000000000000000000000000000..df9fd00cc072ed63ef209e32bab6f00ed0c62678
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/misc/PlayerAreaMap.java
++++ b/src/main/java/io/papermc/paper/util/misc/PlayerAreaMap.java
 @@ -0,0 +1,32 @@
-+package com.destroystokyo.paper.util.misc;
++package io.papermc.paper.util.misc;
 +
 +import net.minecraft.server.level.ServerPlayer;
 +
@@ -1770,13 +1770,13 @@ index 0000000000000000000000000000000000000000..46954db7ecd35ac4018fdf476df7c802
 +        return player.cachedSingleHashSet;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/misc/PlayerDistanceTrackingAreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/PlayerDistanceTrackingAreaMap.java
+diff --git a/src/main/java/io/papermc/paper/util/misc/PlayerDistanceTrackingAreaMap.java b/src/main/java/io/papermc/paper/util/misc/PlayerDistanceTrackingAreaMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d05dcea15f7047b58736c7c0e07920a04d6c5abe
+index 0000000000000000000000000000000000000000..8161fea5cfc3cc99b5180199204a7980e5abd827
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/misc/PlayerDistanceTrackingAreaMap.java
++++ b/src/main/java/io/papermc/paper/util/misc/PlayerDistanceTrackingAreaMap.java
 @@ -0,0 +1,24 @@
-+package com.destroystokyo.paper.util.misc;
++package io.papermc.paper.util.misc;
 +
 +import net.minecraft.server.level.ServerPlayer;
 +
@@ -1800,13 +1800,13 @@ index 0000000000000000000000000000000000000000..d05dcea15f7047b58736c7c0e07920a0
 +        return player.cachedSingleHashSet;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/misc/PooledLinkedHashSets.java b/src/main/java/com/destroystokyo/paper/util/misc/PooledLinkedHashSets.java
+diff --git a/src/main/java/io/papermc/paper/util/misc/PooledLinkedHashSets.java b/src/main/java/io/papermc/paper/util/misc/PooledLinkedHashSets.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e51104e65a07b6ea7bbbcbb6afb066ef6401cc5b
+index 0000000000000000000000000000000000000000..cb860c44d163f779fc9099b23c0973e9321f6215
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/misc/PooledLinkedHashSets.java
++++ b/src/main/java/io/papermc/paper/util/misc/PooledLinkedHashSets.java
 @@ -0,0 +1,287 @@
-+package com.destroystokyo.paper.util.misc;
++package io.papermc.paper.util.misc;
 +
 +import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -2093,13 +2093,13 @@ index 0000000000000000000000000000000000000000..e51104e65a07b6ea7bbbcbb6afb066ef
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/pooled/PooledObjects.java b/src/main/java/com/destroystokyo/paper/util/pooled/PooledObjects.java
+diff --git a/src/main/java/io/papermc/paper/util/pooled/PooledObjects.java b/src/main/java/io/papermc/paper/util/pooled/PooledObjects.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d0c77068e9a53d1b8bbad0f3f6b420d6bc85f8c8
+index 0000000000000000000000000000000000000000..9153393c1b2465f9d02a5511172b9eb6d434b5b1
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/pooled/PooledObjects.java
++++ b/src/main/java/io/papermc/paper/util/pooled/PooledObjects.java
 @@ -0,0 +1,85 @@
-+package com.destroystokyo.paper.util.pooled;
++package io.papermc.paper.util.pooled;
 +
 +import net.minecraft.server.MCUtil;
 +import org.apache.commons.lang3.mutable.MutableInt;
@@ -2184,13 +2184,13 @@ index 0000000000000000000000000000000000000000..d0c77068e9a53d1b8bbad0f3f6b420d6
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/set/OptimizedSmallEnumSet.java b/src/main/java/com/destroystokyo/paper/util/set/OptimizedSmallEnumSet.java
+diff --git a/src/main/java/io/papermc/paper/util/set/OptimizedSmallEnumSet.java b/src/main/java/io/papermc/paper/util/set/OptimizedSmallEnumSet.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9df0006c1a283f77c4d01d9fce9062fc1c9bbb1f
+index 0000000000000000000000000000000000000000..fb56552a9d313f5f27b0e77f36da8bb5ff41cead
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/set/OptimizedSmallEnumSet.java
++++ b/src/main/java/io/papermc/paper/util/set/OptimizedSmallEnumSet.java
 @@ -0,0 +1,67 @@
-+package com.destroystokyo.paper.util.set;
++package io.papermc.paper.util.set;
 +
 +import java.util.Collection;
 +
@@ -3000,7 +3000,7 @@ index 6fa6fb852cd5af2009008ac6158251ba5e8cf6fb..24f72050229031898fd9da585ad2ceec
          }
  
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index a45d5c1156e84ab6e56c95e392fd52ea9ecebcb0..33d17e69fac035c421345e1a8c6eb214a54efc46 100644
+index a45d5c1156e84ab6e56c95e392fd52ea9ecebcb0..5cc8f924a61664d0c6347ea29db9075b0220b161 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -55,6 +55,7 @@ import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
@@ -3016,7 +3016,7 @@ index a45d5c1156e84ab6e56c95e392fd52ea9ecebcb0..33d17e69fac035c421345e1a8c6eb214
      // CraftBukkit end
  
 +    // Paper start - distance maps
-+    private final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
++    private final io.papermc.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new io.papermc.paper.util.misc.PooledLinkedHashSets<>();
 +
 +    void addPlayerToDistanceMaps(ServerPlayer player) {
 +        int chunkX = MCUtil.getChunkCoordinate(player.getX());
@@ -3079,7 +3079,7 @@ index a45d5c1156e84ab6e56c95e392fd52ea9ecebcb0..33d17e69fac035c421345e1a8c6eb214
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index cfe9930490489d506c91d174b5aad199314ffd17..508adf5df266365992f9ee64f6592465e879deaa 100644
+index cfe9930490489d506c91d174b5aad199314ffd17..d904d9ecc349399e3b2a65c77a0e73b774262f80 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -45,6 +45,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureMana
@@ -3095,7 +3095,7 @@ index cfe9930490489d506c91d174b5aad199314ffd17..508adf5df266365992f9ee64f6592465
      @VisibleForDebug
      private NaturalSpawner.SpawnState lastSpawnState;
 +    // Paper start
-+    final com.destroystokyo.paper.util.concurrent.WeakSeqLock loadedChunkMapSeqLock = new com.destroystokyo.paper.util.concurrent.WeakSeqLock();
++    final io.papermc.paper.util.concurrent.WeakSeqLock loadedChunkMapSeqLock = new io.papermc.paper.util.concurrent.WeakSeqLock();
 +    final Long2ObjectOpenHashMap<LevelChunk> loadedChunkMap = new Long2ObjectOpenHashMap<>(8192, 0.5f);
 +
 +    private final LevelChunk[] lastLoadedChunks = new LevelChunk[4 * 4];
@@ -3326,14 +3326,14 @@ index bde78718251f9deb439805d41cb05ac063042efc..bcfc6ea89aa3b1df92d2b181d1d23902
  import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
  import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 2889d43857f418eb26600e78940dedc2b7c2b0f4..2b0d989119c9f69a68a6c1c69fb09dbbedd16716 100644
+index 2889d43857f418eb26600e78940dedc2b7c2b0f4..d79571f6682609dc2c5d34cf3a78a5f93e7df850 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -228,6 +228,8 @@ public class ServerPlayer extends Player {
      public Integer clientViewDistance;
      // CraftBukkit end
  
-+    public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
++    public final io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
 +
      public ServerPlayer(MinecraftServer server, ServerLevel world, GameProfile profile) {
          super(world, world.getSharedSpawnPos(), world.getSharedSpawnAngle(), profile);
@@ -3342,7 +3342,7 @@ index 2889d43857f418eb26600e78940dedc2b7c2b0f4..2b0d989119c9f69a68a6c1c69fb09dbb
          this.maxUpStep = 1.0F;
          this.fudgeSpawnLocation(world);
  
-+        this.cachedSingleHashSet = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
++        this.cachedSingleHashSet = new io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
 +
          // CraftBukkit start
          this.displayName = this.getScoreboardName();
@@ -3613,7 +3613,7 @@ index 3c707d6674b2594b09503b959a31c1f4ad3981e6..c7d499bfc22152e0a49f50a2a8133f31
      public BlockState getBlockState(BlockPos pos) {
          return Blocks.AIR.defaultBlockState();
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 90854842fda0f91ac68c70efbcf8ad9e3297ceb4..e9dc71fb74698b2f11220e4eb379f21610899d97 100644
+index 8ab878e9d8a0409817f3c67aaf1f70af4bd1f976..f18b2918c0a157f327165ca8ac0b583609b17f38 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -84,6 +84,7 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -3766,7 +3766,7 @@ index 00118cc80ebc31e5fac95c31c07634f0e2904263..138b6792bc6ee26e0b9aaaef7bf58fb2
      @Override
      public BlockEntity getBlockEntity(BlockPos pos) {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 62417156dd3e7e68e657f322c089fb6f30a11c0e..0d0f721fe80c52d92d91843ae9970c5fd55ca143 100644
+index 62417156dd3e7e68e657f322c089fb6f30a11c0e..f5eb68e9071bbc060826db1e39fff9c766fba200 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -33,6 +33,7 @@ import net.minecraft.core.SectionPos;
@@ -3801,7 +3801,7 @@ index 62417156dd3e7e68e657f322c089fb6f30a11c0e..0d0f721fe80c52d92d91843ae9970c5f
      // CraftBukkit end
  
 +    // Paper start
-+    public final com.destroystokyo.paper.util.maplist.EntityList entities = new com.destroystokyo.paper.util.maplist.EntityList();
++    public final io.papermc.paper.util.maplist.EntityList entities = new io.papermc.paper.util.maplist.EntityList();
 +    public ChunkHolder playerChunk;
 +
 +    static final int NEIGHBOUR_CACHE_RADIUS = 3;

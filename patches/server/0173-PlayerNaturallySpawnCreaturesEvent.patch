@@ -9,7 +9,7 @@ from triggering monster spawns on a server.
 Also a highly more effecient way to blanket block spawns in a world
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 229e08a3fd8b4fc026ff49af9d163ea26d878bd4..94c5577a887ab4801dae5a1a0accd4b2f448bcc2 100644
+index c18927bbe403e39a614064636ccc1a35427bc35c..64ead8fe0efc48e2fe57c7b608a8e9e890d3c7bb 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -974,11 +974,21 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -24,7 +24,7 @@ index 229e08a3fd8b4fc026ff49af9d163ea26d878bd4..94c5577a887ab4801dae5a1a0accd4b2
  
          return !this.distanceManager.hasPlayersNearby(i) ? true : this.playerMap.getPlayers(i).noneMatch((entityplayer) -> {
 +            // Paper start - add PlayerNaturallySpawnCreaturesEvent
-+            com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
++            io.papermc.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
 +            double blockRange = 16384.0D;
 +            if (reducedRange) {
 +                event = entityplayer.playerNaturallySpawnedEvent;
@@ -36,7 +36,7 @@ index 229e08a3fd8b4fc026ff49af9d163ea26d878bd4..94c5577a887ab4801dae5a1a0accd4b2
          });
      }
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index e3abeb839c36b5238ec115329ce05b58e3383a55..853056ad5c5eeff03e7d6fe0dfd6f837a03ad882 100644
+index aedb6485d68acf19252bfdf4e32d0c337afad7a4..e18eb79f3c261452bea4bc9dce1481e1828cc57a 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -632,6 +632,15 @@ public class ServerChunkCache extends ChunkSource {
@@ -48,7 +48,7 @@ index e3abeb839c36b5238ec115329ce05b58e3383a55..853056ad5c5eeff03e7d6fe0dfd6f837
 +            chunkRange = (chunkRange > level.spigotConfig.viewDistance) ? (byte) level.spigotConfig.viewDistance : chunkRange;
 +            chunkRange = Math.min(chunkRange, 8);
 +            for (ServerPlayer entityPlayer : this.level.players()) {
-+                entityPlayer.playerNaturallySpawnedEvent = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(entityPlayer.getBukkitEntity(), (byte) chunkRange);
++                entityPlayer.playerNaturallySpawnedEvent = new io.papermc.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(entityPlayer.getBukkitEntity(), (byte) chunkRange);
 +                entityPlayer.playerNaturallySpawnedEvent.callEvent();
 +            };
 +            // Paper end
@@ -56,13 +56,13 @@ index e3abeb839c36b5238ec115329ce05b58e3383a55..853056ad5c5eeff03e7d6fe0dfd6f837
              this.chunkMap.getChunks().forEach((playerchunk) -> { // Paper - no... just no...
                  Optional<LevelChunk> optional = ((Either) playerchunk.getTickingChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK)).left();
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index a580ac8a39612f7b2cc9aad2815e987d4ba77b42..83a2c8e00d8445ad66bb8360f4e0e4b7cba44bb3 100644
+index 4ed7fa710b3cbfa13525273321fe675ad2330551..dfecfd3e8b5a658d0166c53bc424d8ac331ae99f 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -1,5 +1,6 @@
  package net.minecraft.server.level;
  
-+import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent;
++import io.papermc.paper.event.entity.PlayerNaturallySpawnCreaturesEvent;
  import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfile;
  import com.mojang.datafixers.util.Either;
@@ -72,5 +72,5 @@ index a580ac8a39612f7b2cc9aad2815e987d4ba77b42..83a2c8e00d8445ad66bb8360f4e0e4b7
      // CraftBukkit end
 +    public PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper
  
-     public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
+     public final io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
  

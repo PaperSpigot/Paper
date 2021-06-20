@@ -21,10 +21,10 @@ Splitting the field up and making it configurable allows for server owners
 to take the burden of this into their own hand without having to rely on
 plugins doing unsafe things.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 77a03abd59db4a43f6f2d59d4c7ef176e782f205..bd508025b771424c942fd856c31d520b6f548082 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 9561343755dc5be9eff2102ad7b31d0722090e8f..64adebc778c98249fc343d0c7f295d7af5c193d0 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -296,4 +296,18 @@ public class PaperConfig {
              Bukkit.getLogger().log(Level.INFO, "Using Aikar's Alternative Luck Formula to apply Luck attribute to all loot pool calculations. See https://luckformula.emc.gs");
          }
@@ -45,7 +45,7 @@ index 77a03abd59db4a43f6f2d59d4c7ef176e782f205..bd508025b771424c942fd856c31d520b
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index f8787bda0652affef90300e334200c34db6b1675..eb52ca159e895608a6a662821f14910970759dd2 100644
+index a08fe4f63802447a2b35312fee882cbcad99e0af..8bf913492fd3bb95923bb91f236564f9f75e8cca 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -228,6 +228,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -69,7 +69,7 @@ index f8787bda0652affef90300e334200c34db6b1675..eb52ca159e895608a6a662821f149109
          // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
          // CraftBukkit start
 -        if (this.chatSpamTickCount.addAndGet(1) > 500 && !this.server.getPlayerList().isOp(this.player.getGameProfile())) {
-+        if (this.chatSpamTickCount.addAndGet(com.destroystokyo.paper.PaperConfig.tabSpamIncrement) > com.destroystokyo.paper.PaperConfig.tabSpamLimit && !this.server.getPlayerList().isOp(this.player.getGameProfile())) { // Paper start - split and make configurable
++        if (this.chatSpamTickCount.addAndGet(io.papermc.paper.PaperConfig.tabSpamIncrement) > io.papermc.paper.PaperConfig.tabSpamLimit && !this.server.getPlayerList().isOp(this.player.getGameProfile())) { // Paper start - split and make configurable
              server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]))); // Paper
              return;
          }

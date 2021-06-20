@@ -5,10 +5,10 @@ Subject: [PATCH] Book Size Limits
 
 Puts some limits on the size of books.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 11d628869a9a6eda8bf21a4f213ff23ad753b18e..8bf4d2b8c38c02d6a5b2fea37113689a252f1571 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 864d1b22c6b9b26ea2d828104422d49751b8e31f..5fc570ef1dd137777b9cf23088cb0ec0c4094749 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -347,6 +347,13 @@ public class PaperConfig {
          }
      }
@@ -24,7 +24,7 @@ index 11d628869a9a6eda8bf21a4f213ff23ad753b18e..8bf4d2b8c38c02d6a5b2fea37113689a
      private static void asyncChunks() {
          ConfigurationSection section;
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 59154fbdba07e812ca99fbd2d3b70d24ae9dbfd5..f0eda343820087497d20ed75d925ea6044f70816 100644
+index 1ac419bba4ce90ee2231f398f3a5b12ae16a557f..72adf8fc2f4cec813fc06e134083dd55649544da 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1002,6 +1002,52 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -41,8 +41,8 @@ index 59154fbdba07e812ca99fbd2d3b70d24ae9dbfd5..f0eda343820087497d20ed75d925ea60
 +                return;
 +            }
 +            long byteTotal = 0;
-+            int maxBookPageSize = com.destroystokyo.paper.PaperConfig.maxBookPageSize;
-+            double multiplier = Math.max(0.3D, Math.min(1D, com.destroystokyo.paper.PaperConfig.maxBookTotalSizeMultiplier));
++            int maxBookPageSize = io.papermc.paper.PaperConfig.maxBookPageSize;
++            double multiplier = Math.max(0.3D, Math.min(1D, io.papermc.paper.PaperConfig.maxBookTotalSizeMultiplier));
 +            long byteAllowed = maxBookPageSize;
 +            for (int i = 0; i < pageList.size(); ++i) {
 +                String testString = pageList.getString(i);

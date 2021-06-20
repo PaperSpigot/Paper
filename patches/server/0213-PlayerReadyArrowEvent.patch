@@ -7,7 +7,7 @@ Called when a player is firing a bow and the server is choosing an arrow to use.
 Plugins can skip selection of certain arrows and control which is used.
 
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 8932cb934d77c0c120cad8392acbbc1c049dcfa7..543a1c9bc5aa97262424758c69cb28127fa0ee75 100644
+index 8932cb934d77c0c120cad8392acbbc1c049dcfa7..0ed85ebcd79b3fec37c15371fcb4ed144cde689e 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
 @@ -2186,6 +2186,17 @@ public abstract class Player extends LivingEntity {
@@ -17,7 +17,7 @@ index 8932cb934d77c0c120cad8392acbbc1c049dcfa7..543a1c9bc5aa97262424758c69cb2812
 +    // Paper start
 +    protected boolean tryReadyArrow(ItemStack bow, ItemStack itemstack) {
 +        return !(this instanceof ServerPlayer) ||
-+                new com.destroystokyo.paper.event.player.PlayerReadyArrowEvent(
++                new io.papermc.paper.event.player.PlayerReadyArrowEvent(
 +                    ((ServerPlayer) this).getBukkitEntity(),
 +                    org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(bow),
 +                    org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)

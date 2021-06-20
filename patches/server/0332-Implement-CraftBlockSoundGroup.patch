@@ -4,13 +4,13 @@ Date: Tue, 28 May 2019 03:48:51 -0700
 Subject: [PATCH] Implement CraftBlockSoundGroup
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java b/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java
+diff --git a/src/main/java/io/papermc/paper/block/CraftBlockSoundGroup.java b/src/main/java/io/papermc/paper/block/CraftBlockSoundGroup.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9a516520d975f52169e346adc4ec6d9db843db2f
+index 0000000000000000000000000000000000000000..02199e6c1758f6f166c94bebda18edcf7976e7c4
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/block/CraftBlockSoundGroup.java
++++ b/src/main/java/io/papermc/paper/block/CraftBlockSoundGroup.java
 @@ -0,0 +1,38 @@
-+package com.destroystokyo.paper.block;
++package io.papermc.paper.block;
 +
 +import net.minecraft.world.level.block.SoundType;
 +import org.bukkit.Sound;
@@ -49,7 +49,7 @@ index 0000000000000000000000000000000000000000..9a516520d975f52169e346adc4ec6d9d
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index bf12cb6a1f991372206e462e46f2686decff11a6..75dd8cbadae9a2d18931dd49f49f8f1e14b50da5 100644
+index bf12cb6a1f991372206e462e46f2686decff11a6..d6f473604807e3c690f03242daa6807fc33ac988 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -764,4 +764,10 @@ public class CraftBlock implements Block {
@@ -58,8 +58,8 @@ index bf12cb6a1f991372206e462e46f2686decff11a6..75dd8cbadae9a2d18931dd49f49f8f1e
      }
 +    // Paper start
 +    @Override
-+    public com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup() {
-+        return new com.destroystokyo.paper.block.CraftBlockSoundGroup(getNMSBlock().defaultBlockState().getSoundType());
++    public io.papermc.paper.block.BlockSoundGroup getSoundGroup() {
++        return new io.papermc.paper.block.CraftBlockSoundGroup(getNMSBlock().defaultBlockState().getSoundType());
 +    }
 +    // Paper end
  }

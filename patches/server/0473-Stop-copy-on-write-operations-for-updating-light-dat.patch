@@ -6,7 +6,7 @@ Subject: [PATCH] Stop copy-on-write operations for updating light data
 Causes huge memory allocations + gc issues
 
 diff --git a/src/main/java/net/minecraft/world/level/lighting/BlockLightSectionStorage.java b/src/main/java/net/minecraft/world/level/lighting/BlockLightSectionStorage.java
-index 573cdb0897978eef8f5fc906ed4928293f4b2ab9..314b46f0becd088d26956b45981217b128d539cb 100644
+index 573cdb0897978eef8f5fc906ed4928293f4b2ab9..9b2c818f26da1ea29723c696d47a0005ee991f6a 100644
 --- a/src/main/java/net/minecraft/world/level/lighting/BlockLightSectionStorage.java
 +++ b/src/main/java/net/minecraft/world/level/lighting/BlockLightSectionStorage.java
 @@ -9,7 +9,7 @@ import net.minecraft.world.level.chunk.LightChunkGetter;
@@ -14,7 +14,7 @@ index 573cdb0897978eef8f5fc906ed4928293f4b2ab9..314b46f0becd088d26956b45981217b1
  public class BlockLightSectionStorage extends LayerLightSectionStorage<BlockLightSectionStorage.BlockDataLayerStorageMap> {
      protected BlockLightSectionStorage(LightChunkGetter chunkProvider) {
 -        super(LightLayer.BLOCK, chunkProvider, new BlockLightSectionStorage.BlockDataLayerStorageMap(new Long2ObjectOpenHashMap<>()));
-+        super(LightLayer.BLOCK, chunkProvider, new BlockLightSectionStorage.BlockDataLayerStorageMap(new com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<>(), false)); // Paper - avoid copying light data
++        super(LightLayer.BLOCK, chunkProvider, new BlockLightSectionStorage.BlockDataLayerStorageMap(new io.papermc.paper.util.map.QueuedChangesMapLong2Object<>(), false)); // Paper - avoid copying light data
      }
  
      @Override
@@ -24,7 +24,7 @@ index 573cdb0897978eef8f5fc906ed4928293f4b2ab9..314b46f0becd088d26956b45981217b1
      protected static final class BlockDataLayerStorageMap extends DataLayerStorageMap<BlockLightSectionStorage.BlockDataLayerStorageMap> {
 -        public BlockDataLayerStorageMap(Long2ObjectOpenHashMap<DataLayer> arrays) {
 -            super(arrays);
-+        public BlockDataLayerStorageMap(com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<DataLayer> long2objectopenhashmap, boolean isVisible) { // Paper - avoid copying light data
++        public BlockDataLayerStorageMap(io.papermc.paper.util.map.QueuedChangesMapLong2Object<DataLayer> long2objectopenhashmap, boolean isVisible) { // Paper - avoid copying light data
 +            super(long2objectopenhashmap, isVisible); // Paper - avoid copying light data
          }
  
@@ -36,7 +36,7 @@ index 573cdb0897978eef8f5fc906ed4928293f4b2ab9..314b46f0becd088d26956b45981217b1
      }
  }
 diff --git a/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java b/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
-index 67ff66e232592203cf8dad605ad01eabc4dded89..f357a3473682c2d37a20fb862522c67b9979402a 100644
+index 67ff66e232592203cf8dad605ad01eabc4dded89..5b2938b0ef6be049da1bbf5f85614b3bf6657396 100644
 --- a/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
 +++ b/src/main/java/net/minecraft/world/level/lighting/DataLayerStorageMap.java
 @@ -9,10 +9,23 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
@@ -44,14 +44,14 @@ index 67ff66e232592203cf8dad605ad01eabc4dded89..f357a3473682c2d37a20fb862522c67b
      private final DataLayer[] lastSections = new DataLayer[2];
      private boolean cacheEnabled;
 -    protected final Long2ObjectOpenHashMap<DataLayer> map;
-+    protected final com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<DataLayer> data; // Paper - avoid copying light data
++    protected final io.papermc.paper.util.map.QueuedChangesMapLong2Object<DataLayer> data; // Paper - avoid copying light data
 +    protected final boolean isVisible; // Paper - avoid copying light data
 +    java.util.function.Function<Long, DataLayer> lookup; // Paper - faster branchless lookup
  
 -    protected DataLayerStorageMap(Long2ObjectOpenHashMap<DataLayer> arrays) {
 -        this.map = arrays;
 +    // Paper start - avoid copying light data
-+    protected DataLayerStorageMap(com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<DataLayer> data, boolean isVisible) {
++    protected DataLayerStorageMap(io.papermc.paper.util.map.QueuedChangesMapLong2Object<DataLayer> data, boolean isVisible) {
 +        if (isVisible) {
 +            data.performUpdatesLockMap();
 +        }
@@ -167,7 +167,7 @@ index ee32aba07aad4a3f101a6a57f7aa6c07f74dd0c3..cc9eb8273d5157fb649d84a3ec589b0b
          }
  
 diff --git a/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java b/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
-index fb41fddaee27097b8b503ae13d6a775b207f883a..f6df52403a1068a0779e4ff8c2ce5dc06176e061 100644
+index fb41fddaee27097b8b503ae13d6a775b207f883a..a6f5aadc3507b655a36bc91e7a77d788da64f107 100644
 --- a/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
 +++ b/src/main/java/net/minecraft/world/level/lighting/SkyLightSectionStorage.java
 @@ -21,7 +21,7 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec
@@ -175,7 +175,7 @@ index fb41fddaee27097b8b503ae13d6a775b207f883a..f6df52403a1068a0779e4ff8c2ce5dc0
  
      protected SkyLightSectionStorage(LightChunkGetter chunkProvider) {
 -        super(LightLayer.SKY, chunkProvider, new SkyLightSectionStorage.SkyDataLayerStorageMap(new Long2ObjectOpenHashMap<>(), new Long2IntOpenHashMap(), Integer.MAX_VALUE));
-+        super(LightLayer.SKY, chunkProvider, new SkyLightSectionStorage.SkyDataLayerStorageMap(new com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<>(), new com.destroystokyo.paper.util.map.QueuedChangesMapLong2Int(), Integer.MAX_VALUE, false)); // Paper - avoid copying light data
++        super(LightLayer.SKY, chunkProvider, new SkyLightSectionStorage.SkyDataLayerStorageMap(new io.papermc.paper.util.map.QueuedChangesMapLong2Object<>(), new io.papermc.paper.util.map.QueuedChangesMapLong2Int(), Integer.MAX_VALUE, false)); // Paper - avoid copying light data
      }
  
      @Override
@@ -276,10 +276,10 @@ index fb41fddaee27097b8b503ae13d6a775b207f883a..f6df52403a1068a0779e4ff8c2ce5dc0
 -            super(arrays);
 -            this.topSections = columnToTopSection;
 -            columnToTopSection.defaultReturnValue(minSectionY);
-+        private final com.destroystokyo.paper.util.map.QueuedChangesMapLong2Int otherData; // Paper - avoid copying light data
++        private final io.papermc.paper.util.map.QueuedChangesMapLong2Int otherData; // Paper - avoid copying light data
 +
 +        // Paper start - avoid copying light data
-+        public SkyDataLayerStorageMap(com.destroystokyo.paper.util.map.QueuedChangesMapLong2Object<DataLayer> arrays, com.destroystokyo.paper.util.map.QueuedChangesMapLong2Int columnToTopSection, int minSectionY, boolean isVisible) {
++        public SkyDataLayerStorageMap(io.papermc.paper.util.map.QueuedChangesMapLong2Object<DataLayer> arrays, io.papermc.paper.util.map.QueuedChangesMapLong2Int columnToTopSection, int minSectionY, boolean isVisible) {
 +            super(arrays, isVisible);
 +            this.otherData = columnToTopSection;
 +            otherData.queueDefaultReturnValue(minSectionY);

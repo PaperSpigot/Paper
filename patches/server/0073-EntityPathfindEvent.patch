@@ -32,7 +32,7 @@ index d2e71f1e70a8b3360110f7e5e6c5ec278218ae27..0ac90b5fefa9720a9d0130f5438e5ef5
  
      private int getSurfaceY() {
 diff --git a/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java b/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
-index f4f2b7a1de7eb37c3d6331bd16f916cf4bbf1a03..989a0c44d6685b5824a055d077fb0f28c1ba4b17 100644
+index f4f2b7a1de7eb37c3d6331bd16f916cf4bbf1a03..66c27928fac09d97a714da4e21a128ee32dcfa2a 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/navigation/PathNavigation.java
 @@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
@@ -90,7 +90,7 @@ index f4f2b7a1de7eb37c3d6331bd16f916cf4bbf1a03..989a0c44d6685b5824a055d077fb0f28
 +            // Paper start - Pathfind event
 +            boolean copiedSet = false;
 +            for (BlockPos possibleTarget : positions) {
-+                if (!new com.destroystokyo.paper.event.entity.EntityPathfindEvent(this.mob.getBukkitEntity(),
++                if (!new io.papermc.paper.event.entity.EntityPathfindEvent(this.mob.getBukkitEntity(),
 +                    MCUtil.toLocation(this.mob.level, possibleTarget), target == null ? null : target.getBukkitEntity()).callEvent()) {
 +                    if (!copiedSet) {
 +                        copiedSet = true;

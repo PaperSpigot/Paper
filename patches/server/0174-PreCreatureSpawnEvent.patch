@@ -15,7 +15,7 @@ instead and save a lot of server resources.
 See: https://github.com/PaperMC/Paper/issues/917
 
 diff --git a/src/main/java/net/minecraft/world/entity/EntityType.java b/src/main/java/net/minecraft/world/entity/EntityType.java
-index 8d5c61a77bea2f2f5dbff26cb479f855945f9541..f38ccdecbade43983358dfbeadca86be7d15a68c 100644
+index 8d5c61a77bea2f2f5dbff26cb479f855945f9541..a87215054cf078d4cc2388f20cf597e9ec2395f2 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityType.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityType.java
 @@ -332,6 +332,20 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
@@ -25,8 +25,8 @@ index 8d5c61a77bea2f2f5dbff26cb479f855945f9541..f38ccdecbade43983358dfbeadca86be
 +        // Paper start - Call PreCreatureSpawnEvent
 +        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(EntityType.getKey(this).getPath());
 +        if (type != null) {
-+            com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
-+            event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
++            io.papermc.paper.event.entity.PreCreatureSpawnEvent event;
++            event = new io.papermc.paper.event.entity.PreCreatureSpawnEvent(
 +                net.minecraft.server.MCUtil.toLocation(worldserver, blockposition),
 +                type,
 +                spawnReason
@@ -40,7 +40,7 @@ index 8d5c61a77bea2f2f5dbff26cb479f855945f9541..f38ccdecbade43983358dfbeadca86be
  
          if (t0 != null) {
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index 98085ea2b5baf99697f2992354918e15691c888f..555cf6d39108d40998adbbaf6b09dd9973f5f2e3 100644
+index 32132911f3431c7d1390edbc69bf4b98e123a713..54bf491030548eb78200d4ff24628c410be57fdf 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
 @@ -987,6 +987,21 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
@@ -48,8 +48,8 @@ index 98085ea2b5baf99697f2992354918e15691c888f..555cf6d39108d40998adbbaf6b09dd99
  
              if (blockposition1 != null) {
 +                // Paper start - Call PreCreatureSpawnEvent
-+                com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
-+                event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
++                io.papermc.paper.event.entity.PreCreatureSpawnEvent event;
++                event = new io.papermc.paper.event.entity.PreCreatureSpawnEvent(
 +                    net.minecraft.server.MCUtil.toLocation(level, blockposition1),
 +                    org.bukkit.entity.EntityType.IRON_GOLEM,
 +                    org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE
@@ -66,7 +66,7 @@ index 98085ea2b5baf99697f2992354918e15691c888f..555cf6d39108d40998adbbaf6b09dd99
  
                  if (entityirongolem != null) {
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index 12a78685848b7fd945a472902d8200ea1d50b9ec..cfb820636f819a7da56d0302d49f39cea1b5a93d 100644
+index 12a78685848b7fd945a472902d8200ea1d50b9ec..5836dc812668d3603bd93bd92a67ceec25bff0d3 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
 @@ -132,6 +132,27 @@ public abstract class BaseSpawner {
@@ -79,8 +79,8 @@ index 12a78685848b7fd945a472902d8200ea1d50b9ec..cfb820636f819a7da56d0302d49f39ce
 +
 +                        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(key);
 +                        if (type != null) {
-+                            com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
-+                            event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
++                            io.papermc.paper.event.entity.PreCreatureSpawnEvent event;
++                            event = new io.papermc.paper.event.entity.PreCreatureSpawnEvent(
 +                                net.minecraft.server.MCUtil.toLocation(world, d0, d1, d2),
 +                                type,
 +                                org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER
@@ -103,7 +103,7 @@ index 12a78685848b7fd945a472902d8200ea1d50b9ec..cfb820636f819a7da56d0302d49f39ce
  }
 +
 diff --git a/src/main/java/net/minecraft/world/level/NaturalSpawner.java b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
-index 59fae60116167baf989e85596334824e9004e6fb..be667bb12e1ee186b8d9ad1d7ac4534454d0e787 100644
+index 82b47fca879f6b29fd3c87cbd277dbba26a74707..d2209a87a80e41e77d40ea6829b83eac3ab6da07 100644
 --- a/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 @@ -231,7 +231,13 @@ public final class NaturalSpawner {
@@ -130,10 +130,10 @@ index 59fae60116167baf989e85596334824e9004e6fb..be667bb12e1ee186b8d9ad1d7ac45344
          EntityType<?> entitytypes = spawnEntry.type;
  
 +        // Paper start
-+        com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
++        io.papermc.paper.event.entity.PreCreatureSpawnEvent event;
 +        org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(EntityType.getKey(entitytypes).getPath());
 +        if (type != null) {
-+            event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
++            event = new io.papermc.paper.event.entity.PreCreatureSpawnEvent(
 +                net.minecraft.server.MCUtil.toLocation(world, pos),
 +                type, SpawnReason.NATURAL
 +            );

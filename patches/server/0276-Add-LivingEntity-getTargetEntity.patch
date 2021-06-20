@@ -5,7 +5,7 @@ Subject: [PATCH] Add LivingEntity#getTargetEntity
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 3e7a2e37108f07c6057d1cd0bf673b0ed162f16a..5e781d0af08ba7faba84ee774e87f1c0d484ae9f 100644
+index 513ca87b98dc7109970fa2c097a70fa3daf4d39a..ea8c69a2d7a0558ec8ea94def0ffc419352aab4b 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -116,6 +116,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
@@ -56,18 +56,18 @@ index 3e7a2e37108f07c6057d1cd0bf673b0ed162f16a..5e781d0af08ba7faba84ee774e87f1c0
  
      public int getShieldBlockingDelay() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index 05e962ed9269db4cfa170960507b10d7b7d13741..e2e76c5de41666ef3a7132e376a3e4257bb13109 100644
+index e546f6e59545c239413725e2dad68c41b78de16d..74164a74a9408e508aac06fecc3f8b4f5eb653c5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 @@ -1,5 +1,6 @@
  package org.bukkit.craftbukkit.entity;
  
-+import com.destroystokyo.paper.entity.TargetEntityInfo;
++import io.papermc.paper.entity.TargetEntityInfo;
  import com.google.common.base.Preconditions;
  import com.google.common.collect.Sets;
  import java.util.ArrayList;
 @@ -210,6 +211,33 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
-             new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().level, ((net.minecraft.world.phys.BlockHitResult)rayTrace).getBlockPos()),
+             new io.papermc.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().level, ((net.minecraft.world.phys.BlockHitResult)rayTrace).getBlockPos()),
                  net.minecraft.server.MCUtil.toBukkitBlockFace(((net.minecraft.world.phys.BlockHitResult)rayTrace).getDirection()));
      }
 +

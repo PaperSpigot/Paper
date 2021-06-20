@@ -5,7 +5,7 @@ Subject: [PATCH] Implement an API for CanPlaceOn and CanDestroy NBT values
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-index 4ad6fd7e110f949f0bd859331ed6a5109ade3008..9288588af4e0f9dd4c9711260cd4b73b66632bb7 100644
+index 4ad6fd7e110f949f0bd859331ed6a5109ade3008..d02c244df51b22a0c2bc11d39ba9bf11580b151a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 @@ -83,6 +83,12 @@ import org.bukkit.persistence.PersistentDataContainer;
@@ -13,8 +13,8 @@ index 4ad6fd7e110f949f0bd859331ed6a5109ade3008..9288588af4e0f9dd4c9711260cd4b73b
  // Spigot end
  
 +// Paper start
-+import com.destroystokyo.paper.Namespaced;
-+import com.destroystokyo.paper.NamespacedTag;
++import io.papermc.paper.Namespaced;
++import io.papermc.paper.NamespacedTag;
 +import java.util.Collections;
 +// Paper end
 +
@@ -392,7 +392,7 @@ index 4ad6fd7e110f949f0bd859331ed6a5109ade3008..9288588af4e0f9dd4c9711260cd4b73b
 +    private boolean ofAcceptableType(Collection<Namespaced> namespacedResources) {
 +        
 +        for (Namespaced resource : namespacedResources) {
-+            if (!(resource instanceof org.bukkit.NamespacedKey || resource instanceof com.destroystokyo.paper.NamespacedTag)) {
++            if (!(resource instanceof org.bukkit.NamespacedKey || resource instanceof io.papermc.paper.NamespacedTag)) {
 +                return false;
 +            }
 +        }

@@ -24,10 +24,10 @@ index fe79c0add4f7cb18d487c5bb9415c40c5b551ea2..8d9ddad1879e7616d980ca70de8aecac
  
          poiUnload = Timings.ofSafe(name + "Chunk unload - POI");
          chunkUnload = Timings.ofSafe(name + "Chunk unload - Chunk");
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 31f192773fe5159ed2109f0d367e6b7287ffd186..f2e4939c8144b9bc7441130302ab3e2358c42063 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index ebedf6ae277af4e600c94d6f30dbbdfb1ca7e74c..5a6c6f512d15783ebf2c755e53361200d201acc1 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -574,5 +574,10 @@ public class PaperWorldConfig {
              Bukkit.getLogger().warning("You have enabled permission-based Anti-Xray checking - depending on your permission plugin, this may cause performance issues");
          }
@@ -39,13 +39,13 @@ index 31f192773fe5159ed2109f0d367e6b7287ffd186..f2e4939c8144b9bc7441130302ab3e23
 +    }
  }
  
-diff --git a/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
+diff --git a/src/main/java/io/papermc/paper/util/PlayerMobDistanceMap.java b/src/main/java/io/papermc/paper/util/PlayerMobDistanceMap.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..72063ba7fb0d04594043cb07034590d597c3d77e
+index 0000000000000000000000000000000000000000..31dfa63945fd47b5806bfffe3e76a57dad0cb6df
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
++++ b/src/main/java/io/papermc/paper/util/PlayerMobDistanceMap.java
 @@ -0,0 +1,252 @@
-+package com.destroystokyo.paper.util;
++package io.papermc.paper.util;
 +
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -297,13 +297,13 @@ index 0000000000000000000000000000000000000000..72063ba7fb0d04594043cb07034590d5
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/util/PooledHashSets.java b/src/main/java/com/destroystokyo/paper/util/PooledHashSets.java
+diff --git a/src/main/java/io/papermc/paper/util/PooledHashSets.java b/src/main/java/io/papermc/paper/util/PooledHashSets.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..11de56afaf059b00fa5bec293516bcdce7c4b2b9
+index 0000000000000000000000000000000000000000..ef75d5830f52eec68a9e0d47c1b9bfb51dd70a0d
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/PooledHashSets.java
++++ b/src/main/java/io/papermc/paper/util/PooledHashSets.java
 @@ -0,0 +1,241 @@
-+package com.destroystokyo.paper.util;
++package io.papermc.paper.util;
 +
 +import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -545,14 +545,14 @@ index 0000000000000000000000000000000000000000..11de56afaf059b00fa5bec293516bcdc
 +    }
 +} 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index dde0d2be31e686b4d5324affd03743345d8af2ed..7e62a86e4ab376c47340d96620f6b1df19fa95ca 100644
+index 49e25caed9a4acd2d3bf26ad60a44c6fa829418d..a12113ddca713bc8aa499fdf67c4a98935326a59 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -145,6 +145,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
      private final Long2ByteMap chunkTypeCache;
      private final Queue<Runnable> unloadQueue;
      int viewDistance;
-+    public final com.destroystokyo.paper.util.PlayerMobDistanceMap playerMobDistanceMap; // Paper
++    public final io.papermc.paper.util.PlayerMobDistanceMap playerMobDistanceMap; // Paper
  
      // CraftBukkit start - recursion-safe executor for Chunk loadCallback() and unloadCallback()
      public final CallbackExecutor callbackExecutor = new CallbackExecutor();
@@ -560,10 +560,10 @@ index dde0d2be31e686b4d5324affd03743345d8af2ed..7e62a86e4ab376c47340d96620f6b1df
          this.overworldDataStorage = persistentStateManagerFactory;
          this.poiManager = new PoiManager(new File(this.storageFolder, "poi"), dataFixer, dsync, world);
          this.setViewDistance(viewDistance);
-+        this.playerMobDistanceMap = this.level.paperConfig.perPlayerMobSpawns ? new com.destroystokyo.paper.util.PlayerMobDistanceMap() : null; // Paper
++        this.playerMobDistanceMap = this.level.paperConfig.perPlayerMobSpawns ? new io.papermc.paper.util.PlayerMobDistanceMap() : null; // Paper
          // Paper start - no-tick view distance
          this.setNoTickViewDistance(this.level.paperConfig.noTickViewDistance);
-         this.playerViewDistanceTickMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
+         this.playerViewDistanceTickMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
 @@ -309,6 +311,25 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          // Paper end - no-tick view distance
      }
@@ -591,7 +591,7 @@ index dde0d2be31e686b4d5324affd03743345d8af2ed..7e62a86e4ab376c47340d96620f6b1df
          double d0 = (double) SectionPos.sectionToBlockCoord(pos.x, 8);
          double d1 = (double) SectionPos.sectionToBlockCoord(pos.z, 8);
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 734b204d53a4b9e9b1112efe3a50b53cf1aa9f47..26f99965e63d36ce4b8cd0482ae21b0c37994caa 100644
+index 08e10aff08930da9784d17cd54335f0707063235..c0a3ca3ae1119b3da1e808fabe46e586dfc12b6d 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -754,7 +754,22 @@ public class ServerChunkCache extends ChunkSource {
@@ -619,7 +619,7 @@ index 734b204d53a4b9e9b1112efe3a50b53cf1aa9f47..26f99965e63d36ce4b8cd0482ae21b0c
  
              this.lastSpawnState = spawnercreature_d;
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 6ecf85579acb186f076f258368051a4ae09c3354..14f88e575f46d81175eaa04b3e7294990e749a14 100644
+index 61cc67851aef9d87792cb4ab54f1e5853c8b93f6..6bc295ec0b4688292db8d6589abf84fc046c65f0 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -90,12 +90,7 @@ import net.minecraft.world.damagesource.DamageSource;
@@ -643,7 +643,7 @@ index 6ecf85579acb186f076f258368051a4ae09c3354..14f88e575f46d81175eaa04b3e729499
 +    // Paper start - mob spawning rework
 +    public static final int ENUMCREATURETYPE_TOTAL_ENUMS = MobCategory.values().length;
 +    public final int[] mobCounts = new int[ENUMCREATURETYPE_TOTAL_ENUMS]; // Paper
-+    public final com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleMobDistanceMap;
++    public final io.papermc.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleMobDistanceMap;
 +    // Paper end
  
      // CraftBukkit start
@@ -652,12 +652,12 @@ index 6ecf85579acb186f076f258368051a4ae09c3354..14f88e575f46d81175eaa04b3e729499
          this.adventure$displayName = net.kyori.adventure.text.Component.text(this.getScoreboardName()); // Paper
          this.bukkitPickUpLoot = true;
          this.maxHealthCache = this.getMaxHealth();
-+        this.cachedSingleMobDistanceMap = new com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
++        this.cachedSingleMobDistanceMap = new io.papermc.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
      }
  
      // Yes, this doesn't match Vanilla, but it's the best we can do for now.
 diff --git a/src/main/java/net/minecraft/world/level/NaturalSpawner.java b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
-index 19d0ed5ff8569b0280117750f9ce05095afd9f70..55b937f802ee7066cb13b9a497932038b2905ff0 100644
+index e6b7fe097c8cce338f60f5e76e11c2a64cadf2b2..2a59e44031b37e8fa052f229fddd57ad9aaa7953 100644
 --- a/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
 @@ -17,6 +17,7 @@ import net.minecraft.core.Registry;

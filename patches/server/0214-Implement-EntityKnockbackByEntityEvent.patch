@@ -6,7 +6,7 @@ Subject: [PATCH] Implement EntityKnockbackByEntityEvent
 This event is called when an entity receives knockback by another entity.
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 08c29388621bf460e1704f6edba59d08a12e75d0..7bb2ce6b378547d593f8487626b5a4d4b3361397 100644
+index 7d997bd030e5a6235b5f3eb466aa5fe9a969d435..dcb599a727ca795f57dc29f2b03081fe6e6766ee 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -1437,7 +1437,7 @@ public abstract class LivingEntity extends Entity {
@@ -48,7 +48,7 @@ index 08c29388621bf460e1704f6edba59d08a12e75d0..7bb2ce6b378547d593f8487626b5a4d4
 +            org.bukkit.util.Vector delta = new org.bukkit.util.Vector(currentMovement.x - vec3d.x, currentMovement.y - vec3d.y, currentMovement.z - vec3d.z);
 +            // Restore old velocity to be able to access it in the event
 +            this.setDeltaMovement(vec3d);
-+            if (knockingBackEntity == null || new com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent((org.bukkit.entity.LivingEntity) getBukkitEntity(), knockingBackEntity.getBukkitEntity(), (float) strength, delta).callEvent()) {
++            if (knockingBackEntity == null || new io.papermc.paper.event.entity.EntityKnockbackByEntityEvent((org.bukkit.entity.LivingEntity) getBukkitEntity(), knockingBackEntity.getBukkitEntity(), (float) strength, delta).callEvent()) {
 +                this.setDeltaMovement(vec3d.x + delta.getX(), vec3d.y + delta.getY(), vec3d.z + delta.getZ());
 +            }
 +            // Paper end
@@ -56,7 +56,7 @@ index 08c29388621bf460e1704f6edba59d08a12e75d0..7bb2ce6b378547d593f8487626b5a4d4
      }
  
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index 85633cd1718783cffe03f750da1c17270eeb4cdd..5595150b0da580fce4d5d23993d77314e225ad58 100644
+index 2cfa2950fb36db44cacd57f8e63dbcb08a8fcf99..5cd549d6dcf32a74d01e1e24f8f72123e29b0c38 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
 @@ -1532,7 +1532,7 @@ public abstract class Mob extends LivingEntity {
@@ -69,7 +69,7 @@ index 85633cd1718783cffe03f750da1c17270eeb4cdd..5595150b0da580fce4d5d23993d77314
              }
  
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 543a1c9bc5aa97262424758c69cb28127fa0ee75..022bff6ac8ed5f2da438929c5ac455505bb16da7 100644
+index 0ed85ebcd79b3fec37c15371fcb4ed144cde689e..88d552c30ca76a0d4da23b296eaf8a409d252706 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
 @@ -1234,7 +1234,7 @@ public abstract class Player extends LivingEntity {

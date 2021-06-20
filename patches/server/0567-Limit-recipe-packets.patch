@@ -4,10 +4,10 @@ Date: Sat, 12 Dec 2020 23:45:28 +0000
 Subject: [PATCH] Limit recipe packets
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 7d50aded88f5b7dfebaea1aebc86231f7b5c4e25..652d87fc5d566dba8018c81676329f0e0bca471b 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 064f3901ac12b1a7a9e7ad0493c07c93eb0f1863..5659dc72274ff6cf49d1252e577b836b1254b014 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -334,6 +334,13 @@ public class PaperConfig {
          tabSpamLimit = getInt("settings.spam-limiter.tab-spam-limit", tabSpamLimit);
      }
@@ -23,7 +23,7 @@ index 7d50aded88f5b7dfebaea1aebc86231f7b5c4e25..652d87fc5d566dba8018c81676329f0e
      public static boolean velocityOnlineMode;
      public static byte[] velocitySecretKey;
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 1b6610cc04f6bcb6d3153886e62ce117c6a17e15..6d88ec99a634d58ba51a87db9e25d746ec746862 100644
+index ac1353f0da6817c3c9e084dcdcd58c9396faea1c..b6e31fc7f64e035d60f5f5ada4d197c312bd2f1a 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -232,6 +232,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -48,7 +48,7 @@ index 1b6610cc04f6bcb6d3153886e62ce117c6a17e15..6d88ec99a634d58ba51a87db9e25d746
      public void handlePlaceRecipe(ServerboundPlaceRecipePacket packet) {
 +        // Paper start
 +        if (!org.bukkit.Bukkit.isPrimaryThread()) {
-+            if (recipeSpamPackets.addAndGet(com.destroystokyo.paper.PaperConfig.autoRecipeIncrement) > com.destroystokyo.paper.PaperConfig.autoRecipeLimit) {
++            if (recipeSpamPackets.addAndGet(io.papermc.paper.PaperConfig.autoRecipeIncrement) > io.papermc.paper.PaperConfig.autoRecipeLimit) {
 +                server.scheduleOnMain(() -> this.disconnect(new TranslatableComponent("disconnect.spam", new Object[0]))); // Paper
 +                return;
 +            }

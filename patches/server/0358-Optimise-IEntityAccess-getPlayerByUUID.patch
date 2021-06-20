@@ -6,11 +6,11 @@ Subject: [PATCH] Optimise IEntityAccess#getPlayerByUUID
 Use the world entity map instead of iterating over all players
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 708bc5689e68d9e3e415e9d2dc1082cf85ee8b58..95fed7617c2b37886e912e35e7ad446c39e791ab 100644
+index 72ff0fefc37c1579272691f04aec2a6882467003..b67e6686af24770f84502eb1f059307bfe46e0b1 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -284,6 +284,14 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
-     public final com.destroystokyo.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
+     public final io.papermc.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
      // Paper end
  
 +    // Paper start - optimise getPlayerByUUID

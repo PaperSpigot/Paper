@@ -6,7 +6,7 @@ Subject: [PATCH] WitchConsumePotionEvent
 Fires when a witch consumes the potion in their hand
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index 0c04665c6e2f5624e21e269d706fea842d54cefd..ecb3843ff3b4f0034f6aaa16cfc09cbd046d9008 100644
+index c38161a20ec0f17cdba853b5267625aaa8c96222..84cff68e4e5fbd05e3d26d03e2485e5271168191 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
 @@ -124,7 +124,11 @@ public class Witch extends Raider implements RangedAttackMob {
@@ -15,7 +15,7 @@ index 0c04665c6e2f5624e21e269d706fea842d54cefd..ecb3843ff3b4f0034f6aaa16cfc09cbd
                      if (itemstack.is(Items.POTION)) {
 -                        List<MobEffectInstance> list = PotionUtils.getMobEffects(itemstack);
 +                        // Paper start
-+                        com.destroystokyo.paper.event.entity.WitchConsumePotionEvent event = new com.destroystokyo.paper.event.entity.WitchConsumePotionEvent((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack));
++                        io.papermc.paper.event.entity.WitchConsumePotionEvent event = new io.papermc.paper.event.entity.WitchConsumePotionEvent((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack));
 +
 +                        List<MobEffectInstance> list = event.callEvent() ? PotionUtils.getMobEffects(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getPotion())) : null;
 +                        // Paper end

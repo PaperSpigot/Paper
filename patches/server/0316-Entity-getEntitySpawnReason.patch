@@ -10,7 +10,7 @@ persistenting Living Entity, SPAWNER for spawners,
 or DEFAULT since data was not stored.
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 434f3a56e373e584801d66c13ba2c045a383beea..1192033c0c2248554ba452c7f3f8f05f29d9ac3a 100644
+index 938afc536c4722fdfc65afb922e6016ea8372e96..bab19aff90db16e29a0231731a867ee3159708a5 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -1111,6 +1111,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -22,7 +22,7 @@ index 434f3a56e373e584801d66c13ba2c045a383beea..1192033c0c2248554ba452c7f3f8f05f
              // Paper start
              if (DEBUG_ENTITIES) {
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index ea336bdf2f15aabe74de82ef6c29b93573254e31..da3100d6577166e222164c174b28020541dd8e3a 100644
+index 1a6d84e60e4a5af4d9409faafb1af06520addb71..d7207800f7a57c6fdd7d7e0205ff954a5d93ce8f 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -335,7 +335,7 @@ public abstract class PlayerList {
@@ -35,7 +35,7 @@ index ea336bdf2f15aabe74de82ef6c29b93573254e31..da3100d6577166e222164c174b280205
              });
  
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 2f9e6781e501a76994edc208a7981030d8fb4ea2..ec2cc6bcfe10896f0ae439f26659a7d14e050f0f 100644
+index 72d546414093e684bc5b7ecb841109a6507b5725..6b53d3f0666782a749446ad56cd5f5c5aca9a47e 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -67,6 +67,8 @@ import net.minecraft.world.InteractionHand;
@@ -54,7 +54,7 @@ index 2f9e6781e501a76994edc208a7981030d8fb4ea2..ec2cc6bcfe10896f0ae439f26659a7d1
 +    public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason;
      // Paper end
  
-     public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
+     public io.papermc.paper.loottable.PaperLootableInventoryData lootableData; // Paper
 @@ -1862,6 +1865,9 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
                  nbt.putUUID("Paper.OriginWorld", originWorld);
                  nbt.put("Paper.Origin", this.newDoubleList(origin.getX(), origin.getY(), origin.getZ()));
@@ -93,7 +93,7 @@ index 2f9e6781e501a76994edc208a7981030d8fb4ea2..ec2cc6bcfe10896f0ae439f26659a7d1
  
          } catch (Throwable throwable) {
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index 7bf688057d684aa1b60f29294c9a7e81ab6742d1..66ae43c40d4bad373b3a5269e8c78d7a3b3ac498 100644
+index ddbf335d761ec137fbe80adf2cdea199cd4ae11e..c0caa3f58261e4eafa6aa1f04219d3022d2e646e 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
 @@ -188,6 +188,7 @@ public abstract class BaseSpawner {

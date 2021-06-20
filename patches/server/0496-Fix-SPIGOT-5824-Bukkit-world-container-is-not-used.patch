@@ -5,7 +5,7 @@ Subject: [PATCH] Fix SPIGOT-5824 Bukkit world-container is not used
 
 
 diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
-index 7ce854edba32ffcafaa5268d4bb2822a5233e40b..3d6e09a3f028e50c08cbbb6b426f5b044c7b9e67 100644
+index 0364bd08d8022480a528b076e7b09c7ff6a1f7fd..ad1c5d4cd46d4ad4cec922cee9027bd5f1638c22 100644
 --- a/src/main/java/net/minecraft/server/Main.java
 +++ b/src/main/java/net/minecraft/server/Main.java
 @@ -129,11 +129,20 @@ public class Main {
@@ -23,7 +23,7 @@ index 7ce854edba32ffcafaa5268d4bb2822a5233e40b..3d6e09a3f028e50c08cbbb6b426f5b04
 +                file = new File(bukkitConfiguration.getString("settings.world-container", "."));
 +            }
 +            // Paper end - fix SPIGOT-5824
-             YggdrasilAuthenticationService yggdrasilauthenticationservice = new com.destroystokyo.paper.profile.PaperAuthenticationService(Proxy.NO_PROXY); // Paper
+             YggdrasilAuthenticationService yggdrasilauthenticationservice = new io.papermc.paper.profile.PaperAuthenticationService(Proxy.NO_PROXY); // Paper
              MinecraftSessionService minecraftsessionservice = yggdrasilauthenticationservice.createMinecraftSessionService();
              GameProfileRepository gameprofilerepository = yggdrasilauthenticationservice.createProfileRepository();
 -            GameProfileCache usercache = new GameProfileCache(gameprofilerepository, new File(file, MinecraftServer.USERID_CACHE_FILE.getName()));

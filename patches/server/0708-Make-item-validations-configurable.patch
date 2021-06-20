@@ -4,10 +4,10 @@ Date: Fri, 4 Jun 2021 12:12:35 -0700
 Subject: [PATCH] Make item validations configurable
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index efc1e42d606e1c9feb1a4871c0714933ae92a1b2..7acf077bc131af718c7548cc29deef558c04e463 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index a5ead24db755a90b1d23e7959b82b8dfff97aad0..df06d5c56a254573ff373dc14c4fe7479cea76e5 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -486,4 +486,19 @@ public class PaperConfig {
          enableBrigadierConsoleHighlighting = getBoolean("settings.console.enable-brigadier-highlighting", enableBrigadierConsoleHighlighting);
          enableBrigadierConsoleCompletions = getBoolean("settings.console.enable-brigadier-completions", enableBrigadierConsoleCompletions);
@@ -29,7 +29,7 @@ index efc1e42d606e1c9feb1a4871c0714933ae92a1b2..7acf077bc131af718c7548cc29deef55
 +    }
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-index a33dd184ea51df7e59ed08e5e2b0ea4ed9dadff5..a13e75797d612d79aa26c4891f66ecf0ce2bebaa 100644
+index a33dd184ea51df7e59ed08e5e2b0ea4ed9dadff5..817d789443ce9580fb8812d23b7b4d754b2af8b7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 @@ -92,11 +92,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
@@ -37,12 +37,12 @@ index a33dd184ea51df7e59ed08e5e2b0ea4ed9dadff5..a13e75797d612d79aa26c4891f66ecf0
  
          if (tag.contains(BOOK_TITLE.NBT)) {
 -            this.title = limit( tag.getString(BOOK_TITLE.NBT), 8192 ); // Spigot
-+            this.title = limit( tag.getString(BOOK_TITLE.NBT), com.destroystokyo.paper.PaperConfig.itemValidationBookTitleLength); // Spigot // Paper - make configurable
++            this.title = limit( tag.getString(BOOK_TITLE.NBT), io.papermc.paper.PaperConfig.itemValidationBookTitleLength); // Spigot // Paper - make configurable
          }
  
          if (tag.contains(BOOK_AUTHOR.NBT)) {
 -            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), 8192 ); // Spigot
-+            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), com.destroystokyo.paper.PaperConfig.itemValidationBookAuthorLength ); // Spigot // Paper - make configurable
++            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), io.papermc.paper.PaperConfig.itemValidationBookAuthorLength ); // Spigot // Paper - make configurable
          }
  
          if (tag.contains(RESOLVED.NBT)) {
@@ -51,12 +51,12 @@ index a33dd184ea51df7e59ed08e5e2b0ea4ed9dadff5..a13e75797d612d79aa26c4891f66ecf0
                      page = this.validatePage(page);
                  }
 -                this.pages.add( limit( page, 16384 ) ); // Spigot
-+                this.pages.add( limit( page, com.destroystokyo.paper.PaperConfig.itemValidationBookPageLength ) ); // Spigot // Paper - make configurable
++                this.pages.add( limit( page, io.papermc.paper.PaperConfig.itemValidationBookPageLength ) ); // Spigot // Paper - make configurable
              }
          }
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-index f9f1c5665adb703042ac7fca76ce2e9f8ebde9d3..9b61187cde84fd1a64c3aaf09b72ad327000c291 100644
+index 81fa49c569b63f49deecd68321181d5f0df9654b..e8c0afa1da6cad1fdc5a0fbfd0315802c3279189 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
 @@ -356,18 +356,18 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
@@ -64,12 +64,12 @@ index f9f1c5665adb703042ac7fca76ce2e9f8ebde9d3..9b61187cde84fd1a64c3aaf09b72ad32
  
              if (display.contains(NAME.NBT)) {
 -                this.displayName = limit( display.getString(NAME.NBT), 8192 ); // Spigot
-+                this.displayName = limit( display.getString(NAME.NBT), com.destroystokyo.paper.PaperConfig.itemValidationDisplayNameLength ); // Spigot // Paper - make configurable
++                this.displayName = limit( display.getString(NAME.NBT), io.papermc.paper.PaperConfig.itemValidationDisplayNameLength ); // Spigot // Paper - make configurable
              }
  
              if (display.contains(LOCNAME.NBT)) {
 -                this.locName = limit( display.getString(LOCNAME.NBT), 8192 ); // Spigot
-+                this.locName = limit( display.getString(LOCNAME.NBT), com.destroystokyo.paper.PaperConfig.itemValidationLocNameLength ); // Spigot // Paper - make configurable
++                this.locName = limit( display.getString(LOCNAME.NBT), io.papermc.paper.PaperConfig.itemValidationLocNameLength ); // Spigot // Paper - make configurable
              }
  
              if (display.contains(LORE.NBT)) {
@@ -77,7 +77,7 @@ index f9f1c5665adb703042ac7fca76ce2e9f8ebde9d3..9b61187cde84fd1a64c3aaf09b72ad32
                  this.lore = new ArrayList<String>(list.size());
                  for (int index = 0; index < list.size(); index++) {
 -                    String line = limit( list.getString(index), 8192 ); // Spigot
-+                    String line = limit( list.getString(index), com.destroystokyo.paper.PaperConfig.itemValidationLoreLineLength ); // Spigot // Paper - make configurable
++                    String line = limit( list.getString(index), io.papermc.paper.PaperConfig.itemValidationLoreLineLength ); // Spigot // Paper - make configurable
                      this.lore.add(line);
                  }
              }

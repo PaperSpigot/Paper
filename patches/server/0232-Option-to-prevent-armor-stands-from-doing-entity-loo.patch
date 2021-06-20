@@ -4,10 +4,10 @@ Date: Mon, 23 Jul 2018 12:57:39 +0200
 Subject: [PATCH] Option to prevent armor stands from doing entity lookups
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 8f8a3ea51823a9cfba985efeb7e320ae42e0da8a..1f6b37bd3cbc825abab5ad2f673200ef5061746a 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index df85f2d6a88c882b641bf9e6b4cd8e7a8d23cfa9..26fe7c73507bf71093b50a0e6278ef9f3f90f551 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -373,4 +373,9 @@ public class PaperWorldConfig {
      private void scanForLegacyEnderDragon() {
          scanForLegacyEnderDragon = getBoolean("game-mechanics.scan-for-legacy-ender-dragon", true);
@@ -31,7 +31,7 @@ index 6d717d3852afb3a3a4bef30c68980c402bdfefff..b47b1215e685c453c3496439bb350a91
  
          for (int i = 0; i < list.size(); ++i) {
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 08f612b7d2e861ef7e8b91e622c7a278542809f0..00e5672f4d302d5ccfe3942e61fe0c0beb782b82 100644
+index 56cc709aa2d839ad1b3ddddd1d0135aa2b1474d4..a247da5a3baa96d388014d1226d4032f63326950 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -768,6 +768,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {

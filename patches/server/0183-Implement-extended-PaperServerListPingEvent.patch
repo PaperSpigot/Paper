@@ -4,15 +4,15 @@ Date: Wed, 11 Oct 2017 15:56:26 +0200
 Subject: [PATCH] Implement extended PaperServerListPingEvent
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+diff --git a/src/main/java/io/papermc/paper/network/PaperServerListPingEventImpl.java b/src/main/java/io/papermc/paper/network/PaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4ecd0c5bbea55f68549c85aa27e80e2c7e6265d4
+index 0000000000000000000000000000000000000000..541048896a24316ad31bd213c3e05ebcb4076579
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
++++ b/src/main/java/io/papermc/paper/network/PaperServerListPingEventImpl.java
 @@ -0,0 +1,31 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
-+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import io.papermc.paper.event.server.PaperServerListPingEvent;
 +import net.minecraft.server.MinecraftServer;
 +import net.minecraft.server.level.ServerPlayer;
 +import org.bukkit.entity.Player;
@@ -41,13 +41,13 @@ index 0000000000000000000000000000000000000000..4ecd0c5bbea55f68549c85aa27e80e2c
 +    }
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
+diff --git a/src/main/java/io/papermc/paper/network/PaperStatusClient.java b/src/main/java/io/papermc/paper/network/PaperStatusClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d926ad804355ee2fdc5910b2505e8671602acdab
+index 0000000000000000000000000000000000000000..f5a18725c9d4dc8ffc233224e6b0edbe22592ace
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
++++ b/src/main/java/io/papermc/paper/network/PaperStatusClient.java
 @@ -0,0 +1,11 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
 +import net.minecraft.network.Connection;
 +
@@ -58,16 +58,16 @@ index 0000000000000000000000000000000000000000..d926ad804355ee2fdc5910b2505e8671
 +    }
 +
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+diff --git a/src/main/java/io/papermc/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/io/papermc/paper/network/StandardPaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4c2351b03b58511b80017b58ee9b20ab5193adc9
+index 0000000000000000000000000000000000000000..c2971531d69d047ec6c6b34f02fa90458388dac8
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
++++ b/src/main/java/io/papermc/paper/network/StandardPaperServerListPingEventImpl.java
 @@ -0,0 +1,110 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
-+import com.destroystokyo.paper.profile.CraftPlayerProfile;
-+import com.destroystokyo.paper.profile.PlayerProfile;
++import io.papermc.paper.profile.CraftPlayerProfile;
++import io.papermc.paper.profile.PlayerProfile;
 +import com.google.common.base.MoreObjects;
 +import com.google.common.base.Strings;
 +import com.mojang.authlib.GameProfile;
@@ -190,7 +190,7 @@ index 67455a5ba75c9b816213e44d6872c5ddf8e27e98..23efad80934930beadf15e65781551d4
  
      public ClientboundStatusResponsePacket(ServerStatus metadata) {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 151d08104ed390905becda5f7ba16c8f933cd3d0..80f8e994d4a85f5d240854ec492adba0633263b2 100644
+index 084af654e1c0ef3b71571f2b529e61b44e2b4418..7c5c259aca713ec668372325e0a78ff50ab06489 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -2,6 +2,9 @@ package net.minecraft.server;
@@ -198,7 +198,7 @@ index 151d08104ed390905becda5f7ba16c8f933cd3d0..80f8e994d4a85f5d240854ec492adba0
  import com.google.common.base.Splitter;
  import com.google.common.collect.ImmutableList;
 +import co.aikar.timings.Timings;
-+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import io.papermc.paper.event.server.PaperServerListPingEvent;
 +import com.google.common.base.Stopwatch;
  import com.google.common.collect.Lists;
  import com.google.common.collect.Maps;
@@ -213,7 +213,7 @@ index 151d08104ed390905becda5f7ba16c8f933cd3d0..80f8e994d4a85f5d240854ec492adba0
  
              for (int k = 0; k < agameprofile.length; ++k) {
 diff --git a/src/main/java/net/minecraft/server/network/ServerStatusPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerStatusPacketListenerImpl.java
-index 9baa56d6da9c24706f1dbc8851fd68ca752cab26..d65191a50349ec86fe35df4ac1070f94fbb77b4c 100644
+index 9baa56d6da9c24706f1dbc8851fd68ca752cab26..2f80019cee9cd338cd8dad05423386698fa2e3c7 100644
 --- a/src/main/java/net/minecraft/server/network/ServerStatusPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerStatusPacketListenerImpl.java
 @@ -47,6 +47,8 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
@@ -230,7 +230,7 @@ index 9baa56d6da9c24706f1dbc8851fd68ca752cab26..d65191a50349ec86fe35df4ac1070f94
  
              this.connection.send(new ClientboundStatusResponsePacket(ping));
 +            */
-+            com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.server, this.connection);
++            io.papermc.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.server, this.connection);
 +            // Paper end
          }
          // CraftBukkit end

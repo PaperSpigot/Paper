@@ -8,7 +8,7 @@ Add -Ddebug.entities=true to your JVM flags to gain more information
 1.17: Needs to be reworked for new entity storage system
 
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 94c5577a887ab4801dae5a1a0accd4b2f448bcc2..b794922eeccc845632f2442a3ed923f1d826a9e1 100644
+index 64ead8fe0efc48e2fe57c7b608a8e9e890d3c7bb..a1cfc09068f91f202fedd80d3ec12377b3ec2d33 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -1156,6 +1156,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -29,7 +29,7 @@ index 94c5577a887ab4801dae5a1a0accd4b2f448bcc2..b794922eeccc845632f2442a3ed923f1
  
      protected void tick() {
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 4df153a3b2cc4b6be499107a997a054abe3569d8..774f37e02feb83be3b92620aa4a0227a0c4acc93 100644
+index ac3e6662eb2add91d1f12951f70ca4bcf6de75ed..261f8d3e7fcb02ec264657e1ed45f1d6fb2196d9 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -202,6 +202,9 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -72,11 +72,11 @@ index 4df153a3b2cc4b6be499107a997a054abe3569d8..774f37e02feb83be3b92620aa4a0227a
              return false;
          } else {
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index a6ba0c7fe05aae72b98072aaa008a1346bf2704e..2138db2c7dc750cc9c2eb49b7878e4f172fb97e5 100644
+index 2a910801abe0507d5f939c73869ca9bf2a9b4737..8662fdf427b8cdfecb6f6f028e25e5e492c1be88 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -171,6 +171,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
-     public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
+     public io.papermc.paper.loottable.PaperLootableInventoryData lootableData; // Paper
      private CraftEntity bukkitEntity;
  
 +    public net.minecraft.server.level.ChunkMap.TrackedEntity tracker; // Paper
@@ -85,7 +85,7 @@ index a6ba0c7fe05aae72b98072aaa008a1346bf2704e..2138db2c7dc750cc9c2eb49b7878e4f1
          if (this.bukkitEntity == null) {
              this.bukkitEntity = CraftEntity.getEntity(this.level.getCraftServer(), this);
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index f354fe35c7fb4b869c9229b14a2cb6b00c7f0973..7bcb67df44a231d9b598a57c1b10bec18823bf74 100644
+index 476c361d159c8b3ad7ad9f1ee0ab59fd66c0559e..eb5e2190f3435751b68fcb8153edbbeaa5f850dd 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -141,6 +141,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {

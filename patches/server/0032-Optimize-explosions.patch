@@ -9,10 +9,10 @@ expensive when there are hundreds or more entities in range.
 This patch adds a per-tick cache that is used for storing and retrieving
 an entity's exposure during an explosion.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index e6e18f309dc09ea9416ea37dcc697ddc2b571a96..4881b03d470646843bad1bc343eb6a6ab9072d8e 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index fd61d29f4d06b19723d995500a9eca04b1e8bade..ef3724940125a9e77c95c4cd00a3c352e925c0bc 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -155,4 +155,10 @@ public class PaperWorldConfig {
          disableEndCredits = getBoolean("game-mechanics.disable-end-credits", false);
          log("End credits disabled: " + disableEndCredits);
@@ -25,7 +25,7 @@ index e6e18f309dc09ea9416ea37dcc697ddc2b571a96..4881b03d470646843bad1bc343eb6a6a
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ca439ac2a09a2ce4e019282c0b75f2f5d41a2208..3b4e679cc3c711635e6e2f3906a0afd2142c7849 100644
+index 65b2fa69fd36addc9534f069cce8ec95cf1122a2..6826d1e4b7f1595f17a118e8f146bb19f3ef9256 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1397,6 +1397,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -135,7 +135,7 @@ index a723b60bdb4b90b30b0b26c9488ede2b1177208f..5e06fa58bd5064fea4154f7f34fdef6a
 +    // Paper end
  }
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index c427c105c653a0b0de6ad33d1d6f622a31a5a680..794d43e6f1a2019f67daf7a93498225924c4394b 100644
+index d619acb6e72cdf79d0ca8ca675f1b4fc7434174c..d711f4a21a093c432d401ecfb457187a7648789a 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -153,6 +153,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {

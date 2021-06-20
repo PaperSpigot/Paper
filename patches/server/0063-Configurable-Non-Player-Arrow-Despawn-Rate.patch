@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable Non Player Arrow Despawn Rate
 
 Can set a much shorter despawn rate for arrows that players can not pick up.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 3ac2ac3db9b1c271b3c21930bb13716669ff64d3..3c78d3234054ce2dc46ef77decb6adb0cbd10620 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 8dd8cedfd9f8f58f7c4fd0d45e702a487ee50099..aa8ed290870e0722c542f7d705e5d386d9d444d4 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -215,4 +215,19 @@ public class PaperWorldConfig {
      private void nonPlayerEntitiesOnScoreboards() {
          nonPlayerEntitiesOnScoreboards = getBoolean("allow-non-player-entities-on-scoreboards", false);
@@ -30,7 +30,7 @@ index 3ac2ac3db9b1c271b3c21930bb13716669ff64d3..3c78d3234054ce2dc46ef77decb6adb0
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/entity/projectile/AbstractArrow.java b/src/main/java/net/minecraft/world/entity/projectile/AbstractArrow.java
-index aa679dd070b9efd4b4450cfdb5e4d849f5793534..676e5ad3a23bfdccd8f5f7bb9e79c3fa004dc95f 100644
+index 860c4ca60adfbf265299c0db41eadc0384f68779..97a4d3b3709028d322617efdfe9a5aabe2197d82 100644
 --- a/src/main/java/net/minecraft/world/entity/projectile/AbstractArrow.java
 +++ b/src/main/java/net/minecraft/world/entity/projectile/AbstractArrow.java
 @@ -310,7 +310,7 @@ public abstract class AbstractArrow extends Projectile {

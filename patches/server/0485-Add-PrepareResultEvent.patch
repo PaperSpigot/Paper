@@ -8,7 +8,7 @@ Adds a new event for all crafting stations that generate a result slot item
 Anvil, Grindstone and Smithing now extend this event
 
 diff --git a/src/main/java/net/minecraft/world/inventory/AnvilMenu.java b/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
-index 1dad9577370bb58b27b32b997a505ce5145a6769..56d3ed1cdafd7904c35be5db568b9975a97418a7 100644
+index dc50c9c83757a527b959e068c6531b106a61b0f1..dd885ceb52eb472bd2a85cb2701ef34f86708a2f 100644
 --- a/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
 +++ b/src/main/java/net/minecraft/world/inventory/AnvilMenu.java
 @@ -317,6 +317,7 @@ public class AnvilMenu extends ItemCombinerMenu {
@@ -94,7 +94,7 @@ index ddd34b07f7cf39a8b5ad51bdefb6e9d7cbf8f393..eac9765ecf0b33cab8b04204591de8d5
  
      private void setupRecipeList(Container input, ItemStack stack) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 1ee76da3b609bf91e9e8529eb402d670b32e4b18..7159d63c7708cebda60da33eefc8a492d8de6219 100644
+index 680c7b425096880428112612f4948ee79f1bb50e..aa7784e313062d1af43d20c1e93370cba48a643d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1529,19 +1529,44 @@ public class CraftEventFactory {
@@ -129,18 +129,18 @@ index 1ee76da3b609bf91e9e8529eb402d670b32e4b18..7159d63c7708cebda60da33eefc8a492
 +
 +    // Paper start - support specific overrides for prepare result
 +    public static void callPrepareResultEvent(AbstractContainerMenu container, int resultSlot) {
-+        com.destroystokyo.paper.event.inventory.PrepareResultEvent event;
++        io.papermc.paper.event.inventory.PrepareResultEvent event;
 +        InventoryView view = container.getBukkitView();
 +        org.bukkit.inventory.ItemStack origItem = view.getTopInventory().getItem(resultSlot);
 +        CraftItemStack result = origItem != null ? CraftItemStack.asCraftCopy(origItem) : null;
 +        if (view.getTopInventory() instanceof org.bukkit.inventory.AnvilInventory) {
 +            event = new PrepareAnvilEvent(view, result);
 +        } else if (view.getTopInventory() instanceof org.bukkit.inventory.GrindstoneInventory) {
-+            event = new com.destroystokyo.paper.event.inventory.PrepareGrindstoneEvent(view, result);
++            event = new io.papermc.paper.event.inventory.PrepareGrindstoneEvent(view, result);
 +        } else if (view.getTopInventory() instanceof org.bukkit.inventory.SmithingInventory) {
 +            event = new PrepareSmithingEvent(view, result);
 +        } else {
-+            event = new com.destroystokyo.paper.event.inventory.PrepareResultEvent(view, result);
++            event = new io.papermc.paper.event.inventory.PrepareResultEvent(view, result);
 +        }
 +        event.callEvent();
 +        event.getInventory().setItem(resultSlot, event.getResult());

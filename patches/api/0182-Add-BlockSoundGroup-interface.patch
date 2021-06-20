@@ -5,13 +5,13 @@ Subject: [PATCH] Add BlockSoundGroup interface
 
 This PR adds the getSoundGroup() method in Block which returns a BlockSoundGroup
 
-diff --git a/src/main/java/com/destroystokyo/paper/block/BlockSoundGroup.java b/src/main/java/com/destroystokyo/paper/block/BlockSoundGroup.java
+diff --git a/src/main/java/io/papermc/paper/block/BlockSoundGroup.java b/src/main/java/io/papermc/paper/block/BlockSoundGroup.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8cf87d228a7006658d52ce0da16c2d74f4706545
+index 0000000000000000000000000000000000000000..68c32b1f46e338f7e6d396b8e9dc453abf36b531
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/block/BlockSoundGroup.java
++++ b/src/main/java/io/papermc/paper/block/BlockSoundGroup.java
 @@ -0,0 +1,52 @@
-+package com.destroystokyo.paper.block;
++package io.papermc.paper.block;
 +
 +import org.bukkit.Sound;
 +import org.bukkit.block.Block;
@@ -64,7 +64,7 @@ index 0000000000000000000000000000000000000000..8cf87d228a7006658d52ce0da16c2d74
 +    Sound getFallSound();
 +}
 diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
-index 18ab5cca036522df2d245f755d6c67904e6398e8..5ac36e0f90d0889853736390877aa92ec0ca181b 100644
+index 18ab5cca036522df2d245f755d6c67904e6398e8..d6459a866557f345966ec0a3afde2e62b3cb3da9 100644
 --- a/src/main/java/org/bukkit/block/Block.java
 +++ b/src/main/java/org/bukkit/block/Block.java
 @@ -587,4 +587,16 @@ public interface Block extends Metadatable {
@@ -74,13 +74,13 @@ index 18ab5cca036522df2d245f755d6c67904e6398e8..5ac36e0f90d0889853736390877aa92e
 +
 +    // Paper start
 +    /**
-+     * Gets the {@link com.destroystokyo.paper.block.BlockSoundGroup} for this block.
++     * Gets the {@link io.papermc.paper.block.BlockSoundGroup} for this block.
 +     * <p>
 +     * This object contains the block, step, place, hit, and fall sounds.
 +     *
 +     * @return the sound group for this block
 +     */
 +    @NotNull
-+    com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup();
++    io.papermc.paper.block.BlockSoundGroup getSoundGroup();
 +    // Paper end
  }

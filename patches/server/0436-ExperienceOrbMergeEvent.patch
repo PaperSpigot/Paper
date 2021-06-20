@@ -9,7 +9,7 @@ Plugins can cancel this if they want to ensure experience orbs do not lose impor
 metadata such as spawn reason, or conditionally move data from source to target.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 7b59cfc35968a82c5db78c5107b175d994df3535..1ee76da3b609bf91e9e8529eb402d670b32e4b18 100644
+index a43a12f25cd3dfa56a997b1a7bb5aa6f7b9d20e2..680c7b425096880428112612f4948ee79f1bb50e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -620,7 +620,7 @@ public class CraftEventFactory {
@@ -17,7 +17,7 @@ index 7b59cfc35968a82c5db78c5107b175d994df3535..1ee76da3b609bf91e9e8529eb402d670
                          net.minecraft.world.entity.ExperienceOrb loopItem = (net.minecraft.world.entity.ExperienceOrb) e;
                          // Paper start
 -                        if (!loopItem.isRemoved() && !(maxValue > 0 && loopItem.value >= maxValue)) {
-+                        if (!loopItem.isRemoved() && !(maxValue > 0 && loopItem.value >= maxValue) && new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) { // Paper - ExperienceOrbMergeEvent
++                        if (!loopItem.isRemoved() && !(maxValue > 0 && loopItem.value >= maxValue) && new io.papermc.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) { // Paper - ExperienceOrbMergeEvent
                              long newTotal = (long)xp.value + (long)loopItem.value;
                              if ((int) newTotal < 0) continue; // Overflow
                              if (maxValue > 0 && newTotal > (long)maxValue) {

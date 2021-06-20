@@ -4,20 +4,20 @@ Date: Mon, 29 Feb 2016 20:24:35 -0600
 Subject: [PATCH] Add exception reporting event
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/event/server/ServerExceptionEvent.java b/src/main/java/com/destroystokyo/paper/event/server/ServerExceptionEvent.java
+diff --git a/src/main/java/io/papermc/paper/event/server/ServerExceptionEvent.java b/src/main/java/io/papermc/paper/event/server/ServerExceptionEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2f573299a9a817a98372817a1de8bf641aaca956
+index 0000000000000000000000000000000000000000..bede8c012cd4cffeb7f9750aefee40f267fd351f
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/event/server/ServerExceptionEvent.java
++++ b/src/main/java/io/papermc/paper/event/server/ServerExceptionEvent.java
 @@ -0,0 +1,43 @@
-+package com.destroystokyo.paper.event.server;
++package io.papermc.paper.event.server;
 +
 +import com.google.common.base.Preconditions;
 +import org.apache.commons.lang.Validate;
 +import org.bukkit.Bukkit;
 +import org.bukkit.event.Event;
 +import org.bukkit.event.HandlerList;
-+import com.destroystokyo.paper.exception.ServerException;
++import io.papermc.paper.exception.ServerException;
 +import org.jetbrains.annotations.NotNull;
 +
 +/**
@@ -53,13 +53,13 @@ index 0000000000000000000000000000000000000000..2f573299a9a817a98372817a1de8bf64
 +        return handlers;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerCommandException.java b/src/main/java/com/destroystokyo/paper/exception/ServerCommandException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerCommandException.java b/src/main/java/io/papermc/paper/exception/ServerCommandException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6fb39af0479a818f7f1465bcdfe505ab4ff7da1a
+index 0000000000000000000000000000000000000000..2c60e04721e6e2df0890e63e17a92f5a580478a6
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerCommandException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerCommandException.java
 @@ -0,0 +1,64 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.command.Command;
 +import org.bukkit.command.CommandSender;
@@ -123,13 +123,13 @@ index 0000000000000000000000000000000000000000..6fb39af0479a818f7f1465bcdfe505ab
 +        return arguments;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerEventException.java b/src/main/java/com/destroystokyo/paper/exception/ServerEventException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerEventException.java b/src/main/java/io/papermc/paper/exception/ServerEventException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..410b24139535cd5d8439ad581c43c61b5757fbf6
+index 0000000000000000000000000000000000000000..a32d1c57bed9e7ad05db271688ee575640141f72
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerEventException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerEventException.java
 @@ -0,0 +1,52 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.event.Event;
 +import org.bukkit.event.Listener;
@@ -181,13 +181,13 @@ index 0000000000000000000000000000000000000000..410b24139535cd5d8439ad581c43c61b
 +        return event;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerException.java b/src/main/java/com/destroystokyo/paper/exception/ServerException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerException.java b/src/main/java/io/papermc/paper/exception/ServerException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c06ea3942447d4824b83ff839cb449fb818dede1
+index 0000000000000000000000000000000000000000..6fb1b7b36e394c52914de045a3d547781b6140e1
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerException.java
 @@ -0,0 +1,23 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +/**
 + * Wrapper exception for all exceptions that are thrown by the server.
@@ -210,16 +210,16 @@ index 0000000000000000000000000000000000000000..c06ea3942447d4824b83ff839cb449fb
 +        super(message, cause, enableSuppression, writableStackTrace);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerInternalException.java b/src/main/java/com/destroystokyo/paper/exception/ServerInternalException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerInternalException.java b/src/main/java/io/papermc/paper/exception/ServerInternalException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e762ed0dbad51625e65fef2e1898679108459a36
+index 0000000000000000000000000000000000000000..ef13ea3cf21317144ee0d28bd9bf9e80e6404961
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerInternalException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerInternalException.java
 @@ -0,0 +1,35 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.Bukkit;
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.event.server.ServerExceptionEvent;
 +
 +/**
 + * Thrown when the internal server throws a recoverable exception.
@@ -251,13 +251,13 @@ index 0000000000000000000000000000000000000000..e762ed0dbad51625e65fef2e18986791
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerPluginEnableDisableException.java b/src/main/java/com/destroystokyo/paper/exception/ServerPluginEnableDisableException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerPluginEnableDisableException.java b/src/main/java/io/papermc/paper/exception/ServerPluginEnableDisableException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f016ba3b1b62e554a9bacbb9635f2dbe441b3c4e
+index 0000000000000000000000000000000000000000..35e745863b68503b14e3829bacea3dd082835246
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerPluginEnableDisableException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerPluginEnableDisableException.java
 @@ -0,0 +1,20 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.plugin.Plugin;
 +
@@ -278,13 +278,13 @@ index 0000000000000000000000000000000000000000..f016ba3b1b62e554a9bacbb9635f2dbe
 +    }
 +}
 \ No newline at end of file
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerPluginException.java b/src/main/java/com/destroystokyo/paper/exception/ServerPluginException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerPluginException.java b/src/main/java/io/papermc/paper/exception/ServerPluginException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6defac287d0214fdf99418d979144050cc1e53bc
+index 0000000000000000000000000000000000000000..8a35c5228cb0e7d252326b0afa28160781657e28
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerPluginException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerPluginException.java
 @@ -0,0 +1,38 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import com.google.common.base.Preconditions;
 +import org.apache.commons.lang.Validate;
@@ -322,13 +322,13 @@ index 0000000000000000000000000000000000000000..6defac287d0214fdf99418d979144050
 +        return responsiblePlugin;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java b/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerPluginMessageException.java b/src/main/java/io/papermc/paper/exception/ServerPluginMessageException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..89e132525cfae0ce979e37b3e2793df781e47227
+index 0000000000000000000000000000000000000000..f16c1ae329d622caac62d997f81f200e11c25893
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerPluginMessageException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerPluginMessageException.java
 @@ -0,0 +1,64 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.entity.Player;
 +import org.bukkit.plugin.Plugin;
@@ -392,13 +392,13 @@ index 0000000000000000000000000000000000000000..89e132525cfae0ce979e37b3e2793df7
 +        return player;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerSchedulerException.java b/src/main/java/com/destroystokyo/paper/exception/ServerSchedulerException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerSchedulerException.java b/src/main/java/io/papermc/paper/exception/ServerSchedulerException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2d0b2d4a9b3e5bdeec0e4ea7ab69858d86aa3715
+index 0000000000000000000000000000000000000000..2435db31a5db5d8dc755e7fd2bfdb94fd0b4d325
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerSchedulerException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerSchedulerException.java
 @@ -0,0 +1,37 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.scheduler.BukkitTask;
 +
@@ -435,13 +435,13 @@ index 0000000000000000000000000000000000000000..2d0b2d4a9b3e5bdeec0e4ea7ab69858d
 +        return task;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/exception/ServerTabCompleteException.java b/src/main/java/com/destroystokyo/paper/exception/ServerTabCompleteException.java
+diff --git a/src/main/java/io/papermc/paper/exception/ServerTabCompleteException.java b/src/main/java/io/papermc/paper/exception/ServerTabCompleteException.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5582999fe94c7a3dac655044ccc6d078cd9521a1
+index 0000000000000000000000000000000000000000..15d2443298fa2901ae96e2e29112ae4c5c494a4e
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/exception/ServerTabCompleteException.java
++++ b/src/main/java/io/papermc/paper/exception/ServerTabCompleteException.java
 @@ -0,0 +1,22 @@
-+package com.destroystokyo.paper.exception;
++package io.papermc.paper.exception;
 +
 +import org.bukkit.command.Command;
 +import org.bukkit.command.CommandSender;
@@ -464,7 +464,7 @@ index 0000000000000000000000000000000000000000..5582999fe94c7a3dac655044ccc6d078
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-index f020cb04eba27a2e70fc7cf799ebbfb434b9d974..adfc7aae2c0f49bbcdd358e83b04a0cf078a7d52 100644
+index f020cb04eba27a2e70fc7cf799ebbfb434b9d974..69fb82b9dd1b5448d75388a91572b327eeb15533 100644
 --- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
 +++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
 @@ -8,6 +8,10 @@ import java.util.HashMap;
@@ -472,9 +472,9 @@ index f020cb04eba27a2e70fc7cf799ebbfb434b9d974..adfc7aae2c0f49bbcdd358e83b04a0cf
  import java.util.List;
  import java.util.Map;
 +
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-+import com.destroystokyo.paper.exception.ServerCommandException;
-+import com.destroystokyo.paper.exception.ServerTabCompleteException;
++import io.papermc.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.exception.ServerCommandException;
++import io.papermc.paper.exception.ServerTabCompleteException;
  import org.apache.commons.lang.Validate;
  import org.bukkit.Location;
  import org.bukkit.Server;
@@ -506,7 +506,7 @@ index f020cb04eba27a2e70fc7cf799ebbfb434b9d974..adfc7aae2c0f49bbcdd358e83b04a0cf
      }
  
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index 7548e40af8043c1b5716f2d7d0122833466854c4..c2c49ee9b5531bc4761d2da54cd707c57fc647bf 100644
+index 7548e40af8043c1b5716f2d7d0122833466854c4..bb3c96285b208f8ab012245ade3d9f2548ef3bcb 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 @@ -23,6 +23,10 @@ import java.util.WeakHashMap;
@@ -514,9 +514,9 @@ index 7548e40af8043c1b5716f2d7d0122833466854c4..c2c49ee9b5531bc4761d2da54cd707c5
  import java.util.regex.Matcher;
  import java.util.regex.Pattern;
 +
-+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
-+import com.destroystokyo.paper.exception.ServerEventException;
-+import com.destroystokyo.paper.exception.ServerPluginEnableDisableException;
++import io.papermc.paper.event.server.ServerExceptionEvent;
++import io.papermc.paper.exception.ServerEventException;
++import io.papermc.paper.exception.ServerPluginEnableDisableException;
  import org.apache.commons.lang.Validate;
  import org.bukkit.Server;
  import org.bukkit.World;

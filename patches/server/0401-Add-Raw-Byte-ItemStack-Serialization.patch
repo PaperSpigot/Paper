@@ -6,7 +6,7 @@ Subject: [PATCH] Add Raw Byte ItemStack Serialization
 Serializes using NBT which is safer for server data migrations than bukkits format.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
-index ad8d6a84e1a66e03ae15269e36bc787148f12396..d18f8d7c699893740fa709ef1f0caa4390e7eb20 100644
+index 98140badf660cdd2dd84cdfd7aca1c2b4ae94e3d..7291bd8392e7bcdd1bbdf63a609c678e0a4b4840 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
 @@ -378,6 +378,46 @@ public final class CraftMagicNumbers implements UnsafeValues {
@@ -49,7 +49,7 @@ index ad8d6a84e1a66e03ae15269e36bc787148f12396..d18f8d7c699893740fa709ef1f0caa43
 +            Dynamic<Tag> converted = DataFixers.getDataFixer().update(References.ITEM_STACK, new Dynamic<Tag>(NbtOps.INSTANCE, compound), dataVersion, getDataVersion());
 +            return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.of((CompoundTag) converted.getValue()));
 +        } catch (IOException ex) {
-+            com.destroystokyo.paper.util.SneakyThrow.sneaky(ex);
++            io.papermc.paper.util.SneakyThrow.sneaky(ex);
 +            throw new RuntimeException();
 +        }
 +    }

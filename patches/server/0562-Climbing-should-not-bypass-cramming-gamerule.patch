@@ -4,10 +4,10 @@ Date: Sun, 23 Aug 2020 20:59:00 +0200
 Subject: [PATCH] Climbing should not bypass cramming gamerule
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 935bb237f8ecd63ca4cec64a7c7a341c9d3358e5..208690ceca2485b54acde5123ba494d71367791b 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 8156c657f634e14c0ebdc6edbc1abd777e6301d8..970746285ebe4bc4881a9f82abc88fbbfaf6f33b 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -74,6 +74,11 @@ public class PaperWorldConfig {
          wanderingTraderSpawnChanceMax = getInt("wandering-trader.spawn-chance-max", wanderingTraderSpawnChanceMax);
      }
@@ -21,7 +21,7 @@ index 935bb237f8ecd63ca4cec64a7c7a341c9d3358e5..208690ceca2485b54acde5123ba494d7
      private void keepLoadedRange() {
          keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 10)) * 16);
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index bf9813eee5865e7363fce3c015a3b8e3e637ce75..408d0f51353c745cbdc5c314dd25fa0c8a13441c 100644
+index 75b001f8a5900af140a31ce97584a5971d153f43..a4c03576068652dc194b009dc4fa46c2ee40ea5f 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -1723,6 +1723,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
@@ -61,7 +61,7 @@ index 8fb89326395a7e70982c0d757b506565e98b12a4..a060cca08631fb42041e3a79a9abc422
              } else if (entity.level.isClientSide && (!(entity1 instanceof Player) || !((Player) entity1).isLocalPlayer())) {
                  return false;
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index a524ea7ff8206036de07d24683adadee8bd41eac..34304fd25a73b3b7e4f078e85b6bee94ab2cc8c8 100644
+index 8922368659b0abf67f10786d7de7aa2faaad620c..56fa8e7eccf23a1b16823eb017080344718a2854 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -3271,7 +3271,7 @@ public abstract class LivingEntity extends Entity {

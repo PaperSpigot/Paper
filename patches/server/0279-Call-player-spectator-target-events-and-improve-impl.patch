@@ -19,7 +19,7 @@ spectate the target entity.
 Co-authored-by: Spottedleaf <Spottedleaf@users.noreply.github.com>
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index df02d712e7daf1603885547995d69cb7fa3962ca..72d17bfbe0830721caa7d1fd0aa50916e75b1ed7 100644
+index e07788f3237882956696b6f4e652ce35bf5b129b..e6f614038469197e7cb3202b68673908ec64763b 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -1822,14 +1822,58 @@ public class ServerPlayer extends Player {
@@ -40,13 +40,13 @@ index df02d712e7daf1603885547995d69cb7fa3962ca..72d17bfbe0830721caa7d1fd0aa50916
 +        if (entity1 == entity) return; // new spec target is the current spec target
 +
 +        if (entity == this) {
-+            com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent playerStopSpectatingEntityEvent = new com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent(this.getBukkitEntity(), entity1.getBukkitEntity());
++            io.papermc.paper.event.player.PlayerStopSpectatingEntityEvent playerStopSpectatingEntityEvent = new io.papermc.paper.event.player.PlayerStopSpectatingEntityEvent(this.getBukkitEntity(), entity1.getBukkitEntity());
 +
 +            if (!playerStopSpectatingEntityEvent.callEvent()) {
 +                return;
 +            }
 +        } else {
-+            com.destroystokyo.paper.event.player.PlayerStartSpectatingEntityEvent playerStartSpectatingEntityEvent = new com.destroystokyo.paper.event.player.PlayerStartSpectatingEntityEvent(this.getBukkitEntity(), entity1.getBukkitEntity(), entity.getBukkitEntity());
++            io.papermc.paper.event.player.PlayerStartSpectatingEntityEvent playerStartSpectatingEntityEvent = new io.papermc.paper.event.player.PlayerStartSpectatingEntityEvent(this.getBukkitEntity(), entity1.getBukkitEntity(), entity.getBukkitEntity());
 +
 +            if (!playerStartSpectatingEntityEvent.callEvent()) {
 +                return;

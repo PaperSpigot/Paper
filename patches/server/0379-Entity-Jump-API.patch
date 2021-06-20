@@ -5,14 +5,14 @@ Subject: [PATCH] Entity Jump API
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index d03d0c896ef7758dbfbf5b9aa3119e07e6ef389c..6388c03176449cb7b22ed9cfb26ab0bfbcf75ccc 100644
+index 3db6a65ee714e521b0fbd75292cdde93ed8dc242..bcb4905d2cab2e73fd14d50c73873eeb1f1cc511 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -3159,8 +3159,10 @@ public abstract class LivingEntity extends Entity {
              } else if (this.isInLava() && (!this.onGround || d7 > d8)) {
                  this.jumpInLiquid((Tag) FluidTags.LAVA);
              } else if ((this.onGround || flag && d7 <= d8) && this.noJumpDelay == 0) {
-+                if (new com.destroystokyo.paper.event.entity.EntityJumpEvent(getBukkitLivingEntity()).callEvent()) { // Paper
++                if (new io.papermc.paper.event.entity.EntityJumpEvent(getBukkitLivingEntity()).callEvent()) { // Paper
                  this.jumpFromGround();
                  this.noJumpDelay = 10;
 +                } else { this.setJumping(false); } // Paper - setJumping(false) stops a potential loop
@@ -20,21 +20,21 @@ index d03d0c896ef7758dbfbf5b9aa3119e07e6ef389c..6388c03176449cb7b22ed9cfb26ab0bf
          } else {
              this.noJumpDelay = 0;
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Panda.java b/src/main/java/net/minecraft/world/entity/animal/Panda.java
-index 2d59eab846db2c0a624cf6d06a570b2313aa6b13..851ee58e52c6003d6ae7b58c9b6b9a9a9795fa85 100644
+index 2d59eab846db2c0a624cf6d06a570b2313aa6b13..8554a15aaadcba7916367e13492ed3719ae9bd18 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Panda.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Panda.java
 @@ -514,7 +514,9 @@ public class Panda extends Animal {
              Panda entitypanda = (Panda) iterator.next();
  
              if (!entitypanda.isBaby() && entitypanda.onGround && !entitypanda.isInWater() && entitypanda.canPerformAction()) {
-+                if (new com.destroystokyo.paper.event.entity.EntityJumpEvent(getBukkitLivingEntity()).callEvent()) { // Paper
++                if (new io.papermc.paper.event.entity.EntityJumpEvent(getBukkitLivingEntity()).callEvent()) { // Paper
                  entitypanda.jumpFromGround();
 +                } else { this.setJumping(false); } // Paper - setJumping(false) stops a potential loop
              }
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
-index e2e76c5de41666ef3a7132e376a3e4257bb13109..d2e1dbc33d25cd1132b74d50dd9dd746098a4ecc 100644
+index 74164a74a9408e508aac06fecc3f8b4f5eb653c5..547257ef5340041087331c171c4ec3d7775d1265 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
 @@ -797,5 +797,19 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {

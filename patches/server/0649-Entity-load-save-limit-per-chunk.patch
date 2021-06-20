@@ -8,12 +8,12 @@ to a chunk. The default values of -1 disable the limit. Although
 defaults are only included for certain entites, this allows setting
 limits for any entity type.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index acd61a9033fdfb91e29a5fa6a10b8983ed94baa5..c94579d5db6802ef27c6c64cde1cdfdff5040ed2 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index a95697280da5e015733563f1181f7f1872d6159a..5f523ee51697cd165a332bdd9614c217fd97e2c3 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -1,9 +1,12 @@
- package com.destroystokyo.paper;
+ package io.papermc.paper;
  
  import java.util.Arrays;
 +import java.util.HashMap;
@@ -24,7 +24,7 @@ index acd61a9033fdfb91e29a5fa6a10b8983ed94baa5..c94579d5db6802ef27c6c64cde1cdfdf
 +import net.minecraft.world.entity.EntityType;
  import net.minecraft.world.entity.monster.Vindicator;
  import net.minecraft.world.entity.monster.Zombie;
- import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
+ import io.papermc.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
 @@ -123,6 +126,20 @@ public class PaperWorldConfig {
          );
      }
@@ -47,7 +47,7 @@ index acd61a9033fdfb91e29a5fa6a10b8983ed94baa5..c94579d5db6802ef27c6c64cde1cdfdf
      private void keepLoadedRange() {
          keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 10)) * 16);
 diff --git a/src/main/java/net/minecraft/world/entity/EntityType.java b/src/main/java/net/minecraft/world/entity/EntityType.java
-index b50bf044a3cb05b811fd06796a351e6b15b352ad..ac99265aacd4a28490705e3079ed04023fb1c54a 100644
+index 302a9511aa4633dfa2f06824a4d6bbaa1723e7f9..e285c26d0d082a553a19ffd334a9a9abad015187 100644
 --- a/src/main/java/net/minecraft/world/entity/EntityType.java
 +++ b/src/main/java/net/minecraft/world/entity/EntityType.java
 @@ -560,9 +560,20 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {

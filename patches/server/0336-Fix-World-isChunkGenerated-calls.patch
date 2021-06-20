@@ -32,7 +32,7 @@ index 0dbd72761bd605473d1643ac1ad16a373060ddae..a066ac00ad3274a7c70edbb9cc442dc9
  
      public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> getFutureIfPresentUnchecked(ChunkStatus leastStatus) {
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 36bc19cbb5242207ff019f62f59205e1a6336728..f271d7b32fef73401778682a1d4832bfbfd49b2f 100644
+index 7d2c5eaeb92870edc7af93c488bb709f34eb155e..5759676cb71b966569af71fcba6f5a3229c42455 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -84,6 +84,7 @@ import net.minecraft.world.level.chunk.ProtoChunk;
@@ -108,7 +108,7 @@ index 36bc19cbb5242207ff019f62f59205e1a6336728..f271d7b32fef73401778682a1d4832bf
          // Spigot start
          return this.isOutsideOfRange(chunkPos, false);
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 1176dd8ebd59c5bda1b74c532ca21ae335078805..ddaa4dfa4611e8d659e9d0211873b6f503e3d230 100644
+index 9217a9af35f9f40a628de5341924ed8da683a8e8..08e10aff08930da9784d17cd54335f0707063235 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -324,6 +324,7 @@ public class ServerChunkCache extends ChunkSource {
@@ -164,7 +164,7 @@ index d126c038ae56312acc2e8be2726065d4eddb08c8..812444e92e35879bda66913df5ef2502
          if (nbt != null) {
              ChunkStatus chunkstatus = ChunkStatus.byName(nbt.getCompound("Level").getString("Status"));
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
-index 46226dd2d16a9f4017661712fe2bfc0c46f63cb2..c22391a0d4b7db49bd3994b0887939a7d8019391 100644
+index 5701f0ccbbc14fe19026bae0a62ba9293a425f00..1ed435f3f82f2bfa0cccf5a5f471054078a718eb 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFile.java
 @@ -27,6 +27,7 @@ import net.minecraft.Util;
@@ -223,7 +223,7 @@ index 46226dd2d16a9f4017661712fe2bfc0c46f63cb2..c22391a0d4b7db49bd3994b0887939a7
              this.padToFullSector();
          } finally {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index 24092d3d3d234b6f1f2b90e22d90f297532358cc..43510774d489bfdd30f10d521e424fa1363b8919 100644
+index d2c5fe601642033b88d8aaa742eadc41ed1fc38a..bf30140190950c62066be255a110c8069d51e468 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -219,6 +219,7 @@ public class RegionFileStorage implements AutoCloseable {
@@ -235,7 +235,7 @@ index 24092d3d3d234b6f1f2b90e22d90f297532358cc..43510774d489bfdd30f10d521e424fa1
              } catch (Throwable throwable) {
                  if (dataoutputstream != null) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 98b2d054b6436e3fdb8fadd03369a65cf4156843..f9c58de7fa8b3c2ab5ac78cf0b366df69e0b40df 100644
+index 1f6a2ef015b8592125aea192c32432a7fea3b5f3..c099b818cf8b67263a0453b9e1ca5afa9af36381 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -20,6 +20,7 @@ import java.util.Objects;

@@ -4,13 +4,13 @@ Date: Mon, 20 Jan 2020 21:38:34 +0100
 Subject: [PATCH] Add Player Client Options API
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/ClientOption.java b/src/main/java/com/destroystokyo/paper/ClientOption.java
+diff --git a/src/main/java/io/papermc/paper/ClientOption.java b/src/main/java/io/papermc/paper/ClientOption.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9dad814cf51bc59ec5dfbf14474fea6557de38aa
+index 0000000000000000000000000000000000000000..c11308e2d48b2ff63911602b82a5f1a17a683461
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/ClientOption.java
++++ b/src/main/java/io/papermc/paper/ClientOption.java
 @@ -0,0 +1,33 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import org.jetbrains.annotations.NotNull;
 +
@@ -43,13 +43,13 @@ index 0000000000000000000000000000000000000000..9dad814cf51bc59ec5dfbf14474fea65
 +        UNKNOWN
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/SkinParts.java b/src/main/java/com/destroystokyo/paper/SkinParts.java
+diff --git a/src/main/java/io/papermc/paper/SkinParts.java b/src/main/java/io/papermc/paper/SkinParts.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4a0c39405d4fbed457787e3c6ded4cc6591bc8c2
+index 0000000000000000000000000000000000000000..ab5f70ce524050bf93169c853611ac9bdd9685f3
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/SkinParts.java
++++ b/src/main/java/io/papermc/paper/SkinParts.java
 @@ -0,0 +1,20 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +public interface SkinParts {
 +
@@ -69,17 +69,17 @@ index 0000000000000000000000000000000000000000..4a0c39405d4fbed457787e3c6ded4cc6
 +
 +    int getRaw();
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerClientOptionsChangeEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerClientOptionsChangeEvent.java
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerClientOptionsChangeEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerClientOptionsChangeEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f7f171c4ee0b8339b2f8fbe82442d65f17202f28
+index 0000000000000000000000000000000000000000..2a6c412f5ddaa224c23a209b5668efb2fdcf88d2
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerClientOptionsChangeEvent.java
++++ b/src/main/java/io/papermc/paper/event/player/PlayerClientOptionsChangeEvent.java
 @@ -0,0 +1,100 @@
-+package com.destroystokyo.paper.event.player;
++package io.papermc.paper.event.player;
 +
-+import com.destroystokyo.paper.ClientOption;
-+import com.destroystokyo.paper.ClientOption.ChatVisibility;
-+import com.destroystokyo.paper.SkinParts;
++import io.papermc.paper.ClientOption;
++import io.papermc.paper.ClientOption.ChatVisibility;
++import io.papermc.paper.SkinParts;
 +
 +import org.jetbrains.annotations.NotNull;
 +
@@ -176,17 +176,17 @@ index 0000000000000000000000000000000000000000..f7f171c4ee0b8339b2f8fbe82442d65f
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 685975e7bb8938ce0b2d80855c4c5549f50b262d..e53f641e11dc74c99e656e985caa7c5943fb53a4 100644
+index 20831a56a42ccbc722f3909330adbb0cbcca0eba..51ea14e13d3bdc2b6ae414c06e53ad832880a912 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -2,6 +2,7 @@ package org.bukkit.entity;
  
  import java.net.InetSocketAddress;
  import java.util.UUID;
-+import com.destroystokyo.paper.ClientOption; // Paper
- import com.destroystokyo.paper.Title; // Paper
++import io.papermc.paper.ClientOption; // Paper
+ import io.papermc.paper.Title; // Paper
  import net.kyori.adventure.text.Component;
- import com.destroystokyo.paper.profile.PlayerProfile; // Paper
+ import io.papermc.paper.profile.PlayerProfile; // Paper
 @@ -1936,6 +1937,12 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * Reset the cooldown counter to 0, effectively starting the cooldown period.
       */

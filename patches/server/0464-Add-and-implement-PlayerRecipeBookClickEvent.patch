@@ -5,7 +5,7 @@ Subject: [PATCH] Add and implement PlayerRecipeBookClickEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 9c71188b1e193b4937eed07ff80c5a61b2db8643..03a98771e828696fef2685fbde040293645a3c17 100644
+index 9ea2973003d35db1cd5fe368a3d8866889f8b4d5..77ae93a690c3974b45f79764bc93642b229067c5 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2777,9 +2777,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -15,7 +15,7 @@ index 9c71188b1e193b4937eed07ff80c5a61b2db8643..03a98771e828696fef2685fbde040293
 -            this.server.getRecipeManager().byKey(packet.getRecipe()).ifPresent((irecipe) -> {
 -                ((RecipeBookMenu) this.player.containerMenu).handlePlacement(packet.isShiftDown(), irecipe, this.player);
 +            // Paper start - fire event for clicking recipes in the recipe book
-+            com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent event = new com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent(
++            io.papermc.paper.event.player.PlayerRecipeBookClickEvent event = new io.papermc.paper.event.player.PlayerRecipeBookClickEvent(
 +                player.getBukkitEntity(), org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(packet.getRecipe()), packet.isShiftDown());
 +            if (event.callEvent()) {
 +                this.server.getRecipeManager().byKey(org.bukkit.craftbukkit.util.CraftNamespacedKey.toMinecraft(event.getRecipe())).ifPresent((irecipe) -> {

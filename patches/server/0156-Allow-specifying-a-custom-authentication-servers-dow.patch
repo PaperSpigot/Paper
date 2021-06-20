@@ -5,12 +5,12 @@ Subject: [PATCH] Allow specifying a custom "authentication servers down" kick
  message
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 48319aaf1c525c6fb7bdee5c2f570a0d056d4eae..52954fc3bf932cfc9d5ce63e3d3cace351305790 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index f01186f8d771ebb9490876e7085c17fcdfc47090..5181c60d667f94d4872506d92cf68360a2f65952 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -1,5 +1,6 @@
- package com.destroystokyo.paper;
+ package io.papermc.paper;
  
 +import com.google.common.base.Strings;
  import com.google.common.base.Throwables;
@@ -27,7 +27,7 @@ index 48319aaf1c525c6fb7bdee5c2f570a0d056d4eae..52954fc3bf932cfc9d5ce63e3d3cace3
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index da563f3dd075d4d0000f13e6b5a88e2b4a9bc871..cc7a4f8a4b351011dfd131b30c4b9386fde84e95 100644
+index b903a19258361036c2a5cfb64f60fa5ddb4ec649..c6ef92ab1a082a9d4338e420e434f3f526757797 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -297,6 +297,10 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener
@@ -35,8 +35,8 @@ index da563f3dd075d4d0000f13e6b5a88e2b4a9bc871..cc7a4f8a4b351011dfd131b30c4b9386
                          ServerLoginPacketListenerImpl.this.state = ServerLoginPacketListenerImpl.State.READY_TO_ACCEPT;
                      } else {
 +                            // Paper start
-+                            if (com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage != null) {
-+                                ServerLoginPacketListenerImpl.this.disconnect(new TextComponent(com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage));
++                            if (io.papermc.paper.PaperConfig.authenticationServersDownKickMessage != null) {
++                                ServerLoginPacketListenerImpl.this.disconnect(new TextComponent(io.papermc.paper.PaperConfig.authenticationServersDownKickMessage));
 +                            } else // Paper end
                          ServerLoginPacketListenerImpl.this.disconnect(new TranslatableComponent("multiplayer.disconnect.authservers_down"));
                          ServerLoginPacketListenerImpl.LOGGER.error("Couldn't verify username because servers are unavailable");

@@ -9,13 +9,13 @@ Add a NetworkClient interface that provides access to:
   - The virtual host (the hostname/port the client used to connect
     to the server)
 
-diff --git a/src/main/java/com/destroystokyo/paper/network/NetworkClient.java b/src/main/java/com/destroystokyo/paper/network/NetworkClient.java
+diff --git a/src/main/java/io/papermc/paper/network/NetworkClient.java b/src/main/java/io/papermc/paper/network/NetworkClient.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7b2af1bd72dfbcf4e962a982940fc49b851aa04f
+index 0000000000000000000000000000000000000000..fa19ad72d61dbaeeb532e8b97dc991d1fecac6fe
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/network/NetworkClient.java
++++ b/src/main/java/io/papermc/paper/network/NetworkClient.java
 @@ -0,0 +1,41 @@
-+package com.destroystokyo.paper.network;
++package io.papermc.paper.network;
 +
 +import java.net.InetSocketAddress;
 +
@@ -57,7 +57,7 @@ index 0000000000000000000000000000000000000000..7b2af1bd72dfbcf4e962a982940fc49b
 +
 +}
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index c4e166311234cbe1e91fa26e74eae1d9fc82f72f..fe0238c0b7c001b69ba6f5f50faf535df59a2351 100644
+index 4dfea61e9a71fdba6e4cba07f29c1f085f6c56e1..8e1e410229485d9290dbae940e7e12432445c2ab 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -35,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
@@ -65,7 +65,7 @@ index c4e166311234cbe1e91fa26e74eae1d9fc82f72f..fe0238c0b7c001b69ba6f5f50faf535d
   * Represents a player, connected or not
   */
 -public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginMessageRecipient, net.kyori.adventure.identity.Identified { // Paper
-+public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginMessageRecipient, net.kyori.adventure.identity.Identified, com.destroystokyo.paper.network.NetworkClient { // Paper
++public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginMessageRecipient, net.kyori.adventure.identity.Identified, io.papermc.paper.network.NetworkClient { // Paper
  
      // Paper start
      @Override

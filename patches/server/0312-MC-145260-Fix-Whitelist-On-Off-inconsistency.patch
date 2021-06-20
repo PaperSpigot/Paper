@@ -11,7 +11,7 @@ everything to the Whitelist object.
 https://github.com/PaperMC/Paper/issues/1880
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 0df68991eb2ef3dabe779f42c2bf44846ac0d862..4ae234a107d16bc71425af5f2729c428f79e3db7 100644
+index db1ed768d1a7e6216102c84b43a22e1b7aa869d6..b7532a6a0d2eb3059cc951b5853ee5347497eeb3 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -62,6 +62,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
@@ -28,9 +28,9 @@ index 0df68991eb2ef3dabe779f42c2bf44846ac0d862..4ae234a107d16bc71425af5f2729c428
          boolean isOp = this.ops.contains(gameprofile);
 -        boolean isWhitelisted = !this.doWhiteList || isOp || this.whitelist.contains(gameprofile);
 +        boolean isWhitelisted = !this.isUsingWhitelist() || isOp || this.whitelist.contains(gameprofile); // Paper - use isUsingWhitelist()
-         final com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent event;
--        event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(net.minecraft.server.MCUtil.toBukkit(gameprofile), this.doWhiteList, isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
-+        event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(net.minecraft.server.MCUtil.toBukkit(gameprofile), this.isUsingWhitelist(), isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage); // Paper - use isUsingWhitelist()
+         final io.papermc.paper.event.profile.ProfileWhitelistVerifyEvent event;
+-        event = new io.papermc.paper.event.profile.ProfileWhitelistVerifyEvent(net.minecraft.server.MCUtil.toBukkit(gameprofile), this.doWhiteList, isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
++        event = new io.papermc.paper.event.profile.ProfileWhitelistVerifyEvent(net.minecraft.server.MCUtil.toBukkit(gameprofile), this.isUsingWhitelist(), isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage); // Paper - use isUsingWhitelist()
          event.callEvent();
          if (!event.isWhitelisted()) {
              if (loginEvent != null) {

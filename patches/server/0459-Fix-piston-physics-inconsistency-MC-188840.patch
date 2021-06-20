@@ -31,10 +31,10 @@ This patch fixes https://bugs.mojang.com/browse/MC-188840
 
 This patch also fixes rail duping and carpet duping.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 7f140333c2e62012fa572c1a061d84432426997f..b67ba8f75e4a3358d7c2462918b85b0bf9b5a922 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 14c5b667fc181285d13cb56d1a860ce2db4f5013..dc0ce41de540ddcb407b53f83c1c294f31a42333 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -434,4 +434,10 @@ public class PaperConfig {
          consoleHasAllPermissions = getBoolean("settings.console-has-all-permissions", consoleHasAllPermissions);
      }
@@ -47,7 +47,7 @@ index 7f140333c2e62012fa572c1a061d84432426997f..b67ba8f75e4a3358d7c2462918b85b0b
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
-index 4eac07022a7d896ee8921afa6d35cba7f0c89941..dd50a29d47a62df8cdfd69358218d1559b6794ef 100644
+index a94a21bbf88f84112ee54e8bb6a0ed842a5f8fef..1d1d7f40e8bb6df8b974dfa4c2485e1b8d85d8bc 100644
 --- a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 +++ b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
 @@ -411,14 +411,26 @@ public class PistonBaseBlock extends DirectionalBlock {
@@ -57,7 +57,7 @@ index 4eac07022a7d896ee8921afa6d35cba7f0c89941..dd50a29d47a62df8cdfd69358218d155
 -                blockposition3 = (BlockPos) list.get(k);
 -                iblockdata1 = world.getBlockState(blockposition3);
 +                // Paper start - fix a variety of piston desync dupes
-+                boolean allowDesync = com.destroystokyo.paper.PaperConfig.allowPistonDuplication;
++                boolean allowDesync = io.papermc.paper.PaperConfig.allowPistonDuplication;
 +                BlockPos oldPos = blockposition3 = (BlockPos) list.get(k);
 +                iblockdata1 = allowDesync ? world.getBlockState(oldPos) : null;
 +                // Paper end - fix a variety of piston desync dupes
@@ -81,7 +81,7 @@ index 4eac07022a7d896ee8921afa6d35cba7f0c89941..dd50a29d47a62df8cdfd69358218d155
              }
  
 diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java b/src/main/java/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
-index 9b631698d1c736f61e07a5a1253127f4081dc90d..87bedba9ab495edcce289c6665271d92b7165944 100644
+index 9b631698d1c736f61e07a5a1253127f4081dc90d..ee7a9d40e09a13682d1e21e2863e81f4bed063f0 100644
 --- a/src/main/java/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 +++ b/src/main/java/net/minecraft/world/level/block/piston/PistonMovingBlockEntity.java
 @@ -281,7 +281,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
@@ -89,7 +89,7 @@ index 9b631698d1c736f61e07a5a1253127f4081dc90d..87bedba9ab495edcce289c6665271d92
                      BlockState blockState = Block.updateFromNeighbourShapes(blockEntity.movedState, world, pos);
                      if (blockState.isAir()) {
 -                        world.setBlock(pos, blockEntity.movedState, 84);
-+                        world.setBlock(pos, blockEntity.movedState, com.destroystokyo.paper.PaperConfig.allowPistonDuplication ? 84 : (84 | 2)); // Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
++                        world.setBlock(pos, blockEntity.movedState, io.papermc.paper.PaperConfig.allowPistonDuplication ? 84 : (84 | 2)); // Paper - force notify (flag 2), it's possible the set type by the piston block (which doesn't notify) set this block to air
                          Block.updateOrDestroy(blockEntity.movedState, blockState, world, pos, 3);
                      } else {
                          if (blockState.hasProperty(BlockStateProperties.WATERLOGGED) && blockState.getValue(BlockStateProperties.WATERLOGGED)) {

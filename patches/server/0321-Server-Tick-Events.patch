@@ -6,14 +6,14 @@ Subject: [PATCH] Server Tick Events
 Fires event at start and end of a server tick
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index dfbdc5ead05821ebf4c08d6e829a9ce925061e1a..d7ab2d4a470fed4b13bad6cf5811a7ce36e748cc 100644
+index dded3da6d2efd963aad333c7416c51cccd56a324..d1525bcf94d6782606045cf3699aaad9e69d8659 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1310,6 +1310,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          });
          isOversleep = false;MinecraftTimings.serverOversleep.stopTiming();
          // Paper end
-+        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.tickCount+1).callEvent(); // Paper
++        new io.papermc.paper.event.server.ServerTickStartEvent(this.tickCount+1).callEvent(); // Paper
  
          ++this.tickCount;
          this.tickChildren(shouldKeepTicking);
@@ -24,7 +24,7 @@ index dfbdc5ead05821ebf4c08d6e829a9ce925061e1a..d7ab2d4a470fed4b13bad6cf5811a7ce
 +        // Paper start
 +        long endTime = System.nanoTime();
 +        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
-+        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.tickCount, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
++        new io.papermc.paper.event.server.ServerTickEndEvent(this.tickCount, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
 +        // Paper end
 +
          this.profiler.push("tallying");

@@ -9,7 +9,7 @@ This is a duplicate API from spigot, so use our duplicate subclass and
 improve setPosition to use raw
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 446dd8c15d4ccdced316deeaba379cb6937496ca..8e9d0ca8aa2b1403fc65ed8d792525047a610a3a 100644
+index bf9340e64149b4ee401afa971999eeed6985261d..9cc66477a56aae802a0ce17c0d7768b190885780 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -213,7 +213,7 @@ public abstract class PlayerList {
@@ -17,7 +17,7 @@ index 446dd8c15d4ccdced316deeaba379cb6937496ca..8e9d0ca8aa2b1403fc65ed8d79252504
          // Spigot start - spawn location event
          Player bukkitPlayer = player.getBukkitEntity();
 -        org.spigotmc.event.player.PlayerSpawnLocationEvent ev = new org.spigotmc.event.player.PlayerSpawnLocationEvent(bukkitPlayer, bukkitPlayer.getLocation());
-+        org.spigotmc.event.player.PlayerSpawnLocationEvent ev = new com.destroystokyo.paper.event.player.PlayerInitialSpawnEvent(bukkitPlayer, bukkitPlayer.getLocation()); // Paper use our duplicate event
++        org.spigotmc.event.player.PlayerSpawnLocationEvent ev = new io.papermc.paper.event.player.PlayerInitialSpawnEvent(bukkitPlayer, bukkitPlayer.getLocation()); // Paper use our duplicate event
          this.cserver.getPluginManager().callEvent(ev);
  
          Location loc = ev.getSpawnLocation();

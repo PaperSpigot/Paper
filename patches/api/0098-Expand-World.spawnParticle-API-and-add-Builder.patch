@@ -8,13 +8,13 @@ the standard API is to send the packet to everyone in the world, which is ineffe
 
 This adds a new Builder API which is much friendlier to use.
 
-diff --git a/src/main/java/com/destroystokyo/paper/ParticleBuilder.java b/src/main/java/com/destroystokyo/paper/ParticleBuilder.java
+diff --git a/src/main/java/io/papermc/paper/ParticleBuilder.java b/src/main/java/io/papermc/paper/ParticleBuilder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..06f1602f5b327705f726d0a99dd6b95e1554d382
+index 0000000000000000000000000000000000000000..0043d31fa1c4522a180554779f3225374275d80b
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/ParticleBuilder.java
++++ b/src/main/java/io/papermc/paper/ParticleBuilder.java
 @@ -0,0 +1,478 @@
-+package com.destroystokyo.paper;
++package io.papermc.paper;
 +
 +import com.google.common.collect.Lists;
 +import org.bukkit.Color;
@@ -493,7 +493,7 @@ index 0000000000000000000000000000000000000000..06f1602f5b327705f726d0a99dd6b95e
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/Particle.java b/src/main/java/org/bukkit/Particle.java
-index c5315ee1ed435c39a3ae298e248b67c5dc291497..687a62707c8021f87e03d6bc358b3b4e6da331e7 100644
+index c5315ee1ed435c39a3ae298e248b67c5dc291497..b067675c7db39bdb26a85aba44c7e7f528e9045b 100644
 --- a/src/main/java/org/bukkit/Particle.java
 +++ b/src/main/java/org/bukkit/Particle.java
 @@ -123,6 +123,17 @@ public enum Particle {
@@ -502,13 +502,13 @@ index c5315ee1ed435c39a3ae298e248b67c5dc291497..687a62707c8021f87e03d6bc358b3b4e
  
 +    // Paper start - Particle API expansion
 +    /**
-+     * Creates a {@link com.destroystokyo.paper.ParticleBuilder}
++     * Creates a {@link io.papermc.paper.ParticleBuilder}
 +     *
-+     * @return a {@link com.destroystokyo.paper.ParticleBuilder} for the particle
++     * @return a {@link io.papermc.paper.ParticleBuilder} for the particle
 +     */
 +    @NotNull
-+    public com.destroystokyo.paper.ParticleBuilder builder() {
-+        return new com.destroystokyo.paper.ParticleBuilder(this);
++    public io.papermc.paper.ParticleBuilder builder() {
++        return new io.papermc.paper.ParticleBuilder(this);
 +    }
 +    // Paper end
      /**

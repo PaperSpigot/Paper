@@ -4,10 +4,10 @@ Date: Sun, 11 Sep 2016 14:30:57 -0500
 Subject: [PATCH] Configurable packet in spam threshold
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index c52dc0346f93527965ef29a0ccdc4bf3debe302e..64d7c9058ee757a6d3cf3b648596092a810e105c 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index b94793fc90496b23bb13e9b124455d8a6ae5a000..5a3c69ee3febd00d19576643453d032254abd169 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -252,4 +252,13 @@ public class PaperConfig {
      public static boolean isProxyOnlineMode() {
          return Bukkit.getOnlineMode() || (SpigotConfig.bungee && bungeeOnlineMode);
@@ -23,14 +23,14 @@ index c52dc0346f93527965ef29a0ccdc4bf3debe302e..64d7c9058ee757a6d3cf3b648596092a
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 8e751e9821dc76f33e9e844990c701f69c817c4b..13077dcc0ce4e7cfa8146ee71db4c2cce9e36f4a 100644
+index cbad2b4426f39ae0c4087304cf5b80b3ea81717f..ff71dc83a47c501d4987b8d32ecd14b0a5368a88 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1496,13 +1496,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
      // Spigot start - limit place/interactions
      private int limitedPackets;
      private long lastLimitedPacket = -1;
-+    private static final int THRESHOLD = com.destroystokyo.paper.PaperConfig.packetInSpamThreshold; // Paper - Configurable threshold
++    private static final int THRESHOLD = io.papermc.paper.PaperConfig.packetInSpamThreshold; // Paper - Configurable threshold
  
      private boolean checkLimit(long timestamp) {
 -        if (this.lastLimitedPacket != -1 && timestamp - this.lastLimitedPacket < 30 && this.limitedPackets++ >= 4) {

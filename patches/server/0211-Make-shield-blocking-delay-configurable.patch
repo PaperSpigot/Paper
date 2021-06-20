@@ -4,10 +4,10 @@ Date: Sat, 16 Jun 2018 01:18:16 -0500
 Subject: [PATCH] Make shield blocking delay configurable
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index a0a846a2e60bdc17537bd697137f65321c1a61d8..e1110274a9f6b8f7007537732ec8eff7e72040ee 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 1ca632100bc839fa129e8464e674a9d3bdab9cf7..6a72244f7603ea758368b82a6bc7b350b3553c87 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -363,4 +363,9 @@ public class PaperWorldConfig {
          disableEnderpearlExploit = getBoolean("game-mechanics.disable-unloaded-chunk-enderpearl-exploit", disableEnderpearlExploit);
          log("Disable Unloaded Chunk Enderpearl Exploit: " + (disableEnderpearlExploit ? "enabled" : "disabled"));
@@ -19,7 +19,7 @@ index a0a846a2e60bdc17537bd697137f65321c1a61d8..e1110274a9f6b8f7007537732ec8eff7
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 0dc03f53c80aac91a914bea91958a6c11c4f2061..08c29388621bf460e1704f6edba59d08a12e75d0 100644
+index 1e56c13fbf460c5bd4a28e20c0f9f0af4affb040..7d997bd030e5a6235b5f3eb466aa5fe9a969d435 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -3665,12 +3665,24 @@ public abstract class LivingEntity extends Entity {

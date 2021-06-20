@@ -40,10 +40,10 @@ This is to ensure that if main isn't truely stuck, it's not manipulating state w
 This also moves all plugins who register "delayed init" tasks to occur just before "Done" so they
 are properly accounted for and wont trip watchdog on init.
 
-diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index e3b74dbdf8e14219a56fab939f3174e0c2f66de6..218f5bafeed8551b55b91c7fccaf6935c8b631ca 100644
---- a/src/main/java/com/destroystokyo/paper/Metrics.java
-+++ b/src/main/java/com/destroystokyo/paper/Metrics.java
+diff --git a/src/main/java/io/papermc/paper/Metrics.java b/src/main/java/io/papermc/paper/Metrics.java
+index 2481a2c28ab279a6da0c6f9c2410613cef27123f..ac1fed340067d7c556e678695326e73b9778eae9 100644
+--- a/src/main/java/io/papermc/paper/Metrics.java
++++ b/src/main/java/io/papermc/paper/Metrics.java
 @@ -92,7 +92,12 @@ public class Metrics {
       * Starts the Scheduler which submits our data every 30 minutes.
       */
@@ -59,19 +59,19 @@ index e3b74dbdf8e14219a56fab939f3174e0c2f66de6..218f5bafeed8551b55b91c7fccaf6935
          // Many servers tend to restart at a fixed time at xx:00 which causes an uneven distribution of requests on the
          // bStats backend. To circumvent this problem, we introduce some randomness into the initial and second delay.
 diff --git a/src/main/java/net/minecraft/CrashReport.java b/src/main/java/net/minecraft/CrashReport.java
-index bda7137b3435c9b7610be258cefb6b4ac2c1d47a..09f56e49383d3f5413ad4c28f3a7664e4d9570bd 100644
+index bda7137b3435c9b7610be258cefb6b4ac2c1d47a..6539ec70abc74811f770f4cf459c3914546c2e01 100644
 --- a/src/main/java/net/minecraft/CrashReport.java
 +++ b/src/main/java/net/minecraft/CrashReport.java
 @@ -231,6 +231,7 @@ public class CrashReport {
      }
  
      public static CrashReport forThrowable(Throwable cause, String title) {
-+        if (cause instanceof ThreadDeath) com.destroystokyo.paper.util.SneakyThrow.sneaky(cause); // Paper
++        if (cause instanceof ThreadDeath) io.papermc.paper.util.SneakyThrow.sneaky(cause); // Paper
          while (cause instanceof CompletionException && cause.getCause() != null) {
              cause = cause.getCause();
          }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 44ad235710dce2b159f891d91b7a0d71e5553507..eb82dd9db7fef4b1f0f764ce153439c69c64168b 100644
+index 5cc7af5c76fc60bc17757016e56cd248767257c8..756ec85c0684b1da4b8436c2106377a1e231c8cf 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -301,7 +301,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -127,7 +127,7 @@ index 44ad235710dce2b159f891d91b7a0d71e5553507..eb82dd9db7fef4b1f0f764ce153439c6
          // Spigot end
 +        // Paper start - move final shutdown items here
 +        LOGGER.info("Flushing Chunk IO");
-         com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.close(true, true); // Paper
+         io.papermc.paper.io.PaperFileIOThread.Holder.INSTANCE.close(true, true); // Paper
 +        LOGGER.info("Closing Thread Pool");
 +        Util.shutdownExecutors(); // Paper
 +        LOGGER.info("Closing Server");
@@ -230,7 +230,7 @@ index 44ad235710dce2b159f891d91b7a0d71e5553507..eb82dd9db7fef4b1f0f764ce153439c6
              this.functionManager.replaceLibrary(this.resources.getFunctionLibrary());
              this.structureManager.onResourceManagerReload(this.resources.getResourceManager());
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 0511f1921193b78cbf4d8426136bf1f79746f955..e5f7f043cbdb28d85b8aa0eea7cbaeb584e5fb85 100644
+index b0e6e9bc19100cdf5a98e183dd7f41e110a82340..9f47858afa756e69a512181bb701f5c4c49a43b3 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -283,7 +283,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
@@ -262,7 +262,7 @@ index 0511f1921193b78cbf4d8426136bf1f79746f955..e5f7f043cbdb28d85b8aa0eea7cbaeb5
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 0aef7208937a4d35212186418beff1daf38c7a96..7aac9509849b9fb8d640437487fbfa0085b76613 100644
+index a945ae9d0db38ef96a8f87458ae80c9deae7bfd0..9acd250ae861e3270f82396f3bd387f8da576822 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -611,6 +611,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -274,7 +274,7 @@ index 0aef7208937a4d35212186418beff1daf38c7a96..7aac9509849b9fb8d640437487fbfa00
                  list.stream().map((playerchunk) -> {
                      CompletableFuture completablefuture;
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 18485689bcbf7818c3ca5b82086acef51888603b..3431d28fd69c634ee0a941796308b88bb51bdaac 100644
+index 2eb08244b1dbc82da6df9493ed7fec4e27449e07..95f9c772b2d02f0ac7612926cbc709933edde058 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -505,7 +505,7 @@ public abstract class PlayerList {
@@ -299,7 +299,7 @@ index 7bf4bf5cb2c1b54a7e2733091f48f3a824336d36..dcce05d2f4ab16424db4ab103a12188e
          }
  
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index af1cee79e27667b78413760286f517c91d1517cb..c84070d05d325a8f49c3918cc112087b9c1074e9 100644
+index db45f334010a1a088c1b70a5e0d65bb9d2a85c5e..c5a696ea71f0c8a6811814d0182f57fb95c66f00 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -843,6 +843,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
@@ -311,7 +311,7 @@ index af1cee79e27667b78413760286f517c91d1517cb..c84070d05d325a8f49c3918cc112087b
              String msg = "Entity threw exception at " + entity.level.getWorld().getName() + ":" + entity.getX() + "," + entity.getY() + "," + entity.getZ();
              System.err.println(msg);
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index e19f5d5d58a8b2e4f35907e1c88224cac7f20e57..61c70e17401ec85c0a7e6e1793f6689506b8059a 100644
+index 48c1b0f5b7f6f4df7945780b4ff2c1d0d25e563d..4ad9fabb5544268f8ef843afc495a016d9a64fde 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -1319,6 +1319,7 @@ public class LevelChunk implements ChunkAccess {
@@ -323,7 +323,7 @@ index e19f5d5d58a8b2e4f35907e1c88224cac7f20e57..61c70e17401ec85c0a7e6e1793f66895
                          String msg = "TileEntity threw exception at " + LevelChunk.this.getLevel().getWorld().getName() + ":" + this.getPos().getX() + "," + this.getPos().getY() + "," + this.getPos().getZ();
                          System.err.println(msg);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 2c8c800f04793493515782722d706db6e5f861af..e31a05dfe7e934692ac89c7cedcab736bcd9ca4f 100644
+index b5e4fa36bc37c4298756c4878571995276e71685..4b0e381c8e330c3189acbd57dbde725cf8efb31d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1839,7 +1839,7 @@ public final class CraftServer implements Server {
@@ -336,7 +336,7 @@ index 2c8c800f04793493515782722d706db6e5f861af..e31a05dfe7e934692ac89c7cedcab736
  
      // Paper start
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 3f219234355edc961f07ae1a75759b6e44ddcfdf..15d6975e6470e1affad9adc73964a720a3de36e9 100644
+index 3f219234355edc961f07ae1a75759b6e44ddcfdf..6438bd2a61facc2ac230d15bb848461fcb7b355b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -12,6 +12,8 @@ import java.util.logging.Level;
@@ -353,7 +353,7 @@ index 3f219234355edc961f07ae1a75759b6e44ddcfdf..15d6975e6470e1affad9adc73964a720
          OptionSet options = null;
  
 +        // Paper start - preload logger classes to avoid plugins mixing versions
-+        tryPreloadClass("com.destroystokyo.paper.log.LogFullPolicy");
++        tryPreloadClass("io.papermc.paper.log.LogFullPolicy");
 +        tryPreloadClass("org.apache.logging.log4j.core.Core");
 +        tryPreloadClass("org.apache.logging.log4j.core.Appender");
 +        tryPreloadClass("org.apache.logging.log4j.core.ContextDataInjector");
@@ -392,7 +392,7 @@ index 3f219234355edc961f07ae1a75759b6e44ddcfdf..15d6975e6470e1affad9adc73964a720
 +            // Paper start
 +            // load some required classes to avoid errors during shutdown if jar is replaced
 +            // also to guarantee our version loads over plugins
-+            tryPreloadClass("com.destroystokyo.paper.util.SneakyThrow");
++            tryPreloadClass("io.papermc.paper.util.SneakyThrow");
 +            tryPreloadClass("com.google.common.collect.Iterators$PeekingImpl");
 +            tryPreloadClass("com.google.common.collect.MapMakerInternalMap$Values");
 +            tryPreloadClass("com.google.common.collect.MapMakerInternalMap$ValueIterator");
@@ -425,8 +425,8 @@ index 3f219234355edc961f07ae1a75759b6e44ddcfdf..15d6975e6470e1affad9adc73964a720
 +            tryPreloadClass("org.slf4j.helpers.FormattingTuple");
 +            tryPreloadClass("org.slf4j.helpers.BasicMarker");
 +            tryPreloadClass("org.slf4j.helpers.Util");
-+            tryPreloadClass("com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent");
-+            tryPreloadClass("com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent");
++            tryPreloadClass("io.papermc.paper.event.player.PlayerConnectionCloseEvent");
++            tryPreloadClass("io.papermc.paper.event.entity.EntityRemoveFromWorldEvent");
 +            // Minecraft, seen during saving
 +            tryPreloadClass(LayerLightEventListener.DummyLightLayerEventListener.class.getName());
 +            tryPreloadClass(LayerLightEventListener.class.getName());
@@ -497,7 +497,7 @@ index a142a56a920e153ed84c08cece993f10d76f7793..92d97a5810a379b427a99b4c63fb9844
          String[] split = restartScript.split( " " );
          if ( split.length > 0 && new File( split[0] ).isFile() )
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 1ffb208094f521883ef0e23baf5fb29380b14273..4d271cae88c16ed2419f896c728fdff612540500 100644
+index 60544038c01879c240864ed98ad17578205eef26..22b0a94638c6efa7476c26039d4f7b8e2a1741d5 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
 @@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
@@ -536,7 +536,7 @@ index 1ffb208094f521883ef0e23baf5fb29380b14273..4d271cae88c16ed2419f896c728fdff6
 @@ -118,7 +121,7 @@ public class WatchdogThread extends Thread
                  log.log( Level.SEVERE, "------------------------------" );
                  log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):" ); // Paper
-                 com.destroystokyo.paper.io.chunk.ChunkTaskManager.dumpAllChunkLoadInfo(); // Paper
+                 io.papermc.paper.io.chunk.ChunkTaskManager.dumpAllChunkLoadInfo(); // Paper
 -                WatchdogThread.dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( MinecraftServer.getServer().serverThread.getId(), Integer.MAX_VALUE ), log );
 +                WatchdogThread.dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( server.serverThread.getId(), Integer.MAX_VALUE ), log );
                  log.log( Level.SEVERE, "------------------------------" );

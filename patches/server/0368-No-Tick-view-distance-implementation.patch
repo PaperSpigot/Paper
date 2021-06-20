@@ -22,10 +22,10 @@ index f27fadc15cb7f5c782e45885ec6a5a69963beade..2ff4d4921e2076abf415bd3c8f5173ec
              ));
          }));
  
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index b8ca1f73b2451307c3711076eaa43e2adb34d92e..45e30c0d78b7625a6a55e6d7d60a823b674b75db 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index ea07ed679c7d11facd137175b2449ef74ec869b9..ab0817fc3fd20c35b61bf15bc9b7b47dab75ad82 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -487,6 +487,11 @@ public class PaperWorldConfig {
          lightQueueSize = getInt("light-queue-size", lightQueueSize);
      }
@@ -39,7 +39,7 @@ index b8ca1f73b2451307c3711076eaa43e2adb34d92e..45e30c0d78b7625a6a55e6d7d60a823b
      public EngineMode engineMode;
      public int maxBlockHeight;
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 5c1421620e02b7d4ab4171ebff41076c7ee8cd55..4bc418f45c6f16a9a1c78b6688625268870a96ad 100644
+index 87931c641568c385241d04003e09fc9f996b25c8..5707cb9199d00f2a81d39f4926d461dab67ffeb7 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
 @@ -636,7 +636,8 @@ public final class MCUtil {
@@ -53,7 +53,7 @@ index 5c1421620e02b7d4ab4171ebff41076c7ee8cd55..4bc418f45c6f16a9a1c78b6688625268
              worldData.addProperty("keep-spawn-loaded-range", world.paperConfig.keepLoadedRange);
              worldData.addProperty("visible-chunk-count", visibleChunks.size());
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index a066ac00ad3274a7c70edbb9cc442dc9be78a3bb..edf0432967c4621e101611924c4ce826f54e3e34 100644
+index a066ac00ad3274a7c70edbb9cc442dc9be78a3bb..3d97a4a13b68147264038f9bc842856d67ef5b39 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 @@ -75,6 +75,17 @@ public class ChunkHolder {
@@ -102,8 +102,8 @@ index a066ac00ad3274a7c70edbb9cc442dc9be78a3bb..edf0432967c4621e101611924c4ce826
 +        // Paper start - per player view distance
 +        // there can be potential desync with player's last mapped section and the view distance map, so use the
 +        // view distance map here.
-+        com.destroystokyo.paper.util.misc.PlayerAreaMap viewDistanceMap = this.chunkMap.playerViewDistanceBroadcastMap;
-+        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> players = viewDistanceMap.getObjectsInRange(this.pos);
++        io.papermc.paper.util.misc.PlayerAreaMap viewDistanceMap = this.chunkMap.playerViewDistanceBroadcastMap;
++        io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> players = viewDistanceMap.getObjectsInRange(this.pos);
 +        if (players == null) {
 +            return;
 +        }
@@ -145,7 +145,7 @@ index a066ac00ad3274a7c70edbb9cc442dc9be78a3bb..edf0432967c4621e101611924c4ce826
  
      public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> getOrScheduleFuture(ChunkStatus targetStatus, ChunkMap chunkStorage) {
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f9dcddb2c 100644
+index c7a23a7a03b3f3d4cba5a3d1e63ca4f1f622d8f0..2a874e14a64f99938ceb4e19480f304915f81bf7 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -127,7 +127,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -160,7 +160,7 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
 @@ -169,21 +169,68 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
  
      // Paper start - distance maps
-     private final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
+     private final io.papermc.paper.util.misc.PooledLinkedHashSets<ServerPlayer> pooledLinkedPlayerHashSets = new io.papermc.paper.util.misc.PooledLinkedHashSets<>();
 +    // Paper start - no-tick view distance
 +    int noTickViewDistance;
 +    public final int getRawNoTickViewDistance() {
@@ -173,9 +173,9 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
 +        return Math.max(this.getEffectiveViewDistance(), this.getEffectiveNoTickViewDistance());
 +    }
 +
-+    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerViewDistanceBroadcastMap;
-+    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerViewDistanceTickMap;
-+    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerViewDistanceNoTickMap;
++    public final io.papermc.paper.util.misc.PlayerAreaMap playerViewDistanceBroadcastMap;
++    public final io.papermc.paper.util.misc.PlayerAreaMap playerViewDistanceTickMap;
++    public final io.papermc.paper.util.misc.PlayerAreaMap playerViewDistanceNoTickMap;
 +    // Paper end - no-tick view distance
  
      void addPlayerToDistanceMaps(ServerPlayer player) {
@@ -232,9 +232,9 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
          this.setViewDistance(viewDistance);
 +        // Paper start - no-tick view distance
 +        this.setNoTickViewDistance(this.level.paperConfig.noTickViewDistance);
-+        this.playerViewDistanceTickMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
++        this.playerViewDistanceTickMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
 +            (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
-+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
++             io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
 +                if (newState.size() != 1) {
 +                    return;
 +                }
@@ -247,17 +247,17 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
 +                ChunkMap.this.level.getChunkSource().addTicketAtLevel(TicketType.PLAYER, chunkPos, 31, chunkPos); // entity ticking level, TODO check on update
 +            },
 +            (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
-+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
++             io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
 +                if (newState != null) {
 +                    return;
 +                }
 +                ChunkPos chunkPos = new ChunkPos(rangeX, rangeZ);
 +                ChunkMap.this.level.getChunkSource().removeTicketAtLevel(TicketType.PLAYER, chunkPos, 31, chunkPos); // entity ticking level, TODO check on update
 +            });
-+        this.playerViewDistanceNoTickMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets);
-+        this.playerViewDistanceBroadcastMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
++        this.playerViewDistanceNoTickMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets);
++        this.playerViewDistanceBroadcastMap = new io.papermc.paper.util.misc.PlayerAreaMap(this.pooledLinkedPlayerHashSets,
 +            (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
-+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
++             io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
 +                if (player.needsChunkCenterUpdate) {
 +                    player.needsChunkCenterUpdate = false;
 +                    player.connection.send(new ClientboundSetChunkCacheCenterPacket(currPosX, currPosZ));
@@ -265,7 +265,7 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
 +                ChunkMap.this.updateChunkTracking(player, new ChunkPos(rangeX, rangeZ), new Packet[2], false, true); // unloaded, loaded
 +            },
 +            (ServerPlayer player, int rangeX, int rangeZ, int currPosX, int currPosZ, int prevPosX, int prevPosZ,
-+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
++             io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newState) -> {
 +                ChunkMap.this.updateChunkTracking(player, new ChunkPos(rangeX, rangeZ), null, true, false); // unloaded, loaded
 +            });
 +        // Paper end - no-tick view distance
@@ -407,7 +407,7 @@ index 06e581bc0c0ea4e8141f7b9610cc5a7ef350c287..5bcb9613beb5cd650c670de73e946f1f
 +        // Paper start - per player view distance
 +        // there can be potential desync with player's last mapped section and the view distance map, so use the
 +        // view distance map here.
-+        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> inRange = this.playerViewDistanceBroadcastMap.getObjectsInRange(chunkPos);
++        io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> inRange = this.playerViewDistanceBroadcastMap.getObjectsInRange(chunkPos);
 +
 +        if (inRange == null) {
 +            return Stream.empty();
@@ -520,19 +520,19 @@ index 45c7ebe67019cdbe88b6617a95d5c40d3a68286c..38eebda226e007c8910e04f502ce218c
                  if (withinViewDistance) {
                      DistanceManager.this.ticketThrottlerInput.tell(ChunkTaskPriorityQueueSorter.message(() -> {
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 2a493097cba7bde598eafcd2986c4ab0fd20b4e6..be01191507ff677de586355abbae27d30de5a837 100644
+index b1ed952f32b30e1ee0b70266f36c55525944813f..61cc67851aef9d87792cb4ab54f1e5853c8b93f6 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -241,6 +241,7 @@ public class ServerPlayer extends Player {
      public PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper
  
-     public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
+     public final io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> cachedSingleHashSet; // Paper
 +    boolean needsChunkCenterUpdate; // Paper - no-tick view distance
  
      public ServerPlayer(MinecraftServer server, ServerLevel world, GameProfile profile) {
          super(world, world.getSharedSpawnPos(), world.getSharedSpawnAngle(), profile);
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index bcc946d2747443c34ee8ac2485a5ab41773c93af..2730923bd0bf3b0f928765b9e09e2299fa9a393d 100644
+index 02f36aa9c718569c9ab82efe5b0eceee3098d9d9..c65f48deccc1b33524344a0d37bc95b78966bd2d 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -241,7 +241,7 @@ public abstract class PlayerList {
@@ -563,7 +563,7 @@ index bcc946d2747443c34ee8ac2485a5ab41773c93af..2730923bd0bf3b0f928765b9e09e2299
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 83673e66aab4988e912d78fb8d1a45f807e38bd9..d58a7adb58abc91f66fc893ee7a7a7bded3619a8 100644
+index 0550091da93a8415b17f67bc5062816af8402651..19ce26843b9118b0c1733c5ccba512c7169195d6 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -527,8 +527,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
@@ -582,7 +582,7 @@ index 83673e66aab4988e912d78fb8d1a45f807e38bd9..d58a7adb58abc91f66fc893ee7a7a7bd
  
              if ((i & 1) != 0) {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index fbb82d344f654b90809582916442c520f344aa39..750895bed591c9f15cd2ea2d8f0611864782c912 100644
+index 648634e5b0e1a7190e67d22f7f1c89ede50c2251..d7fd346a7d5f83cdb23f2a82be44f210646d8f21 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -33,7 +33,10 @@ import net.minecraft.core.Registry;
@@ -625,7 +625,7 @@ index fbb82d344f654b90809582916442c520f344aa39..750895bed591c9f15cd2ea2d8f061186
 +                    if (!LevelChunk.this.areNeighboursLoaded(1)) {
 +                        return;
 +                    }
-+                    com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<net.minecraft.server.level.ServerPlayer> inRange = chunkMap.playerViewDistanceBroadcastMap.getObjectsInRange(LevelChunk.this.coordinateKey);
++                    io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<net.minecraft.server.level.ServerPlayer> inRange = chunkMap.playerViewDistanceBroadcastMap.getObjectsInRange(LevelChunk.this.coordinateKey);
 +                    if (inRange == null) {
 +                        return;
 +                    }
@@ -658,7 +658,7 @@ index fbb82d344f654b90809582916442c520f344aa39..750895bed591c9f15cd2ea2d8f061186
  
                  this.postProcessing[i].clear();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 053878ce00b77367b403a8c52f0d81f485022c59..b6134895d1b04d3ea7340e77f70efa23cff8b568 100644
+index b82456778f69c8f13cc74d2e71c4700d9f2e7751..3d15cf5b2d9bde635c0a24868d10641ba6cff29c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -2541,10 +2541,39 @@ public class CraftWorld implements World {

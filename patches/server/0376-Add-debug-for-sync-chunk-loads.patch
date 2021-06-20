@@ -9,14 +9,14 @@ chunks, however it must be enabled by setting the startup flag
 
 To get a debug log for sync loads, the command is /paper syncloadinfo
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index 7b5afc5d34b78e6404c1a5c6bb823d9589471f13..de45163023f436d386e90e6ded5e6105ba3ecf35 100644
---- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
+diff --git a/src/main/java/io/papermc/paper/PaperCommand.java b/src/main/java/io/papermc/paper/PaperCommand.java
+index 03dee3763802ead5c76da6b37d00ebefeda53677..8c17886662950526bfe8fcd5c8895d2cb43d9728 100644
+--- a/src/main/java/io/papermc/paper/PaperCommand.java
++++ b/src/main/java/io/papermc/paper/PaperCommand.java
 @@ -1,11 +1,17 @@
- package com.destroystokyo.paper;
+ package io.papermc.paper;
  
-+import com.destroystokyo.paper.io.SyncLoadFinder;
++import io.papermc.paper.io.SyncLoadFinder;
  import com.google.common.base.Functions;
  import com.google.common.base.Joiner;
  import com.google.common.collect.ImmutableSet;
@@ -101,13 +101,13 @@ index 7b5afc5d34b78e6404c1a5c6bb823d9589471f13..de45163023f436d386e90e6ded5e6105
      private void doChunkInfo(CommandSender sender, String[] args) {
          List<org.bukkit.World> worlds;
          if (args.length < 2 || args[1].equals("*")) {
-diff --git a/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
+diff --git a/src/main/java/io/papermc/paper/io/SyncLoadFinder.java b/src/main/java/io/papermc/paper/io/SyncLoadFinder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..524f33371b9de1d4dd6972fe59ffbe1804d7c5f3
+index 0000000000000000000000000000000000000000..19255426a09839fb439dc795515d411c08e92692
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/io/SyncLoadFinder.java
++++ b/src/main/java/io/papermc/paper/io/SyncLoadFinder.java
 @@ -0,0 +1,171 @@
-+package com.destroystokyo.paper.io;
++package io.papermc.paper.io;
 +
 +import com.google.gson.JsonArray;
 +import com.google.gson.JsonObject;
@@ -279,24 +279,24 @@ index 0000000000000000000000000000000000000000..524f33371b9de1d4dd6972fe59ffbe18
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index c849ded5448112289a3c37f05dc49fadbf619f81..77f88e081991e85d03540e30b9def5dac9ad59be 100644
+index a1c10a6e8cf4c99896a8be8edd9441cc8122423a..3fd2126d968c2bd48c427b7a70dd08f17b1326df 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -483,6 +483,7 @@ public class ServerChunkCache extends ChunkSource {
-                 this.level.asyncChunkTaskManager.raisePriority(x1, z1, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
-                 com.destroystokyo.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
+                 this.level.asyncChunkTaskManager.raisePriority(x1, z1, io.papermc.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
+                 io.papermc.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.level, x1, z1);
                  // Paper end
-+                com.destroystokyo.paper.io.SyncLoadFinder.logSyncLoad(this.level, x1, z1); // Paper - sync load info
++                io.papermc.paper.io.SyncLoadFinder.logSyncLoad(this.level, x1, z1); // Paper - sync load info
                  this.level.timings.syncChunkLoad.startTiming(); // Paper
              chunkproviderserver_a.managedBlock(completablefuture::isDone);
-                 com.destroystokyo.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
+                 io.papermc.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index fcf5c7b28e927db977ad5b851edaf68e59de8d5b..87a18dcbfbb55410f04e99e84958f22f21193066 100644
+index 3d6dfa5b11b69c932f5e3d210c767dc19dd6be60..683ac7066ad51376b6c7b0175069a2d6e43bbceb 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -280,6 +280,12 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
      };
-     public final com.destroystokyo.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
+     public final io.papermc.paper.io.chunk.ChunkTaskManager asyncChunkTaskManager;
      // Paper end
 +    // Paper start
 +    @Override

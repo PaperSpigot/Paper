@@ -4,10 +4,10 @@ Date: Tue, 30 Mar 2021 16:06:08 -0700
 Subject: [PATCH] Enhance console tab completions for brigadier commands
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index c56e7fb18f9a56c8025eb70a524f028b5942da37..efc1e42d606e1c9feb1a4871c0714933ae92a1b2 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index d445c50efdf70c60a735b41f3d15c2dc96f367b3..a5ead24db755a90b1d23e7959b82b8dfff97aad0 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -479,4 +479,11 @@ public class PaperConfig {
      private static void fixEntityPositionDesync() {
          fixEntityPositionDesync = getBoolean("settings.fix-entity-position-desync", fixEntityPositionDesync);
@@ -20,37 +20,15 @@ index c56e7fb18f9a56c8025eb70a524f028b5942da37..efc1e42d606e1c9feb1a4871c0714933
 +        enableBrigadierConsoleCompletions = getBoolean("settings.console.enable-brigadier-completions", enableBrigadierConsoleCompletions);
 +    }
  }
-diff --git a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
-index a4070b59e261f0f1ac4beec47b11492f4724bf27..e0b1f0671d16ddddcb6725acd25a1d1d69e42701 100644
---- a/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
-+++ b/src/main/java/com/destroystokyo/paper/console/PaperConsole.java
-@@ -16,11 +16,15 @@ public final class PaperConsole extends SimpleTerminalConsole {
- 
-     @Override
-     protected LineReader buildReader(LineReaderBuilder builder) {
--        return super.buildReader(builder
-+        builder
-                 .appName("Paper")
-                 .variable(LineReader.HISTORY_FILE, java.nio.file.Paths.get(".console_history"))
-                 .completer(new ConsoleCommandCompleter(this.server))
--        );
-+                .option(LineReader.Option.COMPLETE_IN_WORD, true);
-+        if (com.destroystokyo.paper.PaperConfig.enableBrigadierConsoleHighlighting) {
-+            builder.highlighter(new io.papermc.paper.console.BrigadierCommandHighlighter(this.server, this.server.createCommandSourceStack()));
-+        }
-+        return super.buildReader(builder);
-     }
- 
-     @Override
 diff --git a/src/main/java/io/papermc/paper/console/BrigadierCommandCompleter.java b/src/main/java/io/papermc/paper/console/BrigadierCommandCompleter.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d3f80b5dcd366c5b8a48cb885d825d243b01ac4c
+index 0000000000000000000000000000000000000000..07a24fd485810a3491d430836f5e2b932ddb17cc
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/console/BrigadierCommandCompleter.java
 @@ -0,0 +1,95 @@
 +package io.papermc.paper.console;
 +
-+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion;
++import io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion;
 +import com.mojang.brigadier.CommandDispatcher;
 +import com.mojang.brigadier.ParseResults;
 +import com.mojang.brigadier.StringReader;
@@ -68,7 +46,7 @@ index 0000000000000000000000000000000000000000..d3f80b5dcd366c5b8a48cb885d825d24
 +import java.util.Collections;
 +import java.util.List;
 +
-+import static com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion.completion;
++import static io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion.completion;
 +
 +public final class BrigadierCommandCompleter {
 +    private final CommandSourceStack commandSourceStack;
@@ -80,7 +58,7 @@ index 0000000000000000000000000000000000000000..d3f80b5dcd366c5b8a48cb885d825d24
 +    }
 +
 +    public void complete(final @NonNull LineReader reader, final @NonNull ParsedLine line, final @NonNull List<Candidate> candidates, final @NonNull List<Completion> existing) {
-+        if (!com.destroystokyo.paper.PaperConfig.enableBrigadierConsoleCompletions) {
++        if (!io.papermc.paper.PaperConfig.enableBrigadierConsoleCompletions) {
 +            this.addCandidates(candidates, Collections.emptyList(), existing);
 +            return;
 +        }
@@ -206,8 +184,30 @@ index 0000000000000000000000000000000000000000..f33e9376bd166ebdb3d9f8c7467cd923
 +        return builder.toAttributedString();
 +    }
 +}
+diff --git a/src/main/java/io/papermc/paper/console/PaperConsole.java b/src/main/java/io/papermc/paper/console/PaperConsole.java
+index 54c4da88547ea5804581837ba42c63ec17aca8f6..2ff529f472ed340802d7de9400113f3cf382de4b 100644
+--- a/src/main/java/io/papermc/paper/console/PaperConsole.java
++++ b/src/main/java/io/papermc/paper/console/PaperConsole.java
+@@ -16,11 +16,15 @@ public final class PaperConsole extends SimpleTerminalConsole {
+ 
+     @Override
+     protected LineReader buildReader(LineReaderBuilder builder) {
+-        return super.buildReader(builder
++        builder
+                 .appName("Paper")
+                 .variable(LineReader.HISTORY_FILE, java.nio.file.Paths.get(".console_history"))
+                 .completer(new ConsoleCommandCompleter(this.server))
+-        );
++                .option(LineReader.Option.COMPLETE_IN_WORD, true);
++        if (io.papermc.paper.PaperConfig.enableBrigadierConsoleHighlighting) {
++            builder.highlighter(new io.papermc.paper.console.BrigadierCommandHighlighter(this.server, this.server.createCommandSourceStack()));
++        }
++        return super.buildReader(builder);
+     }
+ 
+     @Override
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index 14cd8ae69d9b25dc5edad4ff96ff4a9acb1f22cb..b3484487fa8baa4d1dd6c595586fb26a01a2153d 100644
+index 71f6dea67bb2f3574b522ef0f5101aad3eb1b8a7..0f70bb2ffd78e245b2b609458343a5fd9326d131 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -18,9 +18,11 @@ import org.bukkit.event.server.TabCompleteEvent;
@@ -228,7 +228,7 @@ index 14cd8ae69d9b25dc5edad4ff96ff4a9acb1f22cb..b3484487fa8baa4d1dd6c595586fb26a
  
 -            if (!completions.isEmpty()) {
 +            if (false && !completions.isEmpty()) {
-                 for (final com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion completion : completions) {
+                 for (final io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion completion : completions) {
                      if (completion.suggestion().isEmpty()) {
                          continue;
 @@ -80,6 +82,7 @@ public class ConsoleCommandCompleter implements Completer {
@@ -257,7 +257,7 @@ index 14cd8ae69d9b25dc5edad4ff96ff4a9acb1f22cb..b3484487fa8baa4d1dd6c595586fb26a
                  candidates.add(new Candidate(completion));
              }
 +             */
-+            this.addCompletions(reader, line, candidates, offers.stream().map(com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion::completion).collect(java.util.stream.Collectors.toList()));
++            this.addCompletions(reader, line, candidates, offers.stream().map(io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion::completion).collect(java.util.stream.Collectors.toList()));
              // Paper end
  
              // Paper start - JLine handles cursor now
@@ -266,7 +266,7 @@ index 14cd8ae69d9b25dc5edad4ff96ff4a9acb1f22cb..b3484487fa8baa4d1dd6c595586fb26a
          return false;
      }
 +
-+    private void addCompletions(final LineReader reader, final ParsedLine line, final List<Candidate> candidates, final List<com.destroystokyo.paper.event.server.AsyncTabCompleteEvent.Completion> existing) {
++    private void addCompletions(final LineReader reader, final ParsedLine line, final List<Candidate> candidates, final List<io.papermc.paper.event.server.AsyncTabCompleteEvent.Completion> existing) {
 +        this.brigadierCompleter.complete(reader, line, candidates, existing);
 +    }
      // Paper end

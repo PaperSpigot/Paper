@@ -14,7 +14,7 @@ big slowdown in execution but throwing an exception at same time to raise awaren
 that it is happening so that plugin authors can fix their code to stop executing commands async.
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index c58f8cf20822439098648265917801509dda1a72..a6d1ce8fd971e8de720e01eaba4ee6c5872c39db 100644
+index 8b082713c1bd41ff9d26ce45c949514ae8aec6ef..4eaba59cfd0ebf4d0830eb001c545003c90603a8 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -1859,6 +1859,29 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -48,7 +48,7 @@ index c58f8cf20822439098648265917801509dda1a72..a6d1ce8fd971e8de720e01eaba4ee6c5
          } else if (this.player.getChatVisibility() == ChatVisiblity.SYSTEM) {
              // Do nothing, this is coming from a plugin
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 4612557dfe8c81e6a9b6f11dc1c8d40eaa1337ec..452904333ce232855d61ff7d12cb8a5595ebb3f8 100644
+index d1a60d44d50c09adfda81cedf78795086d721513..98125d859bc5d647ab4419a257d6b15c165b23ac 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -762,6 +762,28 @@ public final class CraftServer implements Server {

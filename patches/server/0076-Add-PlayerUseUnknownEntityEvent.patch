@@ -20,7 +20,7 @@ index 8834ed411a7db86b4d2b88183a1315317107d719..c45b5ab6776f3ac79f856c3a6467c510
      static final ServerboundInteractPacket.Action ATTACK_ACTION = new ServerboundInteractPacket.Action() {
          @Override
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index cbd7e9b6b3d0cd5cb87ed8b2657daee9368424a0..8e751e9821dc76f33e9e844990c701f69c817c4b 100644
+index 56fcf5011d6aab09249077e2b8ec9210ed586b98..cbad2b4426f39ae0c4087304cf5b80b3ea81717f 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -2203,8 +2203,37 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -50,7 +50,7 @@ index cbd7e9b6b3d0cd5cb87ed8b2657daee9368424a0..8e751e9821dc76f33e9e844990c701f6
 +    }
  
 +    private void callPlayerUseUnknownEntityEvent(ServerboundInteractPacket packet, InteractionHand hand) {
-+        this.cserver.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent(
++        this.cserver.getPluginManager().callEvent(new io.papermc.paper.event.player.PlayerUseUnknownEntityEvent(
 +            this.getCraftPlayer(),
 +            packet.getEntityId(),
 +            packet.getActionType() == ServerboundInteractPacket.ActionType.ATTACK,

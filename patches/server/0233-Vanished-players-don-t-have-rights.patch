@@ -38,7 +38,7 @@ index 86d245c9a817be5fd2be7f331d3a3a5f3169e8c2..44b28773fe8e79931e738d493bd9405e
  
          BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(context.getLevel(), context.getClickedPos()), player, CraftBlockData.fromData(state), defaultReturn);
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 2d13cbfb5e4ea359106fc008f203b104a179b9c0..f820232e037fa05f7d666fddac6ad1b8b18b04e0 100644
+index a247da5a3baa96d388014d1226d4032f63326950..9c3f3394ad3dfb469f9c3dd067e4092b8ddb977b 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -71,6 +71,10 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -99,13 +99,13 @@ index 2d13cbfb5e4ea359106fc008f203b104a179b9c0..f820232e037fa05f7d666fddac6ad1b8
      public boolean isClientSide() {
          return this.isClientSide;
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 378e09eca16738bce048837752149f212a6e2cc3..4e5128629ccbb884d88b369be5010e6b20763707 100644
+index 1dbe3fa1025cc7834597e8bd637ddb8a268afd61..22d5e18da270a6dd483a79adce71a2fe324f4457 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -1206,6 +1206,14 @@ public class CraftEventFactory {
          Projectile projectile = (Projectile) entity.getBukkitEntity();
          org.bukkit.entity.Entity collided = position.getEntity().getBukkitEntity();
-         com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = new com.destroystokyo.paper.event.entity.ProjectileCollideEvent(projectile, collided);
+         io.papermc.paper.event.entity.ProjectileCollideEvent event = new io.papermc.paper.event.entity.ProjectileCollideEvent(projectile, collided);
 +
 +        if (projectile.getShooter() instanceof Player && collided instanceof Player) {
 +            if (!((Player) projectile.getShooter()).canSee((Player) collided)) {

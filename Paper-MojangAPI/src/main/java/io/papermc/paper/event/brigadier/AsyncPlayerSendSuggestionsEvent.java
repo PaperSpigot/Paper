@@ -1,4 +1,4 @@
-package com.destroystokyo.paper.event.brigadier;
+package io.papermc.paper.event.brigadier;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import org.bukkit.Bukkit;

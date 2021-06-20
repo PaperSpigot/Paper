@@ -5,7 +5,7 @@ Subject: [PATCH] MC Dev fixes
 
 
 diff --git a/src/main/java/net/minecraft/Util.java b/src/main/java/net/minecraft/Util.java
-index 8fd67e0be207561d329b417959f6c537cc8b7c49..23c0914685e51de9dcdbb305c203efd4f2a73128 100644
+index b61eaf223acd703d9c259fb2cd3852481213f93a..771e4b72589d7117a154ab6917bd4a56d55f19db 100644
 --- a/src/main/java/net/minecraft/Util.java
 +++ b/src/main/java/net/minecraft/Util.java
 @@ -306,7 +306,7 @@ public class Util {
@@ -18,7 +18,7 @@ index 8fd67e0be207561d329b417959f6c537cc8b7c49..23c0914685e51de9dcdbb305c203efd4
  
      public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<? extends V>> futures) {
 diff --git a/src/main/java/net/minecraft/core/BlockPos.java b/src/main/java/net/minecraft/core/BlockPos.java
-index 891fc7f4cbea8eccd580f371715478265339c0cc..a153ca538d237fab567550b0bfcdf5b2985c56f8 100644
+index 754e65f322ded875ae7614066bab30a8da2aa4a9..59240bb0ce088a14f8ccb62de8b69bc7bf313975 100644
 --- a/src/main/java/net/minecraft/core/BlockPos.java
 +++ b/src/main/java/net/minecraft/core/BlockPos.java
 @@ -369,12 +369,12 @@ public class BlockPos extends Vec3i {
@@ -157,7 +157,7 @@ index 6b66e1ad66dccacb5c959da924d7857358488678..e722cf3a8e816b0c7405e6282591d9fa
      private static final int MIN_PROTOCOL_ID = -1;
      private static final int MAX_PROTOCOL_ID = 2;
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 729e55535d833f8f6ff65bf226aac5ecdec44990..f0aea7c801b3ef3b1a213ecd473ce9e718f1be46 100644
+index 81f3ad6185883e20cfc750253ec58d60f420dac2..75801343b14a5555e974168170af95f8513926f5 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1766,7 +1766,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -170,7 +170,7 @@ index 729e55535d833f8f6ff65bf226aac5ecdec44990..f0aea7c801b3ef3b1a213ecd473ce9e7
              return ServerResources.loadResources(immutablelist, this.registryHolder, this.isDedicatedServer() ? Commands.CommandSelection.DEDICATED : Commands.CommandSelection.INTEGRATED, this.getFunctionCompilationLevel(), this.executor, this);
          }).thenAcceptAsync((datapackresources) -> {
 diff --git a/src/main/java/net/minecraft/server/level/Ticket.java b/src/main/java/net/minecraft/server/level/Ticket.java
-index 2f66abf62d303342f5fe614fb3e35e7844497ffc..b346fa94b23d81da7da073f71dd12e672e0f079c 100644
+index 062da1bddd9704f5fbc46e974e13e60cd500bbe2..ffc43e5d3d0563c9e9c171064511b2c65ddf67e1 100644
 --- a/src/main/java/net/minecraft/server/level/Ticket.java
 +++ b/src/main/java/net/minecraft/server/level/Ticket.java
 @@ -21,7 +21,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
@@ -222,7 +222,7 @@ index d4488ebc4d4f50e1c3ccfeeb8bb82d06a7a90c30..37110c535b9fe25b53b5ebe9aa448ade
              });
          } finally {
 diff --git a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
-index 9bc0ccf6acccd5505bac7b8a6bfb7597a43570cf..396cf81c2a501a09ab742f53d524463741c4d1ed 100644
+index 38dd114fbfa07a18987cd774ae05060d723247e4..057b92a2948543644618c63abd3f61d1120db4dd 100644
 --- a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
 @@ -75,7 +75,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {

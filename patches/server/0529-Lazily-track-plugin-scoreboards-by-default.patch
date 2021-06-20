@@ -13,10 +13,10 @@ This is a breaking change, however the change is a much more sensible default. I
 this breaks your workflow you can always force all scoreboards to be tracked with
 settings.track-plugin-scoreboards in paper.yml.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 545948f20efd6c8dd42140b565af94cd6b52b661..7d50aded88f5b7dfebaea1aebc86231f7b5c4e25 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index ce56b717399111f8ec8c3d3eb1fb68ce94ea0d77..064f3901ac12b1a7a9e7ad0493c07c93eb0f1863 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -462,4 +462,9 @@ public class PaperConfig {
      private static void maxJoinsPerTick() {
          maxJoinsPerTick = getInt("settings.max-joins-per-tick", 3);
@@ -66,7 +66,7 @@ index 68aa66c340b7a686a353e2a15084d811a3955a0a..b1fbbfeadb63d495b57f6c29b00de532
          return new CraftObjective(this, objective);*/ // Paper
          return registerNewObjective(name, criteria, io.papermc.paper.adventure.PaperAdventure.LEGACY_SECTION_UXRC.deserialize(displayName), renderType); // Paper
 diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
-index ff090edcc85713083449cebb22bd1490123bc1ee..8ccfe9488db44d7d2cf4040a5b4cead33da1d5f4 100644
+index ff090edcc85713083449cebb22bd1490123bc1ee..910a81112a97883ff5d19cc25e2427771304be56 100644
 --- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
 +++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
 @@ -30,6 +30,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
@@ -83,7 +83,7 @@ index ff090edcc85713083449cebb22bd1490123bc1ee..8ccfe9488db44d7d2cf4040a5b4cead3
          CraftScoreboard scoreboard = new CraftScoreboard(new ServerScoreboard(this.server));
 -        this.scoreboards.add(scoreboard);
 +        // Paper start
-+        if (com.destroystokyo.paper.PaperConfig.trackPluginScoreboards) {
++        if (io.papermc.paper.PaperConfig.trackPluginScoreboards) {
 +            scoreboard.registeredGlobally = true;
 +            scoreboards.add(scoreboard);
 +        }

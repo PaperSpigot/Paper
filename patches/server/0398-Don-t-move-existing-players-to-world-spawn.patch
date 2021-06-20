@@ -10,7 +10,7 @@ larger than the keep loaded range.
 By skipping this, we avoid potential for a large spike on server start.
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index ff965e67ba260a7a8e94514f8eca745f81c200b2..1d585171862972fef62e903aeacb507d2383cb80 100644
+index dd4309a68009b16d9f72ac6b54ef259e5b4d9c63..4d0c7fe970f2b5c8bf172a42f458d639d1902b2c 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -309,7 +309,7 @@ public class ServerPlayer extends Player {
@@ -20,7 +20,7 @@ index ff965e67ba260a7a8e94514f8eca745f81c200b2..1d585171862972fef62e903aeacb507d
 -        this.fudgeSpawnLocation(world);
 +        //this.c(worldserver); // Paper - don't move to spawn on login, only first join
  
-         this.cachedSingleHashSet = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
+         this.cachedSingleHashSet = new io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
  
 @@ -528,7 +528,7 @@ public class ServerPlayer extends Player {
                  position = Vec3.atCenterOf(((ServerLevel) world).getSharedSpawnPos());
@@ -32,7 +32,7 @@ index ff965e67ba260a7a8e94514f8eca745f81c200b2..1d585171862972fef62e903aeacb507d
          this.gameMode.setLevel((ServerLevel) world);
      }
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index f98a1c32e0c209473cf7268cbd8245ab9c134d28..18485689bcbf7818c3ca5b82086acef51888603b 100644
+index 9e81c4fd9143877bc3b25da94eb323d225fa0606..2eb08244b1dbc82da6df9493ed7fec4e27449e07 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -207,6 +207,8 @@ public abstract class PlayerList {

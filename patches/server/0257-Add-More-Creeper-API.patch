@@ -5,7 +5,7 @@ Subject: [PATCH] Add More Creeper API
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Creeper.java b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
-index 3bbf6c9bfbb79fd4242cf66d7ace1d8f87404636..e8c36e8541f041a0d72a86f49ced2a3ce1549be0 100644
+index 3bbf6c9bfbb79fd4242cf66d7ace1d8f87404636..201bc04f9a88be0cb8c372fd6113636572f6cd9b 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Creeper.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
 @@ -309,7 +309,18 @@ public class Creeper extends Monster implements PowerableMob {
@@ -19,7 +19,7 @@ index 3bbf6c9bfbb79fd4242cf66d7ace1d8f87404636..e8c36e8541f041a0d72a86f49ced2a3c
 +
 +    public void setIgnited(boolean ignited) {
 +        if (isIgnited() != ignited) {
-+            com.destroystokyo.paper.event.entity.CreeperIgniteEvent event = new com.destroystokyo.paper.event.entity.CreeperIgniteEvent((org.bukkit.entity.Creeper) getBukkitEntity(), ignited);
++            io.papermc.paper.event.entity.CreeperIgniteEvent event = new io.papermc.paper.event.entity.CreeperIgniteEvent((org.bukkit.entity.Creeper) getBukkitEntity(), ignited);
 +            if (event.callEvent()) {
 +                this.entityData.set(Creeper.DATA_IS_IGNITED, event.isIgnited());
 +            }

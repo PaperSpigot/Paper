@@ -5,10 +5,10 @@ Subject: [PATCH] Make the default permission message configurable
 
 TODO: Change the message in PaperCommand
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 9768c591e72ce2ef5fdb43e2fc63378c57773216..11d628869a9a6eda8bf21a4f213ff23ad753b18e 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index afa9f61ab258419e9c8cb3e6d4860ab4d9eac8e6..864d1b22c6b9b26ea2d828104422d49751b8e31f 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -20,6 +20,7 @@ import java.util.regex.Pattern;
  import com.google.common.collect.Lists;
  import net.minecraft.server.MinecraftServer;
@@ -30,18 +30,18 @@ index 9768c591e72ce2ef5fdb43e2fc63378c57773216..11d628869a9a6eda8bf21a4f213ff23a
          Object val = config.get("settings.save-player-data");
          if (val instanceof Boolean) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 7f1d5725e156b9cf3273aa0f66c1e0d486df6a51..d9bfaff4880de1254a72869562b4c42aa29146f1 100644
+index e199ed8963d19d9bd55578d1633cdfce0203c155..f86c1d946d21a566cba6ae02d8d1d9611d01dced 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2340,6 +2340,11 @@ public final class CraftServer implements Server {
-         return com.destroystokyo.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
+         return io.papermc.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
      }
  
 +    @Override
 +    public String getPermissionMessage() {
-+        return com.destroystokyo.paper.PaperConfig.noPermissionMessage;
++        return io.papermc.paper.PaperConfig.noPermissionMessage;
 +    }
 +
      @Override
-     public com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nonnull UUID uuid) {
+     public io.papermc.paper.profile.PlayerProfile createProfile(@Nonnull UUID uuid) {
          return createProfile(uuid, null);

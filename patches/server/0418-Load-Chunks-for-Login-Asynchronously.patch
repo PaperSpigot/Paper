@@ -5,7 +5,7 @@ Subject: [PATCH] Load Chunks for Login Asynchronously
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 7886ba1c08f3bc7cb889a430419d4ddb14bda787..b05598c2234cef011aef496829dfe54a69d58900 100644
+index 3cdef12576a8d38f509336fef7c2d243a3ff346b..ee30f67660c2049c4f0c8e3dd7481b633cb6dccb 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
 @@ -172,6 +172,7 @@ public class ServerPlayer extends Player {
@@ -37,7 +37,7 @@ index be677d437d17b74c6188ce1bd5fc6fdc228fd92f..78fbb4c3e52e900956ae0811aaf934c8
      public static final TicketType<ChunkPos> UNKNOWN = TicketType.create("unknown", Comparator.comparingLong(ChunkPos::toLong), 1);
      public static final TicketType<Unit> PLUGIN = TicketType.create("plugin", (a, b) -> 0); // CraftBukkit
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index fae06882217adf20c6f81db2793ee3930cba30c0..c57b5cf7d61eab5a45e3fa69e8804fd0ef4a54ad 100644
+index 3a848922b7962d5a018a108f8cfa933f08d0a2b7..cfdcaac2baad9dead0c1c621781148c4a14d1cd1 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 @@ -221,6 +221,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
@@ -74,7 +74,7 @@ index fae06882217adf20c6f81db2793ee3930cba30c0..c57b5cf7d61eab5a45e3fa69e8804fd0
          this.server.getProfiler().push("keepAlive");
          // Paper Start - give clients a longer time to respond to pings as per pre 1.12.2 timings
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index 12f945e91827470a9a61951e45c062deee8cf281..195f5d1519c3fc2fdd03ecd0d49d7fba74037692 100644
+index 54eafd4fb76b1883c39d497dd4f0f244339a3670..1a7172aacb245dc0e7492fea63b5a89ba9e42461 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -88,7 +88,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener
@@ -96,7 +96,7 @@ index 12f945e91827470a9a61951e45c062deee8cf281..195f5d1519c3fc2fdd03ecd0d49d7fba
              try {
                  ServerPlayer entityplayer1 = this.server.getPlayerList().processLogin(this.gameProfile, s); // CraftBukkit - add player reference
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 3a13c151066c8784fdc844e1d6310f77ff32e7f1..529fc8732b67a3349672224723725e38925f8f09 100644
+index 98a7518a80363a4e0b72f2fa1173bae1501dcc92..0f9d47e49310048c25a77ec8b8f3270bf80ab1f2 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -38,6 +38,7 @@ import net.minecraft.network.protocol.Packet;
@@ -200,7 +200,7 @@ index 3a13c151066c8784fdc844e1d6310f77ff32e7f1..529fc8732b67a3349672224723725e38
 @@ -522,7 +576,7 @@ public abstract class PlayerList {
          }
  
-         PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, com.destroystokyo.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getScoreboardName())));
+         PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left", net.kyori.adventure.text.format.NamedTextColor.YELLOW, io.papermc.paper.PaperConfig.useDisplayNameInQuit ? entityplayer.getBukkitEntity().displayName() : net.kyori.adventure.text.Component.text(entityplayer.getScoreboardName())));
 -        this.cserver.getPluginManager().callEvent(playerQuitEvent);
 +        if (entityplayer.didPlayerJoinEvent) this.cserver.getPluginManager().callEvent(playerQuitEvent); // Paper - if we disconnected before join ever fired, don't fire quit
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
@@ -244,7 +244,7 @@ index 3a13c151066c8784fdc844e1d6310f77ff32e7f1..529fc8732b67a3349672224723725e38
          Iterator iterator = list.iterator();
  
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 1a3d6368b84aa24b6d0361dd30bc06b79f1d5133..4d2209baf88a3f097e0df1645f88d4afd718c414 100644
+index ff794b11df23e95530d261733def6386b2c3bf0f..c6d1d6b024f3398ebcc7c3f95bf7319227fd46e4 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -1511,7 +1511,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n

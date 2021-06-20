@@ -4,10 +4,10 @@ Date: Wed, 13 Apr 2016 02:10:49 -0400
 Subject: [PATCH] Configurable Player Collision
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 439dcc6effdc91830d2b7ede9063982998b37120..504efea7b6f50a0d17f4f353781953dfb18bdeca 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 78b427357a1b57f33eace715132c0231575ef13d..1ea8fa9aebcc04717a268806bb662cccb7477ef1 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -232,4 +232,9 @@ public class PaperConfig {
      private static void regionFileCacheSize() {
          regionFileCacheSize = Math.max(getInt("settings.region-file-cache-size", 256), 4);
@@ -19,7 +19,7 @@ index 439dcc6effdc91830d2b7ede9063982998b37120..504efea7b6f50a0d17f4f353781953df
 +    }
  }
 diff --git a/src/main/java/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java b/src/main/java/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java
-index 8885220e4813b34627b42523834bbec995d8950d..4c9660176e783999301565790b8cf6f47b0d02a2 100644
+index 8885220e4813b34627b42523834bbec995d8950d..cd498a8c20da1f81c713ef5cb41e20f57ba6e0a3 100644
 --- a/src/main/java/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java
 +++ b/src/main/java/net/minecraft/network/protocol/game/ClientboundSetPlayerTeamPacket.java
 @@ -193,7 +193,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
@@ -27,12 +27,12 @@ index 8885220e4813b34627b42523834bbec995d8950d..4c9660176e783999301565790b8cf6f4
              buf.writeByte(this.options);
              buf.writeUtf(this.nametagVisibility);
 -            buf.writeUtf(this.collisionRule);
-+            buf.writeUtf(!com.destroystokyo.paper.PaperConfig.enablePlayerCollisions ? "never" : this.collisionRule); // Paper
++            buf.writeUtf(!io.papermc.paper.PaperConfig.enablePlayerCollisions ? "never" : this.collisionRule); // Paper
              buf.writeEnum(this.color);
              buf.writeComponent(this.playerPrefix);
              buf.writeComponent(this.playerSuffix);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9e936078b388459bed7da3c6edfd0e65f3b1b1bf..15e26dbc38e23c5284246ef55d038eb011759ee2 100644
+index e250db8035b2d53e724a47da6dc6118d85ca148b..84382e0cc191ec855b2cc1ce8c42ac0478c08eb4 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -163,6 +163,7 @@ import net.minecraft.world.level.storage.loot.LootTables;
@@ -54,7 +54,7 @@ index 9e936078b388459bed7da3c6edfd0e65f3b1b1bf..15e26dbc38e23c5284246ef55d038eb0
 +            scoreboard.removePlayerTeam(scoreboard.getPlayersTeam(teamName)); // Clean up after ourselves
 +        }
 +
-+        if (!com.destroystokyo.paper.PaperConfig.enablePlayerCollisions) {
++        if (!io.papermc.paper.PaperConfig.enablePlayerCollisions) {
 +            this.getPlayerList().collideRuleTeamName = org.apache.commons.lang3.StringUtils.left("collideRule_" + java.util.concurrent.ThreadLocalRandom.current().nextInt(), 16);
 +            PlayerTeam collideTeam = scoreboard.addPlayerTeam(this.getPlayerList().collideRuleTeamName);
 +            collideTeam.setSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
@@ -65,7 +65,7 @@ index 9e936078b388459bed7da3c6edfd0e65f3b1b1bf..15e26dbc38e23c5284246ef55d038eb0
          this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
          this.connection.acceptConnections();
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index ce72102870075fffd8be6f32230ceae269ea4f9c..b9c4428bc9653e81ed046bda94e248218c1fa9c9 100644
+index a16862a74f742dc3e63ffbaaa1973338a9db9b76..170b9a1aee1dd29378b73be81fc76191f1d52d4a 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -85,6 +85,7 @@ import net.minecraft.world.level.storage.PlayerDataStorage;

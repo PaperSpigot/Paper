@@ -11,7 +11,7 @@ This will drastically cut down on packet sending cost for worlds with
 lots of players in them.
 
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 529fc8732b67a3349672224723725e38925f8f09..28b203a5c8a65ba96bf239c270fa6445f94e887e 100644
+index 0f9d47e49310048c25a77ec8b8f3270bf80ab1f2..6045c729db59f6501ba93715d5c7c43f51afe962 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
 @@ -1129,16 +1129,40 @@ public abstract class PlayerList {
@@ -38,7 +38,7 @@ index 529fc8732b67a3349672224723725e38925f8f09..28b203a5c8a65ba96bf239c270fa6445
 +            // Really shouldn't happen...
 +            backingSet = world != null ? world.players.toArray() : players.toArray();
 +        } else {
-+            com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> nearbyPlayers = chunkMap.playerViewDistanceBroadcastMap.getObjectsInRange(MCUtil.fastFloor(x) >> 4, MCUtil.fastFloor(z) >> 4);
++            io.papermc.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> nearbyPlayers = chunkMap.playerViewDistanceBroadcastMap.getObjectsInRange(MCUtil.fastFloor(x) >> 4, MCUtil.fastFloor(z) >> 4);
 +            if (nearbyPlayers == null) {
 +                return;
              }

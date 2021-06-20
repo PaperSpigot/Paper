@@ -4,10 +4,10 @@ Date: Wed, 5 Oct 2016 16:27:36 -0500
 Subject: [PATCH] Option to remove corrupt tile entities
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 9b2e9a02ff31c3cb37b67135d0a03441f247d8e2..96247356d7888d5681bff60567add1188aedb18b 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index f50c764cddddb5b01215747aa86c626b17c5c0b1..62ad155a33ee47939d0834d440dda47a57d02f12 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -301,4 +301,9 @@ public class PaperWorldConfig {
          preventTntFromMovingInWater = getBoolean("prevent-tnt-from-moving-in-water", false);
          log("Prevent TNT from moving in water: " + preventTntFromMovingInWater);
@@ -19,7 +19,7 @@ index 9b2e9a02ff31c3cb37b67135d0a03441f247d8e2..96247356d7888d5681bff60567add118
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index eed2ef73c33b76222de0f4fd91525cc03eef19b0..521f199e495f3bec232cc9ca36e51e0392afe737 100644
+index 62de1bdad0f544c3888d339658756c658124ca73..3607672d544e981921b7ef39c302462be8195009 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -640,6 +640,12 @@ public class LevelChunk implements ChunkAccess {

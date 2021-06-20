@@ -6,7 +6,7 @@ Subject: [PATCH] PlayerPickupExperienceEvent
 Allows plugins to cancel a player picking up an experience orb
 
 diff --git a/src/main/java/net/minecraft/world/entity/ExperienceOrb.java b/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
-index cb0194d688ae176e0fba6c48cf59a51ceb1a5c4e..628407ad2f8fd01850dd4f9e25799bcd6a93961d 100644
+index ea01f84448693ca740b5f3381a9c500e5aa3914e..3291df978c8853a1b769ddc41e18dc29a9b6c1ff 100644
 --- a/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
 +++ b/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
 @@ -300,7 +300,7 @@ public class ExperienceOrb extends Entity {
@@ -14,7 +14,7 @@ index cb0194d688ae176e0fba6c48cf59a51ceb1a5c4e..628407ad2f8fd01850dd4f9e25799bcd
      public void playerTouch(Player player) {
          if (!this.level.isClientSide) {
 -            if (player.takeXpDelay == 0) {
-+            if (player.takeXpDelay == 0 && new com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent(((net.minecraft.server.level.ServerPlayer) player).getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) this.getBukkitEntity()).callEvent()) { // Paper
++            if (player.takeXpDelay == 0 && new io.papermc.paper.event.player.PlayerPickupExperienceEvent(((net.minecraft.server.level.ServerPlayer) player).getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) this.getBukkitEntity()).callEvent()) { // Paper
                  player.takeXpDelay = 2;
                  player.take(this, 1);
                  int i = this.repairPlayerItems(player, this.value);

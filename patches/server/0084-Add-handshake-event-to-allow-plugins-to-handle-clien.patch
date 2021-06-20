@@ -6,7 +6,7 @@ Subject: [PATCH] Add handshake event to allow plugins to handle client
 
 
 diff --git a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
-index 94d0111f35cb025024da10e2fb4ea0cb802d4ff2..c4ba069f5124ec151e05813beddf293fddc3b804 100644
+index 94d0111f35cb025024da10e2fb4ea0cb802d4ff2..ba58f4b960b5446394a93954c204aabb4d409696 100644
 --- a/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 @@ -88,8 +88,35 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
@@ -17,10 +17,10 @@ index 94d0111f35cb025024da10e2fb4ea0cb802d4ff2..c4ba069f5124ec151e05813beddf293f
 +                boolean proxyLogicEnabled = org.spigotmc.SpigotConfig.bungee;
 +                boolean handledByEvent = false;
 +                // Try and handle the handshake through the event
-+                if (com.destroystokyo.paper.event.player.PlayerHandshakeEvent.getHandlerList().getRegisteredListeners().length != 0) { // Hello? Can you hear me?
++                if (io.papermc.paper.event.player.PlayerHandshakeEvent.getHandlerList().getRegisteredListeners().length != 0) { // Hello? Can you hear me?
 +                    java.net.SocketAddress socketAddress = this.connection.address;
 +                    String hostnameOfRemote = socketAddress instanceof java.net.InetSocketAddress ? ((java.net.InetSocketAddress) socketAddress).getHostString() : InetAddress.getLoopbackAddress().getHostAddress();
-+                    com.destroystokyo.paper.event.player.PlayerHandshakeEvent event = new com.destroystokyo.paper.event.player.PlayerHandshakeEvent(packet.hostName, hostnameOfRemote, !proxyLogicEnabled);
++                    io.papermc.paper.event.player.PlayerHandshakeEvent event = new io.papermc.paper.event.player.PlayerHandshakeEvent(packet.hostName, hostnameOfRemote, !proxyLogicEnabled);
 +                    if (event.callEvent()) {
 +                        // If we've failed somehow, let the client know so and go no further.
 +                        if (event.isFailed()) {

@@ -11,13 +11,13 @@ as before with only 2 small objects created (FastIterator/MapEntry)
 
 This should result in siginificant memory use reduction and improved GC behavior.
 
-diff --git a/src/main/java/com/destroystokyo/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java b/src/main/java/com/destroystokyo/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java
+diff --git a/src/main/java/io/papermc/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java b/src/main/java/io/papermc/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f6ff4d8132a95895680f5bc81f8f873e78f0bbdb
+index 0000000000000000000000000000000000000000..925e3336d11c18ebd19c3757eb432a5b24f91edc
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java
++++ b/src/main/java/io/papermc/paper/util/map/Long2ObjectLinkedOpenHashMapFastCopy.java
 @@ -0,0 +1,39 @@
-+package com.destroystokyo.paper.util.map;
++package io.papermc.paper.util.map;
 +
 +import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 +
@@ -57,7 +57,7 @@ index 0000000000000000000000000000000000000000..f6ff4d8132a95895680f5bc81f8f873e
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
-index 530916b8d0c5eb3b7b379100df1e6e0d4ade273d..4d82abf234f67af124dff3f726a6a2e39313a780 100644
+index 5707cb9199d00f2a81d39f4926d461dab67ffeb7..05d6fc646ea2c1595df5af3edc0b4571a2fd5b62 100644
 --- a/src/main/java/net/minecraft/server/MCUtil.java
 +++ b/src/main/java/net/minecraft/server/MCUtil.java
 @@ -614,7 +614,7 @@ public final class MCUtil {
@@ -70,7 +70,7 @@ index 530916b8d0c5eb3b7b379100df1e6e0d4ade273d..4d82abf234f67af124dff3f726a6a2e3
              List<ChunkHolder> allChunks = new ArrayList<>(visibleChunks.values());
              List<ServerPlayer> players = world.players;
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index f75a78f60565be1c8e8b0ce5f3937441f59e1f29..22f6898b96c68fa53ca5900985c18a6f2f5a8b57 100644
+index e1bb5d73968713e5eab4effebfca1ea953e3a52e..a945ae9d0db38ef96a8f87458ae80c9deae7bfd0 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -112,9 +112,36 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -78,10 +78,10 @@ index f75a78f60565be1c8e8b0ce5f3937441f59e1f29..22f6898b96c68fa53ca5900985c18a6f
      public static final int MAX_VIEW_DISTANCE = 33;
      public static final int MAX_CHUNK_DISTANCE = 33 + ChunkStatus.maxDistance();
 +    // Paper start - faster copying
-+    public final Long2ObjectLinkedOpenHashMap<ChunkHolder> updatingChunkMap = new com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<>(); // Paper - faster copying
++    public final Long2ObjectLinkedOpenHashMap<ChunkHolder> updatingChunkMap = new io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<>(); // Paper - faster copying
 +    public final Long2ObjectLinkedOpenHashMap<ChunkHolder> visibleChunkMap = new ProtectedVisibleChunksMap(); // Paper - faster copying
 +
-+    private class ProtectedVisibleChunksMap extends com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> {
++    private class ProtectedVisibleChunksMap extends io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> {
 +        @Override
 +        public ChunkHolder put(long k, ChunkHolder playerChunk) {
 +            throw new UnsupportedOperationException("Updating visible Chunks");
@@ -102,8 +102,8 @@ index f75a78f60565be1c8e8b0ce5f3937441f59e1f29..22f6898b96c68fa53ca5900985c18a6f
 +        }
 +    }
 +    // Paper end
-+    public final com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> pendingVisibleChunks = new com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>(); // Paper - this is used if the visible chunks is updated while iterating only
-+    public transient com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> visibleChunksClone; // Paper - used for async access of visible chunks, clone and cache only when needed
++    public final io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> pendingVisibleChunks = new io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>(); // Paper - this is used if the visible chunks is updated while iterating only
++    public transient io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder> visibleChunksClone; // Paper - used for async access of visible chunks, clone and cache only when needed
      public static final int FORCED_TICKET_LEVEL = 31;
 -    public final Long2ObjectLinkedOpenHashMap<ChunkHolder> updatingChunkMap = new Long2ObjectLinkedOpenHashMap();
 -    public volatile Long2ObjectLinkedOpenHashMap<ChunkHolder> visibleChunkMap;
@@ -204,11 +204,11 @@ index f75a78f60565be1c8e8b0ce5f3937441f59e1f29..22f6898b96c68fa53ca5900985c18a6f
 +            synchronized (this.visibleChunkMap) {
 +                if (isIterating) {
 +                    hasPendingVisibleUpdate = true;
-+                    this.pendingVisibleChunks.copyFrom((com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>)this.updatingChunkMap);
++                    this.pendingVisibleChunks.copyFrom((io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>)this.updatingChunkMap);
 +                } else {
 +                    hasPendingVisibleUpdate = false;
 +                    this.pendingVisibleChunks.clear();
-+                    ((ProtectedVisibleChunksMap)this.visibleChunkMap).copyFrom((com.destroystokyo.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>)this.updatingChunkMap);
++                    ((ProtectedVisibleChunksMap)this.visibleChunkMap).copyFrom((io.papermc.paper.util.map.Long2ObjectLinkedOpenHashMapFastCopy<ChunkHolder>)this.updatingChunkMap);
 +                    this.visibleChunksClone = null;
 +                }
 +            }
@@ -233,7 +233,7 @@ index f75a78f60565be1c8e8b0ce5f3937441f59e1f29..22f6898b96c68fa53ca5900985c18a6f
          while (objectbidirectionaliterator.hasNext()) {
              Entry<ChunkHolder> entry = (Entry) objectbidirectionaliterator.next();
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 43007f8cc9a88d7e6fb435551edac4d93a5668a9..6d999e0de0497114e46445981c64ee70f882c782 100644
+index 35a97367085cc85baf96edfde5e2cc57fd0dabf6..84833669c1c98b89520ef651ee683244b5111aeb 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -767,7 +767,7 @@ public class ServerChunkCache extends ChunkSource {
@@ -246,7 +246,7 @@ index 43007f8cc9a88d7e6fb435551edac4d93a5668a9..6d999e0de0497114e46445981c64ee70
  
                  if (optional.isPresent()) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index b6134895d1b04d3ea7340e77f70efa23cff8b568..72c9ad9f75c20d6c1a6d54e2913e2f9918c11ffd 100644
+index 3d15cf5b2d9bde635c0a24868d10641ba6cff29c..e2c200423131f5c580d291b99a24b4a0651143c9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -287,6 +287,7 @@ public class CraftWorld implements World {

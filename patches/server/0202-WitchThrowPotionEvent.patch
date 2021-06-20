@@ -6,7 +6,7 @@ Subject: [PATCH] WitchThrowPotionEvent
 Fired when a witch throws a potion at a player
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
-index ecb3843ff3b4f0034f6aaa16cfc09cbd046d9008..e2762c6c37975eb2da59d408998a5c0368c146d1 100644
+index 84cff68e4e5fbd05e3d26d03e2485e5271168191..c48e0d4ce254c11a02d4586dfcebd4e9e02c9c92 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
 @@ -236,9 +236,16 @@ public class Witch extends Raider implements RangedAttackMob {
@@ -15,7 +15,7 @@ index ecb3843ff3b4f0034f6aaa16cfc09cbd046d9008..e2762c6c37975eb2da59d408998a5c03
  
 +            // Paper start
 +            ItemStack potion = PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), potionregistry);
-+            com.destroystokyo.paper.event.entity.WitchThrowPotionEvent event = new com.destroystokyo.paper.event.entity.WitchThrowPotionEvent((org.bukkit.entity.Witch) this.getBukkitEntity(), (org.bukkit.entity.LivingEntity) target.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
++            io.papermc.paper.event.entity.WitchThrowPotionEvent event = new io.papermc.paper.event.entity.WitchThrowPotionEvent((org.bukkit.entity.Witch) this.getBukkitEntity(), (org.bukkit.entity.LivingEntity) target.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
 +            if (!event.callEvent()) {
 +                return;
 +            }

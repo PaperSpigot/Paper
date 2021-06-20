@@ -4,10 +4,10 @@ Date: Sun, 22 May 2016 20:20:55 -0500
 Subject: [PATCH] Optional TNT doesn't move in water
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index eb04fdb172a50ec1f5b7fe78fa0e7655246abd60..9b2e9a02ff31c3cb37b67135d0a03441f247d8e2 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 8a994710a4a9e0794a50cb15398296b7afdae50d..f50c764cddddb5b01215747aa86c626b17c5c0b1 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -291,4 +291,14 @@ public class PaperWorldConfig {
              );
          }
@@ -37,7 +37,7 @@ index ac57bfb00edd9268e89a7fd7cea36097d61d6951..ad9bbda31a4cdb306ca40f2b99e4b815
      public ServerEntity(ServerLevel worldserver, Entity entity, int i, boolean flag, Consumer<Packet<?>> consumer, Set<ServerPlayerConnection> trackedPlayers) {
          this.trackedPlayers = trackedPlayers;
 diff --git a/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java b/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
-index abc62c560816d945642d830a020deb28ff2efa37..5a16de4f080c31d6e278363fd1d3e23d48be3db5 100644
+index 8ad1b3cb16533d62deda643ce0cdda308743f78e..dcbd9ec44fb8d1334aca33c136b121ab5c25a0e2 100644
 --- a/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -97,6 +97,27 @@ public class PrimedTnt extends Entity {

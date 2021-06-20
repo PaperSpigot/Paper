@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable Keep Spawn Loaded range per world
 
 This lets you disable it for some worlds and lower it for others.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 13e730b18c346934c061fb570048623ad66e7344..090958a30ce20ff01ae77d4cd821a167474f0214 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index 05b9b4a2959cc942a624f58e4f93c810dd32c176..12ff0720bba15b143cb1b9d0e5b190bcb83af924 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -36,6 +36,12 @@ public class PaperWorldConfig {
          }
      }
@@ -23,7 +23,7 @@ index 13e730b18c346934c061fb570048623ad66e7344..090958a30ce20ff01ae77d4cd821a167
          config.addDefault("world-settings.default." + path, def);
          return config.getBoolean("world-settings." + worldName + "." + path, config.getBoolean("world-settings.default." + path));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 15928916ec8001ec57068b945300517d60dec0b0..49c87dfc50033b22f67f45ad1d67003864ce5ecb 100644
+index 1bc05847e767a0b2b2da41d381065c256adb960c..571a8bdc3a6edba4d7c54cb7fcbe9dcef828b5f3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -775,35 +775,36 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -85,7 +85,7 @@ index 15928916ec8001ec57068b945300517d60dec0b0..49c87dfc50033b22f67f45ad1d670038
          // CraftBukkit start
          // this.updateSpawnFlags();
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 03fde7df39384436e31bf57476feb680a0849030..54c2f27208a826b04dba5cb3dd4873987731ef54 100644
+index bab19aff90db16e29a0231731a867ee3159708a5..72ff0fefc37c1579272691f04aec2a6882467003 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -61,6 +61,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
@@ -221,7 +221,7 @@ index 4185e6bcf9b2bb65b2a0fa5fcbeb5684615169a7..dbc29442f2b2ad3ea451910f4944e901
          this.maxCount = i * i;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index a112daf93daeab6d34416bc7c8a69acfc207c98b..98b2d054b6436e3fdb8fadd03369a65cf4156843 100644
+index bb07434fa3bfc48999608da7022bd37585fd339c..1f6a2ef015b8592125aea192c32432a7fea3b5f3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -1975,15 +1975,21 @@ public class CraftWorld implements World {

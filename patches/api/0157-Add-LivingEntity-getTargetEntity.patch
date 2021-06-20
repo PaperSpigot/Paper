@@ -4,13 +4,13 @@ Date: Sat, 22 Sep 2018 00:32:53 -0500
 Subject: [PATCH] Add LivingEntity#getTargetEntity
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/entity/TargetEntityInfo.java b/src/main/java/com/destroystokyo/paper/entity/TargetEntityInfo.java
+diff --git a/src/main/java/io/papermc/paper/entity/TargetEntityInfo.java b/src/main/java/io/papermc/paper/entity/TargetEntityInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f52644fab1522bdf83ff4f489e9805b274421094
+index 0000000000000000000000000000000000000000..76cf07f25bc849b011135634f6d95109c733c1de
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/entity/TargetEntityInfo.java
++++ b/src/main/java/io/papermc/paper/entity/TargetEntityInfo.java
 @@ -0,0 +1,38 @@
-+package com.destroystokyo.paper.entity;
++package io.papermc.paper.entity;
 +
 +import org.bukkit.entity.Entity;
 +import org.bukkit.util.Vector;
@@ -49,13 +49,13 @@ index 0000000000000000000000000000000000000000..f52644fab1522bdf83ff4f489e9805b2
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
-index ad885a0775b387e3e8ca6bfae80c18465038056c..93d20f67bf856d80226470ae2442d199d3e2f45b 100644
+index 440589d6592ee1ee8581b54d6c9671018bd59b26..7cccefaab2656b16a06c7ae1804b689993239db6 100644
 --- a/src/main/java/org/bukkit/entity/LivingEntity.java
 +++ b/src/main/java/org/bukkit/entity/LivingEntity.java
 @@ -151,6 +151,50 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
       */
      @Nullable
-     public com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, @NotNull com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode);
+     public io.papermc.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, @NotNull io.papermc.paper.block.TargetBlockInfo.FluidMode fluidMode);
 +
 +    /**
 +     * Gets information about the entity being targeted
@@ -86,7 +86,7 @@ index ad885a0775b387e3e8ca6bfae80c18465038056c..93d20f67bf856d80226470ae2442d199
 +     *     or null if no entity is targeted
 +     */
 +    @Nullable
-+    public default com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance) {
++    public default io.papermc.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance) {
 +        return getTargetEntityInfo(maxDistance, false);
 +    }
 +
@@ -99,7 +99,7 @@ index ad885a0775b387e3e8ca6bfae80c18465038056c..93d20f67bf856d80226470ae2442d199
 +     *     or null if no entity is targeted
 +     */
 +    @Nullable
-+    public com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks);
++    public io.papermc.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks);
      // Paper end
  
      /**

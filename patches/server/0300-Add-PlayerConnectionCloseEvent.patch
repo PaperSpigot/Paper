@@ -34,7 +34,7 @@ how PlayerPreLoginEvent interacts with PlayerConnectionCloseEvent
 is undefined.
 
 diff --git a/src/main/java/net/minecraft/network/Connection.java b/src/main/java/net/minecraft/network/Connection.java
-index 8bbf13a7aea1142b3154a1c76837a98aa5ed431d..7387990152e512cb186d76b5aa9d51838312ac03 100644
+index 8bbf13a7aea1142b3154a1c76837a98aa5ed431d..56c969ff11038d30aa3988e72285e76fb4d87da9 100644
 --- a/src/main/java/net/minecraft/network/Connection.java
 +++ b/src/main/java/net/minecraft/network/Connection.java
 @@ -418,6 +418,26 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
@@ -46,7 +46,7 @@ index 8bbf13a7aea1142b3154a1c76837a98aa5ed431d..7387990152e512cb186d76b5aa9d5183
 +                if (packetListener instanceof ServerGamePacketListenerImpl) {
 +                    /* Player was logged in */
 +                    final ServerGamePacketListenerImpl playerConnection = (ServerGamePacketListenerImpl) packetListener;
-+                    new com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent(playerConnection.player.getUUID(),
++                    new io.papermc.paper.event.player.PlayerConnectionCloseEvent(playerConnection.player.getUUID(),
 +                        playerConnection.player.getScoreboardName(), ((java.net.InetSocketAddress)address).getAddress(), false).callEvent();
 +                } else if (packetListener instanceof ServerLoginPacketListenerImpl) {
 +                    /* Player is login stage */
@@ -56,7 +56,7 @@ index 8bbf13a7aea1142b3154a1c76837a98aa5ed431d..7387990152e512cb186d76b5aa9d5183
 +                        case DELAY_ACCEPT:
 +                        case ACCEPTED:
 +                            final com.mojang.authlib.GameProfile profile = loginListener.getGameProfile(); /* Should be non-null at this stage */
-+                            new com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent(profile.getId(), profile.getName(),
++                            new io.papermc.paper.event.player.PlayerConnectionCloseEvent(profile.getId(), profile.getName(),
 +                                ((java.net.InetSocketAddress)address).getAddress(), false).callEvent();
 +                    }
 +                }
@@ -65,7 +65,7 @@ index 8bbf13a7aea1142b3154a1c76837a98aa5ed431d..7387990152e512cb186d76b5aa9d5183
  
          }
 diff --git a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
-index bda4807f70806feb020eb73494079f23e6b0d90e..12f945e91827470a9a61951e45c062deee8cf281 100644
+index 1f6f6d8e96b6a606bdf2d419e7528bf5f7376f0b..54eafd4fb76b1883c39d497dd4f0f244339a3670 100644
 --- a/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
 @@ -59,7 +59,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener

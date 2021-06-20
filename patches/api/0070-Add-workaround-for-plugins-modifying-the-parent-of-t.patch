@@ -12,13 +12,13 @@ With our changes, the plugin logger is now also called "Essentials",
 resulting in an infinite loop. Make sure plugins can't change the
 parent of the plugin logger to avoid this.
 
-diff --git a/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java b/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java
+diff --git a/src/main/java/io/papermc/paper/utils/PaperPluginLogger.java b/src/main/java/io/papermc/paper/utils/PaperPluginLogger.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..76f2cb9cd99cad2a9484eab2becd8c36f1dd91b3
+index 0000000000000000000000000000000000000000..563cf484653549bb6213df066e2a46ca34be3a5d
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/utils/PaperPluginLogger.java
++++ b/src/main/java/io/papermc/paper/utils/PaperPluginLogger.java
 @@ -0,0 +1,41 @@
-+package com.destroystokyo.paper.utils;
++package io.papermc.paper.utils;
 +
 +import org.bukkit.plugin.PluginDescriptionFile;
 +
@@ -60,7 +60,7 @@ index 0000000000000000000000000000000000000000..76f2cb9cd99cad2a9484eab2becd8c36
 +
 +}
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
-index bb2e55e97bf887a28cac7d4f9a0a23960d22cf56..04fa3991f6ce4e9dad804f28fc6c947695857089 100644
+index bb2e55e97bf887a28cac7d4f9a0a23960d22cf56..6e0bac175e0b749d6309a908d65e365555ca8129 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
 @@ -42,7 +42,7 @@ public abstract class JavaPlugin extends PluginBase {
@@ -80,14 +80,14 @@ index bb2e55e97bf887a28cac7d4f9a0a23960d22cf56..04fa3991f6ce4e9dad804f28fc6c9476
 -        this.logger = Logger.getLogger(description.getPrefix() != null ? description.getPrefix() : description.getName());
 +        // Paper start
 +        if (this.logger == null) {
-+            this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(this.description);
++            this.logger = io.papermc.paper.utils.PaperPluginLogger.getLogger(this.description);
 +        }
 +        // Paper end
      }
  
      /**
 diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
-index e77c616977a3dcaa72bb22c35f6092c1f00b2b85..550225f168160298f4b1bf6c361207a59cf23122 100644
+index e77c616977a3dcaa72bb22c35f6092c1f00b2b85..7191cdf3326b3e8ee6a1770496e8692c6644e9ab 100644
 --- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
 @@ -44,6 +44,7 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
@@ -102,7 +102,7 @@ index e77c616977a3dcaa72bb22c35f6092c1f00b2b85..550225f168160298f4b1bf6c361207a5
          this.url = file.toURI().toURL();
          this.libraryLoader = libraryLoader;
  
-+        this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(description); // Paper - Register logger early
++        this.logger = io.papermc.paper.utils.PaperPluginLogger.getLogger(description); // Paper - Register logger early
 +
          try {
              Class<?> jarClass;

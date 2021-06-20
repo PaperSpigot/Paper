@@ -32,10 +32,10 @@ But for those who are ok with leaving this inconsistent behavior, you may use WA
 
 It is recommended you regenerate the entities, as these were legit entities, and deserve your love.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 8190c30346c0fd2d86fb7cbcfc7ce17333e05146..9860f5a0ddff83f1393ee13a96b38c3b14077512 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index e79b2d5e3bd3916c8463e062e818b5208afe9e7a..1241eb2dc705393e2fbd54723dc8a0d60e81cbc5 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -402,6 +402,45 @@ public class PaperWorldConfig {
          preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
      }
@@ -83,14 +83,14 @@ index 8190c30346c0fd2d86fb7cbcfc7ce17333e05146..9860f5a0ddff83f1393ee13a96b38c3b
      private void countAllMobsForSpawning() {
          countAllMobsForSpawning = getBoolean("count-all-mobs-for-spawning", false);
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index f73413362375cc517d49b7d1bc942de9884c78c2..e6c42a52d687a418c92e8f628d589ac31ae90626 100644
+index 69a8d4a0153b6dde604b3b154b1516b5a26f034f..48d0780b3e9f96358d8c77175e4d6a6d9ebdf7fd 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -1,6 +1,7 @@
  package net.minecraft.server.level;
  
  import co.aikar.timings.Timing; // Paper
-+import com.destroystokyo.paper.PaperWorldConfig; // Paper
++import io.papermc.paper.PaperWorldConfig; // Paper
  import com.google.common.collect.ImmutableList;
  import com.google.common.collect.Iterables;
  import com.google.common.collect.ComparisonChain; // Paper
@@ -165,7 +165,7 @@ index f73413362375cc517d49b7d1bc942de9884c78c2..e6c42a52d687a418c92e8f628d589ac3
          ChunkPos chunkcoordintpair = holder.getPos();
          CompletableFuture<Either<List<ChunkAccess>, ChunkHolder.ChunkLoadingFailure>> completablefuture = this.getChunkRangeFuture(chunkcoordintpair, 1, (i) -> {
 diff --git a/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java b/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
-index ed26c290dfbf11735728716577ff564ba84437f0..624fd443d2cc71605cfff996140b00f37c8d8841 100644
+index ed26c290dfbf11735728716577ff564ba84437f0..92d51f43402f257ca90b04296e94113f89c49e0d 100644
 --- a/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
 +++ b/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
 @@ -61,7 +61,21 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
@@ -180,7 +180,7 @@ index ed26c290dfbf11735728716577ff564ba84437f0..624fd443d2cc71605cfff996140b00f3
 +            // Paper end
              LOGGER.warn("UUID of added entity already exists: {}", (Object)entity);
 +            // Paper start
-+            if (net.minecraft.world.level.Level.DEBUG_ENTITIES && ((Entity) entity).level.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
++            if (net.minecraft.world.level.Level.DEBUG_ENTITIES && ((Entity) entity).level.paperConfig.duplicateUUIDMode != io.papermc.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
 +                if (((Entity) entity).addedToWorldStack != null) {
 +                    ((Entity) entity).addedToWorldStack.printStackTrace();
 +                }

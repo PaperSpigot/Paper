@@ -8,7 +8,7 @@ Fires an event anytime an enderman intends to teleport away from the player
 You may cancel this, enabling ranged attacks to damage the enderman for example.
 
 diff --git a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
-index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22bf8047bb5 100644
+index a18765fe0be5a83ee2da3638aa5107e9345f19b6..061487e3b92db22fac8acbe7d47757fc0bc36e73 100644
 --- a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
 +++ b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
 @@ -109,6 +109,12 @@ public class EnderMan extends Monster implements NeutralMob {
@@ -16,8 +16,8 @@ index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22b
      }
  
 +    // Paper start
-+    private boolean tryEscape(com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason reason) {
-+        return new com.destroystokyo.paper.event.entity.EndermanEscapeEvent((org.bukkit.craftbukkit.entity.CraftEnderman) this.getBukkitEntity(), reason).callEvent();
++    private boolean tryEscape(io.papermc.paper.event.entity.EndermanEscapeEvent.Reason reason) {
++        return new io.papermc.paper.event.entity.EndermanEscapeEvent((org.bukkit.craftbukkit.entity.CraftEnderman) this.getBukkitEntity(), reason).callEvent();
 +    }
 +    // Paper end
 +
@@ -29,7 +29,7 @@ index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22b
              float f = this.getBrightness();
  
 -            if (f > 0.5F && this.level.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F) {
-+            if (f > 0.5F && this.level.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && this.tryEscape(com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.RUNAWAY)) { // Paper
++            if (f > 0.5F && this.level.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && this.tryEscape(io.papermc.paper.event.entity.EndermanEscapeEvent.Reason.RUNAWAY)) { // Paper
                  this.setTarget((LivingEntity) null);
                  this.teleport();
              }
@@ -37,7 +37,7 @@ index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22b
          if (this.isInvulnerableTo(source)) {
              return false;
          } else if (source instanceof IndirectEntityDamageSource) {
-+            if (this.tryEscape(com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper start
++            if (this.tryEscape(io.papermc.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper start
              for (int i = 0; i < 64; ++i) {
                  if (this.teleport()) {
                      return true;
@@ -50,7 +50,7 @@ index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22b
              boolean flag = super.hurt(source, amount);
  
 -            if (!this.level.isClientSide() && !(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
-+            if (!this.level.isClientSide() && !(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0 && this.tryEscape(source == DamageSource.DROWN ? com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.DROWN : com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper - use to be critical hits as else, but mojang removed critical hits in 1.16.2 due to MC-185684
++            if (!this.level.isClientSide() && !(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0 && this.tryEscape(source == DamageSource.DROWN ? io.papermc.paper.event.entity.EndermanEscapeEvent.Reason.DROWN : io.papermc.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper - use to be critical hits as else, but mojang removed critical hits in 1.16.2 due to MC-185684
                  this.teleport();
              }
  
@@ -59,7 +59,7 @@ index a18765fe0be5a83ee2da3638aa5107e9345f19b6..8e8eea175e75f2a56a12bf1c23a5d22b
                  if (this.target != null && !this.enderman.isPassenger()) {
                      if (this.enderman.isLookingAtMe((Player) this.target)) {
 -                        if (this.target.distanceToSqr((Entity) this.enderman) < 16.0D) {
-+                        if (this.target.distanceToSqr((Entity) this.enderman) < 16.0D && this.enderman.tryEscape(com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.STARE)) { // Paper
++                        if (this.target.distanceToSqr((Entity) this.enderman) < 16.0D && this.enderman.tryEscape(io.papermc.paper.event.entity.EndermanEscapeEvent.Reason.STARE)) { // Paper
                              this.enderman.teleport();
                          }
  

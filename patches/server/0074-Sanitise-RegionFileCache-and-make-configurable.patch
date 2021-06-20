@@ -10,10 +10,10 @@ used RegionFile.
 The implementation uses a LinkedHashMap as an LRU cache (modified from HashMap).
 The maximum size of the RegionFileCache is also made configurable.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index 716f285e67019b8a62922d09c15883c99f9421aa..439dcc6effdc91830d2b7ede9063982998b37120 100644
---- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperConfig.java b/src/main/java/io/papermc/paper/PaperConfig.java
+index 9c862c2e41d7da1825359f9ea55f43c05c8a7050..78b427357a1b57f33eace715132c0231575ef13d 100644
+--- a/src/main/java/io/papermc/paper/PaperConfig.java
++++ b/src/main/java/io/papermc/paper/PaperConfig.java
 @@ -227,4 +227,9 @@ public class PaperConfig {
      private static void loadPermsBeforePlugins() {
          loadPermsBeforePlugins = getBoolean("settings.load-permissions-yml-before-plugins", true);
@@ -25,7 +25,7 @@ index 716f285e67019b8a62922d09c15883c99f9421aa..439dcc6effdc91830d2b7ede90639829
 +    }
  }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-index e506fa1153cabfb93c7bece73e6fe0fafbb958c9..f973792c8ee4523eb4efdf31d0a97cb3358e1b3b 100644
+index 8c8c5903ed94b3cd4237a10a23d11ca921a1a29c..fafc4951048b9d329afffa9426595d5a56632f65 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 @@ -35,7 +35,7 @@ public class RegionFileStorage implements AutoCloseable {
@@ -33,7 +33,7 @@ index e506fa1153cabfb93c7bece73e6fe0fafbb958c9..f973792c8ee4523eb4efdf31d0a97cb3
              return regionfile;
          } else {
 -            if (this.regionCache.size() >= 256) {
-+            if (this.regionCache.size() >= com.destroystokyo.paper.PaperConfig.regionFileCacheSize) { // Paper - configurable
++            if (this.regionCache.size() >= io.papermc.paper.PaperConfig.regionFileCacheSize) { // Paper - configurable
                  ((RegionFile) this.regionCache.removeLast()).close();
              }
  

@@ -14,7 +14,7 @@ Adds flying monsters to control ghast and phantoms
 Adds villagers as separate config
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 95fed7617c2b37886e912e35e7ad446c39e791ab..22db34272c6635438d11f525fb4f08e2aa631f55 100644
+index b67e6686af24770f84502eb1f059307bfe46e0b1..18e1c9e04556ad041f98a9215ea952f07ada412b 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -2,7 +2,6 @@ package net.minecraft.server.level;
@@ -124,7 +124,7 @@ index 95fed7617c2b37886e912e35e7ad446c39e791ab..22db34272c6635438d11f525fb4f08e2
          } else {
              passenger.stopRiding();
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 5bd250a9f9edb0391aaf935d51334bdb0a4e8575..0a3b0919f3de645de6d63d67a2e6bf64d1d3048c 100644
+index 6b53d3f0666782a749446ad56cd5f5c5aca9a47e..cdc75a1c05ba3a5062800618d24f5521a56c9b2d 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -326,6 +326,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
@@ -158,7 +158,7 @@ index 5bd250a9f9edb0391aaf935d51334bdb0a4e8575..0a3b0919f3de645de6d63d67a2e6bf64
              movement = this.maybeBackOffFromEdge(movement, movementType);
              Vec3 vec3d1 = this.collide(movement);
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index 5595150b0da580fce4d5d23993d77314e225ad58..9306340721e2aae4dfb2025e47b4624a8e351420 100644
+index 5cd549d6dcf32a74d01e1e24f8f72123e29b0c38..108c5871c2171f22a8e0db8c00bfcaa4438b6137 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
 @@ -198,6 +198,19 @@ public abstract class Mob extends LivingEntity {
@@ -262,7 +262,7 @@ index 27ea9c10b7f66c2133b0829c0b1c37143dd80b56..c28ade67f6a59146064a57bf016a6461
                          }
                      }
 diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
-index 555cf6d39108d40998adbbaf6b09dd9973f5f2e3..426fa33c9e5ddf2de5435859ee4a5f352313869c 100644
+index 54bf491030548eb78200d4ff24628c410be57fdf..0426ade7bc249677a003e7b20fe30c331aeca637 100644
 --- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
 +++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
 @@ -227,17 +227,29 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
@@ -317,7 +317,7 @@ index 555cf6d39108d40998adbbaf6b09dd9973f5f2e3..426fa33c9e5ddf2de5435859ee4a5f35
          super.customServerAiStep();
      }
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 76ef2337d87b6ae3f190d4bd5410b04af917a507..fff1d38e07439ab1bc83aa9e7153b3666a351129 100644
+index 8b8d06850cd39a4f1b7e3b5e60973030959e6e18..b5f352e297d01013e2dc00bb9d45c0dd8277990c 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -154,6 +154,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {

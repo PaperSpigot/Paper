@@ -48,7 +48,7 @@ index 5df9ad398ba173bb0ff4770673f8eb5967325c5a..877095c93e944293dfb52471eda59a24
  
          CIRCLE, SWOOP;
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java b/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
-index ee18e2826f6390ef5a29557b733fd00db5bc409f..42effcbd3ca7c38a4e8b1aa835543ad243112a33 100644
+index ee18e2826f6390ef5a29557b733fd00db5bc409f..92e5995d0e81567f77f561eadd8939ae12be1649 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
 @@ -4,6 +4,7 @@ import java.util.Iterator;
@@ -64,7 +64,7 @@ index ee18e2826f6390ef5a29557b733fd00db5bc409f..42effcbd3ca7c38a4e8b1aa835543ad2
  
                                              for (int l = 0; l < k; ++l) {
 +                                                // Paper start
-+                                                com.destroystokyo.paper.event.entity.PhantomPreSpawnEvent event = new com.destroystokyo.paper.event.entity.PhantomPreSpawnEvent(MCUtil.toLocation(world, blockposition1), ((ServerPlayer) entityhuman).getBukkitEntity(), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL);
++                                                io.papermc.paper.event.entity.PhantomPreSpawnEvent event = new io.papermc.paper.event.entity.PhantomPreSpawnEvent(MCUtil.toLocation(world, blockposition1), ((ServerPlayer) entityhuman).getBukkitEntity(), org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL);
 +                                                if (!event.callEvent()) {
 +                                                    if (event.shouldAbortSpawn()) {
 +                                                        break;

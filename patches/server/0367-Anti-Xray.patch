@@ -4,17 +4,17 @@ Date: Mon, 20 Aug 2018 03:03:58 +0200
 Subject: [PATCH] Anti-Xray
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index a91a7d8f56a068b18d50a8b987b71510b0a19d5b..b8ca1f73b2451307c3711076eaa43e2adb34d92e 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index c6c9791ae66e198b1cb4f9c9ae394cdede384578..ea07ed679c7d11facd137175b2449ef74ec869b9 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -1,7 +1,9 @@
- package com.destroystokyo.paper;
+ package io.papermc.paper;
  
 +import java.util.Arrays;
  import java.util.List;
  
-+import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
++import io.papermc.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
  import org.bukkit.Bukkit;
  import org.bukkit.configuration.file.YamlConfiguration;
  import org.spigotmc.SpigotWorldConfig;
@@ -59,13 +59,13 @@ index a91a7d8f56a068b18d50a8b987b71510b0a19d5b..b8ca1f73b2451307c3711076eaa43e2a
 +    }
  }
  
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockController.java b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockController.java
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..55e1c448999d79ddd9781d6f8ff2899807802146
+index 0000000000000000000000000000000000000000..5f0e70c11c20891ff3b80f78f6868d416126e466
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockController.java
++++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockController.java
 @@ -0,0 +1,45 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +import net.minecraft.core.BlockPos;
 +import net.minecraft.core.Direction;
@@ -110,13 +110,13 @@ index 0000000000000000000000000000000000000000..55e1c448999d79ddd9781d6f8ff28998
 +
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c69332299015d90345636cf0f4425db62068f978
+index 0000000000000000000000000000000000000000..443e9660fd27d94f8ff8d86c7850ec120f5177c5
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketBlockControllerAntiXray.java
++++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketBlockControllerAntiXray.java
 @@ -0,0 +1,644 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +import java.util.ArrayList;
 +import java.util.LinkedHashSet;
@@ -148,7 +148,7 @@ index 0000000000000000000000000000000000000000..c69332299015d90345636cf0f4425db6
 +import org.bukkit.Bukkit;
 +import org.bukkit.World.Environment;
 +
-+import com.destroystokyo.paper.PaperWorldConfig;
++import io.papermc.paper.PaperWorldConfig;
 +
 +public final class ChunkPacketBlockControllerAntiXray extends ChunkPacketBlockController {
 +
@@ -760,13 +760,13 @@ index 0000000000000000000000000000000000000000..c69332299015d90345636cf0f4425db6
 +        }
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfo.java b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfo.java
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7c3a85d65754c820e71a1db68f0c5a76c7327d9d
+index 0000000000000000000000000000000000000000..4a0fed21e563f87b2ac28af1733bae93aa3f77ac
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfo.java
++++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfo.java
 @@ -0,0 +1,81 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +import net.minecraft.network.protocol.game.ClientboundLevelChunkPacket;
 +import net.minecraft.world.level.chunk.LevelChunk;
@@ -847,13 +847,13 @@ index 0000000000000000000000000000000000000000..7c3a85d65754c820e71a1db68f0c5a76
 +        return bitsPerObject[chunkSectionIndex] != 0;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfoAntiXray.java b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfoAntiXray.java
+diff --git a/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2339aa92ecaf3af9c7481ec6c21981c39319c76f
+index 0000000000000000000000000000000000000000..a1d23abac711ad7d3a2aab501ba74b3083cfa080
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/ChunkPacketInfoAntiXray.java
++++ b/src/main/java/io/papermc/paper/antixray/ChunkPacketInfoAntiXray.java
 @@ -0,0 +1,30 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +import net.minecraft.network.protocol.game.ClientboundLevelChunkPacket;
 +import net.minecraft.world.level.block.state.BlockState;
@@ -883,13 +883,13 @@ index 0000000000000000000000000000000000000000..2339aa92ecaf3af9c7481ec6c21981c3
 +        chunkPacketBlockControllerAntiXray.obfuscate(this);
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/DataBitsReader.java b/src/main/java/com/destroystokyo/paper/antixray/DataBitsReader.java
+diff --git a/src/main/java/io/papermc/paper/antixray/DataBitsReader.java b/src/main/java/io/papermc/paper/antixray/DataBitsReader.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..298ea423084dbcc1b61f991bcd82b8ae51bf0977
+index 0000000000000000000000000000000000000000..9ae3f3e35d17afa915622007261a2a6076115a02
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/DataBitsReader.java
++++ b/src/main/java/io/papermc/paper/antixray/DataBitsReader.java
 @@ -0,0 +1,51 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +public final class DataBitsReader {
 +
@@ -940,13 +940,13 @@ index 0000000000000000000000000000000000000000..298ea423084dbcc1b61f991bcd82b8ae
 +        return value;
 +    }
 +}
-diff --git a/src/main/java/com/destroystokyo/paper/antixray/DataBitsWriter.java b/src/main/java/com/destroystokyo/paper/antixray/DataBitsWriter.java
+diff --git a/src/main/java/io/papermc/paper/antixray/DataBitsWriter.java b/src/main/java/io/papermc/paper/antixray/DataBitsWriter.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..333763936897befda5bb6c077944d2667f922799
+index 0000000000000000000000000000000000000000..a365888ab9e42f61ddfc242d4fbfee4e896e86d8
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/antixray/DataBitsWriter.java
++++ b/src/main/java/io/papermc/paper/antixray/DataBitsWriter.java
 @@ -0,0 +1,79 @@
-+package com.destroystokyo.paper.antixray;
++package io.papermc.paper.antixray;
 +
 +public final class DataBitsWriter {
 +
@@ -1026,7 +1026,7 @@ index 0000000000000000000000000000000000000000..333763936897befda5bb6c077944d266
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/network/protocol/game/ClientboundLevelChunkPacket.java b/src/main/java/net/minecraft/network/protocol/game/ClientboundLevelChunkPacket.java
-index c28879f32b004f36ff746ea2274f91ddd9501e71..7762d8ff94f856d613a6f50311006b698f2aa2b0 100644
+index c28879f32b004f36ff746ea2274f91ddd9501e71..1569085aa5c5dca7982e3178945dc939b3386983 100644
 --- a/src/main/java/net/minecraft/network/protocol/game/ClientboundLevelChunkPacket.java
 +++ b/src/main/java/net/minecraft/network/protocol/game/ClientboundLevelChunkPacket.java
 @@ -37,7 +37,13 @@ public class ClientboundLevelChunkPacket implements Packet<ClientGamePacketListe
@@ -1039,7 +1039,7 @@ index c28879f32b004f36ff746ea2274f91ddd9501e71..7762d8ff94f856d613a6f50311006b69
 +    // Paper start
 +    @Deprecated public ClientboundLevelChunkPacket(LevelChunk chunk) { this(chunk, true); } // Notice for updates: Please make sure this constructor isn't used anywhere
 +    public ClientboundLevelChunkPacket(LevelChunk chunk, boolean modifyBlocks) {
-+        com.destroystokyo.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo = modifyBlocks ? chunk.level.chunkPacketBlockController.getChunkPacketInfo(this, chunk) : null;
++        io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo = modifyBlocks ? chunk.level.chunkPacketBlockController.getChunkPacketInfo(this, chunk) : null;
 +        // Paper end
          ChunkPos chunkPos = chunk.getPos();
          this.x = chunkPos.x;
@@ -1074,7 +1074,7 @@ index c28879f32b004f36ff746ea2274f91ddd9501e71..7762d8ff94f856d613a6f50311006b69
 -    public BitSet extractChunkData(FriendlyByteBuf buf, LevelChunk chunk) {
 +    // Paper start - Anti-Xray - Add chunk packet info
 +    @Deprecated public BitSet extractChunkData(FriendlyByteBuf buf, LevelChunk chunk) { return extractChunkData(buf, chunk, null); } // Notice for updates: Please make sure this method isn't used anywhere
-+    public BitSet extractChunkData(FriendlyByteBuf buf, LevelChunk chunk, com.destroystokyo.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo) {
++    public BitSet extractChunkData(FriendlyByteBuf buf, LevelChunk chunk, io.papermc.paper.antixray.ChunkPacketInfo<net.minecraft.world.level.block.state.BlockState> chunkPacketInfo) {
 +        // Paper end
          BitSet bitSet = new BitSet();
          LevelChunkSection[] levelChunkSections = chunk.getSections();
@@ -1105,7 +1105,7 @@ index c28879f32b004f36ff746ea2274f91ddd9501e71..7762d8ff94f856d613a6f50311006b69
 +    // Paper end
  }
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index badac53382c776eba3efccfda42283912d07b99a..06e581bc0c0ea4e8141f7b9610cc5a7ef350c287 100644
+index 81fa64ea7b28fcc02f9560747a575768d2d7f656..c7a23a7a03b3f3d4cba5a3d1e63ca4f1f622d8f0 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -1485,7 +1485,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -1118,7 +1118,7 @@ index badac53382c776eba3efccfda42283912d07b99a..06e581bc0c0ea4e8141f7b9610cc5a7e
          }
  
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 22db34272c6635438d11f525fb4f08e2aa631f55..fcf5c7b28e927db977ad5b851edaf68e59de8d5b 100644
+index 18e1c9e04556ad041f98a9215ea952f07ada412b..3d6dfa5b11b69c932f5e3d210c767dc19dd6be60 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -292,7 +292,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -1153,14 +1153,14 @@ index f4a056185990181e486f452960159a5287947382..a695e5a0c2e8846333ccb9aea499b565
  
      public void destroyAndAck(BlockPos pos, ServerboundPlayerActionPacket.Action action, String reason) {
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 580b3d7d993751e7c04e6b7d5d4d8fa9d150d383..83673e66aab4988e912d78fb8d1a45f807e38bd9 100644
+index b5f352e297d01013e2dc00bb9d45c0dd8277990c..0550091da93a8415b17f67bc5062816af8402651 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -164,6 +164,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
      public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
  
-     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
-+    public final com.destroystokyo.paper.antixray.ChunkPacketBlockController chunkPacketBlockController; // Paper - Anti-Xray
+     public final io.papermc.paper.PaperWorldConfig paperConfig; // Paper
++    public final io.papermc.paper.antixray.ChunkPacketBlockController chunkPacketBlockController; // Paper - Anti-Xray
  
      public final co.aikar.timings.WorldTimingsHandler timings; // Paper
      public static BlockPos lastPhysicsProblem; // Spigot
@@ -1171,15 +1171,15 @@ index 580b3d7d993751e7c04e6b7d5d4d8fa9d150d383..83673e66aab4988e912d78fb8d1a45f8
 -    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, final DimensionType dimensionmanager, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, org.bukkit.generator.ChunkGenerator gen, org.bukkit.World.Environment env) {
 +    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, final DimensionType dimensionmanager, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, org.bukkit.generator.ChunkGenerator gen, org.bukkit.World.Environment env, java.util.concurrent.Executor executor) { // Paper
          this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName()); // Spigot
-         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), this.spigotConfig); // Paper
+         this.paperConfig = new io.papermc.paper.PaperWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), this.spigotConfig); // Paper
          this.generator = gen;
 @@ -258,6 +259,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          this.keepSpawnInMemory = this.paperConfig.keepSpawnInMemory; // Paper
          this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
          this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
 +        this.chunkPacketBlockController = this.paperConfig.antiXray ?
-+            new com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray(this, executor)
-+            : com.destroystokyo.paper.antixray.ChunkPacketBlockController.NO_OPERATION_INSTANCE; // Paper - Anti-Xray
++            new io.papermc.paper.antixray.ChunkPacketBlockControllerAntiXray(this, executor)
++            : io.papermc.paper.antixray.ChunkPacketBlockController.NO_OPERATION_INSTANCE; // Paper - Anti-Xray
      }
  
      // Paper start
@@ -1229,7 +1229,7 @@ index 69c2454533e6f21c70792b555ec02c6bc6d169b3..2607c7ba5cf1aca5f3e5c22be2e4e8b3
  
          @Override
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 8cc0f2a74191357ab52f30439a515709f8ab80d1..fbb82d344f654b90809582916442c520f344aa39 100644
+index 3607672d544e981921b7ef39c302462be8195009..648634e5b0e1a7190e67d22f7f1c89ede50c2251 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -456,7 +456,7 @@ public class LevelChunk implements ChunkAccess {
@@ -1254,7 +1254,7 @@ index 8cc0f2a74191357ab52f30439a515709f8ab80d1..fbb82d344f654b90809582916442c520
 +    // Paper end
  }
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
-index 5fd66020a937b641e2a060cf38df731a43f3bf55..ec8b67c1b024df38d5e1ad81acff33537ae25626 100644
+index 5fd66020a937b641e2a060cf38df731a43f3bf55..b137ce2545a1b5222ae38b1bda2b866f2bd39c19 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
 @@ -20,16 +20,25 @@ public class LevelChunkSection {
@@ -1294,7 +1294,7 @@ index 5fd66020a937b641e2a060cf38df731a43f3bf55..ec8b67c1b024df38d5e1ad81acff3353
 -    public void write(FriendlyByteBuf buf) {
 +    // Paper start
 +    @Deprecated public void write(FriendlyByteBuf buf) { write(buf, null); } // Notice for updates: Please make sure this method isn't used anywhere
-+    public void write(FriendlyByteBuf buf, com.destroystokyo.paper.antixray.ChunkPacketInfo<BlockState> chunkPacketInfo) {
++    public void write(FriendlyByteBuf buf, io.papermc.paper.antixray.ChunkPacketInfo<BlockState> chunkPacketInfo) {
 +        // Paper end
          buf.writeShort(this.nonEmptyBlockCount);
 -        this.states.write(buf);
@@ -1303,7 +1303,7 @@ index 5fd66020a937b641e2a060cf38df731a43f3bf55..ec8b67c1b024df38d5e1ad81acff3353
  
      public int getSerializedSize() {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
-index bb8fd88aebb550edec8c679622a02a595cbc6694..4a6981f8bacdeca1069e1ddfe44ac9c4217ce624 100644
+index bb8fd88aebb550edec8c679622a02a595cbc6694..e81ea256104a8a9bfe3d5b31c2c693e4c768c2ae 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
 @@ -28,6 +28,7 @@ public class PalettedContainer<T> implements PaletteResize<T> {
@@ -1384,7 +1384,7 @@ index bb8fd88aebb550edec8c679622a02a595cbc6694..4a6981f8bacdeca1069e1ddfe44ac9c4
 +    @Deprecated public void write(FriendlyByteBuf buf) {
 +        write(buf, null, 0);
 +    }
-+    public void write(FriendlyByteBuf buf, com.destroystokyo.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) {
++    public void write(FriendlyByteBuf buf, io.papermc.paper.antixray.ChunkPacketInfo<T> chunkPacketInfo, int bottomBlockY) {
 +        // Paper end
          try {
              this.acquire();
@@ -1448,7 +1448,7 @@ index 64cb0658021866c3875d145cc4266896e57c081e..f0c537e1d6b32ecde52b3d456f0f3889
      @Override
      public FluidState getFluidIfLoaded(BlockPos blockposition) {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
-index c131f6093c395b4d9e401d3c447e7fb13c631ecf..c09a1c640075bde9f656b11258f5adbd2daa4b0b 100644
+index abd02d88911cbbbe6f770039aa0649cff85d85ee..9db83a8f2eceac41f6b86430e719bad1a12471b5 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
 @@ -136,7 +136,7 @@ public class ChunkSerializer {

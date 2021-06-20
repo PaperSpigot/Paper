@@ -18,7 +18,7 @@ index 70a51ba19fb34f652858b18f24554261787d97e2..27ea9c10b7f66c2133b0829c0b1c3714
      private final int searchRange;
      private final int verticalSearchRange;
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Turtle.java b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
-index fa551b1338a21b7b0864bdb9f31cb365c918facf..925f16d5eb092518ef774f69a8d99689feb0f5d7 100644
+index fa551b1338a21b7b0864bdb9f31cb365c918facf..8fc607b70a2b94d01a916468ed7a947e701303cc 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Turtle.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
 @@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
@@ -43,7 +43,7 @@ index fa551b1338a21b7b0864bdb9f31cb365c918facf..925f16d5eb092518ef774f69a8d99689
              if (!this.turtle.isInWater() && this.isReachedTarget()) {
                  if (this.turtle.layEggCounter < 1) {
 -                    this.turtle.setLayingEgg(true);
-+                    this.turtle.setLayingEgg(new com.destroystokyo.paper.event.entity.TurtleStartDiggingEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity(), MCUtil.toLocation(this.turtle.level, this.getTargetPosition())).callEvent()); // Paper
++                    this.turtle.setLayingEgg(new io.papermc.paper.event.entity.TurtleStartDiggingEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity(), MCUtil.toLocation(this.turtle.level, this.getTargetPosition())).callEvent()); // Paper
                  } else if (this.turtle.layEggCounter > 200) {
                      Level world = this.turtle.level;
  
@@ -51,7 +51,7 @@ index fa551b1338a21b7b0864bdb9f31cb365c918facf..925f16d5eb092518ef774f69a8d99689
 -                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.turtle, this.blockPos.above(), (BlockState) Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, this.turtle.random.nextInt(4) + 1)).isCancelled()) {
 +                    // Paper start
 +                    int eggCount = this.turtle.random.nextInt(4) + 1;
-+                    com.destroystokyo.paper.event.entity.TurtleLayEggEvent layEggEvent = new com.destroystokyo.paper.event.entity.TurtleLayEggEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity(), MCUtil.toLocation(this.turtle.level, this.blockPos.above()), eggCount);
++                    io.papermc.paper.event.entity.TurtleLayEggEvent layEggEvent = new io.papermc.paper.event.entity.TurtleLayEggEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity(), MCUtil.toLocation(this.turtle.level, this.blockPos.above()), eggCount);
 +                    if (layEggEvent.callEvent() && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.turtle, this.blockPos.above(), Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, layEggEvent.getEggCount())).isCancelled()) {
                      world.playSound((Player) null, blockposition, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F);
 -                    world.setBlock(this.blockPos.above(), (BlockState) Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, this.turtle.random.nextInt(4) + 1), 3);
@@ -64,7 +64,7 @@ index fa551b1338a21b7b0864bdb9f31cb365c918facf..925f16d5eb092518ef774f69a8d99689
          @Override
          public boolean canUse() {
 -            return this.turtle.isBaby() ? false : (this.turtle.hasEgg() ? true : (this.turtle.getRandom().nextInt(700) != 0 ? false : !this.turtle.getHomePos().closerThan((Position) this.turtle.position(), 64.0D)));
-+            return this.turtle.isBaby() ? false : (this.turtle.hasEgg() ? true : (this.turtle.getRandom().nextInt(700) != 0 ? false : !this.turtle.getHomePos().closerThan((Position) this.turtle.position(), 64.0D))) && new com.destroystokyo.paper.event.entity.TurtleGoHomeEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity()).callEvent(); // Paper
++            return this.turtle.isBaby() ? false : (this.turtle.hasEgg() ? true : (this.turtle.getRandom().nextInt(700) != 0 ? false : !this.turtle.getHomePos().closerThan((Position) this.turtle.position(), 64.0D))) && new io.papermc.paper.event.entity.TurtleGoHomeEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity()).callEvent(); // Paper
          }
  
          @Override

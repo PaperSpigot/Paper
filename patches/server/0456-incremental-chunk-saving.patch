@@ -4,10 +4,10 @@ Date: Sun, 9 Jun 2019 03:53:22 +0100
 Subject: [PATCH] incremental chunk saving
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 9e5810eb0085ad956f0bd1cd69fa88909d9d638a..77e90a6b7d29ad989fd961e00a6fd97c7e5ec4fe 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+diff --git a/src/main/java/io/papermc/paper/PaperWorldConfig.java b/src/main/java/io/papermc/paper/PaperWorldConfig.java
+index b63e81c4132cb79b7b725b5053c119497fc43503..a68cdb1c46f8736945be44a65738bdfee21a570c 100644
+--- a/src/main/java/io/papermc/paper/PaperWorldConfig.java
++++ b/src/main/java/io/papermc/paper/PaperWorldConfig.java
 @@ -44,6 +44,21 @@ public class PaperWorldConfig {
          log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
      }
@@ -31,7 +31,7 @@ index 9e5810eb0085ad956f0bd1cd69fa88909d9d638a..77e90a6b7d29ad989fd961e00a6fd97c
          config.addDefault("world-settings.default." + path, def);
          return config.getBoolean("world-settings." + worldName + "." + path, config.getBoolean("world-settings.default." + path));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 407f18a9c7a688eaac8ad7018ae4f1a5fc628379..9f80206f966689b79df4e3b9b82ef9f4d2170bfe 100644
+index db8b05a7bc949ae730f3f97efd788f27b09fd71a..b4b8298b0f789320ae723546072eb53963b2e7bf 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -300,6 +300,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
@@ -72,7 +72,7 @@ index 407f18a9c7a688eaac8ad7018ae4f1a5fc628379..9f80206f966689b79df4e3b9b82ef9f4
          this.profiler.push("snooper");
          if (((DedicatedServer) this).getProperties().snooperEnabled && !this.snooper.isStarted() && this.tickCount > 100) { // Spigot
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index 38b624e5817f5b2ce70da777b2bb834784de914f..87319eadeba490bdfd0783cacd33e3ec1dcba302 100644
+index d1ec4b4bbd2827276d0f2162f7f62db3768b1100..df41b34d8106b55a00d048d8f8bafa74e9ff4411 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 @@ -111,6 +111,8 @@ public class ChunkHolder {
@@ -139,7 +139,7 @@ index 38b624e5817f5b2ce70da777b2bb834784de914f..87319eadeba490bdfd0783cacd33e3ec
          for (int i = 0; i < this.futures.length(); ++i) {
              CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> completablefuture = (CompletableFuture) this.futures.get(i);
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index 36a9c0e442aa811dd85cede375640e0610197aa6..8d97e0a38a1cf6fcbc458654e2e85a8eb6033dd9 100644
+index 42807f945549b84996bc68907de6d845579cea4b..90fe91e16add988b5a6960496b11fb3a57b8ab5c 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -97,6 +97,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureMana
@@ -240,7 +240,7 @@ index 36a9c0e442aa811dd85cede375640e0610197aa6..8d97e0a38a1cf6fcbc458654e2e85a8e
              ChunkPos chunkcoordintpair = chunk.getPos();
  
 diff --git a/src/main/java/net/minecraft/server/level/ServerChunkCache.java b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
-index 147f6fd5174a2c489dfb7ea2ce2d2dc7dacfb89d..6c565751c36daa0084196dce5d2f82df64a0c77a 100644
+index c4a86de8dfce58bda9e0f2129329a5d26038c67d..69ee5ea06e9ab7907089d68f98e432c0512d61e8 100644
 --- a/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 +++ b/src/main/java/net/minecraft/server/level/ServerChunkCache.java
 @@ -672,6 +672,15 @@ public class ServerChunkCache extends ChunkSource {
@@ -260,7 +260,7 @@ index 147f6fd5174a2c489dfb7ea2ce2d2dc7dacfb89d..6c565751c36daa0084196dce5d2f82df
      public void close() throws IOException {
          // CraftBukkit start
 diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index cd322d31a079dcd50ca62a2898608e2cf89a3edf..4b8748d955fce10536847a44e22d53d6d491ac1d 100644
+index 1f68934f1bbe6ac27519da50ff11adb74f58afd0..ba365677e848eb8caa6793a3ab16037312e5163c 100644
 --- a/src/main/java/net/minecraft/server/level/ServerLevel.java
 +++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
 @@ -1003,6 +1003,37 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
@@ -314,7 +314,7 @@ index a857953f3488e79fd601ac63881bc4d87708afa7..3cf3b0486f786d7d043cce75767753e1
      default boolean generateFlatBedrock() {
          if (this instanceof ProtoChunk) {
 diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
-index 61c70e17401ec85c0a7e6e1793f6689506b8059a..d866997b974b971245111cac43ac6edf92052de4 100644
+index 4ad9fabb5544268f8ef843afc495a016d9a64fde..65fb908ba4863104f140767f019cce7044ed38c1 100644
 --- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
 @@ -108,6 +108,13 @@ public class LevelChunk implements ChunkAccess {

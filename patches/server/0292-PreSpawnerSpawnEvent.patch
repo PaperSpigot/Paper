@@ -9,17 +9,17 @@ SpawnerSpawnEvent gets called instead of the CreatureSpawnEvent for
 spawners.
 
 diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
-index cfb820636f819a7da56d0302d49f39cea1b5a93d..7bf688057d684aa1b60f29294c9a7e81ab6742d1 100644
+index 5836dc812668d3603bd93bd92a67ceec25bff0d3..ddbf335d761ec137fbe80adf2cdea199cd4ae11e 100644
 --- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
 +++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
 @@ -138,11 +138,11 @@ public abstract class BaseSpawner {
  
                          org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(key);
                          if (type != null) {
--                            com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
--                            event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
-+                            com.destroystokyo.paper.event.entity.PreSpawnerSpawnEvent event;
-+                            event = new com.destroystokyo.paper.event.entity.PreSpawnerSpawnEvent(
+-                            io.papermc.paper.event.entity.PreCreatureSpawnEvent event;
+-                            event = new io.papermc.paper.event.entity.PreCreatureSpawnEvent(
++                            io.papermc.paper.event.entity.PreSpawnerSpawnEvent event;
++                            event = new io.papermc.paper.event.entity.PreSpawnerSpawnEvent(
                                  net.minecraft.server.MCUtil.toLocation(world, d0, d1, d2),
                                  type,
 -                                org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER
