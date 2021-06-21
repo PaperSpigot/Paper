@@ -1,0 +1,117 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kieran Wallbanks <kieran.wallbanks@gmail.com>
+Date: Mon, 21 Jun 2021 14:23:50 +0100
+Subject: [PATCH] Fix NotePlayEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/NoteBlock.java b/src/main/java/net/minecraft/world/level/block/NoteBlock.java
+index f8e58d9f71703139a736d93e7f1996e027a29444..253709d7194d47bd8fb9e976967fd1e84b92fd51 100644
+--- a/src/main/java/net/minecraft/world/level/block/NoteBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/NoteBlock.java
+@@ -61,10 +61,9 @@ public class NoteBlock extends Block {
+     private void play(Level world, BlockPos blockposition, BlockState data) { // CraftBukkit
+         if (world.getBlockState(blockposition.above()).isAir()) {
+             // CraftBukkit start
+-            org.bukkit.event.block.NotePlayEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callNotePlayEvent(world, blockposition, data.getValue(NoteBlock.INSTRUMENT), data.getValue(NoteBlock.NOTE));
+-            if (!event.isCancelled()) {
++            // Paper start - move NotePlayEvent call to fix instrument/note changes
+                 world.blockEvent(blockposition, this, 0, 0);
+-            }
++            // Paper end
+             // CraftBukkit end
+         }
+ 
+@@ -93,10 +92,14 @@ public class NoteBlock extends Block {
+ 
+     @Override
+     public boolean triggerEvent(BlockState state, Level world, BlockPos pos, int type, int data) {
+-        int k = (Integer) state.getValue(NoteBlock.NOTE);
++        // Paper start - move NotePlayEvent call to fix instrument/note changes
++        org.bukkit.event.block.NotePlayEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callNotePlayEvent(world, pos, state.getValue(INSTRUMENT), state.getValue(NOTE));
++        if (!event.callEvent()) return false;
++        int k = event.getNote().getId();
+         float f = (float) Math.pow(2.0D, (double) (k - 12) / 12.0D);
+ 
+-        world.playSound((Player) null, pos, ((NoteBlockInstrument) state.getValue(NoteBlock.INSTRUMENT)).getSoundEvent(), SoundSource.RECORDS, 3.0F, f);
++        world.playSound(null, pos, org.bukkit.craftbukkit.util.CraftMagicNumbers.getNoteBlockInstrument(event.getInstrument()).getSoundEvent(), SoundSource.RECORDS, 3.0F, f);
++        // Paper end
+         world.addParticle(ParticleTypes.NOTE, (double) pos.getX() + 0.5D, (double) pos.getY() + 1.2D, (double) pos.getZ() + 0.5D, (double) k / 24.0D, 0.0D, 0.0D);
+         return true;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index edf7e8d65d7f67f2f34490fdb766eca7d3b17aee..886ae3b042457a9eda62b8169270f050cde00d82 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -119,6 +119,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     // Paper start
+     private static final Map<org.bukkit.entity.EntityType, net.minecraft.world.entity.EntityType<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap<>();
+     private static final Map<net.minecraft.world.entity.EntityType<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap<>();
++    private static final com.google.common.collect.BiMap<org.bukkit.Instrument, net.minecraft.world.level.block.state.properties.NoteBlockInstrument> INSTRUMENT_NOTE_BLOCK_INSTRUMENT = com.google.common.collect.EnumBiMap.create(org.bukkit.Instrument.class, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.class);
+ 
+     static {
+         for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
+@@ -126,6 +127,16 @@ public final class CraftMagicNumbers implements UnsafeValues {
+             ENTITY_TYPE_ENTITY_TYPES.put(type, net.minecraft.core.Registry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())));
+             ENTITY_TYPES_ENTITY_TYPE.put(net.minecraft.core.Registry.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())), type);
+         }
++        INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(org.bukkit.Instrument.PIANO, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.HARP);
++        INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(org.bukkit.Instrument.BASS_DRUM, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASEDRUM);
++        INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(org.bukkit.Instrument.SNARE_DRUM, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.SNARE);
++        INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(org.bukkit.Instrument.STICKS, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.HAT);
++        INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(org.bukkit.Instrument.BASS_GUITAR, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.BASS);
++        for (org.bukkit.Instrument instrument : org.bukkit.Instrument.values()) {
++            if (!INSTRUMENT_NOTE_BLOCK_INSTRUMENT.containsKey(instrument)) {
++                INSTRUMENT_NOTE_BLOCK_INSTRUMENT.put(instrument, net.minecraft.world.level.block.state.properties.NoteBlockInstrument.valueOf(instrument.name()));
++            }
++        }
+         // Paper end
+         for (Block block : net.minecraft.core.Registry.BLOCK) {
+             BLOCK_MATERIAL.put(block, Material.getMaterial(net.minecraft.core.Registry.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
+@@ -199,6 +210,12 @@ public final class CraftMagicNumbers implements UnsafeValues {
+     public static org.bukkit.entity.EntityType getEntityType(net.minecraft.world.entity.EntityType<?> entityTypes) {
+         return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
+     }
++    public static net.minecraft.world.level.block.state.properties.NoteBlockInstrument getNoteBlockInstrument(org.bukkit.Instrument instrument) {
++        return INSTRUMENT_NOTE_BLOCK_INSTRUMENT.get(instrument);
++    }
++    public static org.bukkit.Instrument getInstrument(net.minecraft.world.level.block.state.properties.NoteBlockInstrument instrument) {
++        return INSTRUMENT_NOTE_BLOCK_INSTRUMENT.inverse().get(instrument);
++    }
+     // Paper end
+     // ========================================================================
+     // Paper start
+diff --git a/src/test/java/org/bukkit/InstrumentTest.java b/src/test/java/org/bukkit/InstrumentTest.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f0847a52ca12bbd11f69b5d93bfde8ea39feb2ec
+--- /dev/null
++++ b/src/test/java/org/bukkit/InstrumentTest.java
+@@ -0,0 +1,29 @@
++package org.bukkit;
++
++import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
++import org.bukkit.craftbukkit.util.CraftMagicNumbers;
++import org.junit.Test;
++
++import static org.junit.Assert.assertNotNull;
++
++public class InstrumentTest {
++
++    @Test
++    public void testGetNoteBlockInstrument() {
++        // ensure there is a NoteBlockInstrument for each Instrument
++        for (Instrument instrument : Instrument.values()) {
++            NoteBlockInstrument noteBlockInstrument = CraftMagicNumbers.getNoteBlockInstrument(instrument);
++            assertNotNull("no NoteBlockInstrument for Instrument " + instrument.name(), noteBlockInstrument);
++        }
++    }
++
++    @Test
++    public void testGetInstrument() {
++        // ensure there is an Instrument for each NoteBlockInstrument
++        for (NoteBlockInstrument noteBlockInstrument : NoteBlockInstrument.values()) {
++            Instrument instrument = CraftMagicNumbers.getInstrument(noteBlockInstrument);
++            assertNotNull("no Instrument for NoteBlockInstrument " + noteBlockInstrument.name(), instrument);
++        }
++    }
++
++}
