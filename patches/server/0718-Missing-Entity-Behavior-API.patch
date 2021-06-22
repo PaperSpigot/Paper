@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 21 Jun 2021 23:56:07 -0400
+Subject: [PATCH] Missing Entity Behavior API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java
+index b647a5b9fdc1da61c4035d6f2cef7814033dc608..887512ec0945d71be9ab46424d92074e24cb71fb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java
+@@ -114,4 +114,45 @@ public class CraftFox extends CraftAnimals implements Fox {
+ 
+         this.getHandle().getEntityData().set(net.minecraft.world.entity.animal.Fox.DATA_TRUSTED_ID_1, player == null ? Optional.empty() : Optional.of(player.getUniqueId()));
+     }
++    // Paper start - Add more fox behavior API
++    @Override
++    public void setInterested(boolean interested) {
++        getHandle().setIsInterested(interested);
++    }
++
++    @Override
++    public boolean isInterested() {
++        return getHandle().isInterested();
++    }
++
++    @Override
++    public void setLeaping(boolean leaping) {
++        getHandle().setIsPouncing(leaping);
++    }
++
++    @Override
++    public boolean isLeaping() {
++        return getHandle().isPouncing();
++    }
++
++    @Override
++    public void setDefending(boolean defending) {
++        getHandle().setDefending(defending);
++    }
++
++    @Override
++    public boolean isDefending() {
++        return getHandle().isDefending();
++    }
++
++    @Override
++    public void setFaceplanted(boolean faceplanted) {
++        getHandle().setFaceplanted(faceplanted);
++    }
++
++    @Override
++    public boolean isFaceplanted() {
++        return getHandle().isFaceplanted();
++    }
++    // Paper end - Add more fox behavior API
+ }
