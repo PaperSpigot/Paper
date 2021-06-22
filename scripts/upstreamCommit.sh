@@ -1,38 +1,41 @@
 #!/usr/bin/env bash
-(
-set -e
-PS1="$"
+
+set -euo pipefail
 
 function changelog() {
-    base=$(git ls-tree HEAD $1  | cut -d' ' -f3 | cut -f1)
-    cd $1 && git log --oneline ${base}...HEAD
+  local -r submodule_dir="${1?Missing submodule dir}"
+  local base
+  base="$(git ls-tree HEAD "${submodule_dir}"  | awk '{ print $3 }')"
+  git -C "${submodule_dir}" log --oneline "${base}"...HEAD
 }
-bukkit=$(changelog work/Bukkit)
-cb=$(changelog work/CraftBukkit)
-spigot=$(changelog work/Spigot)
 
-updated=""
-logsuffix=""
-if [ ! -z "$bukkit" ]; then
-    logsuffix="$logsuffix\n\nBukkit Changes:\n$bukkit"
-    updated="Bukkit"
+function main() {
+  local disclaimer="${*:-}"
+
+  if [ -z "${disclaimer:-}" ]; then
+    disclaimer="Upstream has released updates that appear to apply and compile correctly.\nThis update has not been tested by PaperMC and as with ANY update, please do your own testing"
+  fi
+
+  local submodule updated logsuffix changes
+  for submodule in Bukkit CraftBukkit Spigot; do
+    changes="$(changelog work/"${submodule}")"
+    if [ -n "${changes:-}" ]; then
+      if [ -z "${updated:-}" ]; then
+        updated="${submodule}"
+      else
+        updated="${updated}/${submodule}"
+      fi
+      logsuffix="${logsuffix:-}\n\n${submodule} Changes:\n${changes}"
+    fi
+  done
+
+  if [ -n "${updated:-}" ]; then
+    log="${UP_LOG_PREFIX:-}Updated Upstream ($updated)\n\n${disclaimer}${logsuffix}"
+    echo -e "${log}" | git commit -F -
+  fi
+}
+
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
 fi
-if [ ! -z "$cb" ]; then
-    logsuffix="$logsuffix\n\nCraftBukkit Changes:\n$cb"
-    if [ -z "$updated" ]; then updated="CraftBukkit"; else updated="$updated/CraftBukkit"; fi
-fi
-if [ ! -z "$spigot" ]; then
-    logsuffix="$logsuffix\n\nSpigot Changes:\n$spigot"
-    if [ -z "$updated" ]; then updated="Spigot"; else updated="$updated/Spigot"; fi
-fi
-disclaimer="Upstream has released updates that appear to apply and compile correctly.\nThis update has not been tested by PaperMC and as with ANY update, please do your own testing"
-
-if [ ! -z "$1" ]; then
-    disclaimer="$@"
-fi
-
-log="${UP_LOG_PREFIX}Updated Upstream ($updated)\n\n${disclaimer}${logsuffix}"
-
-echo -e "$log" | git commit -F -
-
-) || exit 1
