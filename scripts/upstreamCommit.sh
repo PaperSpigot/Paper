@@ -31,7 +31,7 @@ function main() {
 
   if [ -n "${updated:-}" ]; then
     log="${UP_LOG_PREFIX:-}Updated Upstream ($updated)\n\n${disclaimer}${logsuffix}"
-    echo -e "${log}" | git commit -F -
+    printf '%b' "${log}" | git commit -F -
   fi
 }
 
