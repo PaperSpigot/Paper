@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Tue, 22 Jun 2021 23:15:44 -0400
+Subject: [PATCH] Stinger API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 53b61b609361c305fb8d1f1a8700e81ce139fde4..0a5b336485d43e1abaa84c131f37c15d26b627c4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -311,7 +311,28 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+         Preconditions.checkArgument(count >= 0, "New arrow amount must be >= 0");
+         this.getHandle().getEntityData().set(net.minecraft.world.entity.LivingEntity.DATA_ARROW_COUNT_ID, count);
+     }
++    // Paper Start - Stinger API
++    @Override
++    public int getStingerCooldown() {
++        return getHandle().removeStingerTime;
++    }
++
++    @Override
++    public void setStingerCooldown(int ticks) {
++        getHandle().removeStingerTime = ticks;
++    }
+ 
++    @Override
++    public int getStingersInBody() {
++        return getHandle().getStingerCount();
++    }
++
++    @Override
++    public void setStingersInBody(int count) {
++        Preconditions.checkArgument(count >= 0, "New stinger amount must be >= 0");
++        getHandle().setStingerCount(count);
++    }
++    // Paper End - Stinger API
+     @Override
+     public void damage(double amount) {
+         this.damage(amount, null);
