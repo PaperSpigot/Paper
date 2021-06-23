@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Wed, 26 May 2021 19:34:43 -0400
+Subject: [PATCH] Expose firework item directly + manually setting flight ticks
+
+
+diff --git a/src/main/java/org/bukkit/entity/Firework.java b/src/main/java/org/bukkit/entity/Firework.java
+index d616d5941b3c7b85e350e845901da798601b9a3c..251f3ee4e5be0e77ea0e6abf2fd149151d0e226f 100644
+--- a/src/main/java/org/bukkit/entity/Firework.java
++++ b/src/main/java/org/bukkit/entity/Firework.java
+@@ -7,16 +7,22 @@ public interface Firework extends Projectile {
+ 
+     /**
+      * Get a copy of the fireworks meta
++     * <p>
++     * Returns blank FireworkMeta if the firework rocket item is not a firework.
+      *
+      * @return A copy of the current Firework meta
++     * @see Firework#getItem()
+      */
+     @NotNull
+     FireworkMeta getFireworkMeta();
+ 
+     /**
+      * Apply the provided meta to the fireworks
++     * <p>
++     * Sets the firework item to a firework rocket and adjusts detonation ticks automatically.
+      *
+      * @param meta The FireworkMeta to apply
++     * @see Firework#setItem(org.bukkit.inventory.ItemStack)
+      */
+     void setFireworkMeta(@NotNull FireworkMeta meta);
+ 
+@@ -54,4 +60,52 @@ public interface Firework extends Projectile {
+     @org.jetbrains.annotations.Nullable
+     public LivingEntity getBoostedEntity();
+     // Paper end
++
++    // Paper start
++    /**
++     * Gets the item used in the firework.
++     *
++     * @return firework item
++     */
++    @NotNull
++    public org.bukkit.inventory.ItemStack getItem();
++
++    /**
++     * Sets the item used in the firework.
++     * <p>
++     * Firework explosion effects are used from this item.
++     *
++     * @param itemStack item to set
++     */
++    void setItem(@org.jetbrains.annotations.Nullable org.bukkit.inventory.ItemStack itemStack);
++
++    /**
++     * Gets the number of ticks the firework has flown.
++     *
++     * @return ticks flown
++     */
++    int getTicksFlown();
++
++    /**
++     * Sets the number of ticks the firework has flown.
++     * Setting this greater than detonation ticks will cause the firework to explode.
++     *
++     * @param ticks ticks flown
++     */
++    void setTicksFlown(int ticks);
++
++    /**
++     * Gets the number of ticks the firework will detonate on.
++     *
++     * @return the tick to detonate on
++     */
++    int getTicksToDetonate();
++
++    /**
++     * Set the amount of ticks the firework will detonate on.
++     *
++     * @param ticks ticks to detonate on
++     */
++    void setTicksToDetonate(int ticks);
++    // Paper stop
+ }
