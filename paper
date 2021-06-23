@@ -1,0 +1,296 @@
+#!/usr/bin/env bash
+
+# Can't use `set -eu` since ppl might source this file
+
+# TODO: Display warning that one should use gradle?
+
+# We use a function now to not have to deal with variable name clashes
+_paper_script() {
+  ###################
+  ### SHELL STUFF ###
+  ###################
+  local -r shell_name="$(basename "${SHELL}")"
+  local paper_rcpath="${HOME}/.${shell_name}rc"
+  local -r paper_aliaspath="${HOME}/.${shell_name}_aliases"
+  if [ -f "${paper_aliaspath}" ]; then
+    paper_rcpath="${paper_aliaspath}"
+  fi
+
+  ########################
+  ### RESOLVE REPO DIR ###
+  ########################
+  # get base dir regardless of execution location
+  local script_source="${BASH_SOURCE[0]:-$0:a}" # Fallback to ZSH
+  local dir
+  while [ -h "${script_source}" ]; do # resolve $script_source until the file is no longer a symlink
+      dir="$( cd -P "$( dirname "${script_source}" )" &>/dev/null && pwd )"
+      script_source="$(readlink "${script_source}")"
+      # if $script_source was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+      [[ "${script_source}" != /* ]] && script_source="${dir}/${script_source}"
+  done
+  if [[ "${script_source}" != /* ]]; then
+    script_source="${PWD}/${script_source#./}"
+  fi
+  # shellcheck disable=SC2155
+  local basedir="$(dirname "${script_source}")"
+
+  ########################
+  ### HELPER FUNCTIONS ###
+  ########################
+  _paper_cleanup() {
+    # Cleanup functions, since they leak out of the scope
+    unset -f _paper_cleanup
+    unset -f _papergit
+    unset -f _paper_is_dep_available
+    unset -f _paper_print_help
+  }
+  _papergit() {
+    command git -c commit.gpgsing=false "${@}"
+  }
+  _paper_is_dep_available() {
+    # Check if an application is on the PATH.
+    # If it is not, return with non-zero.
+    local -r dep_name="${1?Dep name parameter is required}"
+    local -r not_found_message="${2:-command was not found in the path and is a required dependency}"
+    command -v "${dep_name}" >/dev/null || {
+      printf '"%s" %s\n' "${dep_name}" "${not_found_message}" >&2
+      return 1
+    }
+  }
+  _paper_print_help() {
+        printf 'PaperMC build tool command. This provides a variety of commands to build and manage the PaperMC build\n'
+        printf 'environment. For all of the functionality of this command to be available, you must first run the\n'
+        printf '"setup" command. View below for details. For essential building and patching, you do not need to do the setup.\n'
+        printf '\n'
+        printf ' Normal commands:\n'
+        printf '  * rb, rebuild         | Rebuild patches - can optionally specify either "api", "server" or "all" (default).\n'
+        printf '  * p, patch            | Apply all patches to the project without building it. Can optinally specify either "api", "server" or "all" (default).\n'
+        printf '  * j, jar              | Apply all patches and build the project.\n'
+        printf '  * pc, paperclip       | Build paperclip jar. Need to apply patches first.\n'
+        printf '  * i, install          | Build and install paper into the local repo.\n'
+        printf '  * m, mcdev            | Setup decompiled sources for non-modified NMS files to be imported into an IDE.\n'
+        printf '  * u, up, upstream     | Updates the submodules used by Paper to their latest upstream versions.\n'
+        printf '  * upc, upstreamcommit | Creates the correctly-formatted upstream commit after updating upstream.\n'
+        printf '  * c, clean            | Removes all generated files.\n'
+        printf '  * t, testserver       | Run the test server. Accepts specifying argument to run "reobf", "shadow" or "dev" (default) type.\n'
+        printf '  * con, continue       | Shortcut command for running git am --continue, or git rebase --continue.\n'
+        printf '\n'
+        printf ' These commands require the setup command before use:\n'
+        printf '  * r, root             | Change directory to the root of the project.\n'
+        printf '  * a. api              | Move to the Paper-API directory.\n'
+        printf '  * s, server           | Move to the Paper-Server directory.\n'
+        printf '  * td, testdirectory   | Move to the test-server directory.\n'
+        printf '  * e, edit             | Use to edit a specific patch, give it the argument "server", "api" or "continue"\n'
+        printf '                        | respectively to edit the correct project. Use the argument "continue" after\n'
+        printf '                        | the changes have been made to finish and rebuild patches. Can be called from anywhere.\n'
+        printf '\n'
+        printf '  * setup               | Add an alias to %s to allow full functionality of this script. Run as:\n' "${paper_rcpath}"
+        printf '                        |     . ./paper setup\n'
+        printf "                        | After you run this command you'll be able to just run \"paper\" from anywhere.\n"
+        printf '                        | The default name for the resulting alias is "paper", you can give an argument to override\n'
+        printf '                        | this default, such as:\n'
+        printf '                        |     . ./paper setup example\n'
+        printf '                        | Which will allow you to run "example" instead.\n'
+  }
+
+  ###########################
+  ### CHECK PREREQUISITES ###
+  ###########################
+  local -r java_not_found_message="was not found - download the JDK by following https://paper.readthedocs.io/en/latest/java-update/index.html"
+  # TODO: Verify which ones are required
+  _paper_is_dep_available git
+  _paper_is_dep_available patch
+  _paper_is_dep_available mvn
+  _paper_is_dep_available curl
+  _paper_is_dep_available javac "${java_not_found_message}"
+  _paper_is_dep_available jar "${java_not_found_message}"
+
+  ###############
+  ### LETS GO ###
+  ###############
+  case "${1:-}" in
+    rb|rbp|rebuild|rbf|rbfull)
+      (
+        local target_task
+        case "${2:-}" in
+          ''|all) target_task=rebuildPatches;;
+          a|api) target_task=rebuildApiPatches;;
+          s|server) target_task=rebuildServerPatches;;
+          *) printf 'Unknown target - %s\nExpected one of: all api server\n' "${2:-}" >&2; return 1;;
+        esac
+        cd "${basedir}"
+        if [[ "${1}" == @(rbf|rbfull) ]]; then
+          printf 'Rebuilding patches without filter\n' >&2
+          ./gradlew "${target_task}" --filter-patches=false || return "${?}"
+        else
+          ./gradlew "${target_task}" || return "${?}"
+        fi
+      );;
+    p|patch)
+      (
+        local target_task
+        case "${2:-}" in
+          ''|all) target_task=applyPatches;;
+          a|api) target_task=applyApiPatches;;
+          s|server) target_task=applyServerPatches;;
+          *) printf 'Unknown target - %s\nExpected one of: all api server\n' "${2:-}" >&2; return 1;;
+        esac
+        cd "${basedir}"
+        ./gradlew "${target_task}" || return "${?}"
+      );;
+    j|jar)
+      (
+        cd "${basedir}"
+        ./gradlew applyPatches || return "${?}"
+        ./gradlew paperclipJar || return "${?}"
+      );;
+    b|build)
+      (
+      printf 'NOT IMPLEMENTED YET\n' >&2 # TODO
+      return 1
+      );;
+    i|install)
+      (
+        cd "${basedir}"
+        ./gradlew applyPatches || return "${?}"
+        ./gradlew publishToMavenLocal || return "${?}"
+        printf "Paper jar successfully built and installed to local repo\n"
+      );;
+    pc|paperclip)
+      (
+        cd "${basedir}"
+        ./gradlew paperclipJar || return "${?}"
+      );;
+    make)
+      (
+        if [[ "${2:-}" = bacon ]]; then
+          cd "${basedir}"
+          ./gradlew applyPatches || return "${?}"
+          ./gradlew paperclipJar || return "${?}"
+        fi
+      );;
+    m|mcdev)
+      (
+        cd "${basedir}"
+        ./gradlew makeMcDevSrc || return "${?}"
+      );;
+    t|test|testserver)
+      (
+        local target_task
+        case "${2:-}" in
+          ''|d|dev) target_task=runDev;;
+          s|shadow) target_task=runShadow;;
+          r|reobf) target_task=runReobf;;
+          *) printf 'Unknown target - %s\nExpected one of: dev shadow reobf\n' "${2:-}" >&2; return 1;;
+        esac
+        cd "${basedir}"
+        ./gradlew "${target_task}" || return "${?}"
+      );;
+    u|up|upstream)
+      (
+        cd "${basedir}"
+        ./scripts/upstreamMerge.sh "${2:-}" || return "${?}"
+      );;
+    cu|commitup|commitupstream|upc|upcommit|upstreamcommit)
+      (
+        cd "${basedir}"
+        shift
+        ./scripts/upstreamCommit.sh "${@}" || return "${?}"
+      );;
+    c|clean)
+      (
+        cd "${basedir}"
+        # Is this good or should be OG version?
+        ./gradlew clean cleanCache || return "${?}"
+      );;
+    con|continue)
+        if [ -d ".git/rebase-apply" ]; then
+            _papergit am --continue
+        elif [ -d ".git/rebase-merge" ]; then
+            _papergit rebase --continue
+        fi
+      ;;
+    e|edit)
+      local -r last_edit_file="${basedir}/.git/PAPER_LAST_EDIT"
+      case "${2:-}" in
+        s|server)
+          printf '%s' "${basedir}/Paper-Server" >| "${last_edit_file}"
+          cd "${basedir}/Paper-Server"
+          _papergit rebase --autostash --interactive base || return "${?}"
+        ;;
+        a|api)
+          printf '%s' "${basedir}/Paper-API" >| "${last_edit_file}"
+          cd "${basedir}/Paper-API"
+          _papergit rebase --autostash --interactive base || return "${?}"
+        ;;
+        c|continue)
+          [ -f "${last_edit_file}" ] || {
+            printf 'No prior edit work to continue\n' >&2
+            return 1
+          }
+          local -r last_edit_dir="$( < "${last_edit_file}")"
+          cd "${last_edit_dir}"
+          rm -f "${last_edit_file}"
+          _papergit add .
+          _papergit commit --amend
+          _papergit rebase --continue
+          (
+            # shellcheck disable=SC2155
+            local -r last_edit_dir_base="$(basename "${last_edit_dir}")"
+            local target_task
+            case "${last_edit_dir_base}" in
+              Paper-API) target_task=rebuildApiPatches;;
+              Paper-Server) target_task=rebuildServerPatches;;
+              *)
+                printf 'Unknown last edit dir - %s\nRebuilding all patches\n' "${last_edit_dir_base}" >&2;
+                target_task=rebuildPatches;;
+            esac
+            cd "${basedir}"
+            ./gradlew "${target_task}" || return "${?}"
+          );;
+        *) printf 'You must either edit the api or server, or continue previous edit.\n'; return 1;;
+      esac
+      ;;
+    setup)
+      [ -f "${paper_rcpath}" ] || {
+        printf 'We were unable to setup the paper build tool alias: %s is missing\n' "${paper_rcpath}" >&2
+        return 1
+      }
+      local -r alias_name="${2:-paper}"
+      # We don't support whitespace in paths cause it's a PITA
+      local -r final_alias="alias ${alias_name}='. ${script_source}'"
+      if grep --quiet --fixed-strings "alias ${alias_name}=" "${paper_rcpath}"; then
+        printf 'Replacing existing alias\n' >&2
+        sed -i "s|alias ${alias_name}=.*|${final_alias}|" "${paper_rcpath}"
+      else
+        printf '%s\n' "${final_alias}" >> "${paper_rcpath}"
+      fi
+      # shellcheck disable=SC2139
+      alias "${alias_name}=. ${script_source}"
+      printf 'You can now just type "%s" at any time to access the paper tool.\n' "${alias_name}" >&2
+    ;;
+    r|root) cd "${basedir}";;
+    a|api) cd "${basedir}/Paper-API";;
+    s|server) cd "${basedir}/Paper-Server";;
+    td|testdir) cd "${basedir}/run";;
+    ''|h|help) _paper_print_help;;
+    *)
+      printf 'Unknown subcommand: %s\n' "${1:-}"
+      _paper_print_help
+      return 1
+    ;;
+  esac || {
+    # Handle failure
+    local -r ecode="${?}"
+  }
+  _paper_cleanup # Always clean after yourself
+  return "${ecode:-0}"
+}
+
+# There's no way to unregister _paper_script without loosing exact exit code value
+if _paper_script "${@}"; then
+  unset -f _paper_script
+else
+  unset -f _paper_script
+  false
+fi
