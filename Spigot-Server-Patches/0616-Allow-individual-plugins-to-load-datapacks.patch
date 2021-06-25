@@ -1,0 +1,137 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thonk <30448663+ExcessiveAmountsOfZombies@users.noreply.github.com>
+Date: Tue, 15 Dec 2020 09:07:01 -0600
+Subject: [PATCH] Allow individual plugins to load datapacks
+
+
+diff --git a/src/main/java/io/papermc/paper/datapack/PluginDataPack.java b/src/main/java/io/papermc/paper/datapack/PluginDataPack.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..50608567cd3f9d8822a85944669a2984314de1f8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/datapack/PluginDataPack.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.datapack;
++
++import net.minecraft.server.ResourcePackFile;
++
++import java.io.File;
++
++public class PluginDataPack extends ResourcePackFile {
++
++    private String name;
++    private boolean enabledByDefault;
++
++    public PluginDataPack(String name, File file, boolean enabledByDefault) {
++        super(file);
++        this.name = name;
++        this.enabledByDefault = enabledByDefault;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public boolean isEnabledByDefault() {
++        return enabledByDefault;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/datapack/PluginSource.java b/src/main/java/io/papermc/paper/datapack/PluginSource.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..10a08118beda6b24533ae054f37acfb78d74bd7e
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/datapack/PluginSource.java
+@@ -0,0 +1,46 @@
++package io.papermc.paper.datapack;
++
++import net.minecraft.server.EnumResourcePackType;
++import net.minecraft.server.PackSource;
++import net.minecraft.server.ResourcePackLoader;
++import net.minecraft.server.ResourcePackSource;
++import org.apache.commons.io.FilenameUtils;
++
++import java.io.File;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.function.Consumer;
++
++public class PluginSource implements ResourcePackSource {
++
++    private File pluginFolder;
++
++    public PluginSource(File pluginFolder) {
++        this.pluginFolder = pluginFolder;
++    }
++
++    @Override
++    public void a(Consumer<ResourcePackLoader> consumer, ResourcePackLoader.a creator) {
++        List<PluginDataPack> packs = new ArrayList<>();
++
++        if (pluginFolder.exists()) {
++            for (File file : pluginFolder.listFiles((dir, name) -> name.endsWith(".jar"))) {
++                PluginDataPack dataPack = new PluginDataPack(FilenameUtils.removeExtension(file.getName()), file, true);
++                if (!dataPack.a(EnumResourcePackType.SERVER_DATA).isEmpty()) {
++                    packs.add(dataPack);
++                }
++
++            }
++        }
++
++        for (PluginDataPack pack : packs) {
++            ResourcePackLoader resourcePack = ResourcePackLoader.a("entry/" + pack.getName(), false,
++                () -> pack, creator, ResourcePackLoader.Position.BOTTOM, PackSource.d);
++            if (resourcePack != null) {
++                consumer.accept(resourcePack);
++            }
++        }
++
++
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
+index ae48df4b9b78bc3a687166fdaa7b8a60bd13ec35..c659974bfbef97737b5e03397848bcd977dde342 100644
+--- a/src/main/java/net/minecraft/server/Main.java
++++ b/src/main/java/net/minecraft/server/Main.java
+@@ -14,6 +14,7 @@ import java.nio.file.Paths;
+ import java.util.Optional;
+ import java.util.concurrent.CompletableFuture;
+ import java.util.function.BooleanSupplier;
++import io.papermc.paper.datapack.PluginSource;
+ import joptsimple.NonOptionArgumentSpec;
+ import joptsimple.OptionParser;
+ import joptsimple.OptionSet;
+@@ -120,7 +121,7 @@ public class Main {
+                 Main.LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
+             }
+ 
+-            ResourcePackRepository resourcepackrepository = new ResourcePackRepository(new ResourcePackSource[]{new ResourcePackSourceVanilla(), new ResourcePackSourceFolder(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), PackSource.c)});
++            ResourcePackRepository resourcepackrepository = new ResourcePackRepository(new ResourcePackSource[]{new ResourcePackSourceVanilla(), new ResourcePackSourceFolder(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), PackSource.c), new PluginSource((File) optionset.valueOf("plugins"))}); // paper - add in PluginSource for plugin datapacks
+             // CraftBukkit start
+             File bukkitDataPackFolder = new File(convertable_conversionsession.getWorldFolder(SavedFile.DATAPACKS).toFile(), "bukkit");
+             if (!bukkitDataPackFolder.exists()) {
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 172fc9ef9c0d3444eb99f750a17d42f130d94f73..0d94a049c1e2311ea40fbc7e13277abbc3b0e1df 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -132,7 +132,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     private long nextTick;
+     private long W; final long getTickOversleepMaxTime() { return this.W; } // Paper - OBFHELPER
+     private boolean X; final boolean hasExecutedTask() { return this.X; } // Paper - OBFHELPER
+-    private final ResourcePackRepository resourcePackRepository;
++    protected ResourcePackRepository resourcePackRepository; // paper - widen access
+     private final ScoreboardServer scoreboardServer;
+     @Nullable
+     private PersistentCommandStorage persistentCommandStorage;
+diff --git a/src/main/java/org/bukkit/craftbukkit/scheduler/MinecraftInternalPlugin.java b/src/main/java/org/bukkit/craftbukkit/scheduler/MinecraftInternalPlugin.java
+index 49dc0c441b9dd7e7745cf15ced67f383ebee1f99..caf77f8cede7988554b73109e020957eb11df215 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scheduler/MinecraftInternalPlugin.java
++++ b/src/main/java/org/bukkit/craftbukkit/scheduler/MinecraftInternalPlugin.java
+@@ -129,4 +129,9 @@ public class MinecraftInternalPlugin extends PluginBase {
+     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+         throw new UnsupportedOperationException("Not supported.");
+     }
++    // paper start
++    @Override
++    public File getFile() {
++        throw new UnsupportedOperationException("Not supported.");
++    } // paper end
+ }

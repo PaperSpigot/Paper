@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thonk <30448663+ExcessiveAmountsOfZombies@users.noreply.github.com>
+Date: Tue, 22 Dec 2020 16:50:18 -0600
+Subject: [PATCH] extend ResourcePackFile to use jar based datapacks and remove
+ world datapacks from running first pass so plugin datapacks have a lower
+ priority than them.
+
+
+diff --git a/src/main/java/org/bukkit/plugin/Plugin.java b/src/main/java/org/bukkit/plugin/Plugin.java
+index 79890c68f1ad31f951dfdbd9a16dac500ec58c40..890abe719dd4d70c02bcaf8895c7d8eedfd266d1 100644
+--- a/src/main/java/org/bukkit/plugin/Plugin.java
++++ b/src/main/java/org/bukkit/plugin/Plugin.java
+@@ -171,6 +171,14 @@ public interface Plugin extends TabExecutor {
+     default org.slf4j.Logger getSLF4JLogger() {
+         return org.slf4j.LoggerFactory.getLogger(getLogger().getName());
+     }
++
++    /**
++     * Returns the file where the jar is located.
++     *
++     * @return The jar.
++     */
++    @NotNull
++    public File getFile();
+     // Paper end
+ 
+     /**
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+index 04fa3991f6ce4e9dad804f28fc6c947695857089..0818dbd39b6d4c3354bdbb0332b98a98b3f16f2a 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+@@ -111,7 +111,7 @@ public abstract class JavaPlugin extends PluginBase {
+      * @return File containing this plugin
+      */
+     @NotNull
+-    protected File getFile() {
++    public File getFile() { // paper - widen access for plugin datapacks
+         return file;
+     }
+ 
+diff --git a/src/test/java/org/bukkit/plugin/TestPlugin.java b/src/test/java/org/bukkit/plugin/TestPlugin.java
+index 6d450897187e810070f633e832034763a102a0b0..49b34e3f56ed6857062b35e7536bbb73fdbb8aba 100644
+--- a/src/test/java/org/bukkit/plugin/TestPlugin.java
++++ b/src/test/java/org/bukkit/plugin/TestPlugin.java
+@@ -121,4 +121,9 @@ public class TestPlugin extends PluginBase {
+     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+         throw new UnsupportedOperationException("Not supported.");
+     }
++    // paper start
++    @Override
++    public File getFile() {
++        throw new UnsupportedOperationException("Not supported.");
++    } // paper end
+ }
