@@ -20,7 +20,9 @@ _paper_script() {
   ### RESOLVE REPO DIR ###
   ########################
   # get base dir regardless of execution location
-  local script_source="${BASH_SOURCE[0]:-$0:a}" # Fallback to ZSH
+  local script_source="${BASH_SOURCE[0]:-}"
+  # Fallback for ZSH
+  [ -n "${script_source:-}" ] || script_source="${(%):-%x}"
   local dir
   while [ -h "${script_source}" ]; do # resolve $script_source until the file is no longer a symlink
       dir="$( cd -P "$( dirname "${script_source}" )" &>/dev/null && pwd )"
