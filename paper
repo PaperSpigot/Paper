@@ -99,13 +99,9 @@ _paper_script() {
   ### CHECK PREREQUISITES ###
   ###########################
   local -r java_not_found_message="was not found - download the JDK by following https://paper.readthedocs.io/en/latest/java-update/index.html"
-  # TODO: Verify which ones are required
-  _paper_is_dep_available git
-  _paper_is_dep_available patch
-  _paper_is_dep_available mvn
-  _paper_is_dep_available curl
-  _paper_is_dep_available javac "${java_not_found_message}"
-  _paper_is_dep_available jar "${java_not_found_message}"
+  _paper_is_dep_available git || return "${?}"
+  _paper_is_dep_available javac "${java_not_found_message}" || return "${?}"
+  _paper_is_dep_available jar "${java_not_found_message}" || return "${?}"
 
   ###############
   ### LETS GO ###
@@ -144,12 +140,13 @@ _paper_script() {
       (
         cd "${basedir}"
         ./gradlew applyPatches || return "${?}"
-        ./gradlew paperclipJar || return "${?}"
+        ./gradlew reobfJar || return "${?}"
       );;
     b|build)
       (
-      printf 'NOT IMPLEMENTED YET\n' >&2 # TODO
-      return 1
+        cd "${basedir}"
+        ./gradlew build || return "${?}"
+        return 1
       );;
     i|install)
       (
