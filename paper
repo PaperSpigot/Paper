@@ -166,11 +166,6 @@ _paper_script() {
           ./gradlew paperclipJar || return "${?}"
         fi
       );;
-    m|mcdev)
-      (
-        cd "${basedir}"
-        ./gradlew makeMcDevSrc || return "${?}"
-      );;
     t|test|testserver)
       (
         local target_task
@@ -208,44 +203,16 @@ _paper_script() {
         fi
       ;;
     e|edit)
-      local -r last_edit_file="${basedir}/.git/PAPER_LAST_EDIT"
       case "${2:-}" in
         s|server)
-          printf '%s' "${basedir}/Paper-Server" >| "${last_edit_file}"
           cd "${basedir}/Paper-Server"
           _papergit rebase --autostash --interactive base || return "${?}"
         ;;
         a|api)
-          printf '%s' "${basedir}/Paper-API" >| "${last_edit_file}"
           cd "${basedir}/Paper-API"
           _papergit rebase --autostash --interactive base || return "${?}"
         ;;
-        c|continue)
-          [ -f "${last_edit_file}" ] || {
-            printf 'No prior edit work to continue\n' >&2
-            return 1
-          }
-          local -r last_edit_dir="$( < "${last_edit_file}")"
-          cd "${last_edit_dir}"
-          rm -f "${last_edit_file}"
-          _papergit add .
-          _papergit commit --amend
-          _papergit rebase --continue
-          (
-            # shellcheck disable=SC2155
-            local -r last_edit_dir_base="$(basename "${last_edit_dir}")"
-            local target_task
-            case "${last_edit_dir_base}" in
-              Paper-API) target_task=rebuildApiPatches;;
-              Paper-Server) target_task=rebuildServerPatches;;
-              *)
-                printf 'Unknown last edit dir - %s\nRebuilding all patches\n' "${last_edit_dir_base}" >&2;
-                target_task=rebuildPatches;;
-            esac
-            cd "${basedir}"
-            ./gradlew "${target_task}" || return "${?}"
-          );;
-        *) printf 'You must either edit the api or server, or continue previous edit.\n'; return 1;;
+        *) printf 'You must either edit the api or server\n'; return 1;;
       esac
       ;;
     setup)
