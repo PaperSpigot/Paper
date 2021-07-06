@@ -5,7 +5,7 @@ Subject: [PATCH] Add PlayerArmorChangeEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 8044082ed3ca6076af38e4299e50f1f690d02a72..0dc03f53c80aac91a914bea91958a6c11c4f2061 100644
+index 8044082ed3ca6076af38e4299e50f1f690d02a72..210237665ef016cc24f2fe09e1ea00cfb4324d8e 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
 @@ -1,5 +1,6 @@
@@ -20,7 +20,7 @@ index 8044082ed3ca6076af38e4299e50f1f690d02a72..0dc03f53c80aac91a914bea91958a6c1
  
              if (!ItemStack.matches(itemstack1, itemstack)) {
 +                // Paper start - PlayerArmorChangeEvent
-+                if (this instanceof ServerPlayer && enumitemslot.getType() == EquipmentSlot.Type.ARMOR) {
++                if (this instanceof ServerPlayer && enumitemslot.getType() == EquipmentSlot.Type.ARMOR && !((ServerPlayer) this).joining) {
 +                    final org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(itemstack);
 +                    final org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(itemstack1);
 +                    new PlayerArmorChangeEvent((Player) this.getBukkitEntity(), PlayerArmorChangeEvent.SlotType.valueOf(enumitemslot.name()), oldItem, newItem).callEvent();
