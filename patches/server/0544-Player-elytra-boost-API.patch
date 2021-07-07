@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Tue, 14 Apr 2020 12:05:22 +0200
+Subject: [PATCH] Player elytra boost API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index be7b69f8279bbb95d49c5b6ac24fde356d5caaf2..2742b50ed2f7e6fa9393fdf47a1f3c32703e0ff0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -538,6 +538,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+         throw new RuntimeException("Unknown settings type");
+     }
++
++    @Override
++    public org.bukkit.entity.Firework boostElytra(ItemStack firework) {
++        Validate.isTrue(isGliding(), "Player must be gliding");
++        Validate.isTrue(firework != null, "firework == null");
++        Validate.isTrue(firework.getType() == Material.FIREWORK_ROCKET, "Firework must be Material.FIREWORK_ROCKET");
++
++        net.minecraft.world.item.ItemStack item = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(firework);
++        net.minecraft.world.level.Level world = ((CraftWorld) getWorld()).getHandle();
++        net.minecraft.world.entity.projectile.FireworkRocketEntity entity = new net.minecraft.world.entity.projectile.FireworkRocketEntity(world, item, getHandle());
++        return world.addFreshEntity(entity)
++            ? (org.bukkit.entity.Firework) entity.getBukkitEntity()
++            : null;
++    }
+     // Paper end
+ 
+     @Override

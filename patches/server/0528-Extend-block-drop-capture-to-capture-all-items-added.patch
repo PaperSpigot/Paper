@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Thu, 17 Sep 2020 00:36:05 +0100
+Subject: [PATCH] Extend block drop capture to capture all items added to the
+ world
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 352bbb614366b31b3842f028d41f3324b8d283bf..73d0270d4fde57ce7a75930e259ede4c9318b0ae 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -1223,6 +1223,13 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+             // WorldServer.LOGGER.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.getEntityType())); // CraftBukkit
+             return false;
+         } else {
++            // Paper start - capture all item additions to the world
++            if (captureDrops != null && entity instanceof net.minecraft.world.entity.item.ItemEntity) {
++                captureDrops.add((net.minecraft.world.entity.item.ItemEntity) entity);
++                return true;
++            }
++            // Paper end
++
+             if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
+                 return false;
+             }
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
+index 51d7c59e6b3f4ca84905b186d9b173ec2c36a0b1..55d0b15a7ea1576af8045e84fe47eff696bb369f 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayerGameMode.java
+@@ -7,6 +7,7 @@ import net.minecraft.world.InteractionResult;
+ import net.minecraft.world.InteractionResultHolder;
+ import net.minecraft.world.MenuProvider;
+ import net.minecraft.world.entity.EquipmentSlot;
++import net.minecraft.world.entity.item.ItemEntity;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.DoubleHighBlockItem;
+ import net.minecraft.world.item.ItemStack;
+@@ -423,10 +424,12 @@ public class ServerPlayerGameMode {
+                     // return true; // CraftBukkit
+                 }
+                 // CraftBukkit start
++                java.util.List<ItemEntity> itemsToDrop = level.captureDrops; // Paper - store current list
++                level.captureDrops = null; // Paper - Remove this earlier so that we can actually drop stuff
+                 if (event.isDropItems()) {
+-                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, level.captureDrops);
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockDropItemEvent(bblock, state, this.player, itemsToDrop); // Paper - use stored ref
+                 }
+-                level.captureDrops = null;
++                //world.captureDrops = null; // Paper - move up
+ 
+                 // Drop event experience
+                 if (flag && event != null) {

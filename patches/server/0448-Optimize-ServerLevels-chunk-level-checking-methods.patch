@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Thu, 16 Apr 2020 16:13:59 -0700
+Subject: [PATCH] Optimize ServerLevels chunk level checking methods
+
+These can be hot functions (i.e entity ticking and block ticking),
+so inline where possible, and avoid the abstraction of the
+Either class.
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index ef622b936c7272315dd379139011e2bf8cc35177..b76b1e009cd4c120bcc84f074b2b0eafe6a7cc0d 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -2091,15 +2091,18 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+     public boolean isPositionTickingWithEntitiesLoaded(BlockPos blockposition) {
+         long i = ChunkPos.asLong(blockposition);
+ 
+-        return this.chunkSource.isPositionTicking(i) && this.areEntitiesLoaded(i);
++        // Paper start - optimize is ticking ready type functions
++        ChunkHolder chunkHolder = this.chunkSource.chunkMap.getVisibleChunkIfPresent(i);
++        return chunkHolder != null && chunkHolder.isTickingReady() && this.areEntitiesLoaded(i);
++        // Paper end
+     }
+ 
+     public boolean isPositionEntityTicking(BlockPos blockposition) {
+-        return this.entityManager.isPositionTicking(blockposition);
++        return this.entityManager.isPositionTicking(ChunkPos.asLong(blockposition)); // Paper
+     }
+ 
+     public boolean isPositionEntityTicking(ChunkPos chunkcoordintpair) {
+-        return this.entityManager.isPositionTicking(chunkcoordintpair);
++        return this.entityManager.isPositionTicking(chunkcoordintpair.toLong()); // Paper
+     }
+ 
+     private final class EntityCallbacks implements LevelCallback<Entity> {
+diff --git a/src/main/java/net/minecraft/world/level/ChunkPos.java b/src/main/java/net/minecraft/world/level/ChunkPos.java
+index 439f82a48e6f6ce7b4773505ced32324cacb302d..2a99aa989ac5c19d99bb3cbc0934425e46573cd7 100644
+--- a/src/main/java/net/minecraft/world/level/ChunkPos.java
++++ b/src/main/java/net/minecraft/world/level/ChunkPos.java
+@@ -48,7 +48,7 @@ public class ChunkPos {
+     }
+ 
+     public static long asLong(BlockPos blockPos) {
+-        return asLong(SectionPos.blockToSectionCoord(blockPos.getX()), SectionPos.blockToSectionCoord(blockPos.getZ()));
++        return (((long)blockPos.getX() >> 4) & 4294967295L) | ((((long)blockPos.getZ() >> 4) & 4294967295L) << 32); // Paper - inline
+     }
+ 
+     public static int getX(long pos) {
+diff --git a/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java b/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
+index a56cfcf5ac735147f3f2bd029a2b1a4e889d5b4f..5a0a1b01e89b122811b0b567e1ee27081953e638 100644
+--- a/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
++++ b/src/main/java/net/minecraft/world/level/entity/PersistentEntitySectionManager.java
+@@ -327,6 +327,11 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
+     public LevelEntityGetter<T> getEntityGetter() {
+         return this.entityGetter;
+     }
++    // Paper start
++    public final boolean isPositionTicking(long position) {
++        return this.chunkVisibility.get(position).isTicking();
++    }
++    // Paper end
+ 
+     public boolean isPositionTicking(BlockPos blockPos) {
+         return this.chunkVisibility.get(ChunkPos.asLong(blockPos)).isTicking();

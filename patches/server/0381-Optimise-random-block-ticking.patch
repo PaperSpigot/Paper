@@ -1,0 +1,368 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Mon, 27 Jan 2020 21:28:00 -0800
+Subject: [PATCH] Optimise random block ticking
+
+Massive performance improvement for random block ticking.
+The performance increase comes from the fact that the vast
+majority of attempted block ticks (~95% in my testing) fail
+because the randomly selected block is not tickable.
+
+Now only tickable blocks are targeted, however this means that
+the maximum number of block ticks occurs per chunk. However,
+not all chunks are going to be targeted. The percent chance
+of a chunk being targeted is based on how many tickable blocks
+are in the chunk.
+This means that while block ticks are spread out less, the
+total number of blocks ticked per world tick remains the same.
+Therefore, the chance of a random tickable block being ticked
+remains the same.
+
+diff --git a/src/main/java/com/destroystokyo/paper/util/math/ThreadUnsafeRandom.java b/src/main/java/com/destroystokyo/paper/util/math/ThreadUnsafeRandom.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3edc8e52e06a62ce9f8cc734fd7458b37cfaad91
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/util/math/ThreadUnsafeRandom.java
+@@ -0,0 +1,46 @@
++package com.destroystokyo.paper.util.math;
++
++import java.util.Random;
++
++public final class ThreadUnsafeRandom extends Random {
++
++    // See javadoc and internal comments for java.util.Random where these values come from, how they are used, and the author for them.
++    private static final long multiplier = 0x5DEECE66DL;
++    private static final long addend = 0xBL;
++    private static final long mask = (1L << 48) - 1;
++
++    private static long initialScramble(long seed) {
++        return (seed ^ multiplier) & mask;
++    }
++
++    private long seed;
++
++    @Override
++    public void setSeed(long seed) {
++        // note: called by Random constructor
++        this.seed = initialScramble(seed);
++    }
++
++    @Override
++    protected int next(int bits) {
++        // avoid the expensive CAS logic used by superclass
++        return (int) (((this.seed = this.seed * multiplier + addend) & mask) >>> (48 - bits));
++    }
++
++    // Taken from
++    // https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
++    // https://github.com/lemire/Code-used-on-Daniel-Lemire-s-blog/blob/master/2016/06/25/fastrange.c
++    // Original license is public domain
++    public static int fastRandomBounded(final long randomInteger, final long limit) {
++        // randomInteger must be [0, pow(2, 32))
++        // limit must be [0, pow(2, 32))
++        return (int)((randomInteger * limit) >>> 32);
++    }
++
++    @Override
++    public int nextInt(int bound) {
++        // yes this breaks random's spec
++        // however there's nothing that uses this class that relies on it
++        return fastRandomBounded(this.next(32) & 0xFFFFFFFFL, bound);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index f0ce4150e863ea0d1f4a2f6a22d1be6a482cc78d..e58e1b2be42ced19c81c0006eebc564b90647d7a 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -672,6 +672,10 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+             entityplayer.stopSleepInBed(false, false);
+         });
+     }
++    // Paper start - optimise random block ticking
++    private final BlockPos.MutableBlockPos chunkTickMutablePosition = new BlockPos.MutableBlockPos();
++    private final com.destroystokyo.paper.util.math.ThreadUnsafeRandom randomTickRandom = new com.destroystokyo.paper.util.math.ThreadUnsafeRandom();
++    // Paper end
+ 
+     public void tickChunk(LevelChunk chunk, int randomTickSpeed) {
+         ChunkPos chunkcoordintpair = chunk.getPos();
+@@ -681,10 +685,10 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+         ProfilerFiller gameprofilerfiller = this.getProfiler();
+ 
+         gameprofilerfiller.push("thunder");
+-        BlockPos blockposition;
++        final BlockPos.MutableBlockPos blockposition = this.chunkTickMutablePosition; // Paper - use mutable to reduce allocation rate, final to force compile fail on change
+ 
+         if (!this.paperConfig.disableThunder && flag && this.isThundering() && this.random.nextInt(100000) == 0) { // Paper - Disable thunder
+-            blockposition = this.findLightningTargetAround(this.getBlockRandomPos(j, 0, k, 15));
++            blockposition.set(this.findLightningTargetAround(this.getBlockRandomPos(j, 0, k, 15))); // Paper
+             if (this.isRainingAt(blockposition)) {
+                 DifficultyInstance difficultydamagescaler = this.getCurrentDifficultyAt(blockposition);
+                 boolean flag1 = this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.random.nextDouble() < (double) difficultydamagescaler.getEffectiveDifficulty() * paperConfig.skeleHorseSpawnChance && !this.getBlockState(blockposition.below()).is(Blocks.LIGHTNING_ROD); // Paper
+@@ -707,64 +711,78 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+         }
+ 
+         gameprofilerfiller.popPush("iceandsnow");
+-        if (!this.paperConfig.disableIceAndSnow && this.random.nextInt(16) == 0) { // Paper - Disable ice and snow
+-            blockposition = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, this.getBlockRandomPos(j, 0, k, 15));
+-            BlockPos blockposition1 = blockposition.below();
++        if (!this.paperConfig.disableIceAndSnow && this.randomTickRandom.nextInt(16) == 0) { // Paper - Disable ice and snow // Paper - optimise random ticking
++            // Paper start - optimise chunk ticking
++            this.getRandomBlockPosition(j, 0, k, 15, blockposition);
++            int normalY = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, blockposition.getX() & 15, blockposition.getZ() & 15) + 1;
++            int downY = normalY - 1;
++            blockposition.setY(normalY);
++            // Paper end
+             Biome biomebase = this.getBiome(blockposition);
+ 
+-            if (biomebase.shouldFreeze((LevelReader) this, blockposition1)) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, blockposition1, Blocks.ICE.defaultBlockState(), null); // CraftBukkit
++            // Paper start - optimise chunk ticking
++            blockposition.setY(downY);
++            if (biomebase.shouldFreeze(this, blockposition)) {
++                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, blockposition, Blocks.ICE.defaultBlockState(), null); // CraftBukkit
++                // Paper end
+             }
+ 
+             if (flag) {
++                blockposition.setY(normalY); // Paper
+                 if (biomebase.shouldSnow(this, blockposition)) {
+                     org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, blockposition, Blocks.SNOW.defaultBlockState(), null); // CraftBukkit
+                 }
+ 
+-                BlockState iblockdata = this.getBlockState(blockposition1);
++                blockposition.setY(downY); // Paper
++                BlockState iblockdata = this.getBlockState(blockposition); // Paper
++                blockposition.setY(normalY); // Paper
+                 Biome.Precipitation biomebase_precipitation = this.getBiome(blockposition).getPrecipitation();
+ 
+-                if (biomebase_precipitation == Biome.Precipitation.RAIN && biomebase.isColdEnoughToSnow(blockposition1)) {
++                blockposition.setY(downY); // Paper
++                if (biomebase_precipitation == Biome.Precipitation.RAIN && biomebase.isColdEnoughToSnow(blockposition)) { // Paper
+                     biomebase_precipitation = Biome.Precipitation.SNOW;
+                 }
+ 
+-                iblockdata.getBlock().handlePrecipitation(iblockdata, (net.minecraft.world.level.Level) this, blockposition1, biomebase_precipitation);
++                iblockdata.getBlock().handlePrecipitation(iblockdata, (net.minecraft.world.level.Level) this, blockposition, biomebase_precipitation); // Paper
+             }
+         }
+ 
+-        gameprofilerfiller.popPush("tickBlocks");
++        // Paper start - optimise random block ticking
++        gameprofilerfiller.popPush("randomTick");
+         timings.chunkTicksBlocks.startTiming(); // Paper
+         if (randomTickSpeed > 0) {
+-            LevelChunkSection[] achunksection = chunk.getSections();
+-            int l = achunksection.length;
+-
+-            for (int i1 = 0; i1 < l; ++i1) {
+-                LevelChunkSection chunksection = achunksection[i1];
+-
+-                if (chunksection != LevelChunk.EMPTY_SECTION && chunksection.isRandomlyTicking()) {
+-                    int j1 = chunksection.bottomBlockY();
+-
+-                    for (int k1 = 0; k1 < randomTickSpeed; ++k1) {
+-                        BlockPos blockposition2 = this.getBlockRandomPos(j, j1, k, 15);
+-
+-                        gameprofilerfiller.push("randomTick");
+-                        BlockState iblockdata1 = chunksection.getBlockState(blockposition2.getX() - j, blockposition2.getY() - j1, blockposition2.getZ() - k);
++            LevelChunkSection[] sections = chunk.getSections();
++            int minSection = this.getMinSection();
++            for (int sectionIndex = 0; sectionIndex < sections.length; ++sectionIndex) {
++                LevelChunkSection section = sections[sectionIndex];
++                if (section == null || section.tickingList.size() == 0) {
++                    continue;
++                }
+ 
+-                        if (iblockdata1.isRandomlyTicking()) {
+-                            iblockdata1.randomTick(this, blockposition2, this.random);
+-                        }
++                int yPos = (sectionIndex + minSection) << 4;
++                for (int a = 0; a < randomTickSpeed; ++a) {
++                    int tickingBlocks = section.tickingList.size();
++                    int index = this.randomTickRandom.nextInt(16 * 16 * 16);
++                    if (index >= tickingBlocks) {
++                        continue;
++                    }
+ 
+-                        FluidState fluid = iblockdata1.getFluidState();
++                    long raw = section.tickingList.getRaw(index);
++                    int location = com.destroystokyo.paper.util.maplist.IBlockDataList.getLocationFromRaw(raw);
++                    int randomX = location & 15;
++                    int randomY = ((location >>> (4 + 4)) & 255) | yPos;
++                    int randomZ = (location >>> 4) & 15;
+ 
+-                        if (fluid.isRandomlyTicking()) {
+-                            fluid.randomTick(this, blockposition2, this.random);
+-                        }
++                    BlockPos blockposition2 = blockposition.set(j + randomX, randomY, k + randomZ);
++                    BlockState iblockdata = com.destroystokyo.paper.util.maplist.IBlockDataList.getBlockDataFromRaw(raw);
+ 
+-                        gameprofilerfiller.pop();
+-                    }
++                    iblockdata.randomTick(this, blockposition2, this.randomTickRandom);
++                    // We drop the fluid tick since LAVA is ALREADY TICKED by the above method (See LiquidBlock).
++                    // TODO CHECK ON UPDATE
+                 }
+             }
+         }
++        // Paper end - optimise random block ticking
+         timings.chunkTicksBlocks.stopTiming(); // Paper
+         gameprofilerfiller.pop();
+     }
+diff --git a/src/main/java/net/minecraft/util/BitStorage.java b/src/main/java/net/minecraft/util/BitStorage.java
+index 07e1374ac3430662edd9f585e59b785e329f0820..9f9c0b56f0891e9c423d79f8ae4c3643a2b91048 100644
+--- a/src/main/java/net/minecraft/util/BitStorage.java
++++ b/src/main/java/net/minecraft/util/BitStorage.java
+@@ -104,4 +104,32 @@ public class BitStorage {
+         }
+ 
+     }
++
++    // Paper start
++    public final void forEach(DataBitConsumer consumer) {
++        int i = 0;
++        long[] along = this.data;
++        int j = along.length;
++
++        for (int k = 0; k < j; ++k) {
++            long l = along[k];
++
++            for (int i1 = 0; i1 < this.valuesPerLong; ++i1) {
++                consumer.accept(i, (int) (l & this.mask));
++                l >>= this.bits;
++                ++i;
++                if (i >= this.size) {
++                    return;
++                }
++            }
++        }
++    }
++
++    @FunctionalInterface
++    public static interface DataBitConsumer {
++
++        void accept(int location, int data);
++
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Turtle.java b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
+index 925f16d5eb092518ef774f69a8d99689feb0f5d7..01d8af06f19427354cac95d691e65d31253fef94 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Turtle.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
+@@ -91,7 +91,7 @@ public class Turtle extends Animal {
+     }
+ 
+     public void setHomePos(BlockPos pos) {
+-        this.entityData.set(Turtle.HOME_POS, pos);
++        this.entityData.set(Turtle.HOME_POS, pos.immutable()); // Paper - called with mutablepos...
+     }
+ 
+     public BlockPos getHomePos() { // Paper - public
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index fd23c7913b7a426443515e14be0ac9814a5e934e..0540489b690b0187f240645d544a108a60d18371 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -1310,10 +1310,18 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+     public abstract TagContainer getTagManager();
+ 
+     public BlockPos getBlockRandomPos(int x, int y, int z, int l) {
++        // Paper start - allow use of mutable pos
++        BlockPos.MutableBlockPos ret = new BlockPos.MutableBlockPos();
++        this.getRandomBlockPosition(x, y, z, l, ret);
++        return ret.immutable();
++    }
++    public final BlockPos.MutableBlockPos getRandomBlockPosition(int x, int y, int z, int l, BlockPos.MutableBlockPos out) {
++        // Paper end
+         this.randValue = this.randValue * 3 + 1013904223;
+         int i1 = this.randValue >> 2;
+ 
+-        return new BlockPos(x + (i1 & 15), y + (i1 >> 16 & l), z + (i1 >> 8 & 15));
++        out.set(x + (i1 & 15), y + (i1 >> 16 & l), z + (i1 >> 8 & 15)); // Paper - change to setValues call
++        return out; // Paper
+     }
+ 
+     public boolean noSave() {
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+index c9fefeef19bd46ade51b23eadb5eef3a88024ea1..3119a09c4bbd43030c27d08fd149344d24b2a6b1 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+@@ -19,6 +19,7 @@ public class LevelChunkSection {
+     private short tickingBlockCount;
+     private short tickingFluidCount;
+     final PalettedContainer<BlockState> states; // Paper - package-private
++    public final com.destroystokyo.paper.util.maplist.IBlockDataList tickingList = new com.destroystokyo.paper.util.maplist.IBlockDataList(); // Paper
+ 
+     // Paper start - Anti-Xray - Add parameters
+     @Deprecated public LevelChunkSection(int yOffset) { this(yOffset, null, null, true); } // Notice for updates: Please make sure this constructor isn't used anywhere
+@@ -79,6 +80,9 @@ public class LevelChunkSection {
+             --this.nonEmptyBlockCount;
+             if (blockState.isRandomlyTicking()) {
+                 --this.tickingBlockCount;
++                // Paper start
++                this.tickingList.remove(x, y, z);
++                // Paper end
+             }
+         }
+ 
+@@ -90,6 +94,9 @@ public class LevelChunkSection {
+             ++this.nonEmptyBlockCount;
+             if (state.isRandomlyTicking()) {
+                 ++this.tickingBlockCount;
++                // Paper start
++                this.tickingList.add(x, y, z, state);
++                // Paper end
+             }
+         }
+ 
+@@ -125,22 +132,28 @@ public class LevelChunkSection {
+     }
+ 
+     public void recalcBlockCounts() {
++        // Paper start
++        this.tickingList.clear();
++        // Paper end
+         this.nonEmptyBlockCount = 0;
+         this.tickingBlockCount = 0;
+         this.tickingFluidCount = 0;
+-        this.states.count((state, count) -> {
++        this.states.forEachLocation((state, location) -> { // Paper
+             FluidState fluidState = state.getFluidState();
+             if (!state.isAir()) {
+-                this.nonEmptyBlockCount = (short)(this.nonEmptyBlockCount + count);
++                this.nonEmptyBlockCount = (short)(this.nonEmptyBlockCount + 1); // Paper
+                 if (state.isRandomlyTicking()) {
+-                    this.tickingBlockCount = (short)(this.tickingBlockCount + count);
++                    // Paper start
++                    this.tickingBlockCount = (short)(this.tickingBlockCount + 1);
++                    this.tickingList.add(location, state);
++                    // Paper end
+                 }
+             }
+ 
+             if (!fluidState.isEmpty()) {
+-                this.nonEmptyBlockCount = (short)(this.nonEmptyBlockCount + count);
++                this.nonEmptyBlockCount = (short)(this.nonEmptyBlockCount + 1); // Paper
+                 if (fluidState.isRandomlyTicking()) {
+-                    this.tickingFluidCount = (short)(this.tickingFluidCount + count);
++                    this.tickingFluidCount = (short)(this.tickingFluidCount + 1); // Paper
+                 }
+             }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
+index ac51089aae57a5f1d2411367ff177e058702894c..57cabf1e6f3bf1e694defd42998d21f649ee2abe 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
++++ b/src/main/java/net/minecraft/world/level/chunk/PalettedContainer.java
+@@ -318,4 +318,12 @@ public class PalettedContainer<T> implements PaletteResize<T> {
+     public interface CountConsumer<T> {
+         void accept(T object, int count);
+     }
++
++    // Paper start
++    public void forEachLocation(PalettedContainer.CountConsumer<T> datapaletteblock_a) {
++        this.storage.forEach((int location, int data) -> {
++            datapaletteblock_a.accept(this.palette.valueFor(data), location);
++        });
++    }
++    // Paper end
+ }

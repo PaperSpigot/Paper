@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 4 Jun 2021 12:12:35 -0700
+Subject: [PATCH] Make item validations configurable
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+index 458412d66f392fe5736f68126180b0a039dde785..ffdacd1946c73e762b89b35c55a2e60eb7cd195b 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+@@ -486,4 +486,19 @@ public class PaperConfig {
+         enableBrigadierConsoleHighlighting = getBoolean("settings.console.enable-brigadier-highlighting", enableBrigadierConsoleHighlighting);
+         enableBrigadierConsoleCompletions = getBoolean("settings.console.enable-brigadier-completions", enableBrigadierConsoleCompletions);
+     }
++
++    public static int itemValidationDisplayNameLength = 8192;
++    public static int itemValidationLocNameLength = 8192;
++    public static int itemValidationLoreLineLength = 8192;
++    public static int itemValidationBookTitleLength = 8192;
++    public static int itemValidationBookAuthorLength = 8192;
++    public static int itemValidationBookPageLength = 16384;
++    private static void itemValidationSettings() {
++        itemValidationDisplayNameLength = getInt("settings.item-validation.display-name", itemValidationDisplayNameLength);
++        itemValidationLocNameLength = getInt("settings.item-validation.loc-name", itemValidationLocNameLength);
++        itemValidationLoreLineLength = getInt("settings.item-validation.lore-line", itemValidationLoreLineLength);
++        itemValidationBookTitleLength = getInt("settings.item-validation.book.title", itemValidationBookTitleLength);
++        itemValidationBookAuthorLength = getInt("settings.item-validation.book.author", itemValidationBookAuthorLength);
++        itemValidationBookPageLength = getInt("settings.item-validation.book.page", itemValidationBookPageLength);
++    }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+index a33dd184ea51df7e59ed08e5e2b0ea4ed9dadff5..a13e75797d612d79aa26c4891f66ecf0ce2bebaa 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+@@ -92,11 +92,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+         super(tag);
+ 
+         if (tag.contains(BOOK_TITLE.NBT)) {
+-            this.title = limit( tag.getString(BOOK_TITLE.NBT), 8192 ); // Spigot
++            this.title = limit( tag.getString(BOOK_TITLE.NBT), com.destroystokyo.paper.PaperConfig.itemValidationBookTitleLength); // Spigot // Paper - make configurable
+         }
+ 
+         if (tag.contains(BOOK_AUTHOR.NBT)) {
+-            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), 8192 ); // Spigot
++            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), com.destroystokyo.paper.PaperConfig.itemValidationBookAuthorLength ); // Spigot // Paper - make configurable
+         }
+ 
+         if (tag.contains(RESOLVED.NBT)) {
+@@ -124,7 +124,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+                 } else {
+                     page = this.validatePage(page);
+                 }
+-                this.pages.add( limit( page, 16384 ) ); // Spigot
++                this.pages.add( limit( page, com.destroystokyo.paper.PaperConfig.itemValidationBookPageLength ) ); // Spigot // Paper - make configurable
+             }
+         }
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+index 808eb6b9ec535b1179a1d7b88877c9ce1755c45b..c88ab49f60857d5687facc8523f9edc4d652c81b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+@@ -357,18 +357,18 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
+             CompoundTag display = tag.getCompound(DISPLAY.NBT);
+ 
+             if (display.contains(NAME.NBT)) {
+-                this.displayName = limit( display.getString(NAME.NBT), 8192 ); // Spigot
++                this.displayName = limit( display.getString(NAME.NBT), com.destroystokyo.paper.PaperConfig.itemValidationDisplayNameLength ); // Spigot // Paper - make configurable
+             }
+ 
+             if (display.contains(LOCNAME.NBT)) {
+-                this.locName = limit( display.getString(LOCNAME.NBT), 8192 ); // Spigot
++                this.locName = limit( display.getString(LOCNAME.NBT), com.destroystokyo.paper.PaperConfig.itemValidationLocNameLength ); // Spigot // Paper - make configurable
+             }
+ 
+             if (display.contains(LORE.NBT)) {
+                 ListTag list = display.getList(LORE.NBT, CraftMagicNumbers.NBT.TAG_STRING);
+                 this.lore = new ArrayList<String>(list.size());
+                 for (int index = 0; index < list.size(); index++) {
+-                    String line = limit( list.getString(index), 8192 ); // Spigot
++                    String line = limit( list.getString(index), com.destroystokyo.paper.PaperConfig.itemValidationLoreLineLength ); // Spigot // Paper - make configurable
+                     this.lore.add(line);
+                 }
+             }

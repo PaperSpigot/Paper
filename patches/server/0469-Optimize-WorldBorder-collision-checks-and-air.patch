@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Sun, 10 May 2020 22:49:05 -0400
+Subject: [PATCH] Optimize WorldBorder collision checks and air
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index b208f561ab8bb0ea9ad06fb2a30becef4583c2e6..1e6684855172d25ff839628be48a337ec4dca7cf 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1044,7 +1044,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+         AABB axisalignedbb = this.getBoundingBox();
+         CollisionContext voxelshapecollision = CollisionContext.of(this);
+         VoxelShape voxelshape = this.level.getWorldBorder().getCollisionShape();
+-        Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelshape, Shapes.create(axisalignedbb.deflate(1.0E-7D)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelshape);
++        Stream<VoxelShape> stream = !this.level.getWorldBorder().isWithinBounds(axisalignedbb) ? Stream.empty() : Stream.of(voxelshape); // Paper
+         Stream<VoxelShape> stream1 = this.level.getEntityCollisions(this, axisalignedbb.expandTowards(movement), (entity) -> {
+             return true;
+         });
+diff --git a/src/main/java/net/minecraft/world/level/CollisionSpliterator.java b/src/main/java/net/minecraft/world/level/CollisionSpliterator.java
+index 6f4acf1c7c98a6069b79db483b8c79a8f4b46d54..e420c98d9ccc45d570984dc30fdb928883edec9f 100644
+--- a/src/main/java/net/minecraft/world/level/CollisionSpliterator.java
++++ b/src/main/java/net/minecraft/world/level/CollisionSpliterator.java
+@@ -133,9 +133,10 @@ public class CollisionSpliterator extends AbstractSpliterator<VoxelShape> {
+         WorldBorder worldBorder = this.collisionGetter.getWorldBorder();
+         AABB aABB = this.source.getBoundingBox();
+         if (!isBoxFullyWithinWorldBorder(worldBorder, aABB)) {
+-            VoxelShape voxelShape = worldBorder.getCollisionShape();
+-            if (!isOutsideBorder(voxelShape, aABB) && isCloseToBorder(voxelShape, aABB)) {
+-                action.accept(voxelShape);
++            // Paper start
++            if (worldBorder.isWithinBounds(aABB.deflate(1.0E-7D)) && !worldBorder.isWithinBounds(aABB.inflate(1.0E-7D))) {
++                action.accept(worldBorder.getCollisionShape());
++                // Paper end
+                 return true;
+             }
+         }
+diff --git a/src/main/java/net/minecraft/world/phys/shapes/Shapes.java b/src/main/java/net/minecraft/world/phys/shapes/Shapes.java
+index 18eeb49a4859a8ab9cbef97caf63c0639bc63233..16bc18cacbf7a23fb744c8a12e7fd8da699b2fea 100644
+--- a/src/main/java/net/minecraft/world/phys/shapes/Shapes.java
++++ b/src/main/java/net/minecraft/world/phys/shapes/Shapes.java
+@@ -239,7 +239,7 @@ public final class Shapes {
+                                 mutableBlockPos.set(axisCycle, q, r, p);
+                                 BlockState blockState = world.getTypeIfLoaded(mutableBlockPos); // Paper
+                                 if (blockState == null) return 0.0D; // Paper
+-                                if ((s != 1 || blockState.hasLargeCollisionShape()) && (s != 2 || blockState.is(Blocks.MOVING_PISTON))) {
++                                if (!blockState.isAir() && (s != 1 || blockState.hasLargeCollisionShape()) && (s != 2 || blockState.is(Blocks.MOVING_PISTON))) { // Paper
+                                     initial = blockState.getCollisionShape(world, mutableBlockPos, context).collide(axis3, box.move((double)(-mutableBlockPos.getX()), (double)(-mutableBlockPos.getY()), (double)(-mutableBlockPos.getZ())), initial);
+                                     if (Math.abs(initial) < 1.0E-7D) {
+                                         return 0.0D;

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 16:45:28 -0700
+Subject: [PATCH] add consumeFuel to FurnaceBurnEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+index e7bb8e3a81a07e47db203d72cbb870a250f1715c..348e485897c34cca19113cc35f055a58778ca38b 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -341,7 +341,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+                 if (blockEntity.isLit() && furnaceBurnEvent.isBurning()) {
+                     // CraftBukkit end
+                     flag1 = true;
+-                    if (!itemstack.isEmpty()) {
++                    if (!itemstack.isEmpty() && furnaceBurnEvent.willConsumeFuel()) { // Paper
+                         Item item = itemstack.getItem();
+ 
+                         itemstack.shrink(1);

@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Tue, 14 Jan 2020 14:59:08 -0800
+Subject: [PATCH] Optimise Chunk#getFluid
+
+Removing the try catch and generally reducing ops should make it
+faster on its own, however removing the try catch makes it
+easier to inline due to code size
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+index f75b044feec3f860fc22cbe5602f6c0dffb7d68a..a1f763536d77065e1ce779733a505df43be225ae 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -461,18 +461,20 @@ public class LevelChunk implements ChunkAccess {
+     }
+ 
+     public FluidState getFluidState(int x, int y, int z) {
+-        try {
+-            int l = this.getSectionIndex(y);
+-
+-            if (l >= 0 && l < this.sections.length) {
+-                LevelChunkSection chunksection = this.sections[l];
+-
+-                if (!LevelChunkSection.isEmpty(chunksection)) {
+-                    return chunksection.getFluidState(x & 15, y & 15, z & 15);
++        // try {  // Paper - remove try catch
++        // Paper start - reduce the number of ops in this call
++        int index = this.getSectionIndex(y);
++            if (index >= 0 && index < this.sections.length) {
++                LevelChunkSection chunksection = this.sections[index];
++
++                if (chunksection != null) {
++                    return chunksection.states.get((y & 15) << 8 | (z & 15) << 4 | x & 15).getFluidState();
+                 }
++                // Paper end
+             }
+ 
+             return Fluids.EMPTY.defaultFluidState();
++        /* // Paper - remove try catch
+         } catch (Throwable throwable) {
+             CrashReport crashreport = CrashReport.forThrowable(throwable, "Getting fluid state");
+             CrashReportCategory crashreportsystemdetails = crashreport.addCategory("Block being got");
+@@ -482,6 +484,7 @@ public class LevelChunk implements ChunkAccess {
+             });
+             throw new ReportedException(crashreport);
+         }
++         */  // Paper - remove try catch
+     }
+ 
+     // CraftBukkit start
+diff --git a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+index 60fa637e15ba868a299e0ae50a17b3af87c9793a..92b39f19ed1faad8d38d03fa53e7dad953e51f5d 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
++++ b/src/main/java/net/minecraft/world/level/chunk/LevelChunkSection.java
+@@ -51,7 +51,7 @@ public class LevelChunkSection {
+     }
+ 
+     public FluidState getFluidState(int x, int y, int z) {
+-        return this.states.get(x, y, z).getFluidState();
++        return this.states.get(x, y, z).getFluidState(); // Paper - diff on change - we expect this to be effectively just getType(x, y, z).getFluid(). If this changes we need to check other patches that use IBlockData#getFluid.
+     }
+ 
+     public void acquire() {

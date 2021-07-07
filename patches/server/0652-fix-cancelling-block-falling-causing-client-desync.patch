@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Sat, 27 Mar 2021 11:13:30 +0100
+Subject: [PATCH] fix cancelling block falling causing client desync
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+index 15ec064cb9336924e16a7c9b3f76a9b6ef18d947..8336ea928faa92c6f58f8cdfb9faf1d8e26c9ccf 100644
+--- a/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/FallingBlockEntity.java
+@@ -119,8 +119,18 @@ public class FallingBlockEntity extends Entity {
+ 
+             if (this.time++ == 0) {
+                 blockposition = this.blockPosition();
+-                if (this.level.getBlockState(blockposition).is(block) && !CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.defaultBlockState()).isCancelled()) {
+-                    this.level.removeBlock(blockposition, false);
++                // Paper start - fix cancelling block falling causing client desync
++                if (this.level.getBlockState(blockposition).is(block)) {
++                    if (CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.defaultBlockState()).isCancelled()) {
++                        if (this.level.getBlockState(blockposition).is(block)) { //if listener didn't update the block
++                            ((ServerLevel) level).getChunkSource().blockChanged(blockposition);
++                        }
++                        this.discard();
++                        return;
++                    } else {
++                        this.level.removeBlock(blockposition, false);
++                    }
++                    // Paper end - fix cancelling block falling causing client desync
+                 } else if (!this.level.isClientSide) {
+                     this.discard();
+                     return;

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Esophose <esophose@gmail.com>
+Date: Sat, 3 Oct 2020 18:57:47 -0600
+Subject: [PATCH] Fix Player spawnParticle x/y/z precision loss
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 2742b50ed2f7e6fa9393fdf47a1f3c32703e0ff0..1a2ed6e414b190f7ccb390fa1923222bf38bc36c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2061,7 +2061,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         if (data != null && !particle.getDataType().isInstance(data)) {
+             throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
+         }
+-        ClientboundLevelParticlesPacket packetplayoutworldparticles = new ClientboundLevelParticlesPacket(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
++        ClientboundLevelParticlesPacket packetplayoutworldparticles = new ClientboundLevelParticlesPacket(CraftParticle.toNMS(particle, data), true, x, y, z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count); // Paper - Fix x/y/z coordinate precision loss
+         this.getHandle().connection.send(packetplayoutworldparticles);
+ 
+     }

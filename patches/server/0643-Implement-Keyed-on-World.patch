@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 6 Jan 2021 00:34:04 -0800
+Subject: [PATCH] Implement Keyed on World
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 5bf7faca0b318cebbaa308c8f56cdb3bc69c1cc8..dda910b0135cc285365c03630e57867ff0a2a6ab 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1150,7 +1150,7 @@ public final class CraftServer implements Server {
+         } else if (name.equals(levelName + "_the_end")) {
+             worldKey = net.minecraft.world.level.Level.END;
+         } else {
+-            worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(name.toLowerCase(java.util.Locale.ENGLISH)));
++            worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new net.minecraft.resources.ResourceLocation(creator.key().getNamespace().toLowerCase(java.util.Locale.ENGLISH), creator.key().getKey().toLowerCase(java.util.Locale.ENGLISH))); // Paper
+         }
+ 
+         ServerLevel internal = (ServerLevel) new ServerLevel(this.console, console.executor, worldSession, worlddata, worldKey, dimensionmanager, this.getServer().progressListenerFactory.create(11),
+@@ -1241,6 +1241,15 @@ public final class CraftServer implements Server {
+         return null;
+     }
+ 
++    // Paper start
++    @Override
++    public World getWorld(NamespacedKey worldKey) {
++        ServerLevel worldServer = console.getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, CraftNamespacedKey.toMinecraft(worldKey)));
++        if (worldServer == null) return null;
++        return worldServer.getWorld();
++    }
++    // Paper end
++
+     public void addWorld(World world) {
+         // Check if a World already exists with the UID.
+         if (this.getWorld(world.getUID()) != null) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 071214bf8776959f2240b89501cd9ded2e07fdd7..7b1b64dfbac25e19bc97762fd6d8d8b09c6b5489 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2586,6 +2586,11 @@ public class CraftWorld implements World {
+             return java.util.concurrent.CompletableFuture.completedFuture(chunk == null ? null : chunk.getBukkitChunk());
+         }, net.minecraft.server.MinecraftServer.getServer());
+     }
++
++    @Override
++    public org.bukkit.NamespacedKey getKey() {
++        return org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(world.dimension().location());
++    }
+     // Paper end
+ 
+     // Spigot start

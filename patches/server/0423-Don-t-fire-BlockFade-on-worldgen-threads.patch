@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Thu, 23 Apr 2020 01:36:39 -0400
+Subject: [PATCH] Don't fire BlockFade on worldgen threads
+
+Caused a deadlock
+
+diff --git a/src/main/java/net/minecraft/world/level/block/FireBlock.java b/src/main/java/net/minecraft/world/level/block/FireBlock.java
+index becf80cdbbeb6327958758779cc42ea894127988..3249b4a7e2267d8c321ae4cf592e9fc26dfdcb98 100644
+--- a/src/main/java/net/minecraft/world/level/block/FireBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/FireBlock.java
+@@ -100,6 +100,7 @@ public class FireBlock extends BaseFireBlock {
+     @Override
+     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+         // CraftBukkit start
++        if (!(world instanceof ServerLevel)) return this.canSurvive(state, world, pos) ? (BlockState) this.getStateWithAge(world, pos, (Integer) state.getValue(FireBlock.AGE)) : Blocks.AIR.defaultBlockState(); // Paper - don't fire events in world generation
+         if (!this.canSurvive(state, world, pos)) {
+             // Suppress during worldgen
+             if (!(world instanceof Level)) {
+@@ -115,7 +116,7 @@ public class FireBlock extends BaseFireBlock {
+                 return blockState.getHandle();
+             }
+         }
+-        return this.getStateWithAge(world, pos, (Integer) state.getValue(FireBlock.AGE));
++        return this.getStateWithAge(world, pos, (Integer) state.getValue(FireBlock.AGE)); // Paper - diff on change, see "don't fire events in world generation"
+         // CraftBukkit end
+     }
+ 

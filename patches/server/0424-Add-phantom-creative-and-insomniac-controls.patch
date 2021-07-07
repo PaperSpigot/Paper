@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Blake Galbreath <Blake.Galbreath@GMail.com>
+Date: Sat, 25 Apr 2020 15:13:41 -0500
+Subject: [PATCH] Add phantom creative and insomniac controls
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 2d038185846ae34bc301ab93d881022a05ee458b..1460cd36e8d38c1c4318adf818b87961bfe07aec 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -513,6 +513,13 @@ public class PaperWorldConfig {
+         lightQueueSize = getInt("light-queue-size", lightQueueSize);
+     }
+ 
++    public boolean phantomIgnoreCreative = true;
++    public boolean phantomOnlyAttackInsomniacs = true;
++    private void phantomSettings() {
++        phantomIgnoreCreative = getBoolean("phantoms-do-not-spawn-on-creative-players", phantomIgnoreCreative);
++        phantomOnlyAttackInsomniacs = getBoolean("phantoms-only-attack-insomniacs", phantomOnlyAttackInsomniacs);
++    }
++
+     public int noTickViewDistance;
+     private void viewDistance() {
+         this.noTickViewDistance = this.getInt("viewdistances.no-tick-view-distance", -1);
+diff --git a/src/main/java/net/minecraft/world/entity/EntitySelector.java b/src/main/java/net/minecraft/world/entity/EntitySelector.java
+index d17b75ad13bbc8a38cdc2f2d77ee5d88438cec31..8fb89326395a7e70982c0d757b506565e98b12a4 100644
+--- a/src/main/java/net/minecraft/world/entity/EntitySelector.java
++++ b/src/main/java/net/minecraft/world/entity/EntitySelector.java
+@@ -26,6 +26,7 @@ public final class EntitySelector {
+     public static final Predicate<Entity> NO_SPECTATORS = (entity) -> {
+         return !entity.isSpectator();
+     };
++    public static Predicate<Player> isInsomniac = (player) -> net.minecraft.util.Mth.clamp(((net.minecraft.server.level.ServerPlayer) player).getStats().getValue(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_REST)), 1, Integer.MAX_VALUE) >= 72000; // Paper
+ 
+     private EntitySelector() {}
+     // Paper start
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Phantom.java b/src/main/java/net/minecraft/world/entity/monster/Phantom.java
+index 877095c93e944293dfb52471eda59a24fad2dbc9..460a848bd2a417d05a0bbb084371c98b661a427f 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Phantom.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Phantom.java
+@@ -547,6 +547,7 @@ public class Phantom extends FlyingMob implements Enemy {
+                         Player entityhuman = (Player) iterator.next();
+ 
+                         if (Phantom.this.canAttack((LivingEntity) entityhuman, TargetingConditions.DEFAULT)) {
++                            if (!level.paperConfig.phantomOnlyAttackInsomniacs || EntitySelector.isInsomniac.test(entityhuman)) // Paper
+                             Phantom.this.setGoalTarget(entityhuman, org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER, true); // CraftBukkit - reason
+                             return true;
+                         }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java b/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
+index 42effcbd3ca7c38a4e8b1aa835543ad243112a33..79504dc3448402e73b09c4232b1fd0488872cf68 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/PhantomSpawner.java
+@@ -53,7 +53,7 @@ public class PhantomSpawner implements CustomSpawner {
+                     while (iterator.hasNext()) {
+                         Player entityhuman = (Player) iterator.next();
+ 
+-                        if (!entityhuman.isSpectator()) {
++                        if (!entityhuman.isSpectator() && (!world.paperConfig.phantomIgnoreCreative || !entityhuman.isCreative())) { // Paper
+                             BlockPos blockposition = entityhuman.blockPosition();
+ 
+                             if (!world.dimensionType().hasSkyLight() || blockposition.getY() >= world.getSeaLevel() && world.canSeeSky(blockposition)) {

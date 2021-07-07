@@ -1,0 +1,143 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Mon, 9 Nov 2020 20:44:51 +0100
+Subject: [PATCH] Add ignore discounts API
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+index cbec6decd12dae4f1b9f05f863b493d7379f46ed..25bc1f56e884e8fd9fc900d05dc82712e2f6e9d4 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+@@ -474,6 +474,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+ 
+             while (iterator.hasNext()) {
+                 MerchantOffer merchantrecipe = (MerchantOffer) iterator.next();
++                if (merchantrecipe.ignoreDiscounts) continue; // Paper
+ 
+                 // CraftBukkit start
+                 int bonus = -Mth.floor((float) i * merchantrecipe.getPriceMultiplier());
+@@ -493,6 +494,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+ 
+             while (iterator1.hasNext()) {
+                 MerchantOffer merchantrecipe1 = (MerchantOffer) iterator1.next();
++                if (merchantrecipe1.ignoreDiscounts) continue; // Paper
+                 double d0 = 0.3D + 0.0625D * (double) j;
+                 int k = (int) Math.floor(d0 * (double) merchantrecipe1.getBaseCostA().getCount());
+ 
+diff --git a/src/main/java/net/minecraft/world/item/trading/MerchantOffer.java b/src/main/java/net/minecraft/world/item/trading/MerchantOffer.java
+index 75827fcad36a551d832f4be094167936092b6caf..70b703b920752e7301e4f19cdc07a1a4ceac5e0e 100644
+--- a/src/main/java/net/minecraft/world/item/trading/MerchantOffer.java
++++ b/src/main/java/net/minecraft/world/item/trading/MerchantOffer.java
+@@ -19,6 +19,7 @@ public class MerchantOffer {
+     private int demand;
+     public float priceMultiplier;
+     public int xp;
++    public boolean ignoreDiscounts; // Paper
+     // CraftBukkit start
+     private CraftMerchantRecipe bukkitHandle;
+ 
+@@ -27,7 +28,12 @@ public class MerchantOffer {
+     }
+ 
+     public MerchantOffer(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int uses, int maxUses, int experience, float priceMultiplier, CraftMerchantRecipe bukkit) {
+-        this(itemstack, itemstack1, itemstack2, uses, maxUses, experience, priceMultiplier);
++        // Paper start - add ignoreDiscounts param
++        this(itemstack, itemstack1, itemstack2, uses, maxUses, experience, priceMultiplier, false, bukkit);
++    }
++    public MerchantOffer(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int uses, int maxUses, int experience, float priceMultiplier, boolean ignoreDiscounts, CraftMerchantRecipe bukkit) {
++        this(itemstack, itemstack1, itemstack2, uses, maxUses, experience, priceMultiplier, 0, ignoreDiscounts);
++        // Paper end
+         this.bukkitHandle = bukkit;
+     }
+     // CraftBukkit end
+@@ -59,6 +65,7 @@ public class MerchantOffer {
+ 
+         this.specialPriceDiff = nbt.getInt("specialPrice");
+         this.demand = nbt.getInt("demand");
++        this.ignoreDiscounts = nbt.getBoolean("Paper.IgnoreDiscounts"); // Paper
+     }
+ 
+     public MerchantOffer(ItemStack buyItem, ItemStack sellItem, int maxUses, int merchantExperience, float priceMultiplier) {
+@@ -70,10 +77,19 @@ public class MerchantOffer {
+     }
+ 
+     public MerchantOffer(ItemStack firstBuyItem, ItemStack secondBuyItem, ItemStack sellItem, int uses, int maxUses, int merchantExperience, float priceMultiplier) {
+-        this(firstBuyItem, secondBuyItem, sellItem, uses, maxUses, merchantExperience, priceMultiplier, 0);
++        // Paper start - add ignoreDiscounts param
++        this(firstBuyItem, secondBuyItem, sellItem, uses, maxUses, merchantExperience, priceMultiplier, false);
++    }
++    public MerchantOffer(ItemStack firstBuyItem, ItemStack secondBuyItem, ItemStack sellItem, int uses, int maxUses, int merchantExperience, float priceMultiplier, boolean ignoreDiscounts) {
++        this(firstBuyItem, secondBuyItem, sellItem, uses, maxUses, merchantExperience, priceMultiplier, 0, ignoreDiscounts);
+     }
+ 
+     public MerchantOffer(ItemStack firstBuyItem, ItemStack secondBuyItem, ItemStack sellItem, int uses, int maxUses, int merchantExperience, float priceMultiplier, int demandBonus) {
++        this(firstBuyItem, secondBuyItem, sellItem, uses, maxUses, merchantExperience, priceMultiplier, demandBonus, false);
++    }
++    public MerchantOffer(ItemStack firstBuyItem, ItemStack secondBuyItem, ItemStack sellItem, int uses, int maxUses, int merchantExperience, float priceMultiplier, int demandBonus, boolean ignoreDiscounts) {
++        this.ignoreDiscounts = ignoreDiscounts;
++        // Paper end
+         this.rewardExp = true;
+         this.xp = 1;
+         this.baseCostA = firstBuyItem;
+@@ -189,6 +205,7 @@ public class MerchantOffer {
+         nbttagcompound.putFloat("priceMultiplier", this.priceMultiplier);
+         nbttagcompound.putInt("specialPrice", this.specialPriceDiff);
+         nbttagcompound.putInt("demand", this.demand);
++        nbttagcompound.putBoolean("Paper.IgnoreDiscounts", this.ignoreDiscounts); // Paper
+         return nbttagcompound;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
+index 8dfbac01a7c88797bb7adfee6278d090da2bedc9..fc69347b03ce197584b310f99e14799046ed5b70 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantRecipe.java
+@@ -17,7 +17,12 @@ public class CraftMerchantRecipe extends MerchantRecipe {
+     }
+ 
+     public CraftMerchantRecipe(ItemStack result, int uses, int maxUses, boolean experienceReward, int experience, float priceMultiplier) {
+-        super(result, uses, maxUses, experienceReward, experience, priceMultiplier);
++        // Paper start - add ignoreDiscounts param
++        this(result, uses, maxUses, experienceReward, experience, priceMultiplier, false);
++    }
++    public CraftMerchantRecipe(ItemStack result, int uses, int maxUses, boolean experienceReward, int experience, float priceMultiplier, boolean ignoreDiscounts) {
++        super(result, uses, maxUses, experienceReward, experience, priceMultiplier, ignoreDiscounts);
++        // Paper end
+         this.handle = new net.minecraft.world.item.trading.MerchantOffer(
+                 net.minecraft.world.item.ItemStack.EMPTY,
+                 net.minecraft.world.item.ItemStack.EMPTY,
+@@ -26,6 +31,7 @@ public class CraftMerchantRecipe extends MerchantRecipe {
+                 maxUses,
+                 experience,
+                 priceMultiplier,
++                ignoreDiscounts, // Paper - add ignoreDiscounts param
+                 this
+         );
+         this.setExperienceReward(experienceReward);
+@@ -81,6 +87,18 @@ public class CraftMerchantRecipe extends MerchantRecipe {
+         handle.priceMultiplier = priceMultiplier;
+     }
+ 
++    // Paper start
++    @Override
++    public boolean shouldIgnoreDiscounts() {
++        return this.handle.ignoreDiscounts;
++    }
++
++    @Override
++    public void setIgnoreDiscounts(boolean ignoreDiscounts) {
++        this.handle.ignoreDiscounts = ignoreDiscounts;
++    }
++    // Paper end
++
+     public net.minecraft.world.item.trading.MerchantOffer toMinecraft() {
+         List<ItemStack> ingredients = getIngredients();
+         Preconditions.checkState(!ingredients.isEmpty(), "No offered ingredients");
+@@ -95,7 +113,7 @@ public class CraftMerchantRecipe extends MerchantRecipe {
+         if (recipe instanceof CraftMerchantRecipe) {
+             return (CraftMerchantRecipe) recipe;
+         } else {
+-            CraftMerchantRecipe craft = new CraftMerchantRecipe(recipe.getResult(), recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
++            CraftMerchantRecipe craft = new CraftMerchantRecipe(recipe.getResult(), recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier(), recipe.shouldIgnoreDiscounts()); // Paper - shouldIgnoreDiscounts
+             craft.setIngredients(recipe.getIngredients());
+ 
+             return craft;

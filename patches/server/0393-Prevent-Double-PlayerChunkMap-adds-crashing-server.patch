@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Thu, 2 Apr 2020 01:42:39 -0400
+Subject: [PATCH] Prevent Double PlayerChunkMap adds crashing server
+
+Suspected case would be around the technique used in .stopRiding
+Stack will identify any causer of this and warn instead of crashing.
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
+index b2d88e0423d93fdb45dc8ca7d53c98069ade749e..2b291296821dc6d6a8437bd977eeba517cdb5003 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
+@@ -1508,6 +1508,14 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+ 
+     public void addEntity(Entity entity) {
+         org.spigotmc.AsyncCatcher.catchOp("entity track"); // Spigot
++        // Paper start - ignore and warn about illegal addEntity calls instead of crashing server
++        if (!entity.valid || entity.level != this.level || this.entityMap.containsKey(entity.getId())) {
++            new Throwable("[ERROR] Illegal PlayerChunkMap::addEntity for world " + this.level.getWorld().getName()
++                + ": " + entity  + (this.entityMap.containsKey(entity.getId()) ? " ALREADY CONTAINED (This would have crashed your server)" : ""))
++                .printStackTrace();
++            return;
++        }
++        // Paper end
+         if (!(entity instanceof EnderDragonPart)) {
+             EntityType<?> entitytypes = entity.getType();
+             int i = entitytypes.clientTrackingRange() * 16;
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 427d9c6ffdabc3962ccb8ecd97fe4997643cf2a8..f2b3f69f6e843249f80349fcbf3c1778db79e004 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -2118,7 +2118,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+ 
+         public void onTrackingStart(Entity entity) {
+             org.spigotmc.AsyncCatcher.catchOp("entity register"); // Spigot
+-            ServerLevel.this.getChunkSource().addEntity(entity);
++            // ServerLevel.this.getChunkSource().addEntity(entity); // Paper - moved down below valid=true
+             if (entity instanceof ServerPlayer) {
+                 ServerLevel.this.players.add((ServerPlayer) entity);
+                 ServerLevel.this.updateSleepingPlayerList();
+@@ -2140,6 +2140,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+             }
+ 
+             entity.valid = true; // CraftBukkit
++            ServerLevel.this.getChunkSource().addEntity(entity);
+             // Paper start - Set origin location when the entity is being added to the world
+             if (entity.getOriginVector() == null) {
+                 entity.setOrigin(entity.getBukkitEntity().getLocation());
