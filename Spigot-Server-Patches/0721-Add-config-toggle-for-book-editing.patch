@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Sat, 1 May 2021 13:37:50 +0100
+Subject: [PATCH] Add config toggle for book editing
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+index efc1e42d606e1c9feb1a4871c0714933ae92a1b2..7e203721c4648128f06feb18c7e1fede63fc0922 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
+@@ -486,4 +486,9 @@ public class PaperConfig {
+         enableBrigadierConsoleHighlighting = getBoolean("settings.console.enable-brigadier-highlighting", enableBrigadierConsoleHighlighting);
+         enableBrigadierConsoleCompletions = getBoolean("settings.console.enable-brigadier-completions", enableBrigadierConsoleCompletions);
+     }
++
++    public static boolean allowBookEditing = true;
++    private static void allowBookEditing() {
++        allowBookEditing = getBoolean("settings.allow-book-editing", allowBookEditing);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 9455cb9bc849a330e57fdc466fb51902631e22d8..c64c4a129211f08db68a0d940e72ec6c5577d873 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -1138,6 +1138,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+     }
+ 
+     private void a(List<String> list, int i) {
++        // Paper start - Config for allowing book editing
++        if (!PaperConfig.allowBookEditing) {
++            return;
++        }
++        // Paper end
+         ItemStack itemstack = this.player.inventory.getItem(i);
+ 
+         if (itemstack.getItem() == Items.WRITABLE_BOOK) {
+@@ -1151,6 +1156,11 @@ public class PlayerConnection implements PacketListenerPlayIn {
+     }
+ 
+     private void a(String s, List<String> list, int i) {
++        // Paper start - Config for allowing book editing
++        if (!PaperConfig.allowBookEditing) {
++            return;
++        }
++        // Paper end
+         ItemStack itemstack = this.player.inventory.getItem(i);
+ 
+         if (itemstack.getItem() == Items.WRITABLE_BOOK) {
