@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: stonar96 <minecraft.stonar96@gmail.com>
+Date: Sun, 17 Jan 2021 01:11:36 +0100
+Subject: [PATCH] Optimize HashMapPalette
+
+HashMapPalette uses an instance of CrudeIncrementalIntIdentityHashBiMap
+internally. A Palette has a preset maximum size = 1 << bits.
+CrudeIncrementalIntIdentityHashBiMap has an initial size but is
+automatically resized. The CrudeIncrementalIntIdentityHashBiMap is created
+with the maximum size in the constructor of HashMapPalette, with the aim
+that it doesn't need to be resized anymore. However, there are two things
+that I think Mojang hasn't considered here:
+1) The CrudeIncrementalIntIdentityHashBiMap is resized, when its initial
+size is reached and not the next time, when a further object is added.
+2) HashMapPalette adds objects (unnecessarily) before checking if the
+initial size of CrudeIncrementalIntIdentityHashBiMap is reached.
+This means to actually avoid resize operations in
+CrudeIncrementalIntIdentityHashBiMap, one has to add 2 to the initial size
+or add 1 and check the size before adding objects. This commit implements
+the second approach. Note that this isn't only an optimization but also
+makes async reads of Palettes fail-safe. An async read while the
+CrudeIncrementalIntIdentityHashBiMap is resized is fatal and can even lead
+to corrupted data. This is also something that Anti-Xray is currently
+relying on.
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java b/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
+index e8225af9813c972cf3234b5847698ad47c12093e..4d07a63729ad1f330e0197bacdb7ed90425ae150 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
++++ b/src/main/java/net/minecraft/world/level/chunk/HashMapPalette.java
+@@ -23,17 +23,23 @@ public class HashMapPalette<T> implements Palette<T> {
+         this.resizeHandler = resizeHandler;
+         this.reader = elementDeserializer;
+         this.writer = elementSerializer;
+-        this.values = new CrudeIncrementalIntIdentityHashBiMap<>(1 << indexBits);
++        this.values = new CrudeIncrementalIntIdentityHashBiMap<>((1 << indexBits) + 1); // Paper - Avoid unnecessary resize operation in CrudeIncrementalIntIdentityHashBiMap
+     }
+ 
+     @Override
+     public int idFor(T object) {
+         int i = this.values.getId(object);
+         if (i == -1) {
+-            i = this.values.add(object);
+-            if (i >= 1 << this.bits) {
++            // Paper start - Avoid unnecessary resize operation in CrudeIncrementalIntIdentityHashBiMap and optimize
++            // We use size() instead of the result from add(K)
++            // This avoids adding another object unnecessarily
++            // Without this change, + 2 would be required in the constructor
++            if (this.values.size() >= 1 << this.bits) {
+                 i = this.resizeHandler.onResize(this.bits + 1, object);
++            } else {
++                i = this.values.add(object);
+             }
++            // Paper end
+         }
+ 
+         return i;
