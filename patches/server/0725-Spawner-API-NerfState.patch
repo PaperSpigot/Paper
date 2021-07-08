@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 6 Dec 2020 18:06:56 -0800
+Subject: [PATCH] Spawner API - NerfState
+
+
+diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
+index 9228c0bc797fb95c8ac949bdc568eadafee84a80..b7dbe5038e68c07df3c87b5673f04c65af3126e9 100644
+--- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
++++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
+@@ -47,6 +47,8 @@ public abstract class BaseSpawner {
+     public int spawnRange;
+     private final Random random;
+     private int tickDelay = 0; // Paper
++    public org.bukkit.block.CreatureSpawner.NerfStatus nerfStatus = org.bukkit.block.CreatureSpawner.NerfStatus.DEFAULT;
++    private static final String PAPER_NERF_MOBS = "Paper.NerfStatus"; // Paper
+ 
+     public BaseSpawner() {
+         this.spawnPotentials = BaseSpawner.EMPTY_POTENTIALS;
+@@ -183,7 +185,7 @@ public abstract class BaseSpawner {
+                                 ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.SPAWNER, (SpawnGroupData) null, (CompoundTag) null);
+                             }
+                             // Spigot Start
+-                            if (entityinsentient.level.spigotConfig.nerfSpawnerMobs) {
++                            if ((entityinsentient.level.spigotConfig.nerfSpawnerMobs && this.nerfStatus == org.bukkit.block.CreatureSpawner.NerfStatus.DEFAULT) || this.nerfStatus == org.bukkit.block.CreatureSpawner.NerfStatus.ENABLED) { // Paper - Nerf Mobs API
+                                 entityinsentient.aware = false;
+                             }
+                             // Spigot End
+@@ -285,6 +287,11 @@ public abstract class BaseSpawner {
+         if (nbt.contains("SpawnRange", 99)) {
+             this.spawnRange = nbt.getShort("SpawnRange");
+         }
++        // Paper start - api for nerfing mobs
++        if (nbt.contains(PAPER_NERF_MOBS, org.bukkit.craftbukkit.util.CraftMagicNumbers.NBT.TAG_STRING)) {
++            this.nerfStatus = org.bukkit.block.CreatureSpawner.NerfStatus.valueOf(nbt.getString(PAPER_NERF_MOBS));
++        }
++        // Paper end
+ 
+         this.displayEntity = null;
+     }
+@@ -308,6 +315,9 @@ public abstract class BaseSpawner {
+ 
+             nbt.putShort("MinSpawnDelay", (short) Math.min(Short.MAX_VALUE, this.minSpawnDelay));
+             nbt.putShort("MaxSpawnDelay", (short) Math.min(Short.MAX_VALUE, this.maxSpawnDelay));
++            if (this.nerfStatus != org.bukkit.block.CreatureSpawner.NerfStatus.DEFAULT) {
++                nbt.putString(PAPER_NERF_MOBS, this.nerfStatus.name());
++            }
+             // Paper end
+             nbt.putShort("SpawnCount", (short) this.spawnCount);
+             nbt.putShort("MaxNearbyEntities", (short) this.maxNearbyEntities);
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
+index 75575b24aa0291c26d65de9787bc9d2f88c867e4..f30e8e3cb4e0d38f8d4ac068fc21d5e73ff16857 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
+@@ -133,6 +133,16 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<SpawnerBlockEnti
+         this.getSnapshot().getSpawner().delay(world.getHandle(), getPosition());
+     }
+ 
++    @Override
++    public org.bukkit.block.CreatureSpawner.NerfStatus getNerfStatus() {
++        return this.getSnapshot().getSpawner().nerfStatus;
++    }
++
++    @Override
++    public void setNerfStatus(org.bukkit.block.CreatureSpawner.NerfStatus nerfStatus) {
++        this.getSnapshot().getSpawner().nerfStatus = nerfStatus;
++    }
++
+     @Override
+     public void setSpawnedItem(org.bukkit.inventory.ItemStack itemStack) {
+         Preconditions.checkArgument(itemStack != null && !itemStack.getType().isAir(), "spawners cannot spawn air");
