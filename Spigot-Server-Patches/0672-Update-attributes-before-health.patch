@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Sat, 30 Jan 2021 18:48:20 +0100
+Subject: [PATCH] Update attributes before health
+
+Currently, the health is updated in the player tick, THEN entity
+trackers are ran and the attributes of a player are updated. This can
+result in a health desync with the client, as the client will cap their
+health at the known maximum health (e.g. we send 40.0F HP, but they think
+the maximum is still 20.0F HP).
+
+This can be alleviated by broadcasting the required attributes off the
+bat in the player tick, if applicable.
+
+An alternative implementation would be to set the lastHealthSent to
+-1.0E8F, and let the player tick method send the health again the next
+tick.
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index a9a409eebabae11ab84cf9bcced1f9a030b4a479..763820ae868afc94d4b4120db41716bcbebad8e2 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -516,6 +516,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             }
+             if (valid && isAlive() && playerConnection != null) ((WorldServer)world).getChunkProvider().playerChunkMap.checkHighPriorityChunks(this); // Paper
+ 
++            // Paper start - send the attributes of the player
++            java.util.Set<AttributeModifiable> trackedAttributes = this.getAttributeMap().getAttributes();
++            Chunk currentChunk = this.getCurrentChunk();
++            if (!trackedAttributes.isEmpty() && currentChunk != null) {
++                this.getBukkitEntity().injectScaledMaxHealth(trackedAttributes, false);
++                currentChunk.playerChunk.sendPacketToTrackedPlayers(new PacketPlayOutUpdateAttributes(this.getId(), trackedAttributes), false);
++            }
++            // Paper end
++
+             for (int i = 0; i < this.inventory.getSize(); ++i) {
+                 ItemStack itemstack = this.inventory.getItem(i);
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 3960a975e74ed81c45819fe5e0f01c6c18252982..ae1f0a2b4ffbfc855b1bf2b5ec3a70a0499209b2 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -377,6 +377,7 @@ public class EntityTrackerEntry {
+             Set<AttributeModifiable> set = ((EntityLiving) this.tracker).getAttributeMap().getAttributes();
+ 
+             if (!set.isEmpty()) {
++                // Paper - diff on change
+                 // CraftBukkit start - Send scaled max health
+                 if (this.tracker instanceof EntityPlayer) {
+                     ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
