@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 6 Jan 2021 23:38:19 -0800
+Subject: [PATCH] CommandFunction API
+
+
+diff --git a/src/main/java/io/papermc/paper/datapack/CommandFunction.java b/src/main/java/io/papermc/paper/datapack/CommandFunction.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..47e273df8685140cf8dd05b6b79ccf187fb413f4
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/datapack/CommandFunction.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.datapack;
++
++import org.bukkit.Keyed;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.List;
++
++public interface CommandFunction extends Keyed {
++    /**
++     * Executes the function.
++     *
++     * @return the number of commands run
++     */
++    int execute();
++
++    /**
++     * Gets the command run by this function.
++     *
++     * @return the list of commands
++     */
++    @NotNull
++    List<String> getCommands();
++}
+diff --git a/src/main/java/io/papermc/paper/datapack/DatapackManager.java b/src/main/java/io/papermc/paper/datapack/DatapackManager.java
+index 58f78d5e91beacaf710f62461cf869f70d08b2a2..9f354fd54fb8b671c29aa55a9ede38c424872f9c 100644
+--- a/src/main/java/io/papermc/paper/datapack/DatapackManager.java
++++ b/src/main/java/io/papermc/paper/datapack/DatapackManager.java
+@@ -1,6 +1,8 @@
+ package io.papermc.paper.datapack;
+ 
++import org.bukkit.NamespacedKey;
+ import org.checkerframework.checker.nullness.qual.NonNull;
++import org.jetbrains.annotations.Nullable;
+ 
+ import java.util.Collection;
+ 
+@@ -18,4 +20,20 @@ public interface DatapackManager {
+     @NonNull
+     Collection<Datapack> getEnabledPacks();
+ 
++    /**
++     * Gets all command functions registered with the server.
++     *
++     * @return the list of functions
++     */
++    @NonNull
++    Collection<CommandFunction> getCommandFunctions();
++
++    /**
++     * Get the command function with this namespaced key.
++     *
++     * @param functionKey the namespaced key
++     * @return the command function if found, null if none
++     */
++    @Nullable
++    CommandFunction getCommandFunction(@Nullable NamespacedKey functionKey);
+ }
