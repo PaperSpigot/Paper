@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thonk <30448663+ExcessiveAmountsOfZombies@users.noreply.github.com>
+Date: Sun, 13 Dec 2020 23:12:43 -0600
+Subject: [PATCH] add get/set biome for namespaced keys
+
+
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index a1496fe00a2d5ba6c1af054d4327f868b2cd7344..a14edfc5624fea3c2dc23b02100e2ec6c4a835f2 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -2474,6 +2474,28 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+      */
+     @NotNull
+     Biome getBiome(int x, int y, int z);
++    // Paper start
++    /**
++     * Gets the biome NamespacedKey for the given block coordinates.
++     *
++     * @param x X coordinate of the block
++     * @param y Y coordinate of the block
++     * @param z Z coordinate of the block
++     * @return Biome NamespacedKey of the requested block
++     */
++    @NotNull
++    NamespacedKey getBiomeKey(int x, int y, int z);
++
++    /**
++     * Sets the biome for the given block coordinates
++     *
++     * @param x X coordinate of the block
++     * @param y Y coordinate of the block
++     * @param z Z coordinate of the block
++     * @param key new Biome from a namespaced key
++     */
++    void setBiome(int x, int y, int z, @NotNull NamespacedKey key);
++    // Paper end
+ 
+     /**
+      * Sets the biome for the given block coordinates
+diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
+index 08e6f1741685f54506c8a4ff29bbd30f62cf8e45..ff5e77c3d76ba0c60a36a7315b8cb04ad71d12b0 100644
+--- a/src/main/java/org/bukkit/block/Block.java
++++ b/src/main/java/org/bukkit/block/Block.java
+@@ -363,6 +363,22 @@ public interface Block extends Metadatable {
+     @NotNull
+     Biome getBiome();
+ 
++    // paper start
++    /**
++     * Returns the key of the biome that this block resides in
++     *
++     * @return NamespacedKey of a biome from this block.
++     */
++    @NotNull
++    org.bukkit.NamespacedKey getBiomeKey();
++
++    /**
++     * Sets the biome that this block resides in
++     *
++     * @param key new namespaced biome type for this block
++     */
++    void setBiome(@NotNull org.bukkit.NamespacedKey key);
++    // paper end
+     /**
+      * Sets the biome that this block resides in
+      *
