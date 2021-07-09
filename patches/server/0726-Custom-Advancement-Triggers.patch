@@ -1,0 +1,192 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 8 Jul 2021 23:29:19 -0700
+Subject: [PATCH] Custom Advancement Triggers
+
+
+diff --git a/src/main/java/io/papermc/paper/advancements/CraftAdvancementManager.java b/src/main/java/io/papermc/paper/advancements/CraftAdvancementManager.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f500351ebeac82146c65da637f73a7b5ef327ea0
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/CraftAdvancementManager.java
+@@ -0,0 +1,26 @@
++package io.papermc.paper.advancements;
++
++import com.google.common.collect.Maps;
++import net.minecraft.advancements.CriteriaTriggers;
++import org.bukkit.NamespacedKey;
++
++import java.util.Map;
++
++public class CraftAdvancementManager implements AdvancementManager {
++
++    private final Map<NamespacedKey, CustomAdvancementTrigger> customTriggers = Maps.newHashMap();
++
++    @Override
++    public <T extends CustomAdvancementTrigger<D>, D> T registerCustomTrigger(T trigger) {
++        CraftCustomAdvancementTrigger<T, D> customTrigger = new CraftCustomAdvancementTrigger<>(trigger.getKey(), trigger);
++        CriteriaTriggers.register(customTrigger);
++        customTriggers.put(trigger.getKey(), trigger);
++        trigger.triggerConsumer = customTrigger::trigger;
++        return trigger;
++    }
++
++    @Override
++    public Map<NamespacedKey, CustomAdvancementTrigger> getCustomTriggers() {
++        return customTriggers;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/CraftCustomAdvancementTrigger.java b/src/main/java/io/papermc/paper/advancements/CraftCustomAdvancementTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c1f778289bfbafa5ae3e4031ecc4d1a843b72b51
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/CraftCustomAdvancementTrigger.java
+@@ -0,0 +1,52 @@
++package io.papermc.paper.advancements;
++
++import com.google.gson.JsonObject;
++import io.papermc.paper.advancements.CraftCustomAdvancementTrigger.CustomAdvancementTriggerInstance;
++import net.minecraft.advancements.critereon.EntityPredicate;
++import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
++import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
++import net.minecraft.advancements.critereon.DeserializationContext;
++import net.minecraft.resources.ResourceLocation;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++import org.bukkit.entity.Player;
++
++import java.util.function.Predicate;
++
++public class CraftCustomAdvancementTrigger<T extends CustomAdvancementTrigger<D>, D> extends SimpleCriterionTrigger<CustomAdvancementTriggerInstance<D>> {
++
++    private final ResourceLocation key;
++    private final T trigger;
++
++    public CraftCustomAdvancementTrigger(NamespacedKey key, T trigger) {
++        this.key = CraftNamespacedKey.toMinecraft(key);
++        this.trigger = trigger;
++    }
++
++    @Override
++    public ResourceLocation getId() {
++        return key;
++    }
++
++    public void trigger(Player player, Predicate<D> instancePredicate) {
++        this.trigger(((CraftPlayer) player).getHandle(), customAdvancementTriggerInstance -> {
++            return instancePredicate.test(customAdvancementTriggerInstance.data);
++        });
++    }
++
++    @Override
++    protected CustomAdvancementTriggerInstance<D> createInstance(JsonObject conditionsObject, EntityPredicate.Composite playerPredicate, DeserializationContext predicateDeserializer) {
++        return new CustomAdvancementTriggerInstance<>(key, playerPredicate, trigger.createInstance(conditionsObject));
++    }
++
++    public static class CustomAdvancementTriggerInstance<D> extends AbstractCriterionTriggerInstance {
++
++        private final D data;
++
++        public CustomAdvancementTriggerInstance(ResourceLocation minecraftkey, EntityPredicate.Composite criterionconditionentity_b, D data) {
++            super(minecraftkey, criterionconditionentity_b);
++            this.data = data;
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
+index cfd43069ee2b6f79afb12e10d223f6bf75100034..7ee85e83d3410cbd3843c3e0606a236e38650c71 100644
+--- a/src/main/java/net/minecraft/server/Main.java
++++ b/src/main/java/net/minecraft/server/Main.java
+@@ -184,6 +184,7 @@ public class Main {
+             }
+             // CraftBukkit end
+             DataPackConfig datapackconfiguration1 = MinecraftServer.configurePackRepository(resourcepackrepository, datapackconfiguration == null ? DataPackConfig.DEFAULT : datapackconfiguration, flag);
++            /* Paper start - move loading datapacks until after plugins so datapacks that use custom triggers added by plugins don't fail to load
+             CompletableFuture completablefuture = ServerResources.loadResources(resourcepackrepository.openAllSelected(), iregistrycustom_dimension, Commands.CommandSelection.DEDICATED, dedicatedserversettings.getProperties().functionPermissionLevel, Util.backgroundExecutor(), Runnable::run);
+ 
+             ServerResources datapackresources;
+@@ -195,7 +196,9 @@ public class Main {
+                 resourcepackrepository.close();
+                 return;
+             }
++            */// Paper end
+ 
++            ServerResources datapackresources = ServerResources.createResources(iregistrycustom_dimension, Commands.CommandSelection.DEDICATED, dedicatedserversettings.getProperties().functionPermissionLevel); // Paper - create DataPackResources an alternate way
+             datapackresources.updateGlobals();
+             /*
+             RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a((DynamicOps) DynamicOpsNBT.INSTANCE, datapackresources.i(), (IRegistryCustom) iregistrycustom_dimension);
+diff --git a/src/main/java/net/minecraft/server/ServerResources.java b/src/main/java/net/minecraft/server/ServerResources.java
+index 83e8f192b23b28a1ee5884b2e990c012e396c429..9d16484e2fc95e28fce8019c0700ed911239eb1a 100644
+--- a/src/main/java/net/minecraft/server/ServerResources.java
++++ b/src/main/java/net/minecraft/server/ServerResources.java
+@@ -79,6 +79,11 @@ public class ServerResources implements AutoCloseable {
+         return this.resources;
+     }
+ 
++    // Paper start
++    public static ServerResources createResources(RegistryAccess registryManager, Commands.CommandSelection commandEnvironment, int functionPermissionLevel) {
++        return new net.minecraft.server.ServerResources(registryManager, commandEnvironment, functionPermissionLevel);
++    }
++    // Paper end
+     public static CompletableFuture<ServerResources> loadResources(List<PackResources> packs, RegistryAccess registryManager, Commands.CommandSelection commandEnvironment, int functionPermissionLevel, Executor prepareExecutor, Executor applyExecutor) {
+         ServerResources serverResources = new ServerResources(registryManager, commandEnvironment, functionPermissionLevel);
+         CompletableFuture<Unit> completableFuture = serverResources.resources.reload(prepareExecutor, applyExecutor, packs, DATA_RELOAD_INITIAL_TASK);
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 6d7eef79de7a899ccdbc3194d925bb4caa0a4b03..58e1217eeff0109fb3074d8fffbeec6a131093bb 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -276,6 +276,23 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         server.loadPlugins();
+         server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.STARTUP);
+         // CraftBukkit end
++        // Paper start - load datapacks
++        try {
++            java.util.concurrent.CompletableFuture<Void> loadDatapacks = java.util.concurrent.CompletableFuture.supplyAsync(() -> {
++                return this.getPackRepository().openAllSelected();
++            }, this).thenCompose((list) -> {
++                return this.resources.resources.reload(this.executor, this, list, ServerResources.DATA_RELOAD_INITIAL_TASK);
++            }).thenAcceptAsync((unit) -> {
++                this.resources.updateGlobals();
++            }, this);
++            this.managedBlock(loadDatapacks::isDone);
++        } catch (Exception exception) {
++            DedicatedServer.LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", exception);
++            this.resources.close();
++            this.getPackRepository().close();
++            return false;
++        }
++        // Paper end
+ 
+         if (!this.usesAuthentication()) {
+             DedicatedServer.LOGGER.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index c79b193ad822b8c246f24a87cd418892bc18ff5a..c0a75b04702ea4594f736b7de25e7541ec35ec3f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -268,6 +268,7 @@ public final class CraftServer implements Server {
+     public int reloadCount;
+     private final io.papermc.paper.datapack.PaperDatapackManager datapackManager; // Paper
+     public static Exception excessiveVelEx; // Paper - Velocity warnings
++    public io.papermc.paper.advancements.CraftAdvancementManager advancementManager; // Paper
+ 
+     static {
+         ConfigurationSerialization.registerClass(CraftOfflinePlayer.class);
+@@ -350,6 +351,7 @@ public final class CraftServer implements Server {
+         this.minimumAPI = this.configuration.getString("settings.minimum-api");
+         this.loadIcon();
+         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
++        advancementManager = new io.papermc.paper.advancements.CraftAdvancementManager(); // Paper
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+@@ -2527,5 +2529,9 @@ public final class CraftServer implements Server {
+         return datapackManager;
+     }
+ 
++    @Override
++    public io.papermc.paper.advancements.AdvancementManager getAdvancementManager() {
++        return advancementManager;
++    }
+     // Paper end
+ }

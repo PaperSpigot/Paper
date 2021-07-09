@@ -1,0 +1,117 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 21 Apr 2021 23:55:51 -0700
+Subject: [PATCH] Custom Advancement Triggers
+
+
+diff --git a/src/main/java/io/papermc/paper/advancements/AdvancementManager.java b/src/main/java/io/papermc/paper/advancements/AdvancementManager.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..966f715deabbf33a7c8e9a7af95676de3d14aea6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/AdvancementManager.java
+@@ -0,0 +1,21 @@
++package io.papermc.paper.advancements;
++
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.Map;
++
++public interface AdvancementManager {
++    /**
++     * Registers a custom trigger
++     *
++     * @param trigger
++     * @param <T>
++     * @return
++     */
++    @NotNull
++    <T extends CustomAdvancementTrigger<D>, D> T registerCustomTrigger(@NotNull T trigger);
++
++    @NotNull
++    Map<NamespacedKey, CustomAdvancementTrigger> getCustomTriggers();
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/CustomAdvancementTrigger.java b/src/main/java/io/papermc/paper/advancements/CustomAdvancementTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2c18dd4d541b951c10ec0cf360b8ef7a00380f19
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/CustomAdvancementTrigger.java
+@@ -0,0 +1,39 @@
++package io.papermc.paper.advancements;
++
++import com.google.gson.JsonObject;
++import org.bukkit.Keyed;
++import org.bukkit.entity.Player;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.function.BiConsumer;
++import java.util.function.Predicate;
++
++/**
++ * Should be extended by all classes representing custom triggers.
++ *
++ * @param <D> a data holder class for information parsed from the advancement JSON
++ */
++public abstract class CustomAdvancementTrigger<D> implements Keyed {
++
++    BiConsumer<Player, Predicate<D>> triggerConsumer;
++
++    /**
++     * This is the conditions object of the advancement JSON. Overriden by custom trigger implementations.
++     *
++     * @param conditionsObject the conditions JSON object
++     * @return an instance of the data class
++     */
++    @NotNull
++    protected abstract D createInstance(@NotNull JsonObject conditionsObject);
++
++    /**
++     * Needs to be called to trigger the advancement at the
++     * end of some logic in the implementing class.
++     *
++     * @param player Player the advancement pertains to
++     * @param instancePredicate supplies the instance of the trigger
++     */
++    protected final void trigger(@NotNull Player player, @NotNull Predicate<D> instancePredicate) {
++        triggerConsumer.accept(player, instancePredicate);
++    }
++}
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 66580ade2cd8b8795b2d79f7958460162c3a17db..d057155cc2dbf6a710b9f36ea66f8e469c8ac649 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -2000,6 +2000,16 @@ public final class Bukkit {
+     public static io.papermc.paper.datapack.DatapackManager getDatapackManager() {
+         return server.getDatapackManager();
+     }
++
++    /**
++     * Returns the {@link io.papermc.paper.advancements.AdvancementManager}
++     *
++     * @return the advancements manager
++     */
++    @NotNull
++    public static io.papermc.paper.advancements.AdvancementManager getAdvancementManager() {
++        return server.getAdvancementManager();
++    }
+     // Paper end
+ 
+     @NotNull
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index f05edac8cdd33daaf1d15a526be4d2ac2b08846d..0d898efcea90a038cffe75723bee5fb2fb7d9e73 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -1735,5 +1735,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+      */
+     @NotNull
+     io.papermc.paper.datapack.DatapackManager getDatapackManager();
++
++    /**
++     * Returns the {@link io.papermc.paper.advancements.AdvancementManager}
++     *
++     * @return the advancements manager
++     */
++    @NotNull
++    io.papermc.paper.advancements.AdvancementManager getAdvancementManager();
+     // Paper end
+ }
