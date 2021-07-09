@@ -1,0 +1,197 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: kickash32 <kickash32@gmail.com>
+Date: Mon, 5 Apr 2021 01:42:35 -0400
+Subject: [PATCH] Imporve cancelling PreCreatureSpawnEvent with
+ Per-Player-Mob-Spawns
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+index c5e54c519e1f686761faa53b5e9579c514a65332..46f73b18794beaecad2f7805c9904575ed5f71cb 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/level/ChunkProviderServer.java
+@@ -832,7 +832,15 @@ public class ChunkProviderServer extends IChunkProvider {
+                 this.world.timings.playerMobDistanceMapUpdate.stopTiming();
+                 // re-set mob counts
+                 for (EntityPlayer player : this.world.players) {
+-                    Arrays.fill(player.mobCounts, 0);
++                    for (int ii = 0; ii < EntityPlayer.ENUMCREATURETYPE_TOTAL_ENUMS; ii++){
++                        player.mobCounts[ii] = 0;
++
++                        int newBackoff = player.mobBackoffCounts[ii] - 1;//todo make configurable bleed // todo use non linear algorithm?
++                        if (newBackoff < 0) {
++                            newBackoff = 0;
++                        }
++                        player.mobBackoffCounts[ii] = newBackoff;
++                    }
+                 }
+                 spawnercreature_d = SpawnerCreature.countMobs(l, this.world.A(), this::a, true);
+             } else {
+diff --git a/src/main/java/net/minecraft/server/level/EntityPlayer.java b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+index 37c9b5fd712e30a9a0faccc840f738f4b2cfc723..eaffdd58e2650c4c19d0857b4384a20d3b7b5de1 100644
+--- a/src/main/java/net/minecraft/server/level/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/level/EntityPlayer.java
+@@ -236,6 +236,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     // Paper start - mob spawning rework
+     public static final int ENUMCREATURETYPE_TOTAL_ENUMS = EnumCreatureType.values().length;
+     public final int[] mobCounts = new int[ENUMCREATURETYPE_TOTAL_ENUMS]; // Paper
++    public final int[] mobBackoffCounts = new int[ENUMCREATURETYPE_TOTAL_ENUMS]; // Paper
+     public final com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleMobDistanceMap;
+     // Paper end
+ 
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 300884804bf9ac3fba7c30a04d8adf52e3dd2e3e..d6c8d90adede8ae447d352e9d02933b38b694643 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -623,8 +623,19 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         }
+     }
+ 
++    public void updateFailurePlayerMobTypeMap(int chunkX, int chunkZ, EnumCreatureType entityType) {
++        if (!this.world.paperConfig.perPlayerMobSpawns) {
++            return;
++        }
++        int index = entityType.ordinal();
++
++        for (EntityPlayer player : this.playerMobDistanceMap.getPlayersInRange(chunkX, chunkZ)) {
++            ++player.mobBackoffCounts[index];
++        }
++    }
++
+     public int getMobCountNear(EntityPlayer entityPlayer, EnumCreatureType enumCreatureType) {
+-        return entityPlayer.mobCounts[enumCreatureType.ordinal()];
++        return entityPlayer.mobCounts[enumCreatureType.ordinal()] + entityPlayer.mobBackoffCounts[enumCreatureType.ordinal()];
+     }
+ 
+     private static double getDistanceSquaredFromChunk(ChunkCoordIntPair chunkPos, Entity entity) { return a(chunkPos, entity); } // Paper - OBFHELPER
+diff --git a/src/main/java/net/minecraft/world/level/SpawnerCreature.java b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+index 24771c3522ea74ac12058591137eafc21adf3762..637c3c09eef8171b07c69b01f9d6e1266986f878 100644
+--- a/src/main/java/net/minecraft/world/level/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/world/level/SpawnerCreature.java
+@@ -49,6 +49,7 @@ import org.apache.logging.log4j.Logger;
+ 
+ // CraftBukkit start
+ import net.minecraft.world.level.storage.WorldData;
++import org.bukkit.event.entity.CreatureSpawnEvent;
+ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+ // CraftBukkit end
+ 
+@@ -190,7 +191,8 @@ public final class SpawnerCreature {
+                 }, (entityinsentient, ichunkaccess) -> {
+                     spawnercreature_d.a(entityinsentient, ichunkaccess);
+                 },
+-                difference, worldserver.paperConfig.perPlayerMobSpawns ? worldserver.getChunkProvider().playerChunkMap::updatePlayerMobTypeMap : null);
++                difference, worldserver.paperConfig.perPlayerMobSpawns ? worldserver.getChunkProvider().playerChunkMap::updatePlayerMobTypeMap : null,
++                    worldserver.paperConfig.perPlayerMobSpawns ? worldserver.getChunkProvider().playerChunkMap::updateFailurePlayerMobTypeMap : null);
+                 spawnercreature_d.getEntityCountsByType().mergeInt(enumcreaturetype, spawnCount, Integer::sum);
+                 // Paper end - per player mob spawning
+             }
+@@ -202,23 +204,23 @@ public final class SpawnerCreature {
+ 
+     public static void a(EnumCreatureType enumcreaturetype, WorldServer worldserver, Chunk chunk, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a) {
+         // Paper start - add parameters and int ret type
+-        spawnMobs(enumcreaturetype, worldserver, chunk, spawnercreature_c, spawnercreature_a, Integer.MAX_VALUE, null);
++        spawnMobs(enumcreaturetype, worldserver, chunk, spawnercreature_c, spawnercreature_a, Integer.MAX_VALUE, null, null);
+     }
+-    public static int spawnMobs(EnumCreatureType enumcreaturetype, WorldServer worldserver, Chunk chunk, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a, int maxSpawns, Consumer<Entity> trackEntity) {
++    public static int spawnMobs(EnumCreatureType enumcreaturetype, WorldServer worldserver, Chunk chunk, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a, int maxSpawns, Consumer<Entity> trackEntity, FailConsumer trackFail) {
+         // Paper end - add parameters and int ret type
+         BlockPosition blockposition = getRandomPosition(worldserver, chunk);
+ 
+         if (blockposition.getY() >= 1) {
+-            return spawnMobsInternal(enumcreaturetype, worldserver, (IChunkAccess) chunk, blockposition, spawnercreature_c, spawnercreature_a, maxSpawns, trackEntity);
++            return spawnMobsInternal(enumcreaturetype, worldserver, (IChunkAccess) chunk, blockposition, spawnercreature_c, spawnercreature_a, maxSpawns, trackEntity, trackFail);
+         }
+         return 0; // Paper
+     }
+ 
+     public static void a(EnumCreatureType enumcreaturetype, WorldServer worldserver, IChunkAccess ichunkaccess, BlockPosition blockposition, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a) {
+         // Paper start - add maxSpawns parameter and return spawned mobs
+-        spawnMobsInternal(enumcreaturetype, worldserver, ichunkaccess, blockposition, spawnercreature_c, spawnercreature_a, Integer.MAX_VALUE, null);
++        spawnMobsInternal(enumcreaturetype, worldserver, ichunkaccess, blockposition, spawnercreature_c, spawnercreature_a, Integer.MAX_VALUE, null, null);
+     }
+-    public static int spawnMobsInternal(EnumCreatureType enumcreaturetype, WorldServer worldserver, IChunkAccess ichunkaccess, BlockPosition blockposition, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a, int maxSpawns, Consumer<Entity> trackEntity) {
++    public static int spawnMobsInternal(EnumCreatureType enumcreaturetype, WorldServer worldserver, IChunkAccess ichunkaccess, BlockPosition blockposition, SpawnerCreature.c spawnercreature_c, SpawnerCreature.a spawnercreature_a, int maxSpawns, Consumer<Entity> trackEntity, FailConsumer trackFail) {
+         // Paper end - add maxSpawns parameter and return spawned mobs
+         StructureManager structuremanager = worldserver.getStructureManager();
+         ChunkGenerator chunkgenerator = worldserver.getChunkProvider().getChunkGenerator();
+@@ -266,11 +268,14 @@ public final class SpawnerCreature {
+                                     }
+ 
+                                     // Paper start
+-                                    Boolean doSpawning = a(worldserver, enumcreaturetype, structuremanager, chunkgenerator, biomesettingsmobs_c, blockposition_mutableblockposition, d2);
+-                                    if (doSpawning == null) {
++                                    PreSpawnStatus doSpawning = validateSpawnLoc(worldserver, enumcreaturetype, structuremanager, chunkgenerator, biomesettingsmobs_c, blockposition_mutableblockposition, d2);
++                                    if ((doSpawning == PreSpawnStatus.ABORT || doSpawning == PreSpawnStatus.CANCELLED) && trackFail != null){
++                                        trackFail.accept(blockposition_mutableblockposition.getX() >> 4, blockposition_mutableblockposition.getZ() >> 4, enumcreaturetype);
++                                    }
++                                    if (doSpawning == PreSpawnStatus.ABORT) {
+                                         return j; // Paper
+                                     }
+-                                    if (doSpawning && spawnercreature_c.test(biomesettingsmobs_c.c, blockposition_mutableblockposition, ichunkaccess)) {
++                                    if (doSpawning == PreSpawnStatus.SUCCESS && spawnercreature_c.test(biomesettingsmobs_c.c, blockposition_mutableblockposition, ichunkaccess)) {
+                                         // Paper end
+                                         EntityInsentient entityinsentient = a(worldserver, biomesettingsmobs_c.c);
+ 
+@@ -333,7 +338,16 @@ public final class SpawnerCreature {
+         }
+     }
+ 
++    private enum PreSpawnStatus {
++        FAIL,
++        SUCCESS,
++        CANCELLED,
++        ABORT
++    }
+     private static Boolean a(WorldServer worldserver, EnumCreatureType enumcreaturetype, StructureManager structuremanager, ChunkGenerator chunkgenerator, BiomeSettingsMobs.c biomesettingsmobs_c, BlockPosition.MutableBlockPosition blockposition_mutableblockposition, double d0) { // Paper
++        return validateSpawnLoc(worldserver, enumcreaturetype, structuremanager, chunkgenerator, biomesettingsmobs_c, blockposition_mutableblockposition, d0) == PreSpawnStatus.SUCCESS;
++    }
++    private static PreSpawnStatus validateSpawnLoc(WorldServer worldserver, EnumCreatureType enumcreaturetype, StructureManager structuremanager, ChunkGenerator chunkgenerator, BiomeSettingsMobs.c biomesettingsmobs_c, BlockPosition.MutableBlockPosition blockposition_mutableblockposition, double d0) { // Paper
+         EntityTypes<?> entitytypes = biomesettingsmobs_c.c;
+         // Paper start
+         com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+@@ -345,23 +359,27 @@ public final class SpawnerCreature {
+             );
+             if (!event.callEvent()) {
+                 if (event.shouldAbortSpawn()) {
+-                    return null;
++                    return PreSpawnStatus.ABORT;
+                 }
+-                return false;
++                return PreSpawnStatus.CANCELLED;
+             }
+         }
+         // Paper end
+ 
+         if (entitytypes.e() == EnumCreatureType.MISC) {
+-            return false;
++            return PreSpawnStatus.FAIL;
+         } else if (!entitytypes.d() && d0 > (double) (entitytypes.e().f() * entitytypes.e().f())) {
+-            return false;
++            return PreSpawnStatus.FAIL;
+         } else if (entitytypes.b() && a(worldserver, structuremanager, chunkgenerator, enumcreaturetype, biomesettingsmobs_c, (BlockPosition) blockposition_mutableblockposition)) {
+             EntityPositionTypes.Surface entitypositiontypes_surface = EntityPositionTypes.a(entitytypes);
+ 
+-            return !a(entitypositiontypes_surface, (IWorldReader) worldserver, blockposition_mutableblockposition, entitytypes) ? false : (!EntityPositionTypes.a(entitytypes, worldserver, EnumMobSpawn.NATURAL, blockposition_mutableblockposition, worldserver.random) ? false : worldserver.b(entitytypes.a((double) blockposition_mutableblockposition.getX() + 0.5D, (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + 0.5D)));
++             if (!a(entitypositiontypes_surface, (IWorldReader) worldserver, blockposition_mutableblockposition, entitytypes) ? false : (!EntityPositionTypes.a(entitytypes, worldserver, EnumMobSpawn.NATURAL, blockposition_mutableblockposition, worldserver.random) ? false : worldserver.b(entitytypes.a((double) blockposition_mutableblockposition.getX() + 0.5D, (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + 0.5D)))) {
++                 return PreSpawnStatus.SUCCESS;
++             } else {
++                 return PreSpawnStatus.FAIL;
++             }
+         } else {
+-            return false;
++            return PreSpawnStatus.FAIL;
+         }
+     }
+ 
+@@ -539,6 +557,11 @@ public final class SpawnerCreature {
+         return blockposition_mutableblockposition.immutableCopy();
+     }
+ 
++    @FunctionalInterface
++    public interface FailConsumer {
++        void accept(int chunkX, int chunkZ, EnumCreatureType creatureType);
++    }
++
+     @FunctionalInterface
+     public interface b {
+ 
