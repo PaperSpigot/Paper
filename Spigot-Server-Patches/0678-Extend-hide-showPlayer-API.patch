@@ -1,0 +1,160 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 16:36:58 -0600
+Subject: [PATCH] Extend hide/showPlayer API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 8a6340c1eeda638e70d3da6ad30e51b98fd66947..91142d47ae0c63c5050522791e002810e5dd00f8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1320,26 +1320,43 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return (plugin == null) ? null : pluginWeakReferences.computeIfAbsent(plugin, WeakReference::new);
+     }
+ 
++    // Paper start
+     @Override
+     @Deprecated
+     public void hidePlayer(Player player) {
+-        hidePlayer0(null, player);
++        hidePlayer0(null, player.getUniqueId(), true);
+     }
+ 
+     @Override
+     public void hidePlayer(Plugin plugin, Player player) {
++        hidePlayer(plugin, player.getUniqueId(), true);
++    }
++
++    @Override
++    public void hidePlayer(Plugin plugin, Player player, boolean immediate) {
++        hidePlayer(plugin, player.getUniqueId(), immediate);
++    }
++
++    @Override
++    public void hidePlayer(Plugin plugin, UUID uuid) {
++        hidePlayer(plugin, uuid, true);
++    }
++
++    @Override
++    public void hidePlayer(Plugin plugin, UUID uuid, boolean immediate) {
+         Validate.notNull(plugin, "Plugin cannot be null");
+         Validate.isTrue(plugin.isEnabled(), "Plugin attempted to hide player while disabled");
++        Validate.notNull(uuid, "hidden player id cannot be null");
+ 
+-        hidePlayer0(plugin, player);
++        hidePlayer0(plugin, uuid, immediate);
+     }
+ 
+-    private void hidePlayer0(@Nullable Plugin plugin, Player player) {
+-        Validate.notNull(player, "hidden player cannot be null");
++    private void hidePlayer0(@Nullable Plugin plugin, UUID uuid, boolean immediate) {
++        Validate.notNull(uuid, "hidden player cannot be null");
+         if (getHandle().playerConnection == null) return;
+-        if (equals(player)) return;
++        if (getUniqueId().equals(uuid)) return;
+ 
+-        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(player.getUniqueId());
++        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(uuid);
+         if (hidingPlugins != null) {
+             // Some plugins are already hiding the player. Just mark that this
+             // plugin wants the player hidden too and end.
+@@ -1348,13 +1365,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+         hidingPlugins = new HashSet<>();
+         hidingPlugins.add(getPluginWeakReference(plugin));
+-        hiddenPlayers.put(player.getUniqueId(), hidingPlugins);
+-
+-        // Remove this player from the hidden player's EntityTrackerEntry
+-        // Paper start
+-        EntityPlayer other = ((CraftPlayer) player).getHandle();
+-        unregisterPlayer(other);
++        hiddenPlayers.put(uuid, hidingPlugins);
++
++        if (immediate) {
++            org.bukkit.entity.Entity player = server.getEntity(uuid);
++            if (player instanceof CraftPlayer) {
++                // Remove this player from the hidden player's EntityTrackerEntry
++                // Paper start
++                EntityPlayer other = ((CraftPlayer) player).getHandle();
++                unregisterPlayer(other);
++            }
++        }
+     }
++    // Paper end
++
+     private void unregisterPlayer(EntityPlayer other) {
+         PlayerChunkMap tracker = ((WorldServer) entity.world).getChunkProvider().playerChunkMap;
+         // Paper end
+@@ -1369,26 +1393,43 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+     }
+ 
++    // Paper start
+     @Override
+     @Deprecated
+     public void showPlayer(Player player) {
+-        showPlayer0(null, player);
++        showPlayer0(null, player.getUniqueId(), true);
+     }
+ 
+     @Override
+     public void showPlayer(Plugin plugin, Player player) {
++        showPlayer(plugin, player.getUniqueId(), true);
++    }
++
++    @Override
++    public void showPlayer(Plugin plugin, Player player, boolean immediate) {
++        showPlayer(plugin, player.getUniqueId(), immediate);
++    }
++
++    @Override
++    public void showPlayer(Plugin plugin, UUID uuid) {
+         Validate.notNull(plugin, "Plugin cannot be null");
+         // Don't require that plugin be enabled. A plugin must be allowed to call
+         // showPlayer during its onDisable() method.
+-        showPlayer0(plugin, player);
++        showPlayer(plugin, uuid, true);
++    }
++
++    @Override
++    public void showPlayer(Plugin plugin, UUID uuid, boolean immediate) {
++        Validate.notNull(plugin, "Plugin cannot be null");
++        showPlayer0(plugin, uuid, immediate);
+     }
+ 
+-    private void showPlayer0(@Nullable Plugin plugin, Player player) {
+-        Validate.notNull(player, "shown player cannot be null");
++    private void showPlayer0(@Nullable Plugin plugin, UUID uuid, boolean immediate) {
++        Validate.notNull(uuid, "shown player cannot be null");
+         if (getHandle().playerConnection == null) return;
+-        if (equals(player)) return;
++        if (getUniqueId().equals(uuid)) return;
+ 
+-        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(player.getUniqueId());
++        Set<WeakReference<Plugin>> hidingPlugins = hiddenPlayers.get(uuid);
+         if (hidingPlugins == null) {
+             return; // Player isn't hidden
+         }
+@@ -1396,12 +1437,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         if (!hidingPlugins.isEmpty()) {
+             return; // Some other plugins still want the player hidden
+         }
+-        hiddenPlayers.remove(player.getUniqueId());
++        hiddenPlayers.remove(uuid);
+ 
+         // Paper start
+-        EntityPlayer other = ((CraftPlayer) player).getHandle();
+-        registerPlayer(other);
++        if (immediate) {
++            org.bukkit.entity.Entity player = server.getEntity(uuid);
++            if (player instanceof CraftPlayer) {
++                EntityPlayer other = ((CraftPlayer) player).getHandle();
++                registerPlayer(other);
++            }
++        }
+     }
++    // Paper end
++
+     private void registerPlayer(EntityPlayer other) {
+         PlayerChunkMap tracker = ((WorldServer) entity.world).getChunkProvider().playerChunkMap;
+         // Paper end

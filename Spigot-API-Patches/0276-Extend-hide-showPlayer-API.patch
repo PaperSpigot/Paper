@@ -1,0 +1,98 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 16:36:59 -0600
+Subject: [PATCH] Extend hide/showPlayer API
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 5fe48dcc5a3ea492915350cff44d5f112ce11dbf..ca4069d0a7fdf8a4f79eac93300a3a5bfe5a7045 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1247,7 +1247,39 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @param plugin Plugin that wants to hide the player
+      * @param player Player to hide
+      */
+-    public void hidePlayer(@NotNull Plugin plugin, @NotNull Player player);
++    default void hidePlayer(@NotNull Plugin plugin, @NotNull Player player) {
++        hidePlayer(plugin, player, true);
++    }
++
++    // Paper start
++    /**
++     * Hides a player from this player
++     *
++     * @param plugin Plugin that wants to hide the player
++     * @param player Player to hide
++     * @param immediate Immediately untrack the Player. Defaults to true.
++     */
++    public void hidePlayer(@NotNull Plugin plugin, @NotNull Player player, boolean immediate);
++
++    /**
++     * Adds a player UUID to be hidden from this player
++     *
++     * @param plugin Plugin that wants to hide the Player UUID
++     * @param uuid Player UUID to hide
++     */
++    default void hidePlayer(@NotNull Plugin plugin, @NotNull UUID uuid) {
++        hidePlayer(plugin, uuid, true);
++    }
++
++    /**
++     * Adds a player UUID to be hidden from this player
++     *
++     * @param plugin Plugin that wants to hide the Player UUID
++     * @param uuid Player UUID to hide
++     * @param immediate If the Player with the given UUID is online, immediately hide them from the player. Defaults to true.
++     */
++    public void hidePlayer(@NotNull Plugin plugin, @NotNull UUID uuid, boolean immediate);
++    // Paper end
+ 
+     /**
+      * Allows this player to see a player that was previously hidden
+@@ -1266,7 +1298,45 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @param plugin Plugin that wants to show the player
+      * @param player Player to show
+      */
+-    public void showPlayer(@NotNull Plugin plugin, @NotNull Player player);
++    default void showPlayer(@NotNull Plugin plugin, @NotNull Player player) {
++        showPlayer(plugin, player, true);
++    }
++
++    // Paper start
++    /**
++     * Allows this player to see a player that was previously hidden. If
++     * another another plugin had hidden the player too, then the player will
++     * remain hidden until the other plugin calls this method too.
++     *
++     * @param plugin Plugin that wants to show the player
++     * @param player Player to show
++     * @param immediate Immediately track the Player. Defaults to true.
++     */
++    public void showPlayer(@NotNull Plugin plugin, @NotNull Player player, boolean immediate);
++
++    /**
++     * Allows this player to see a player that was previously hidden. If
++     * another another plugin had hidden the player too, then the player will
++     * remain hidden until the other plugin calls this method too.
++     *
++     * @param plugin Plugin that wants to show the player
++     * @param uuid Player UUID to show
++     */
++    default void showPlayer(@NotNull Plugin plugin, @NotNull UUID uuid) {
++        showPlayer(plugin, uuid, true);
++    }
++
++    /**
++     * Allows this player to see a player that was previously hidden. If
++     * another another plugin had hidden the player too, then the player will
++     * remain hidden until the other plugin calls this method too.
++     *
++     * @param plugin Plugin that wants to show the player
++     * @param uuid Player UUID to show
++     * @param immediate If the Player with the given UUID is online, immediately show them to the player. Defaults to true.
++     */
++    public void showPlayer(@NotNull Plugin plugin, @NotNull UUID uuid, boolean immediate);
++    // Paper end
+ 
+     /**
+      * Checks to see if a player has been hidden from this player
