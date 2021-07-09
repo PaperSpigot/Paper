@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 01:41:56 -0700
+Subject: [PATCH] OfflinePlayer advancements
+
+
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 48045993c8ad4b014cf4a67f7c4db42e014d1c81..27ceca75eca65b77647d03543a1d2bbbcba38d00 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1468,6 +1468,20 @@ public abstract class PlayerList {
+         advancementdataplayer.setPlayer(player);
+         return advancementdataplayer;
+     }
++    // Paper start
++    public PlayerAdvancements getPlayerAdvancements(UUID uuid) {
++        ServerPlayer entityPlayer = getPlayer(uuid);
++        PlayerAdvancements advancementDataPlayer = entityPlayer == null ? null : entityPlayer.getAdvancements();
++        if (advancementDataPlayer == null) {
++            File file = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).toFile();
++            File file1 = new File(file, uuid + ".json");
++
++            advancementDataPlayer = new PlayerAdvancements(this.server.getFixerUpper(), this, this.server.getAdvancements(), file1, entityPlayer);
++        }
++        advancementDataPlayer.setPlayer(entityPlayer);
++        return advancementDataPlayer;
++    }
++    // Paper end
+ 
+     public void setViewDistance(int viewDistance) {
+         this.viewDistance = viewDistance;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftOfflinePlayer.java b/src/main/java/org/bukkit/craftbukkit/CraftOfflinePlayer.java
+index b20bfe5ab165bf86985e5ff2f93f415d9710e0e4..cd7b6b48c56d4524ede5f9563bcaf7b50c869d5f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftOfflinePlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftOfflinePlayer.java
+@@ -297,6 +297,30 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
+ 
+         return result;
+     }
++
++    @Override
++    public org.bukkit.advancement.AdvancementProgress getAdvancementProgress(org.bukkit.advancement.Advancement advancement) {
++        Player player = this.getPlayer();
++        if (player != null) return player.getAdvancementProgress(advancement);
++        com.google.common.base.Preconditions.checkArgument(advancement != null, "advancement");
++
++        org.bukkit.craftbukkit.advancement.CraftAdvancement craft = (org.bukkit.craftbukkit.advancement.CraftAdvancement) advancement;
++        net.minecraft.server.PlayerAdvancements data = server.getHandle().getPlayerAdvancements(getUniqueId());
++        net.minecraft.advancements.AdvancementProgress progress = data.getOrStartProgress(craft.getHandle());
++        return new org.bukkit.craftbukkit.advancement.CraftAdvancementProgress(craft, data, progress) {
++            @Override
++            public boolean awardCriteria(String criteria) {
++                throw new UnsupportedOperationException("Cannot award criteria to an offline player");
++            }
++
++            @Override
++            public boolean revokeCriteria(String criteria) {
++                boolean result = super.revokeCriteria(criteria);
++                data.save();
++                return result;
++            }
++        };
++    }
+     // Paper end
+ 
+     @Override
