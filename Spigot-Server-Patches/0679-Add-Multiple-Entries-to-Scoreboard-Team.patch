@@ -1,0 +1,109 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 17:02:17 -0600
+Subject: [PATCH] Add Multiple Entries to Scoreboard Team
+
+
+diff --git a/src/main/java/net/minecraft/server/Scoreboard.java b/src/main/java/net/minecraft/server/Scoreboard.java
+index 2ab11597adb1c713011103cfc53011f93bbb0336..ef1897c11e958346003279e7a9a08fd79700aad9 100644
+--- a/src/main/java/net/minecraft/server/Scoreboard.java
++++ b/src/main/java/net/minecraft/server/Scoreboard.java
+@@ -50,7 +50,7 @@ public class Scoreboard {
+ 
+     public final void getObjectivesForCriteria(IScoreboardCriteria iscoreboardcriteria, String s, Consumer<ScoreboardScore> consumer) {
+         ((List) this.objectivesByCriteria.getOrDefault(iscoreboardcriteria, Collections.emptyList())).forEach((scoreboardobjective) -> {
+-            consumer.accept(this.getPlayerScoreForObjective(s, scoreboardobjective));
++            consumer.accept(this.getPlayerScoreForObjective(s, (ScoreboardObjective) scoreboardobjective)); // Paper
+         });
+     }
+ 
+@@ -231,6 +231,28 @@ public class Scoreboard {
+         }
+     }
+ 
++    // Paper start
++    public boolean addPlayersToTeam(Collection<String> entries, ScoreboardTeam scoreboardteam) {
++        boolean added = false;
++        for (String entry : entries) {
++            if (entry.length() > 40) {
++                throw new IllegalArgumentException("The player name '" + entry + "' is too long!");
++            } else {
++                if (this.getPlayerTeam(entry) != null) {
++                    this.removePlayerFromTeam(entry);
++                }
++
++                this.teamsByPlayer.put(entry, scoreboardteam);
++                if (scoreboardteam.getPlayerNameSet().add(entry)) {
++                    added = true;
++                }
++            }
++        }
++
++        return added;
++    }
++    // Paper end
++
+     public boolean removePlayerFromTeam(String s) {
+         ScoreboardTeam scoreboardteam = this.getPlayerTeam(s);
+ 
+diff --git a/src/main/java/net/minecraft/server/ScoreboardServer.java b/src/main/java/net/minecraft/server/ScoreboardServer.java
+index 929397a4ca8af8aba24c36bd6fc8ed0071982b64..2d21b579a3596b944806cd64b97e347f3812db8f 100644
+--- a/src/main/java/net/minecraft/server/ScoreboardServer.java
++++ b/src/main/java/net/minecraft/server/ScoreboardServer.java
+@@ -3,6 +3,7 @@ package net.minecraft.server;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Sets;
+ import java.util.Arrays;
++import java.util.Collection; // Paper
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
+@@ -80,6 +81,19 @@ public class ScoreboardServer extends Scoreboard {
+         }
+     }
+ 
++    // Paper start
++    @Override
++    public boolean addPlayersToTeam(Collection<String> entries, ScoreboardTeam scoreboardteam) {
++        if (super.addPlayersToTeam(entries, scoreboardteam)) {
++            this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, entries, 3));
++            this.b();
++            return true;
++        } else {
++            return false;
++        }
++    }
++    // Paper end
++
+     @Override
+     public void removePlayerFromTeam(String s, ScoreboardTeam scoreboardteam) {
+         super.removePlayerFromTeam(s, scoreboardteam);
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
+index 4d9b5d7cd080f8b2e9d85f2805660c76d7131e66..b61454e3df1d7238ae7038f62a49938a6fc36ae0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
+@@ -1,6 +1,7 @@
+ package org.bukkit.craftbukkit.scoreboard;
+ 
+ import com.google.common.collect.ImmutableSet;
++import java.util.Collection; // Paper
+ import java.util.Set;
+ import net.minecraft.server.ScoreboardTeam;
+ import net.minecraft.server.ScoreboardTeamBase;
+@@ -225,6 +226,16 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
+         scoreboard.board.addPlayerToTeam(entry, team);
+     }
+ 
++    // Paper start
++    @Override
++    public void addEntries(Collection<String> entries) throws IllegalStateException, IllegalArgumentException {
++        Validate.notNull(entries, "Entries cannot be null");
++        CraftScoreboard scoreboard = checkState();
++
++        scoreboard.board.addPlayersToTeam(entries, team);
++    }
++    // Paper end
++
+     @Override
+     public boolean removePlayer(OfflinePlayer player) throws IllegalStateException, IllegalArgumentException {
+         Validate.notNull(player, "OfflinePlayer cannot be null");

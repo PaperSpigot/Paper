@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 17:02:18 -0600
+Subject: [PATCH] Add Multiple Entries to Scoreboard Team
+
+
+diff --git a/src/main/java/org/bukkit/scoreboard/Team.java b/src/main/java/org/bukkit/scoreboard/Team.java
+index f0af10a5b9ad048be197ed5ec6c8ed2672eb3dd5..8d9fbea8f45bea1572a0d0b6d6a8d0835b668029 100644
+--- a/src/main/java/org/bukkit/scoreboard/Team.java
++++ b/src/main/java/org/bukkit/scoreboard/Team.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.scoreboard;
+ 
++import java.util.Collection; // Paper
+ import java.util.Set;
+ import org.bukkit.ChatColor;
+ import org.bukkit.OfflinePlayer;
+@@ -319,6 +320,19 @@ public interface Team {
+      */
+     void addEntry(@NotNull String entry) throws IllegalStateException, IllegalArgumentException;
+ 
++    // Paper start
++    /**
++     * This puts a collection of entries onto this team for the scoreboard.
++     * <p>
++     * Entries on other teams will be removed from their respective teams.
++     *
++     * @param entries the entries to add
++     * @throws IllegalArgumentException if entries are null
++     * @throws IllegalStateException if this team has been unregistered
++     */
++    void addEntries(@NotNull Collection<String> entries) throws IllegalStateException, IllegalArgumentException;
++    // Paper end
++
+     /**
+      * Removes the player from this team.
+      *
