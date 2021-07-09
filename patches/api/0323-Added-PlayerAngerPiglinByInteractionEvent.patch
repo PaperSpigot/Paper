@@ -1,0 +1,114 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Mon, 4 Jan 2021 23:47:38 -0800
+Subject: [PATCH] Added PlayerAngerPiglinByInteractionEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerAngerPiglinByInteractionEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerAngerPiglinByInteractionEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ce3a9ca7e90b98e240132a63d19a57b61cbf7ee8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/player/PlayerAngerPiglinByInteractionEvent.java
+@@ -0,0 +1,102 @@
++package io.papermc.paper.event.player;
++
++import org.bukkit.Location;
++import org.bukkit.entity.Piglin;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.bukkit.inventory.InventoryHolder;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.List;
++
++/**
++ * Called when a player interacts with a chest-like block
++ * or destroys a block tagged as guarded by piglins.
++ */
++public class PlayerAngerPiglinByInteractionEvent extends PlayerEvent implements Cancellable {
++
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++
++    private final Location location;
++    private final boolean openBlock;
++    private final InventoryHolder source;
++    private final List<Piglin> piglinsToBeAngered;
++    private boolean cancelled;
++
++    public PlayerAngerPiglinByInteractionEvent(@NotNull Player player,
++                                               @NotNull Location location,
++                                               boolean openBlock,
++                                               @Nullable InventoryHolder source,
++                                               @NotNull List<Piglin> piglinsToBeAngered) {
++        super(player);
++        this.location = location;
++        this.openBlock = openBlock;
++        this.source = source;
++        this.piglinsToBeAngered = piglinsToBeAngered;
++    }
++
++    /**
++     * Gets the list of piglins that will be angered by this interaction.
++     * This list is mutable and changes to it will be reflected on the server.
++     *
++     * @return the list of piglins.
++     */
++    @NotNull
++    public List<Piglin> getPiglinsToBeAngered() {
++        return piglinsToBeAngered;
++    }
++
++    /**
++     * Gets the location of the source.
++     *
++     * @return the location of the source
++     */
++    @NotNull
++    public Location getLocation() {
++        return location;
++    }
++
++    /**
++     * Gets if the interaction was the opening of a block.
++     *
++     * @return true if open a block, false if breaking a block
++     */
++    public boolean isOpenBlock() {
++        return openBlock;
++    }
++
++    /**
++     * If the interaction was opening of a inventory, this returns the block or entities
++     * associated with that inventory.
++     *
++     * @return the inventory holder
++     */
++    @Nullable
++    public InventoryHolder getSource() {
++        return source;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return HANDLER_LIST;
++    }
++
++    @NotNull
++    public static final HandlerList getHandlerList() {
++        return HANDLER_LIST;
++    }
++}
