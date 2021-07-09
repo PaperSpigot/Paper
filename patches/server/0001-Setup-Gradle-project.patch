@@ -20,17 +20,15 @@ index 67fb370cad6924895a6b27052dbd5c1767e3f0c9..3e05459f27c4c5697ae65da504d67a6a
  /.project
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..f99a9702fe9282a1982c25cd0c003d8df80e97de
+index 0000000000000000000000000000000000000000..fd782b6067e773c753ece52447b8b63caba7fc94
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,146 @@
+@@ -0,0 +1,172 @@
 +import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 +import com.github.jengelman.gradle.plugins.shadow.transformers.Transformer
 +import io.papermc.paperweight.util.Git
 +import io.papermc.paperweight.util.path
 +import shadow.org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor.PLUGIN_CACHE_FILE
-+import java.text.SimpleDateFormat
-+import java.util.Date
 +import java.util.Locale
 +
 +plugins {
@@ -98,19 +96,47 @@ index 0000000000000000000000000000000000000000..f99a9702fe9282a1982c25cd0c003d8d
 +    }
 +}
 +
++relocation {
++    fun cb(pack: String) = "org.bukkit.craftbukkit.libs.$pack"
++
++    sequenceOf(
++        "org.jline:jline-terminal-jansi" to "jline",
++        "commons-codec:commons-codec" to "org.apache.commons.codec",
++        "commons-io:commons-io" to "org.apache.commons.io",
++        "it.unimi.dsi:fastutil" to "it.unimi",
++        "org.apache.commons:commons-lang3" to "org.apache.commons.lang3",
++        "org.ow2.asm:asm" to "org.objectweb.asm"
++    ).forEach { (owner, pack) ->
++        relocate(owner, pack to cb(pack))
++    }
++
++    // runtimeOnly dependencies don't need an owner attached
++    // owner is used for dev bundle generation, runtimeOnly deps are not included in dev bundle
++    sequenceOf(
++        "org.apache.http",
++        "org.apache.maven",
++        "org.codehaus.plexus",
++        "org.eclipse.aether",
++        "org.eclipse.sisu"
++    ).forEach { pack ->
++        relocate(pack to cb(pack))
++    }
++
++    val packageVersion = "1_17_R1"
++    relocate("org.bukkit.craftbukkit" to "org.bukkit.craftbukkit.v$packageVersion") {
++        exclude("org.bukkit.craftbukkit.Main*")
++    }
++}
++
 +tasks.shadowJar {
 +    archiveClassifier.set("mojang-mapped")
 +
-+    val packageVersion = "1_17_R1"
-+    relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v$packageVersion") {
-+        exclude("org.bukkit.craftbukkit.Main*")
-+    }
-+    listOf(
-+        "jline", "it.unimi", "org.apache.commons.codec", "org.apache.commons.io",
-+        "org.apache.commons.lang3", "org.apache.http", "org.apache.maven", "org.codehaus.plexus",
-+        "org.eclipse.aether", "org.eclipse.sisu", "org.objectweb.asm"
-+    ).forEach { pack ->
-+        relocate(pack, "org.bukkit.craftbukkit.libs.$pack")
++    for (relocation in relocation.relocations.get()) {
++        relocate(relocation.fromPackage, relocation.toPackage) {
++            for (exclude in relocation.excludes) {
++                exclude(exclude)
++            }
++        }
 +    }
 +    mergeServiceFiles()
 +    transform(ModifiedLog4j2PluginsCacheFileTransformer::class.java)

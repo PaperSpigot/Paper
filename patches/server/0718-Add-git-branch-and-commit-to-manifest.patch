@@ -5,10 +5,10 @@ Subject: [PATCH] Add git branch and commit to manifest
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 88694b73f7c9d02c8d0d4f38ef0533b9eb9e3497..682935762008602ca214f68147766792cbedeea9 100644
+index 97952c50ebd29b4210a737b605638020eb01d82a..14ec4de2a7fd781f8a10deb01666b12273cb7973 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -77,6 +77,7 @@ tasks.jar {
+@@ -75,6 +75,7 @@ tasks.jar {
          val gitHash = git("rev-parse", "--short=7", "HEAD").getText().trim()
          val implementationVersion = System.getenv("BUILD_NUMBER") ?: "\"$gitHash\""
          val date = git("show", "-s", "--format=%ci", gitHash).getText().trim() // Paper
@@ -16,7 +16,7 @@ index 88694b73f7c9d02c8d0d4f38ef0533b9eb9e3497..682935762008602ca214f68147766792
          attributes(
              "Main-Class" to "org.bukkit.craftbukkit.Main",
              "Implementation-Title" to "CraftBukkit",
-@@ -86,6 +87,8 @@ tasks.jar {
+@@ -84,6 +85,8 @@ tasks.jar {
              "Specification-Version" to project.version,
              "Specification-Vendor" to "Bukkit Team",
              "Multi-Release" to "true", // Paper
