@@ -1,0 +1,113 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: syldium <syldium@mailo.com>
+Date: Fri, 9 Jul 2021 18:50:40 +0200
+Subject: [PATCH] Add advancement display API
+
+
+diff --git a/src/main/java/io/papermc/paper/advancement/PaperAdvancementDisplay.java b/src/main/java/io/papermc/paper/advancement/PaperAdvancementDisplay.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8a24164130ad7b6037ef6e8d06d2c55d4a42d0ef
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancement/PaperAdvancementDisplay.java
+@@ -0,0 +1,58 @@
++package io.papermc.paper.advancement;
++
++import io.papermc.paper.adventure.PaperAdventure;
++import net.kyori.adventure.text.Component;
++import net.minecraft.advancements.DisplayInfo;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public record PaperAdvancementDisplay(DisplayInfo handle) implements AdvancementDisplay {
++
++    @Override
++    public @NotNull Frame frame() {
++        return switch (this.handle.getFrame()) {
++            case TASK -> Frame.TASK;
++            case CHALLENGE -> Frame.CHALLENGE;
++            case GOAL -> Frame.GOAL;
++        };
++    }
++
++    @Override
++    public @NotNull Component title() {
++        return PaperAdventure.asAdventure(this.handle.getTitle());
++    }
++
++    @Override
++    public @NotNull Component description() {
++        return PaperAdventure.asAdventure(this.handle.getDescription());
++    }
++
++    @Override
++    public @NotNull ItemStack icon() {
++        return CraftItemStack.asBukkitCopy(this.handle.getIcon());
++    }
++
++    @Override
++    public boolean doesShowToast() {
++        return this.handle.shouldShowToast();
++    }
++
++    @Override
++    public boolean doesAnnounceToChat() {
++        return this.handle.shouldAnnounceChat();
++    }
++
++    @Override
++    public boolean isHidden() {
++        return this.handle.isHidden();
++    }
++
++    @Override
++    public @Nullable NamespacedKey getBackgroundPath() {
++        return this.handle.getBackground() == null ? null : CraftNamespacedKey.fromMinecraft(this.handle.getBackground());
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/advancement/CraftAdvancement.java b/src/main/java/org/bukkit/craftbukkit/advancement/CraftAdvancement.java
+index 20d51358b4b47cbf43c3d172765243e96aa1966c..2d99ed5c0c7fa1ac2c6df4d42dd12a5fc1538461 100644
+--- a/src/main/java/org/bukkit/craftbukkit/advancement/CraftAdvancement.java
++++ b/src/main/java/org/bukkit/craftbukkit/advancement/CraftAdvancement.java
+@@ -27,4 +27,38 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
+     public Collection<String> getCriteria() {
+         return Collections.unmodifiableCollection(this.handle.getCriteria().keySet());
+     }
++    // Paper start
++    @Override
++    public io.papermc.paper.advancement.AdvancementDisplay getDisplay() {
++        return this.handle.getDisplay() == null ? null : new io.papermc.paper.advancement.PaperAdvancementDisplay(this.handle.getDisplay());
++    }
++
++    @Override
++    public org.bukkit.advancement.Advancement getParent() {
++        return this.handle.getParent() == null ? null : this.handle.getParent().bukkit;
++    }
++
++    @Override
++    public Collection<org.bukkit.advancement.Advancement> getChildren() {
++        final var children = com.google.common.collect.ImmutableList.<org.bukkit.advancement.Advancement>builder();
++        for (Advancement advancement : this.handle.getChildren()) {
++            children.add(advancement.bukkit);
++        }
++        return children.build();
++    }
++
++    @Override
++    public org.bukkit.advancement.Advancement getRoot() {
++        Advancement advancement = this.handle;
++        while (advancement.getParent() != null) {
++            advancement = advancement.getParent();
++        }
++        return advancement.bukkit;
++    }
++
++    @Override
++    public net.kyori.adventure.text.Component asComponent() {
++        return io.papermc.paper.adventure.PaperAdventure.asAdventure(this.handle.getChatComponent());
++    }
++    // Paper end
+ }
