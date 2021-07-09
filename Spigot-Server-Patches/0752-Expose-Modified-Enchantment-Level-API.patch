@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swedz <me@swedz.net>
+Date: Sat, 29 May 2021 00:12:44 -0400
+Subject: [PATCH] Expose Modified Enchantment Level API
+
+
+diff --git a/src/main/java/net/minecraft/world/item/enchantment/Enchantment.java b/src/main/java/net/minecraft/world/item/enchantment/Enchantment.java
+index c719c1c1f837753f61eb7be83b6ec2a214ab6819..54d391dfafe3e6a87c5e5483491444ccc1187649 100644
+--- a/src/main/java/net/minecraft/world/item/enchantment/Enchantment.java
++++ b/src/main/java/net/minecraft/world/item/enchantment/Enchantment.java
+@@ -59,10 +59,12 @@ public abstract class Enchantment {
+         return 1;
+     }
+ 
++    public int getModifiedEnchantmentLevelMinimum(int level) { return a(level); } // Paper - OBFHELPER
+     public int a(int i) {
+         return 1 + i * 10;
+     }
+ 
++    public int getModifiedEnchantmentLevelMaximum(int level) { return b(level); } // Paper - OBFHELPER
+     public int b(int i) {
+         return this.a(i) + 5;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+index 3b83852249e56609074ef1e8cdad6416db66007b..b354132ba09dee1f58cd46f2941cc5d37cc3c105 100644
+--- a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
++++ b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+@@ -208,6 +208,16 @@ public class CraftEnchantment extends Enchantment {
+         return fromNMSRarity(target.getRarity());
+     }
+ 
++    @Override
++    public int getModifiedEnchantmentLevelMinimum(int level) {
++        return target.getModifiedEnchantmentLevelMinimum(level);
++    }
++
++    @Override
++    public int getModifiedEnchantmentLevelMaximum(int level) {
++        return target.getModifiedEnchantmentLevelMaximum(level);
++    }
++
+     @Override
+     public float getDamageIncrease(int level, org.bukkit.entity.EntityCategory entityCategory) {
+         return target.getDamageIncrease(level, org.bukkit.craftbukkit.entity.CraftLivingEntity.fromBukkitEntityCategory(entityCategory));

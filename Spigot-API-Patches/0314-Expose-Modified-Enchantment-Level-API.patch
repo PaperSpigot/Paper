@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swedz <me@swedz.net>
+Date: Sat, 29 May 2021 00:12:27 -0400
+Subject: [PATCH] Expose Modified Enchantment Level API
+
+
+diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java
+index 799813410f40589ba1d7d530a47d87f609764705..d9511c18ddc20278f151c28d05f3bb544e8e95e8 100644
+--- a/src/main/java/org/bukkit/enchantments/Enchantment.java
++++ b/src/main/java/org/bukkit/enchantments/Enchantment.java
+@@ -330,6 +330,24 @@ public abstract class Enchantment implements Keyed {
+     @NotNull
+     public abstract io.papermc.paper.enchantments.EnchantmentRarity getRarity();
+ 
++    /**
++     * Gets the modified enchantment level minimum for the enchantment given the level
++     *
++     * @param level the enchantment level
++     * @return the minimum modified enchantment level
++     * @see <a href="https://minecraft.fandom.com/wiki/Enchanting/Levels">Modified Enchantment Values</a>
++     */
++    public abstract int getModifiedEnchantmentLevelMinimum(int level);
++
++    /**
++     * Gets the modified enchantment level maximum for the enchantment given the level
++     *
++     * @param level the enchantment level
++     * @return the maximum modified enchantment level
++     * @see <a href="https://minecraft.fandom.com/wiki/Enchanting/Levels">Modified Enchantment Values</a>
++     */
++    public abstract int getModifiedEnchantmentLevelMaximum(int level);
++
+     /**
+      * Gets the damage increase as a result of the level and entity category specified
+      *
+diff --git a/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java b/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
+index ca097db904db96e81c0ea4b06b445a13e9333cfe..63ffa91044ce7f31aad6eca241fa87033ba046b5 100644
+--- a/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
++++ b/src/main/java/org/bukkit/enchantments/EnchantmentWrapper.java
+@@ -86,6 +86,16 @@ public class EnchantmentWrapper extends Enchantment {
+         return getEnchantment().getRarity();
+     }
+ 
++    @Override
++    public int getModifiedEnchantmentLevelMinimum(int level) {
++        return getEnchantment().getModifiedEnchantmentLevelMinimum(level);
++    }
++
++    @Override
++    public int getModifiedEnchantmentLevelMaximum(int level) {
++        return getEnchantment().getModifiedEnchantmentLevelMaximum(level);
++    }
++
+     @Override
+     public float getDamageIncrease(int level, @NotNull org.bukkit.entity.EntityCategory entityCategory) {
+         return getEnchantment().getDamageIncrease(level, entityCategory);
