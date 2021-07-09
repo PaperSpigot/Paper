@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 18 Aug 2018 12:43:16 -0400
+Subject: [PATCH] Restore vanilla default mob-spawn-range and water animals
+ limit
+
+
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index 0efcbab8f8806aeb8dd8bd6384e5a7cee375d100..34ee684901906fc2ef5f0d09680d2686b813e52b 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -165,7 +165,7 @@ public class SpigotWorldConfig
+     public byte mobSpawnRange;
+     private void mobSpawnRange()
+     {
+-        mobSpawnRange = (byte) getInt( "mob-spawn-range", 6 );
++        mobSpawnRange = (byte) getInt( "mob-spawn-range", 8 ); // Paper - Vanilla
+         log( "Mob Spawn Range: " + mobSpawnRange );
+     }
+ 
+diff --git a/src/main/resources/configurations/bukkit.yml b/src/main/resources/configurations/bukkit.yml
+index 6474a7fb738e1238cc272afc5ff14b645947e688..6d71bd0db752e6f523364ca5351579b6bcb434c8 100644
+--- a/src/main/resources/configurations/bukkit.yml
++++ b/src/main/resources/configurations/bukkit.yml
+@@ -26,7 +26,7 @@ settings:
+ spawn-limits:
+     monsters: 70
+     animals: 10
+-    water-animals: 15
++    water-animals: 5
+     water-ambient: 20
+     ambient: 15
+ chunk-gc:
