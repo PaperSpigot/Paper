@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Sat, 27 Feb 2021 07:55:51 +0000
+Subject: [PATCH] Add PreDragonRespawnEvent and DragonRespawnEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EnderDragonBattle.java b/src/main/java/net/minecraft/server/EnderDragonBattle.java
+index 0d8fba494ed11ad79201dfd1c7f3ad5b288ca0ca..66062bb646cd90822eeda1bdd417955823cde6f4 100644
+--- a/src/main/java/net/minecraft/server/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/server/EnderDragonBattle.java
+@@ -15,6 +15,14 @@ import java.util.function.Predicate;
+ import javax.annotation.Nullable;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++// Paper start - Add DragonRespawnEvent and PreDragonRespawnEvent
++import java.util.ArrayList;
++import java.util.stream.Collectors;
++import org.bukkit.craftbukkit.boss.CraftDragonBattle;
++import org.bukkit.entity.EnderCrystal;
++import io.papermc.paper.event.world.DragonRespawnEvent;
++import io.papermc.paper.event.world.PreDragonRespawnEvent;
++// Paper end
+ import io.papermc.paper.event.block.DragonEggFormEvent; // Paper - DragonEggFormEvent
+ 
+ public class EnderDragonBattle {
+@@ -206,6 +214,15 @@ public class EnderDragonBattle {
+             this.q = 0;
+             if (enumdragonrespawn == EnumDragonRespawn.END) {
+                 this.respawnPhase = null;
++                // Paper start - DragonRespawnEvent
++                if (previouslyKilled) {
++                    DragonRespawnEvent dragonRespawnEvent = new DragonRespawnEvent(world.getWorld(), new CraftDragonBattle(this));
++                    if (!dragonRespawnEvent.callEvent()) {
++                        this.generateExitPortal(true);
++                        return;
++                    }
++                }
++                // Paper end
+                 this.dragonKilled = false;
+                 EntityEnderDragon entityenderdragon = this.o();
+                 Iterator iterator = this.bossBattle.getPlayers().iterator();
+@@ -494,6 +511,12 @@ public class EnderDragonBattle {
+             }
+ 
+             EnderDragonBattle.LOGGER.debug("Found all crystals, respawning dragon.");
++            // Paper start - PreDragonRespawnEvent
++            PreDragonRespawnEvent preDragonRespawnEvent = new PreDragonRespawnEvent(world.getWorld(), new CraftDragonBattle(this), new ArrayList<>(list.stream().map(e -> (EnderCrystal) e.getBukkitEntity()).collect(Collectors.toList())));
++            if (!preDragonRespawnEvent.callEvent()) {
++                return;
++            }
++            // Paper end
+             this.a((List) list);
+         }
+ 
