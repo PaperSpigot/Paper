@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 17:16:17 -0600
+Subject: [PATCH] Add PlayerShieldBreakEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/player/PlayerShieldBreakEvent.java b/src/main/java/org/bukkit/event/player/PlayerShieldBreakEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ba97c78022e7ddd40d6e1c0b9bd983aaf3f96277
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/player/PlayerShieldBreakEvent.java
+@@ -0,0 +1,44 @@
++package org.bukkit.event.player;
++
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Event;
++import org.bukkit.event.HandlerList;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Thrown whenever a {@link Player} dies
++ */
++public class PlayerShieldBreakEvent extends Event {
++    private static final HandlerList handlers = new HandlerList();
++
++    private final Player player;
++    private final LivingEntity damager;
++
++    public PlayerShieldBreakEvent(@NotNull final Player player, @Nullable final LivingEntity damager) {
++        this.player = player;
++        this.damager = damager;
++    }
++
++    @Nullable
++    public LivingEntity getDamager() {
++        return damager;
++    }
++
++    @NotNull
++    public Player getPlayer() {
++        return player;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}

@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tom <cryptite@gmail.com>
+Date: Fri, 26 Feb 2021 17:16:16 -0600
+Subject: [PATCH] Add PlayerShieldBreakEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 59b00c78f8d92bcceca35d0f25e4d94b3ebdc6e2..5b3bbc81f57b6db3de1df21a2b8fe232f5b0f189 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -23,6 +23,7 @@ import org.bukkit.entity.Item;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.entity.CreatureSpawnEvent;
+ import org.bukkit.event.entity.EntityCombustByEntityEvent;
++import org.bukkit.event.player.PlayerShieldBreakEvent; // Paper
+ import org.bukkit.event.player.PlayerDropItemEvent;
+ import org.bukkit.event.player.PlayerVelocityEvent;
+ // CraftBukkit end
+@@ -770,7 +771,7 @@ public abstract class EntityHuman extends EntityLiving {
+     protected void shieldBlock(EntityLiving entityliving) {
+         super.shieldBlock(entityliving);
+         if (entityliving.getItemInMainHand().getItem() instanceof ItemAxe) {
+-            this.p(true);
++            this.p(entityliving, true); // Paper
+         }
+ 
+     }
+@@ -1226,7 +1227,7 @@ public abstract class EntityHuman extends EntityLiving {
+         this.attack(entityliving);
+     }
+ 
+-    public void p(boolean flag) {
++    public void p(EntityLiving entityLiving, boolean flag) { // Paper
+         float f = 0.25F + (float) EnchantmentManager.getDigSpeedEnchantmentLevel(this) * 0.05F;
+ 
+         if (flag) {
+@@ -1234,6 +1235,11 @@ public abstract class EntityHuman extends EntityLiving {
+         }
+ 
+         if (this.random.nextFloat() < f) {
++            // Paper start
++            Player player = (Player) this.getBukkitEntity();
++            org.bukkit.Bukkit.getPluginManager().callEvent(new PlayerShieldBreakEvent(player, entityLiving.getBukkitLivingEntity()));
++            // Paper end
++
+             this.getCooldownTracker().setCooldown(Items.SHIELD, 100);
+             this.clearActiveItem();
+             this.world.broadcastEntityEffect(this, (byte) 30);
