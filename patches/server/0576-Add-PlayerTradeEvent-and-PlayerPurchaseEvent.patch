@@ -1,0 +1,250 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 2 Jul 2020 16:12:10 -0700
+Subject: [PATCH] Add PlayerTradeEvent and PlayerPurchaseEvent
+
+Co-authored-by: Alexander <protonull@protonmail.com>
+
+diff --git a/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java b/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
+index 4a7b657265cbbc91ae85409abb3db29cfc555a2c..c75fa3274dedfafa11b94704695a2313f11c22cc 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/AbstractVillager.java
+@@ -138,11 +138,24 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
+     @Override
+     public void overrideXp(int experience) {}
+ 
++    // Paper start
++    @Override
++    public void processTrade(MerchantOffer recipe, io.papermc.paper.event.player.PlayerPurchaseEvent event) { // The MerchantRecipe passed in here is the one set by the PlayerPurchaseEvent
++        if (event.willIncreaseTradeUses()) {
++            recipe.increaseUses();
++        }
++        if (event.isRewardingExp()) {
++            this.rewardTradeXp(recipe);
++        }
++        this.notifyTrade(recipe);
++    }
++    // Paper end
++
+     @Override
+     public void notifyTrade(MerchantOffer offer) {
+-        offer.increaseUses();
++        // offer.increaseUses(); // Paper - handled in processTrade
+         this.ambientSoundTime = -this.getAmbientSoundInterval();
+-        this.rewardTradeXp(offer);
++        // this.rewardTradeXp(offer); // Paper - handled in processTrade
+         if (this.tradingPlayer instanceof ServerPlayer) {
+             CriteriaTriggers.TRADE.trigger((ServerPlayer) this.tradingPlayer, this, offer.getResult());
+         }
+diff --git a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+index 60a67f75b4f772654e064e2b19f68a907ca4c93b..83d9fe7d92a8cb46478964d0742d0103a937648c 100644
+--- a/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
++++ b/src/main/java/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -741,6 +741,14 @@ public abstract class AbstractContainerMenu {
+     public abstract boolean stillValid(Player player);
+ 
+     protected boolean moveItemStackTo(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
++        // Paper start
++        return this.moveItemStackTo(stack, startIndex, endIndex, fromLast, false);
++    }
++    protected boolean moveItemStackTo(ItemStack stack, int startIndex, int endIndex, boolean fromLast, boolean isCheck) {
++        if (isCheck) {
++            stack = stack.copy();
++        }
++        // Paper end
+         boolean flag1 = false;
+         int k = startIndex;
+ 
+@@ -763,18 +771,27 @@ public abstract class AbstractContainerMenu {
+ 
+                 slot = (Slot) this.slots.get(k);
+                 itemstack1 = slot.getItem();
++                // Paper start - clone if only a check
++                if (isCheck) {
++                    itemstack1 = itemstack1.copy();
++                }
++                // Paper end
+                 if (!itemstack1.isEmpty() && ItemStack.isSameItemSameTags(stack, itemstack1)) {
+                     int l = itemstack1.getCount() + stack.getCount();
+ 
+                     if (l <= stack.getMaxStackSize()) {
+                         stack.setCount(0);
+                         itemstack1.setCount(l);
++                        if (!isCheck) { // Paper - dont update if only a check
+                         slot.setChanged();
++                        } // Paper
+                         flag1 = true;
+                     } else if (itemstack1.getCount() < stack.getMaxStackSize()) {
+                         stack.shrink(stack.getMaxStackSize() - itemstack1.getCount());
+                         itemstack1.setCount(stack.getMaxStackSize());
++                        if (!isCheck) { // Paper - dont update if only a check
+                         slot.setChanged();
++                        } // Paper
+                         flag1 = true;
+                     }
+                 }
+@@ -805,14 +822,33 @@ public abstract class AbstractContainerMenu {
+ 
+                 slot = (Slot) this.slots.get(k);
+                 itemstack1 = slot.getItem();
++                // Paper start - clone if only a check
++                if (isCheck) {
++                    itemstack1 = itemstack1.copy();
++                }
++                // Paper end
+                 if (itemstack1.isEmpty() && slot.mayPlace(stack)) {
+                     if (stack.getCount() > slot.getMaxStackSize()) {
++                        // Paper start - dont set slot if only check
++                        if (isCheck) {
++                            stack.shrink(slot.getMaxStackSize());
++                        } else {
++                        // Paper end
+                         slot.set(stack.split(slot.getMaxStackSize()));
++                        } // Paper
+                     } else {
++                        // Paper start - dont set slot if only check
++                        if (isCheck) {
++                            stack.shrink(stack.getCount());
++                        } else {
++                        // Paper end
+                         slot.set(stack.split(stack.getCount()));
++                        } // Paper
+                     }
+ 
++                    if (!isCheck) { // Paper - dont update if only check
+                     slot.setChanged();
++                    } // Paper
+                     flag1 = true;
+                     break;
+                 }
+diff --git a/src/main/java/net/minecraft/world/inventory/MerchantMenu.java b/src/main/java/net/minecraft/world/inventory/MerchantMenu.java
+index dc036f6450b2eccdc848c66dac525ed43f70f4e4..563360f846c5c50515c825913f314ea2adc822a3 100644
+--- a/src/main/java/net/minecraft/world/inventory/MerchantMenu.java
++++ b/src/main/java/net/minecraft/world/inventory/MerchantMenu.java
+@@ -134,12 +134,15 @@ public class MerchantMenu extends AbstractContainerMenu {
+ 
+             itemstack = itemstack1.copy();
+             if (index == 2) {
+-                if (!this.moveItemStackTo(itemstack1, 3, 39, true)) {
++                if (!this.moveItemStackTo(itemstack1, 3, 39, true, true)) {
+                     return ItemStack.EMPTY;
+                 }
+-
+-                slot.onQuickCraft(itemstack1, itemstack);
+-                this.playTradeSound();
++                // if (!this.a(itemstack1, 3, 39, true)) { // Paper - deal with this after event
++                //     return ItemStack.b;
++                // }
++                //
++                // slot.onQuickCraft(itemstack1, itemstack);
++                // this.playTradeSound();
+             } else if (index != 0 && index != 1) {
+                 if (index >= 3 && index < 30) {
+                     if (!this.moveItemStackTo(itemstack1, 30, 39, false)) {
+@@ -152,6 +155,7 @@ public class MerchantMenu extends AbstractContainerMenu {
+                 return ItemStack.EMPTY;
+             }
+ 
++            if (index != 2) { // Paper - moved down for slot 2
+             if (itemstack1.isEmpty()) {
+                 slot.set(ItemStack.EMPTY);
+             } else {
+@@ -163,6 +167,21 @@ public class MerchantMenu extends AbstractContainerMenu {
+             }
+ 
+             slot.onTake(player, itemstack1);
++            } // Paper start - handle slot 2
++            if (index == 2) { // is merchant result slot
++                slot.onTake(player, itemstack1);
++                if (itemstack1.isEmpty()) {
++                    slot.set(ItemStack.EMPTY);
++                    return ItemStack.EMPTY;
++                }
++
++                this.moveItemStackTo(itemstack1, 3, 39, true, false); // This should always succeed because it's checked above
++
++                // slot.a(itemstack1, itemstack); this is a trigger check, already covered
++                this.playTradeSound();
++                slot.set(ItemStack.EMPTY); // itemstack1 should ALWAYS be empty
++            }
++            // Paper end
+         }
+ 
+         return itemstack;
+diff --git a/src/main/java/net/minecraft/world/inventory/MerchantResultSlot.java b/src/main/java/net/minecraft/world/inventory/MerchantResultSlot.java
+index 74b28315197b81f80334ae6023113904e4fac4c3..c629f0611fa8eaef722a8d794de0c3bb31900f3b 100644
+--- a/src/main/java/net/minecraft/world/inventory/MerchantResultSlot.java
++++ b/src/main/java/net/minecraft/world/inventory/MerchantResultSlot.java
+@@ -49,11 +49,28 @@ public class MerchantResultSlot extends Slot {
+     public void onTake(Player player, ItemStack stack) {
+         this.checkTakeAchievements(stack);
+         MerchantOffer merchantOffer = this.slots.getActiveOffer();
++        // Paper start
++        io.papermc.paper.event.player.PlayerPurchaseEvent event = null;
++        if (this.merchant instanceof net.minecraft.world.entity.npc.AbstractVillager && this.merchant.getTradingPlayer().getBukkitEntity() instanceof org.bukkit.entity.Player) {
++            event = new io.papermc.paper.event.player.PlayerTradeEvent((org.bukkit.entity.Player) this.merchant.getTradingPlayer().getBukkitEntity(), (org.bukkit.entity.AbstractVillager) ((net.minecraft.world.entity.npc.AbstractVillager) this.merchant).getBukkitEntity(), merchantOffer.asBukkit(), true, true);
++        } else if (this.merchant instanceof org.bukkit.craftbukkit.inventory.CraftMerchantCustom.MinecraftMerchant && this.merchant.getTradingPlayer().getBukkitEntity() instanceof org.bukkit.entity.Player) {
++            event = new io.papermc.paper.event.player.PlayerPurchaseEvent((org.bukkit.entity.Player) this.merchant.getTradingPlayer().getBukkitEntity(), merchantOffer.asBukkit(), false, true);
++        }
++        if (event != null) {
++            if (!event.callEvent()) {
++                stack.setCount(0);
++                event.getPlayer().updateInventory();
++                return;
++            }
++            merchantOffer = org.bukkit.craftbukkit.inventory.CraftMerchantRecipe.fromBukkit(event.getTrade()).toMinecraft();
++        }
++        this.checkTakeAchievements(stack);
++        // Paper end
+         if (merchantOffer != null) {
+             ItemStack itemStack = this.slots.getItem(0);
+             ItemStack itemStack2 = this.slots.getItem(1);
+             if (merchantOffer.take(itemStack, itemStack2) || merchantOffer.take(itemStack2, itemStack)) {
+-                this.merchant.notifyTrade(merchantOffer);
++                this.merchant.processTrade(merchantOffer, event); // Paper
+                 player.awardStat(Stats.TRADED_WITH_VILLAGER);
+                 this.slots.setItem(0, itemStack);
+                 this.slots.setItem(1, itemStack2);
+diff --git a/src/main/java/net/minecraft/world/item/trading/Merchant.java b/src/main/java/net/minecraft/world/item/trading/Merchant.java
+index 50dca0d86dbc47f66ba2d2f262e8587853cc6f9e..f11eff88ba4b9a4f8601d70c07907cc12611a1d0 100644
+--- a/src/main/java/net/minecraft/world/item/trading/Merchant.java
++++ b/src/main/java/net/minecraft/world/item/trading/Merchant.java
+@@ -21,6 +21,7 @@ public interface Merchant {
+ 
+     void overrideOffers(MerchantOffers offers);
+ 
++    default void processTrade(MerchantOffer merchantRecipe, io.papermc.paper.event.player.PlayerPurchaseEvent event) { this.notifyTrade(merchantRecipe); } // Paper
+     void notifyTrade(MerchantOffer offer);
+ 
+     void notifyTradeUpdated(ItemStack stack);
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantCustom.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantCustom.java
+index f40d6a0048ad5b3f6e31d83894ee89f5ca64fb3a..5f491a3de29260b30993330c24a5b6aa596063a4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantCustom.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMerchantCustom.java
+@@ -79,10 +79,25 @@ public class CraftMerchantCustom extends CraftMerchant {
+             return this.trades;
+         }
+ 
++        // Paper start
++        @Override
++        public void processTrade(MerchantOffer merchantRecipe, io.papermc.paper.event.player.PlayerPurchaseEvent event) { // The MerchantRecipe passed in here is the one set by the PlayerPurchaseEvent
++            /** Based on {@link net.minecraft.world.entity.npc.AbstractVillager#processTrade(MerchantOffer, io.papermc.paper.event.player.PlayerPurchaseEvent)} */
++            if (getTradingPlayer() instanceof net.minecraft.server.level.ServerPlayer) {
++                if (event.willIncreaseTradeUses()) {
++                    merchantRecipe.increaseUses();
++                }
++                if (event.isRewardingExp()) {
++                    this.tradingWorld.addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(tradingWorld, tradingPlayer.getX(), tradingPlayer.getY(), tradingPlayer.getZ(), merchantRecipe.getXp(), org.bukkit.entity.ExperienceOrb.SpawnReason.VILLAGER_TRADE, this.tradingPlayer, null));
++                }
++            }
++            this.notifyTrade(merchantRecipe);
++        }
++        // Paper end
+         @Override
+         public void notifyTrade(MerchantOffer offer) {
+             // increase recipe's uses
+-            offer.increaseUses();
++            // merchantrecipe.increaseUses(); // Paper - handled above in processTrade
+         }
+ 
+         @Override
