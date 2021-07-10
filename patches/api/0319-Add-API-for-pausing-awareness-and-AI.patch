@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: froobynooby <froobynooby@froobworld.com>
+Date: Sat, 1 May 2021 12:32:18 +0930
+Subject: [PATCH] Add API for pausing awareness and AI
+
+
+diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
+index cda05df6784dd4d6a09710a416dcb71c016dabfc..b5daf8c6d251a5a279604419d8a94ddf362ec6ce 100644
+--- a/src/main/java/org/bukkit/entity/LivingEntity.java
++++ b/src/main/java/org/bukkit/entity/LivingEntity.java
+@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
+ import org.bukkit.entity.memory.MemoryKey;
+ import org.bukkit.inventory.EntityEquipment;
+ import org.bukkit.inventory.ItemStack;
++import org.bukkit.plugin.Plugin;
+ import org.bukkit.potion.PotionEffect;
+ import org.bukkit.potion.PotionEffectType;
+ import org.bukkit.projectiles.ProjectileSource;
+@@ -623,6 +624,31 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+      */
+     void setAI(boolean ai);
+ 
++    // Paper start
++    /**
++     * Pause an entity's AI until it is unloaded.
++     *
++     * The entity will be completely unable to move if it has no AI.
++     *
++     * @param plugin the plugin that wants to pause the entity's AI.
++     */
++    void pauseAI(@NotNull Plugin plugin);
++
++    /**
++     * Resume an entity's AI if it is paused.
++     *
++     * @param plugin the plugin that wants to resume the entity's AI.
++     */
++    void resumeAI(@NotNull Plugin plugin);
++
++    /**
++     * Gets whether the entity's AI is paused or not.
++     *
++     * @return whether the entity's AI is paused.
++     */
++    boolean isAIPaused();
++    // Paper end
++
+     /**
+      * Checks whether an entity has AI.
+      *
+diff --git a/src/main/java/org/bukkit/entity/Mob.java b/src/main/java/org/bukkit/entity/Mob.java
+index 7d4ce660adb21e579e564796568945ee20f0ca59..b45546bc8f69e9cac0bd27b21f2c0926e83b6b30 100644
+--- a/src/main/java/org/bukkit/entity/Mob.java
++++ b/src/main/java/org/bukkit/entity/Mob.java
+@@ -1,6 +1,7 @@
+ package org.bukkit.entity;
+ 
+ import org.bukkit.loot.Lootable;
++import org.bukkit.plugin.Plugin;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+@@ -136,6 +137,33 @@ public interface Mob extends LivingEntity, Lootable {
+      */
+     public void setAware(boolean aware);
+ 
++    // Paper start
++    /**
++     * Pause an entity's awareness until it is unloaded.
++     *
++     * Unaware mobs will still move if pushed, attacked, etc. but will not move
++     * or perform any actions on their own. Unaware mobs may also have other
++     * unspecified behaviours disabled, such as drowning.
++     *
++     * @param plugin the plugin that wants to pause the entity's awareness.
++     */
++    void pauseAwareness(@NotNull Plugin plugin);
++
++    /**
++     * Resume an entity's awareness if it is paused.
++     *
++     * @param plugin the plugin that wants to resume the entity's awareness.
++     */
++    void resumeAwareness(@NotNull Plugin plugin);
++
++    /**
++     * Gets whether the entity's awareness is paused or not.
++     *
++     * @return whether the entity's awareness is paused.
++     */
++    boolean isAwarenessPaused();
++    // Paper end
++
+     /**
+      * Gets whether this mob is aware of its surroundings.
+      *

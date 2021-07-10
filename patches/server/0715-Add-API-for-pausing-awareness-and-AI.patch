@@ -1,0 +1,271 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: froobynooby <froobynooby@froobworld.com>
+Date: Sun, 20 Jun 2021 14:28:29 +0930
+Subject: [PATCH] Add API for pausing awareness and AI
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
+index c4c5c35e37b793f3b74349ff03c0829f4913b91c..9c9e61c0febf10e9945cc02d70436ce381e2f3f5 100644
+--- a/src/main/java/net/minecraft/world/entity/Mob.java
++++ b/src/main/java/net/minecraft/world/entity/Mob.java
+@@ -125,6 +125,18 @@ public abstract class Mob extends LivingEntity {
+     private float restrictRadius;
+ 
+     public boolean aware = true; // CraftBukkit
++    // Paper start
++    public java.util.Set<String> aiPausedPlugins = new java.util.HashSet<>();
++    public java.util.Set<String> awarenessPausedPlugins = new java.util.HashSet<>();
++
++    public boolean pausedOrNoAI() {
++        return this.isNoAi() || !this.aiPausedPlugins.isEmpty();
++    }
++
++    public boolean pausedOrNoAwareness() {
++        return !this.aware || !this.awarenessPausedPlugins.isEmpty();
++    }
++    // Paper end
+ 
+     protected Mob(EntityType<? extends Mob> type, Level world) {
+         super(type, world);
+@@ -813,7 +825,7 @@ public abstract class Mob extends LivingEntity {
+     @Override
+     protected final void serverAiStep() {
+         ++this.noActionTime;
+-        if (!this.aware) { // Paper start - Allow nerfed mobs to jump, float and take water damage
++        if (this.pausedOrNoAwareness()) { // Paper start - Allow nerfed mobs to jump, float and take water damage
+             if (goalFloat != null) {
+                 if (goalFloat.canUse()) goalFloat.tick();
+                 this.getJumpControl().tick();
+@@ -1483,7 +1495,7 @@ public abstract class Mob extends LivingEntity {
+ 
+     @Override
+     public boolean isEffectiveAi() {
+-        return super.isEffectiveAi() && !this.isNoAi();
++        return super.isEffectiveAi() && !this.pausedOrNoAI(); // Paper
+     }
+ 
+     public void setNoAi(boolean aiDisabled) {
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Dolphin.java b/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
+index f3093815066e6881a2bb638ae4643f69374450b3..3530a44ace406fba724a558830c4532acc3c0ce5 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Dolphin.java
+@@ -262,7 +262,7 @@ public class Dolphin extends WaterAnimal {
+     @Override
+     public void tick() {
+         super.tick();
+-        if (this.isNoAi()) {
++        if (this.pausedOrNoAI()) { // Paper
+             this.setAirSupply(this.getMaxAirSupply());
+         } else {
+             if (this.isInWaterRainOrBubble()) {
+diff --git a/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java b/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+index 25ebcb30cf5165675f26802983b6f68404b93b06..0545a5da19083229ca9b42de2d2ca7c49799e9ef 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
++++ b/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+@@ -158,7 +158,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
+         int i = this.getAirSupply();
+ 
+         super.baseTick();
+-        if (!this.isNoAi()) {
++        if (!this.pausedOrNoAI()) { // Paper
+             this.handleAirSupply(i);
+         }
+ 
+@@ -287,7 +287,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
+         this.level.getProfiler().push("axolotlActivityUpdate");
+         AxolotlAi.updateActivity(this);
+         this.level.getProfiler().pop();
+-        if (!this.isNoAi()) {
++        if (!this.pausedOrNoAI()) { // Paper
+             Optional<Integer> optional = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
+ 
+             this.setPlayingDead(optional.isPresent() && (Integer) optional.get() > 0);
+@@ -320,7 +320,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
+     public boolean hurt(DamageSource source, float amount) {
+         float f1 = this.getHealth();
+ 
+-        if (!this.level.isClientSide && !this.isNoAi() && this.level.random.nextInt(3) == 0 && ((float) this.level.random.nextInt(3) < amount || f1 / this.getMaxHealth() < 0.5F) && amount < f1 && this.isInWater() && (source.getEntity() != null || source.getDirectEntity() != null) && !this.isPlayingDead()) {
++        if (!this.level.isClientSide && !this.pausedOrNoAI() && this.level.random.nextInt(3) == 0 && ((float) this.level.random.nextInt(3) < amount || f1 / this.getMaxHealth() < 0.5F) && amount < f1 && this.isInWater() && (source.getEntity() != null || source.getDirectEntity() != null) && !this.isPlayingDead()) { // Paper
+             this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, (int) 200);
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+index c98202092752a9015aaf95bd1471135b88e84425..acb9269894164e0b5e00d3b42eeb51655fdd8560 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+@@ -200,7 +200,7 @@ public class EnderDragon extends Mob implements Enemy {
+             }
+ 
+             this.setYRot(Mth.wrapDegrees(this.getYRot()));
+-            if (this.isNoAi()) {
++            if (this.pausedOrNoAI()) { // Paper
+                 this.flapTime = 0.5F;
+             } else {
+                 if (this.posPointer < 0) {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Ravager.java b/src/main/java/net/minecraft/world/entity/monster/Ravager.java
+index 4f51de49757a912ec84ccf5dab087c9a3e11a60e..0b2480a52d3c41ec157497acfe81505084307b12 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Ravager.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Ravager.java
+@@ -137,7 +137,7 @@ public class Ravager extends Raider {
+ 
+     @Override
+     public boolean canBeControlledByRider() {
+-        return !this.isNoAi() && this.getControllingPassenger() instanceof LivingEntity;
++        return !this.pausedOrNoAI() && this.getControllingPassenger() instanceof LivingEntity; // Paper
+     }
+ 
+     @Nullable
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Shulker.java b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+index ca0d1c059a6ad94590bcbff34b37b9c13ef19474..f0fe77e638a8365fe2ff52f4ba91bba844e13b31 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Shulker.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+@@ -398,7 +398,7 @@ public class Shulker extends AbstractGolem implements Enemy {
+     }
+ 
+     protected boolean teleportSomewhere() {
+-        if (!this.isNoAi() && this.isAlive()) {
++        if (!this.pausedOrNoAI() && this.isAlive()) { // Paper
+             BlockPos blockposition = this.blockPosition();
+ 
+             for (int i = 0; i < 5; ++i) {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Skeleton.java b/src/main/java/net/minecraft/world/entity/monster/Skeleton.java
+index c87d1f8a057e98f7f4ad7e11d89bfa791a7bae90..942981a46ee8d75b3092558dd65911768d701c64 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Skeleton.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Skeleton.java
+@@ -46,7 +46,7 @@ public class Skeleton extends AbstractSkeleton {
+ 
+     @Override
+     public void tick() {
+-        if (!this.level.isClientSide && this.isAlive() && !this.isNoAi()) {
++        if (!this.level.isClientSide && this.isAlive() && !this.pausedOrNoAI()) { // Paper
+             if (this.isFreezeConverting()) {
+                 --this.conversionTime;
+                 if (this.conversionTime < 0) {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Vindicator.java b/src/main/java/net/minecraft/world/entity/monster/Vindicator.java
+index 51082fb81477b96c778796e8daf288b366cecf22..f7e7066a5fee4d8f2e5ef88202d68061783cab27 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Vindicator.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Vindicator.java
+@@ -77,7 +77,7 @@ public class Vindicator extends AbstractIllager {
+ 
+     @Override
+     protected void customServerAiStep() {
+-        if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
++        if (!this.pausedOrNoAI() && GoalUtils.hasGroundPathNavigation(this)) { // Paper
+             boolean bl = ((ServerLevel)this.level).isRaided(this.blockPosition());
+             ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(bl);
+         }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+index bb3b932c57fd1e5b1517940c7602c7f4aeeaf17e..2b9fe220df6e4dccdeb46ccc0a155d9836457ffa 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+@@ -211,7 +211,7 @@ public class Zombie extends Monster {
+ 
+     @Override
+     public void tick() {
+-        if (!this.level.isClientSide && this.isAlive() && !this.isNoAi()) {
++        if (!this.level.isClientSide && this.isAlive() && !this.pausedOrNoAI()) { // Paper
+             if (this.isUnderWaterConverting()) {
+                 // CraftBukkit start - Use wall time instead of ticks for conversion
+                 int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/AbstractPiglin.java b/src/main/java/net/minecraft/world/entity/monster/piglin/AbstractPiglin.java
+index 5f4c8fe42ad816a2850a772d3be0ae983f5c291d..14d4ae2b71043659f92e0e8294120eea8e48cd9d 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/AbstractPiglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/AbstractPiglin.java
+@@ -96,7 +96,7 @@ public abstract class AbstractPiglin extends Monster {
+     }
+ 
+     public boolean isConverting() {
+-        return !this.level.dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.isNoAi();
++        return !this.level.dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.pausedOrNoAI(); // Paper
+     }
+ 
+     protected void finishConversion(ServerLevel world) {
+diff --git a/src/main/java/net/minecraft/world/entity/npc/Villager.java b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+index 43bb055f0f9ecb82c25e0f47258f45ce4182a75d..15c467669ee216b63a3d3c1bf8d5c572c64363f6 100644
+--- a/src/main/java/net/minecraft/world/entity/npc/Villager.java
++++ b/src/main/java/net/minecraft/world/entity/npc/Villager.java
+@@ -273,7 +273,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
+             this.lastTradedPlayer = null;
+         }
+ 
+-        if (!inactive && !this.isNoAi() && this.random.nextInt(100) == 0) { // Paper
++        if (!inactive && !this.pausedOrNoAI() && this.random.nextInt(100) == 0) { // Paper
+             Raid raid = ((ServerLevel) this.level).getRaidAt(this.blockPosition());
+ 
+             if (raid != null && raid.isActive() && !raid.isOver()) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 53b61b609361c305fb8d1f1a8700e81ce139fde4..82430605185040a8bf8558d569f575b98e2af1b5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -76,6 +76,7 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
+ import org.bukkit.event.player.PlayerTeleportEvent;
+ import org.bukkit.inventory.EntityEquipment;
+ import org.bukkit.inventory.ItemStack;
++import org.bukkit.plugin.Plugin;
+ import org.bukkit.potion.PotionData;
+ import org.bukkit.potion.PotionEffect;
+ import org.bukkit.potion.PotionEffectType;
+@@ -697,6 +698,27 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+         }
+     }
+ 
++
++    // Paper start
++    @Override
++    public void pauseAI(Plugin plugin) {
++        if (this.getHandle() instanceof Mob) {
++            ((Mob) this.getHandle()).aiPausedPlugins.add(plugin.getName());
++        }
++    }
++    @Override
++    public void resumeAI(Plugin plugin) {
++        if (this.getHandle() instanceof Mob) {
++            ((Mob) this.getHandle()).aiPausedPlugins.remove(plugin.getName());
++        }
++    }
++
++    @Override
++    public boolean isAIPaused() {
++        return (this.getHandle() instanceof Mob) ? !((Mob) this.getHandle()).aiPausedPlugins.isEmpty() : false;
++    }
++    // Paper end
++
+     @Override
+     public boolean hasAI() {
+         return (this.getHandle() instanceof Mob) ? !((Mob) this.getHandle()).isNoAi() : false;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
+index 6549d7c40d6a0ca307fdcb6fd3ca01d2ab732b59..9c150b41f4588c3c2bf00d590b88bce4b4ef0251 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMob.java
+@@ -7,6 +7,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Mob;
+ import org.bukkit.loot.LootTable;
++import org.bukkit.plugin.Plugin;
+ 
+ public abstract class CraftMob extends CraftLivingEntity implements Mob {
+     public CraftMob(CraftServer server, net.minecraft.world.entity.Mob entity) {
+@@ -33,6 +34,23 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
+         return (CraftLivingEntity) this.getHandle().getTarget().getBukkitEntity();
+     }
+ 
++    // Paper start
++    @Override
++    public void pauseAwareness(Plugin plugin) {
++        this.getHandle().awarenessPausedPlugins.add(plugin.getName());
++    }
++
++    @Override
++    public void resumeAwareness(Plugin plugin) {
++        this.getHandle().awarenessPausedPlugins.remove(plugin.getName());
++    }
++
++    @Override
++    public boolean isAwarenessPaused() {
++        return !this.getHandle().awarenessPausedPlugins.isEmpty();
++    }
++    // Paper end
++
+     @Override
+     public void setAware(boolean aware) {
+         this.getHandle().aware = aware;
