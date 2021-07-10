@@ -1,0 +1,254 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: SirYwell <hannesgreule@outlook.de>
+Date: Sat, 10 Jul 2021 11:12:30 +0200
+Subject: [PATCH] Rewrite LogEvents to contain the source jars in stack traces
+
+
+diff --git a/src/main/java/io/papermc/paper/logging/DelegateLogEvent.java b/src/main/java/io/papermc/paper/logging/DelegateLogEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ffd1befe64c6c3036c22e05ed1c44808d64bd28
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/logging/DelegateLogEvent.java
+@@ -0,0 +1,130 @@
++package io.papermc.paper.logging;
++
++import org.apache.logging.log4j.Level;
++import org.apache.logging.log4j.Marker;
++import org.apache.logging.log4j.ThreadContext;
++import org.apache.logging.log4j.core.LogEvent;
++import org.apache.logging.log4j.core.impl.ThrowableProxy;
++import org.apache.logging.log4j.core.time.Instant;
++import org.apache.logging.log4j.message.Message;
++import org.apache.logging.log4j.util.ReadOnlyStringMap;
++
++import java.util.Map;
++
++public class DelegateLogEvent implements LogEvent {
++    private final LogEvent original;
++
++    protected DelegateLogEvent(LogEvent original) {
++        this.original = original;
++    }
++
++    @Override
++    public LogEvent toImmutable() {
++        return this.original.toImmutable();
++    }
++
++    @Override
++    public Map<String, String> getContextMap() {
++        return this.original.getContextMap();
++    }
++
++    @Override
++    public ReadOnlyStringMap getContextData() {
++        return this.original.getContextData();
++    }
++
++    @Override
++    public ThreadContext.ContextStack getContextStack() {
++        return this.original.getContextStack();
++    }
++
++    @Override
++    public String getLoggerFqcn() {
++        return this.original.getLoggerFqcn();
++    }
++
++    @Override
++    public Level getLevel() {
++        return this.original.getLevel();
++    }
++
++    @Override
++    public String getLoggerName() {
++        return this.original.getLoggerName();
++    }
++
++    @Override
++    public Marker getMarker() {
++        return this.original.getMarker();
++    }
++
++    @Override
++    public Message getMessage() {
++        return this.original.getMessage();
++    }
++
++    @Override
++    public long getTimeMillis() {
++        return this.original.getTimeMillis();
++    }
++
++    @Override
++    public Instant getInstant() {
++        return this.original.getInstant();
++    }
++
++    @Override
++    public StackTraceElement getSource() {
++        return this.original.getSource();
++    }
++
++    @Override
++    public String getThreadName() {
++        return this.original.getThreadName();
++    }
++
++    @Override
++    public long getThreadId() {
++        return this.original.getThreadId();
++    }
++
++    @Override
++    public int getThreadPriority() {
++        return this.original.getThreadPriority();
++    }
++
++    @Override
++    public Throwable getThrown() {
++        return this.original.getThrown();
++    }
++
++    @Override
++    public ThrowableProxy getThrownProxy() {
++        return this.original.getThrownProxy();
++    }
++
++    @Override
++    public boolean isEndOfBatch() {
++        return this.original.isEndOfBatch();
++    }
++
++    @Override
++    public boolean isIncludeLocation() {
++        return this.original.isIncludeLocation();
++    }
++
++    @Override
++    public void setEndOfBatch(boolean endOfBatch) {
++        this.original.setEndOfBatch(endOfBatch);
++    }
++
++    @Override
++    public void setIncludeLocation(boolean locationRequired) {
++        this.original.setIncludeLocation(locationRequired);
++    }
++
++    @Override
++    public long getNanoTime() {
++        return this.original.getNanoTime();
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/logging/ExtraClassInfoLogEvent.java b/src/main/java/io/papermc/paper/logging/ExtraClassInfoLogEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..558427c65b4051923f73d15d85ee519be005060a
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/logging/ExtraClassInfoLogEvent.java
+@@ -0,0 +1,48 @@
++package io.papermc.paper.logging;
++
++import org.apache.logging.log4j.core.LogEvent;
++import org.apache.logging.log4j.core.impl.ExtendedClassInfo;
++import org.apache.logging.log4j.core.impl.ExtendedStackTraceElement;
++import org.apache.logging.log4j.core.impl.ThrowableProxy;
++
++public class ExtraClassInfoLogEvent extends DelegateLogEvent {
++
++    private boolean fixed;
++
++    public ExtraClassInfoLogEvent(LogEvent original) {
++        super(original);
++    }
++
++    @Override
++    public ThrowableProxy getThrownProxy() {
++        if (fixed) {
++            return super.getThrownProxy();
++        }
++        rewriteStackTrace(super.getThrownProxy());
++        fixed = true;
++        return super.getThrownProxy();
++    }
++
++    private void rewriteStackTrace(ThrowableProxy throwable) {
++        ExtendedStackTraceElement[] stackTrace = throwable.getExtendedStackTrace();
++        for (int i = 0; i < stackTrace.length; i++) {
++            ExtendedClassInfo classInfo = stackTrace[i].getExtraClassInfo();
++            if (classInfo.getLocation().equals("?")) {
++                StackTraceElement element = stackTrace[i].getStackTraceElement();
++                String classLoaderName = element.getClassLoaderName();
++                if (classLoaderName != null) {
++                    stackTrace[i] = new ExtendedStackTraceElement(element,
++                        new ExtendedClassInfo(classInfo.getExact(), classLoaderName, "?"));
++                }
++            }
++        }
++        if (throwable.getCauseProxy() != null) {
++            rewriteStackTrace(throwable.getCauseProxy());
++        }
++        if (throwable.getSuppressedProxies() != null) {
++            for (ThrowableProxy proxy : throwable.getSuppressedProxies()) {
++                rewriteStackTrace(proxy);
++            }
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/logging/ExtraClassInfoRewritePolicy.java b/src/main/java/io/papermc/paper/logging/ExtraClassInfoRewritePolicy.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..34734bb969a1a74c7a4f9c17d40ebf007ad5d701
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/logging/ExtraClassInfoRewritePolicy.java
+@@ -0,0 +1,29 @@
++package io.papermc.paper.logging;
++
++import org.apache.logging.log4j.core.Core;
++import org.apache.logging.log4j.core.LogEvent;
++import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
++import org.apache.logging.log4j.core.config.plugins.Plugin;
++import org.apache.logging.log4j.core.config.plugins.PluginFactory;
++import org.jetbrains.annotations.NotNull;
++
++@Plugin(
++    name = "ExtraClassInfoRewritePolicy",
++    category = Core.CATEGORY_NAME,
++    elementType = "rewritePolicy",
++    printObject = true
++)
++public final class ExtraClassInfoRewritePolicy implements RewritePolicy {
++    @Override
++    public LogEvent rewrite(LogEvent source) {
++        if (source.getThrown() != null) {
++            return new ExtraClassInfoLogEvent(source);
++        }
++        return source;
++    }
++
++    @PluginFactory
++    public static @NotNull ExtraClassInfoRewritePolicy createPolicy() {
++        return new ExtraClassInfoRewritePolicy();
++    }
++}
+diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
+index f91d0df569b2f1d430ea5eee5f53779902a4f32c..e2b30a3f71d0b6d9402c5f840d721ed743a40ad1 100644
+--- a/src/main/resources/log4j2.xml
++++ b/src/main/resources/log4j2.xml
+@@ -35,13 +35,17 @@
+             <AppenderRef ref="TerminalConsole" level="info"/>
+             <AppenderRef ref="ServerGuiConsole" level="info"/>
+         </Rewrite>
++        <Rewrite name="rewrite2">
++            <ExtraClassInfoRewritePolicy />
++            <AppenderRef ref="rewrite"/>
++        </Rewrite>
+     </Appenders>
+     <Loggers>
+         <Root level="info">
+             <filters>
+                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
+             </filters>
+-            <AppenderRef ref="rewrite"/>
++            <AppenderRef ref="rewrite2"/>
+         </Root>
+     </Loggers>
+ </Configuration>
