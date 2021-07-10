@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 16 May 2021 13:40:23 -0700
+Subject: [PATCH] More PortalCreateEvent reasons
+
+
+diff --git a/src/main/java/org/bukkit/event/world/PortalCreateEvent.java b/src/main/java/org/bukkit/event/world/PortalCreateEvent.java
+index 579f017474ff22f0991ca884c35cdde7e14a94dc..113a44faef4aa563a086c14e07f234445fc861c3 100644
+--- a/src/main/java/org/bukkit/event/world/PortalCreateEvent.java
++++ b/src/main/java/org/bukkit/event/world/PortalCreateEvent.java
+@@ -19,7 +19,7 @@ public class PortalCreateEvent extends WorldEvent implements Cancellable {
+     private final Entity entity;
+     private final CreateReason reason;
+ 
+-    @Deprecated
++    // @Deprecated // Paper undeprecate for portal creations not caused by entities
+     public PortalCreateEvent(@NotNull final List<BlockState> blocks, @NotNull final World world, @NotNull CreateReason reason) {
+         this(blocks, world, null, reason);
+     }
+@@ -101,6 +101,35 @@ public class PortalCreateEvent extends WorldEvent implements Cancellable {
+          * When the target end platform is created as a result of a player
+          * entering an end portal.
+          */
+-        END_PLATFORM
++        END_PLATFORM,
++
++        /**
++         * When the ender dragon is defeated and a new end gateway
++         * is generated on the main end island.
++         */
++        END_GATEWAY_DRAGON_DEFEAT,
++
++        /**
++         * When an entity causes the generation of an end gateway
++         * by going through one that does not have a linked gateway.
++         */
++        END_GATEWAY_PAIR,
++
++        /**
++         * When a non-active end portal is generated on the main end
++         * island in the end dimension.
++         */
++        END_PORTAL,
++
++        /**
++         * When an active end portal is generated on the main end
++         * island in the end dimension.
++         */
++        ACTIVE_END_PORTAL,
++
++        /**
++         * Fallback reason
++         */
++        UNKNOWN,
+     }
+ }
