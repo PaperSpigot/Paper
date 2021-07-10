@@ -1,0 +1,77 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thonk <30448663+ExcessiveAmountsOfZombies@users.noreply.github.com>
+Date: Wed, 7 Jul 2021 20:32:34 -0500
+Subject: [PATCH] make configured features seed configurable
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 3d7c8f007dc6b3454f23ee0d62b62d0931eb99ea..cc848b1fc8894d299ec1499a172bd328a5d9491f 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -5,12 +5,14 @@ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.stream.Collectors;
++import net.minecraft.resources.ResourceLocation;
+ import net.minecraft.world.Difficulty;
+ import net.minecraft.world.entity.EntityType;
+ import net.minecraft.world.entity.monster.Vindicator;
+ import net.minecraft.world.entity.monster.Zombie;
+ import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
+ import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.configuration.file.YamlConfiguration;
+ import org.spigotmc.SpigotWorldConfig;
+ 
+@@ -825,5 +827,19 @@ public class PaperWorldConfig {
+     private void fixInvulnerableEndCrystalExploit() {
+         fixInvulnerableEndCrystalExploit = getBoolean("unsupported-settings.fix-invulnerable-end-crystal-exploit", fixInvulnerableEndCrystalExploit);
+     }
++
++    public Map<ResourceLocation, Long> configuredFeatureSeedReplacements = new HashMap<>();
++    private void setupConfiguredFeatureSeedReplacer() {
++        String path = "configured-feature.seed-replacements";
++        getLong(path + ".minecraft:disk_clay", -1);
++        ConfigurationSection values = config.getConfigurationSection("world-settings." + worldName + "." + path);
++        if (values == null) {
++            values = config.getConfigurationSection("world-settings.default." + path);
++        }
++        for (String key : values.getKeys(false)) {
++            ResourceLocation resourceKey = new ResourceLocation(key);
++            configuredFeatureSeedReplacements.put(resourceKey, values.getLong(key));
++        }
++    }
+ }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/biome/Biome.java b/src/main/java/net/minecraft/world/level/biome/Biome.java
+index a7a7e6cd87270e64a92448f03f8b0b0c7e375ec7..6418db3ebcf42c8dbe9c400e4fe005c0cdf45aed 100644
+--- a/src/main/java/net/minecraft/world/level/biome/Biome.java
++++ b/src/main/java/net/minecraft/world/level/biome/Biome.java
+@@ -225,8 +225,10 @@ public final class Biome {
+         Registry<StructureFeature<?>> registry2 = region.registryAccess().registryOrThrow(Registry.STRUCTURE_FEATURE_REGISTRY);
+         int i = GenerationStep.Decoration.values().length;
+ 
++        long populationCopy = populationSeed; // Paper - keep a copy here so that any replacements don't override into features that don't need to be changed
+         for(int j = 0; j < i; ++j) {
+             int k = 0;
++            populationSeed = populationCopy; // Paper also don't want configuredFeatures to pollute StructureFeatures
+             if (structureAccessor.shouldGenerateFeatures()) {
+                 for(StructureFeature<?> structureFeature : this.structuresByStep.getOrDefault(j, Collections.emptyList())) {
+                     random.setFeatureSeed(populationSeed, k, j);
+@@ -263,6 +265,16 @@ public final class Biome {
+                     Supplier<String> supplier3 = () -> {
+                         return registry.getResourceKey(configuredFeature).map(Object::toString).orElseGet(configuredFeature::toString);
+                     };
++                    // Paper start - set the populationSeed back to the one defined by the region and if applicable, replace
++                    populationSeed = populationCopy;
++                    ResourceLocation location = registry.getKey(configuredFeature);
++                    Long replacementSeed = region.getMinecraftWorld().paperConfig.configuredFeatureSeedReplacements.getOrDefault(location, null);
++                    ChunkPos pos = region.getCenter();
++                    int x = pos.getMinBlockX();
++                    int z = pos.getMinBlockZ();
++                    if (replacementSeed != null && replacementSeed != -1) {
++                        populationSeed = random.setDecorationSeed(replacementSeed, x, z);
++                    } // Paper end
+                     random.setFeatureSeed(populationSeed, k, j);
+ 
+                     try {

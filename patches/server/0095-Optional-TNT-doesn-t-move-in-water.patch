@@ -5,10 +5,10 @@ Subject: [PATCH] Optional TNT doesn't move in water
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index eb04fdb172a50ec1f5b7fe78fa0e7655246abd60..9b2e9a02ff31c3cb37b67135d0a03441f247d8e2 100644
+index 8ec1e836cf6001d3aef1e829c5eee7f26be22ab5..bae18e486c8cae3576ef49f493abc1daefc28248 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -291,4 +291,14 @@ public class PaperWorldConfig {
+@@ -296,4 +296,14 @@ public class PaperWorldConfig {
              );
          }
      }
@@ -24,7 +24,7 @@ index eb04fdb172a50ec1f5b7fe78fa0e7655246abd60..9b2e9a02ff31c3cb37b67135d0a03441
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/level/ServerEntity.java b/src/main/java/net/minecraft/server/level/ServerEntity.java
-index ac57bfb00edd9268e89a7fd7cea36097d61d6951..ad9bbda31a4cdb306ca40f2b99e4b815c4f136bd 100644
+index a70bf50c3a17295bb9ffe30ea86f3b84e134cdbc..f835ef1c7109f56f32da394c9afc9fd35b05b51a 100644
 --- a/src/main/java/net/minecraft/server/level/ServerEntity.java
 +++ b/src/main/java/net/minecraft/server/level/ServerEntity.java
 @@ -68,7 +68,7 @@ public class ServerEntity {
@@ -37,7 +37,7 @@ index ac57bfb00edd9268e89a7fd7cea36097d61d6951..ad9bbda31a4cdb306ca40f2b99e4b815
      public ServerEntity(ServerLevel worldserver, Entity entity, int i, boolean flag, Consumer<Packet<?>> consumer, Set<ServerPlayerConnection> trackedPlayers) {
          this.trackedPlayers = trackedPlayers;
 diff --git a/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java b/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
-index abc62c560816d945642d830a020deb28ff2efa37..5a16de4f080c31d6e278363fd1d3e23d48be3db5 100644
+index 8ad1b3cb16533d62deda643ce0cdda308743f78e..dcbd9ec44fb8d1334aca33c136b121ab5c25a0e2 100644
 --- a/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/src/main/java/net/minecraft/world/entity/item/PrimedTnt.java
 @@ -97,6 +97,27 @@ public class PrimedTnt extends Entity {

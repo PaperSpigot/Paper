@@ -489,10 +489,10 @@ index 0000000000000000000000000000000000000000..2c0514892d3993bef57ecf677cf8bb0f
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b31109d2dadd29e8852468c19265066b773d2be0
+index 0000000000000000000000000000000000000000..e9ef06a837c9174def8e5fd86688f5974daafc3c
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,73 @@
 +package com.destroystokyo.paper;
 +
 +import java.util.List;
@@ -544,6 +544,11 @@ index 0000000000000000000000000000000000000000..b31109d2dadd29e8852468c19265066b
 +    private int getInt(String path, int def) {
 +        config.addDefault("world-settings.default." + path, def);
 +        return config.getInt("world-settings." + worldName + "." + path, config.getInt("world-settings.default." + path));
++    }
++
++    private long getLong(String path, long def) {
++        config.addDefault("world-settings.default." + path, def);
++        return config.getLong("world-settings." + worldName + "." + path, config.getInt("world-settings.default." + path));
 +    }
 +
 +    private float getFloat(String path, float def) {
@@ -681,7 +686,7 @@ index 7f81dd05ec8945a851b6501854dc894cad240a66..d6b2e7d643f907ddd81d394d9b613e9c
          this.world = new CraftWorld((ServerLevel) this, gen, env);
          this.ticksPerAnimalSpawns = this.getCraftServer().getTicksPerAnimalSpawns(); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 1364a4a95e265c042880c99ea6b59dd2725b18ac..57a44f1d466caeccebe0e2498e3833cb953ffd5a 100644
+index 6c1a641f57011f3443e022758e37660034aa240f..a3f27b2e766e0477410e14e55a0c800ab307984c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -805,6 +805,7 @@ public final class CraftServer implements Server {
