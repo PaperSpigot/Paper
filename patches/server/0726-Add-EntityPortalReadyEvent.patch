@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 12 May 2021 04:30:42 -0700
+Subject: [PATCH] Add EntityPortalReadyEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index a11507c630248b98153275f78c15ebee59a6b0a3..61cc51769d0280f954fca83b33206f4a6eee896e 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2519,6 +2519,13 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+                 if (true && !this.isPassenger() && this.portalTime++ >= i) { // CraftBukkit
+                     this.level.getProfiler().push("portal");
+                     this.portalTime = i;
++                    // Paper start
++                    io.papermc.paper.event.entity.EntityPortalReadyEvent event = new io.papermc.paper.event.entity.EntityPortalReadyEvent(this.getBukkitEntity(), worldserver1 == null ? null : worldserver.getWorld(), org.bukkit.PortalType.NETHER);
++                    if (!event.callEvent()) {
++                        this.portalTime = 0;
++                    } else {
++                        worldserver1 = event.getWorld() == null ? null : ((CraftWorld) event.getWorld()).getHandle();
++                    // Paper end
+                     this.setPortalCooldown();
+                     // CraftBukkit start
+                     if (this instanceof ServerPlayer) {
+@@ -2526,6 +2533,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+                     } else {
+                         this.changeDimension(worldserver1);
+                     }
++                    } // Paper
+                     // CraftBukkit end
+                     this.level.getProfiler().pop();
+                 }
