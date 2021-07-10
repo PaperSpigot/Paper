@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 12 May 2021 02:49:28 -0700
+Subject: [PATCH] add back EntityPortalExitEvent
+
+Was removed here: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/a2d787f6ebeb72fa7d5750788221fb9a0d838ac4
+
+diff --git a/src/main/java/org/bukkit/event/entity/EntityPortalExitEvent.java b/src/main/java/org/bukkit/event/entity/EntityPortalExitEvent.java
+index 869ad3b12ebd8275d04b0c21b5ecc0389da01490..0a87e2934901eb1bcaec72ed8141cd4828a4efce 100644
+--- a/src/main/java/org/bukkit/event/entity/EntityPortalExitEvent.java
++++ b/src/main/java/org/bukkit/event/entity/EntityPortalExitEvent.java
+@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
+  * <p>
+  * This event allows you to modify the velocity of the entity after they have
+  * successfully exited the portal.
++ * <p>
++ * Cancelling this event does not prevent the teleport, but it does prevent
++ * any changes to velocity and location from taking place.
+  */
+ public class EntityPortalExitEvent extends EntityTeleportEvent {
+     private static final HandlerList handlers = new HandlerList();

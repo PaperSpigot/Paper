@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 16 May 2021 09:39:46 -0700
+Subject: [PATCH] Add back EntityPortalExitEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index a11507c630248b98153275f78c15ebee59a6b0a3..83134dd9d2f760b508d922312cb0211de6e2011c 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2981,6 +2981,19 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+             if (shapedetectorshape == null) {
+                 return null;
+             } else {
++                // Paper start - Call EntityPortalExitEvent
++                Vec3 position = shapedetectorshape.pos;
++                float yaw = shapedetectorshape.yRot;
++                float pitch = shapedetectorshape.xRot;
++                Vec3 velocity = shapedetectorshape.speed;
++                org.bukkit.event.entity.EntityPortalExitEvent event = new org.bukkit.event.entity.EntityPortalExitEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), shapedetectorshape.portalEventInfo.getTo(), this.getBukkitEntity().getVelocity(), org.bukkit.craftbukkit.util.CraftVector.toBukkit(shapedetectorshape.speed));
++                if (event.callEvent() && event.getTo() != null && this.isAlive()) {
++                    position = Vec3.atLowerCornerOf(MCUtil.toBlockPosition(event.getTo()));
++                    yaw = event.getTo().getYaw();
++                    pitch = event.getTo().getPitch();
++                    velocity = org.bukkit.craftbukkit.util.CraftVector.toNMS(event.getAfter());
++                }
++                // Paper end
+                 // CraftBukkit start
+                 worldserver = shapedetectorshape.world;
+                 this.unRide();
+@@ -2996,8 +3009,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+ 
+                 if (entity != null) {
+                     entity.restoreFrom(this);
+-                    entity.moveTo(shapedetectorshape.pos.x, shapedetectorshape.pos.y, shapedetectorshape.pos.z, shapedetectorshape.yRot, entity.getXRot());
+-                    entity.setDeltaMovement(shapedetectorshape.speed);
++                    entity.moveTo(position.x, position.y, position.z, yaw, pitch); // Paper - respect EntityPortalExitEvent values
++                    entity.setDeltaMovement(velocity); // Paper - respect EntityPortalExitEvent values
+                     worldserver.addDuringTeleport(entity);
+                     if (worldserver.getTypeKey() == DimensionType.END_LOCATION) { // CraftBukkit
+                         ServerLevel.makeObsidianPlatform(worldserver, this); // CraftBukkit
