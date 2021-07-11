@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 11 Jul 2021 12:52:56 -0700
+Subject: [PATCH] fix various menus with empty level accesses
+
+
+diff --git a/src/main/java/net/minecraft/world/inventory/ContainerLevelAccess.java b/src/main/java/net/minecraft/world/inventory/ContainerLevelAccess.java
+index c96b04f045dda384cdee9254a1765ef97e5f7f03..f00a957a0f55e69f93e6d7dc80193304447c3dcb 100644
+--- a/src/main/java/net/minecraft/world/inventory/ContainerLevelAccess.java
++++ b/src/main/java/net/minecraft/world/inventory/ContainerLevelAccess.java
+@@ -27,6 +27,12 @@ public interface ContainerLevelAccess {
+         public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> getter) {
+             return Optional.empty();
+         }
++        // Paper start
++        @Override
++        public org.bukkit.Location getLocation() {
++            return null;
++        }
++        // Paper end
+     };
+ 
+     static ContainerLevelAccess create(final Level world, final BlockPos pos) {
