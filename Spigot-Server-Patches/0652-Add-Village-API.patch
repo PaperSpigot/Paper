@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheShermanTanker <tanksherman27@gmail.com>
+Date: Thu, 24 Sep 2020 19:01:07 +0800
+Subject: [PATCH] Add Village API
+
+
+diff --git a/src/main/java/net/minecraft/server/SectionPosition.java b/src/main/java/net/minecraft/server/SectionPosition.java
+index f95925f1c5d091f1a129d0437bb6e175c6ac080f..188127a336f048ff2c7316cd039b59d025fd356a 100644
+--- a/src/main/java/net/minecraft/server/SectionPosition.java
++++ b/src/main/java/net/minecraft/server/SectionPosition.java
+@@ -11,6 +11,7 @@ public class SectionPosition extends BaseBlockPosition {
+         super(i, j, k);
+     }
+ 
++    public static SectionPosition of(int i, int j, int k) { return a(i, j, k); } // Paper - OBFHELPER
+     public static SectionPosition a(int i, int j, int k) {
+         return new SectionPosition(i, j, k);
+     }
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index fbe7f43f6c1010e7a34114f8afb0e64934744335..494cfb6fb696f43eabb2fde1b974ee56c41f0404 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -1973,6 +1973,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         return this.getChunkProvider().j();
+     }
+ 
++    public final boolean isVillage(BlockPosition blockPosition) { return this.a_(blockPosition); } // Paper - OBFHELPER
+     public boolean a_(BlockPosition blockposition) {
+         return this.a(blockposition, 1);
+     }
+@@ -1981,10 +1982,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         return this.a_(sectionposition.q());
+     }
+ 
++    public boolean isCloseToVillage(BlockPosition blockpos, int maxDistance) { return a(blockpos, maxDistance); }//Paper - OBFHELPER
+     public boolean a(BlockPosition blockposition, int i) {
+         return i > 6 ? false : this.b(SectionPosition.a(blockposition)) <= i;
+     }
+ 
++    public int sectionsToVillage(SectionPosition sectionpos) { return b(sectionpos); }//Paper - OBFHELPER
+     public int b(SectionPosition sectionposition) {
+         return this.y().a(sectionposition);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index d86c25593db7cc0a73db1c37af94ae4e41bb4e93..a5762355a1bdaf74ba423a227d29a75ef94013d6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2635,4 +2635,20 @@ public class CraftWorld implements World {
+         return spigot;
+     }
+     // Spigot end
++    // Paper start - village api
++    @Override 
++    public boolean isVillage(int x, int y, int z) {
++        return world.isVillage(new BlockPosition(x, y, z));
++    }
++
++    @Override
++    public boolean isCloseToVillage(int x, int y, int z, int distanceInChunks) {
++        return world.isCloseToVillage(new BlockPosition(x, y, z), distanceInChunks);
++    }
++
++    @Override
++    public int sectionsToVillage(int x, int y, int z) {
++        return world.sectionsToVillage(net.minecraft.server.SectionPosition.a(new BlockPosition(x, y, z)));
++    }
++    // Paper - end
+ }
