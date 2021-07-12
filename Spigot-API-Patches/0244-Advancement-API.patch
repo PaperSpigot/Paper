@@ -1,0 +1,4160 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 29 Dec 2020 15:19:52 -0800
+Subject: [PATCH] Advancement API
+
+
+diff --git a/src/main/java/io/papermc/paper/advancements/AdvancementDisplay.java b/src/main/java/io/papermc/paper/advancements/AdvancementDisplay.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..40f8f03525c49f71647c088fa6f19397fbb67714
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/AdvancementDisplay.java
+@@ -0,0 +1,103 @@
++package io.papermc.paper.advancements;
++
++import org.bukkit.NamespacedKey;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class AdvancementDisplay {
++
++    private final String title; // TODO Component
++    private final String description; // TODO Component
++    private final ItemStack icon;
++    private final NamespacedKey background;
++    private final AdvancementFrameType frameType;
++    private final boolean showToast;
++    private final boolean announceToChat;
++    private final boolean hidden;
++
++    public AdvancementDisplay(String title, String description, ItemStack icon, NamespacedKey background, AdvancementFrameType frameType, boolean showToast, boolean announceToChat, boolean hidden) { // TODO Component
++        this.title = title;
++        this.description = description;
++        this.icon = icon;
++        this.background = background;
++        this.frameType = frameType;
++        this.showToast = showToast;
++        this.announceToChat = announceToChat;
++        this.hidden = hidden;
++    }
++
++    public String title() { // TODO Component
++        return null;
++    }
++
++    public String description() { // TODO Component
++        return null;
++    }
++
++    public ItemStack getIcon() {
++        return icon;
++    }
++
++    public NamespacedKey getBackground() {
++        return background;
++    }
++
++    public AdvancementFrameType getFrame() {
++        return frameType;
++    }
++
++    public boolean getShowToast() {
++        return showToast;
++    }
++
++    public boolean getAnnounceToChat() {
++        return announceToChat;
++    }
++
++    public boolean getHidden() {
++        return hidden;
++    }
++
++    @Override
++    public String toString() {
++        return "CraftAdvancementDisplay{" +
++            "title='" + title + '\'' +
++            ", description='" + description + '\'' +
++            ", icon=" + icon +
++            ", background=" + background +
++            ", frameType=" + frameType +
++            ", showToast=" + showToast +
++            ", announceToChat=" + announceToChat +
++            ", hidden=" + hidden +
++            '}';
++    }
++
++    public enum AdvancementFrameType {
++        TASK("task"),
++        CHALLENGE("challenge"),
++        GOAL("goal");
++
++        private String text;
++        AdvancementFrameType (String text) {
++            this.text = text;
++        }
++
++        public String getText() {
++            return text;
++        }
++
++        @Nullable
++        public static AdvancementFrameType getByText(@Nullable String text) {
++            if (text == null) return null;
++            for (AdvancementFrameType value : AdvancementFrameType.values()) {
++                if (value.getText().equals(text)) return value;
++            }
++            return null;
++        }
++    }
++
++    public static interface Builder {
++
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/AdvancementRewards.java b/src/main/java/io/papermc/paper/advancements/AdvancementRewards.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4e6e62e5712a1eaace1528a0b6f76af589897154
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/AdvancementRewards.java
+@@ -0,0 +1,104 @@
++package io.papermc.paper.advancements;
++
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.Contract;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.Collection;
++
++public class AdvancementRewards {
++
++    private int exp = 0;
++    private Collection<NamespacedKey> loot;
++    private Collection<NamespacedKey> recipes;
++    private NamespacedKey function = null;
++
++    public AdvancementRewards(int exp, Collection<NamespacedKey> loot, Collection<NamespacedKey> recipes, NamespacedKey function) {
++        this.exp = exp;
++        this.loot = loot;
++        this.recipes = recipes;
++        this.function = function;
++    }
++
++    public AdvancementRewards() { }
++
++    public int getExp() {
++        return exp;
++    }
++
++    public Collection<NamespacedKey> getLoot() {
++        return loot;
++    }
++
++    public Collection<NamespacedKey> getRecipes() {
++        return recipes;
++    }
++
++    public NamespacedKey getFunction() {
++        return function;
++    }
++
++    @Override
++    public String toString() {
++        return "CraftAdvancementRewards{" +
++            "exp=" + exp +
++            ", loot=" + loot +
++            ", recipes=" + recipes +
++            ", function=" + function +
++            '}';
++    }
++
++    public AdvancementRewardsBuilder edit() {
++        return new AdvancementRewardsBuilder(this);
++    }
++
++    public static boolean isEmpty(AdvancementRewards advancementRewards) {
++        return advancementRewards.getExp() == 0 && advancementRewards.getRecipes().size() == 0 && advancementRewards.getLoot().size() == 0 && advancementRewards.getFunction() == null;
++    }
++
++    public static AdvancementRewardsBuilder builder() {
++        return new AdvancementRewardsBuilder();
++    }
++
++    public static final class AdvancementRewardsBuilder {
++        private int exp = 0;
++        private Collection<NamespacedKey> loot;
++        private Collection<NamespacedKey> recipes;
++        private NamespacedKey function = null;
++
++        private AdvancementRewardsBuilder() { }
++
++        private AdvancementRewardsBuilder(AdvancementRewards rewards) {
++            this.exp = rewards.exp;
++            this.loot = rewards.loot;
++            this.recipes = rewards.recipes;
++            this.function = rewards.function;
++        }
++
++        public AdvancementRewardsBuilder exp(int exp) {
++            this.exp = exp;
++            return this;
++        }
++
++        public AdvancementRewardsBuilder loot(Collection<NamespacedKey> loot) {
++            this.loot = loot;
++            return this;
++        }
++
++        public AdvancementRewardsBuilder recipes(Collection<NamespacedKey> recipes) {
++            this.recipes = recipes;
++            return this;
++        }
++
++        public AdvancementRewardsBuilder function(NamespacedKey function) {
++            this.function = function;
++            return this;
++        }
++
++        @NotNull
++        public AdvancementRewards build() {
++            return new AdvancementRewards(exp, loot, recipes, function);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/AdvancementsManager.java b/src/main/java/io/papermc/paper/advancements/AdvancementsManager.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..5e6d6f879703ea284dfe41c5c956210bb4b9aa57
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/AdvancementsManager.java
+@@ -0,0 +1,12 @@
++package io.papermc.paper.advancements;
++
++import org.bukkit.advancement.Advancement;
++import org.jetbrains.annotations.NotNull;
++
++public interface AdvancementsManager {
++
++    @NotNull
++    Advancement createAdvancement(@NotNull String key);
++
++    void reload();
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/AbstractLocationTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/AbstractLocationTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ed06121c696defb5d7728d2bd8584693c39ca44
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/AbstractLocationTrigger.java
+@@ -0,0 +1,61 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.LocationCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public abstract class AbstractLocationTrigger extends PlayerTrigger {
++
++    private final LocationCondition location;
++
++    protected AbstractLocationTrigger(@NotNull NamespacedKey key, @NotNull EntityPredicatesCondition player, @NotNull LocationCondition location) {
++        super(key, player);
++        this.location = location;
++    }
++
++    @NotNull
++    public LocationCondition getLocation() {
++        return location;
++    }
++
++    public static class LocationTrigger extends AbstractLocationTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("location");
++
++        public LocationTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition location) {
++            super(KEY, player, location);
++        }
++    }
++
++    public static class SleptInBedTrigger extends AbstractLocationTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("slept_in_bed");
++
++        public SleptInBedTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition location) {
++            super(KEY, player, location);
++        }
++    }
++
++    public static class HeroOfTheVillageTrigger extends AbstractLocationTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("hero_of_the_village");
++
++        public HeroOfTheVillageTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition location) {
++            super(KEY, player, location);
++        }
++    }
++
++    public static class VoluntaryExileTrigger extends AbstractLocationTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("voluntary_exile");
++
++        public VoluntaryExileTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition location) {
++            super(KEY, player, location);
++        }
++    }
++
++
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/BeeNestDestroyedTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/BeeNestDestroyedTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6698f7d821602a8942070bcee15d4ba7c7fc82d9
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/BeeNestDestroyedTrigger.java
+@@ -0,0 +1,41 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class BeeNestDestroyedTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("bee_nest_destroyed");
++
++    private final Material block;
++    private final ItemCondition item;
++    private final IntegerRange numOfBees;
++
++    public BeeNestDestroyedTrigger(@NotNull EntityPredicatesCondition player, @Nullable Material block, @NotNull ItemCondition item, @NotNull IntegerRange numOfBees) {
++        super(KEY, player);
++        this.block = block;
++        this.item = item;
++        this.numOfBees = numOfBees;
++    }
++
++    @Nullable
++    public Material getBlock() {
++        return block;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++
++    @NotNull
++    public IntegerRange getNumOfBees() {
++        return numOfBees;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/BredAnimalsTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/BredAnimalsTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e147077dce8c5ce847e9b5800d1eab92c23ccd90
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/BredAnimalsTrigger.java
+@@ -0,0 +1,38 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class BredAnimalsTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("bred_animals");
++
++    private final EntityPredicatesCondition parent;
++    private final EntityPredicatesCondition partner;
++    private final EntityPredicatesCondition child;
++
++    public BredAnimalsTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition parent, @NotNull EntityPredicatesCondition partner, @NotNull EntityPredicatesCondition child) {
++        super(KEY, player);
++        this.parent = parent;
++        this.partner = partner;
++        this.child = child;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getParent() {
++        return parent;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getPartner() {
++        return partner;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getChild() {
++        return child;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/BrewedPotionTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/BrewedPotionTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b441e932cccaa5cebe92f52125a9d4def02c5fbe
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/BrewedPotionTrigger.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.bukkit.potion.PotionEffectType;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class BrewedPotionTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("brewed_potion");
++
++    private final PotionEffectType effectType;
++
++    public BrewedPotionTrigger(@NotNull EntityPredicatesCondition player, @Nullable PotionEffectType effectType) {
++        super(KEY, player);
++        this.effectType = effectType;
++    }
++
++    @Nullable
++    public PotionEffectType getEffectType() {
++        return effectType;
++}
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ChangedDimensionTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ChangedDimensionTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a695374f4a3db6785e31d48410dc53109090ccfa
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ChangedDimensionTrigger.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.bukkit.World;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class ChangedDimensionTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("changed_dimension");
++
++    private final NamespacedKey from;
++    private final NamespacedKey to;
++
++    public ChangedDimensionTrigger(@NotNull EntityPredicatesCondition player, @Nullable NamespacedKey from, @Nullable NamespacedKey to) {
++        super(KEY, player);
++        this.from = from;
++        this.to = to;
++    }
++
++    @Nullable
++    public NamespacedKey getFrom() {
++        return from;
++    }
++
++    @Nullable
++    public NamespacedKey getTo() {
++        return to;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ChanneledLightningTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ChanneledLightningTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b64e07fbdb2bf82376e4f622fffc252cc3812ec1
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ChanneledLightningTrigger.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class ChanneledLightningTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("channeled_lightning");
++
++    private final EntityPredicatesCondition[] victims;
++
++    public ChanneledLightningTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition[] victims) {
++        super(KEY, player);
++        this.victims = victims;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition[] getVictims() {
++        return victims;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ConstructBeaconTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ConstructBeaconTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0a8c83d3d3fb2a2204ea4616f0ce2b3da601b7fe
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ConstructBeaconTrigger.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class ConstructBeaconTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("construct_beacon");
++
++    private final IntegerRange level;
++
++    public ConstructBeaconTrigger(@NotNull EntityPredicatesCondition player, IntegerRange level) {
++        super(KEY, player);
++        this.level = level;
++    }
++
++    @NotNull
++    public IntegerRange getLevel() {
++        return level;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ConsumeItemTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ConsumeItemTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..01d0b517e78d012cd8b45cdfeb355f32de37a649
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ConsumeItemTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class ConsumeItemTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("consume_item");
++
++    private final ItemCondition item;
++
++    public ConsumeItemTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.item = item;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/CuredZombieVillagerTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/CuredZombieVillagerTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..20c95064d752528d4fc485b21be994b9810d16f3
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/CuredZombieVillagerTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class CuredZombieVillagerTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("cured_zombie_villager");
++
++    private final EntityPredicatesCondition zombie;
++    private final EntityPredicatesCondition villager;
++
++    public CuredZombieVillagerTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition zombie, @NotNull EntityPredicatesCondition villager) {
++        super(KEY, player);
++        this.zombie = zombie;
++        this.villager = villager;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getZombie() {
++        return zombie;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getVillager() {
++        return villager;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/EffectsChangedTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/EffectsChangedTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4d696fd195d20e527ffa42c2d97b2a1abe12924d
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/EffectsChangedTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EffectsCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class EffectsChangedTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("effects_changed");
++
++    private final EffectsCondition effects;
++
++    public EffectsChangedTrigger(@NotNull EntityPredicatesCondition player, @NotNull EffectsCondition effects) {
++        super(KEY, player);
++        this.effects = effects;
++    }
++
++    @NotNull
++    public EffectsCondition getEffects() {
++        return effects;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/EnchantedItemTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/EnchantedItemTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d5549381c7eecb31f2899732173d5371b1b5d403
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/EnchantedItemTrigger.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class EnchantedItemTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("enchanted_item");
++
++    private final ItemCondition item;
++    private final IntegerRange levels;
++
++    public EnchantedItemTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item, @NotNull IntegerRange levels) {
++        super(KEY, player);
++        this.item = item;
++        this.levels = levels;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++
++    @NotNull
++    public IntegerRange getLevels() {
++        return levels;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/EnterBlockTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/EnterBlockTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..66ba93013bad1df4b9c5cbef65e0baaa0c69eb6e
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/EnterBlockTrigger.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.StateCondition;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class EnterBlockTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("enter_block");
++
++    private final Material block;
++    private final StateCondition state;
++
++    public EnterBlockTrigger(@NotNull EntityPredicatesCondition player, @Nullable Material block, @NotNull StateCondition state) {
++        super(KEY, player);
++        this.block = block;
++        this.state = state;
++    }
++
++    @Nullable
++    public Material getBlock() {
++        return block;
++    }
++
++    @NotNull
++    public StateCondition getState() {
++        return state;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/EntityHurtPlayerTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/EntityHurtPlayerTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1fe6f336526f559eff44b57f197e467de2c2d1ae
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/EntityHurtPlayerTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.DamageCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class EntityHurtPlayerTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("entity_hurt_player");
++
++    private final DamageCondition damageCondition;
++
++    public EntityHurtPlayerTrigger(@NotNull EntityPredicatesCondition player, @NotNull DamageCondition damageCondition) {
++        super(KEY, player);
++        this.damageCondition = damageCondition;
++    }
++
++    @NotNull
++    public DamageCondition getDamageCondition() {
++        return damageCondition;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/FilledBucketTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/FilledBucketTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..93d977487ce7b9e05a87a72a4537dc94ac394288
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/FilledBucketTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class FilledBucketTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("filled_bucket");
++
++    private final ItemCondition item;
++
++    public FilledBucketTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.item = item;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/FishingRodHookedTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/FishingRodHookedTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fbac2260a21eff2d8fe73be13011799ddbb15a07
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/FishingRodHookedTrigger.java
+@@ -0,0 +1,38 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class FishingRodHookedTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("fishing_rod_hooked");
++
++    private final ItemCondition rod;
++    private final EntityPredicatesCondition entity;
++    private final ItemCondition item;
++
++    public FishingRodHookedTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition rod, @NotNull EntityPredicatesCondition entity, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.rod = rod;
++        this.entity = entity;
++        this.item = item;
++    }
++
++    @NotNull
++    public ItemCondition getRod() {
++        return rod;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntity() {
++        return entity;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/GenerateLootTableTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/GenerateLootTableTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..df4c18b075a0d06a24d42d1054820ef9c2290256
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/GenerateLootTableTrigger.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class GenerateLootTableTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("player_generates_container_loot");
++
++    private final NamespacedKey loottable;
++
++    public GenerateLootTableTrigger(@NotNull EntityPredicatesCondition player, @NotNull NamespacedKey loottable) {
++        super(KEY, player);
++        this.loottable = loottable;
++    }
++
++    @NotNull
++    public NamespacedKey getLoottable() {
++        return loottable;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ImpossibleTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ImpossibleTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..82b3f606901970a05c9ae354598662bce9a8167f
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ImpossibleTrigger.java
+@@ -0,0 +1,12 @@
++package io.papermc.paper.advancements.triggers;
++
++import org.bukkit.NamespacedKey;
++
++public class ImpossibleTrigger extends Trigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("impossible");
++
++    public ImpossibleTrigger() {
++        super(KEY);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/InteractBlockTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/InteractBlockTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..12540d88ebcb829027690b0c9c9ff2e8e42d5cd8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/InteractBlockTrigger.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import io.papermc.paper.advancements.triggers.conditions.LocationCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class InteractBlockTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("item_used_on_block");
++
++    private final LocationCondition location;
++    private final ItemCondition item;
++
++    public InteractBlockTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition location, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.location = location;
++        this.item = item;
++    }
++
++    @NotNull
++    public LocationCondition getLocation() {
++        return location;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/InventoryChangedTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/InventoryChangedTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..cb324edbfabe0f09bcf67cfad50feaa5f23738db
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/InventoryChangedTrigger.java
+@@ -0,0 +1,46 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition.ItemsCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class InventoryChangedTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("inventory_changed");
++
++    private final IntegerRange occupied;
++    private final IntegerRange full;
++    private final IntegerRange empty;
++    private final ItemsCondition items;
++
++    public InventoryChangedTrigger(@NotNull EntityPredicatesCondition player, @NotNull IntegerRange occupied, @NotNull IntegerRange full, @NotNull IntegerRange empty, @NotNull ItemsCondition items) {
++        super(KEY, player);
++        this.occupied = occupied;
++        this.full = full;
++        this.empty = empty;
++        this.items = items;
++    }
++
++    @NotNull
++    public IntegerRange getOccupied() {
++        return occupied;
++    }
++
++    @NotNull
++    public IntegerRange getFull() {
++        return full;
++    }
++
++    @NotNull
++    public IntegerRange getEmpty() {
++        return empty;
++    }
++
++    @NotNull
++    public ItemsCondition getItems() {
++        return items;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ItemDurabilityChangeTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ItemDurabilityChangeTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b3d2313a47dbda0dcc2a2e6dc05e925a98ec27a7
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ItemDurabilityChangeTrigger.java
+@@ -0,0 +1,40 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class ItemDurabilityChangeTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("item_durability_changed");
++
++    private final ItemCondition item;
++    private final IntegerRange durability;
++    private final IntegerRange delta;
++
++    public ItemDurabilityChangeTrigger(@Nullable EntityPredicatesCondition player, @NotNull ItemCondition item, @NotNull IntegerRange durability, @NotNull IntegerRange delta) {
++        super(KEY, player);
++        this.item = item;
++        this.durability = durability;
++        this.delta = delta;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++
++    @NotNull
++    public IntegerRange getDurability() {
++        return durability;
++    }
++
++    @NotNull
++    public IntegerRange getDelta() {
++        return delta;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/KilledByCrossbowTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/KilledByCrossbowTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d7346563616aebc028816f20a725db8bc57d490f
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/KilledByCrossbowTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class KilledByCrossbowTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("killed_by_crossbow");
++
++    private final EntityPredicatesCondition[] victims;
++    private final IntegerRange uniqueEntityTypes;
++
++    public KilledByCrossbowTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition[] victims, @NotNull IntegerRange uniqueEntityTypes) {
++        super(KEY, player);
++        this.victims = victims;
++        this.uniqueEntityTypes = uniqueEntityTypes;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition[] getVictims() {
++        return victims;
++    }
++
++    @NotNull
++    public IntegerRange getUniqueEntityTypes() {
++        return uniqueEntityTypes;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/KilledTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/KilledTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3f866a0cb0663e956600cde45383e53d909e66d4
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/KilledTrigger.java
+@@ -0,0 +1,47 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.DamageSourceCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public abstract class KilledTrigger extends PlayerTrigger {
++
++    private final EntityPredicatesCondition entityPredicates;
++    private final DamageSourceCondition damageSource;
++
++    protected KilledTrigger(@NotNull NamespacedKey key, @NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition entityPredicates, @NotNull DamageSourceCondition damageSource) {
++        super(key, player);
++        this.entityPredicates = entityPredicates;
++        this.damageSource = damageSource;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntityPredicates() {
++        return entityPredicates;
++    }
++
++    @NotNull
++    public DamageSourceCondition getDamageSource() {
++        return damageSource;
++    }
++
++    public static class PlayerKilledEntityTrigger extends KilledTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("player_killed_entity");
++
++        public PlayerKilledEntityTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition entityPredicates, @NotNull DamageSourceCondition damageSource) {
++            super(KEY, player, entityPredicates, damageSource);
++        }
++    }
++
++    public static class EntityKilledPlayerTrigger extends KilledTrigger {
++
++        public static final NamespacedKey KEY = NamespacedKey.minecraft("entity_killed_player");
++
++        public EntityKilledPlayerTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition entityPredicates, @NotNull DamageSourceCondition damageSource) {
++            super(KEY, player, entityPredicates, damageSource);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/LevitationTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/LevitationTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a0a25f6f71d94c43590d19629fe6a5f22f63bf2d
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/LevitationTrigger.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.DistanceCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class LevitationTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("levitation");
++
++    private final DistanceCondition distance;
++    private final IntegerRange duration;
++
++    public LevitationTrigger(@NotNull EntityPredicatesCondition player, @NotNull DistanceCondition distance, @NotNull IntegerRange duration) {
++        super(KEY, player);
++        this.distance = distance;
++        this.duration = duration;
++    }
++
++    @NotNull
++    public DistanceCondition getDistance() {
++        return distance;
++    }
++
++    @NotNull
++    public IntegerRange getDuration() {
++        return duration;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/NetherTravelTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/NetherTravelTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..01f6a871553d0e09206b89b365ef493487c15bc1
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/NetherTravelTrigger.java
+@@ -0,0 +1,39 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.DistanceCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.LocationCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class NetherTravelTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("nether_travel");
++
++    private final LocationCondition entered;
++    private final LocationCondition exited;
++    private final DistanceCondition distance;
++
++    public NetherTravelTrigger(@NotNull EntityPredicatesCondition player, @NotNull LocationCondition entered, @NotNull LocationCondition exited, @NotNull DistanceCondition distance) {
++        super(KEY, player);
++        this.entered = entered;
++        this.exited = exited;
++        this.distance = distance;
++    }
++
++    @NotNull
++    public LocationCondition getEntered() {
++        return entered;
++    }
++
++    @NotNull
++    public LocationCondition getExited() {
++        return exited;
++    }
++
++    @NotNull
++    public DistanceCondition getDistance() {
++        return distance;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/PlacedBlockTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/PlacedBlockTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fa7a14a6d2f8ebf421bd51ef409980b4e636260b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/PlacedBlockTrigger.java
+@@ -0,0 +1,49 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import io.papermc.paper.advancements.triggers.conditions.LocationCondition;
++import io.papermc.paper.advancements.triggers.conditions.StateCondition;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class PlacedBlockTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("placed_block");
++
++    private final Material block;
++    private final StateCondition state;
++    private final LocationCondition location;
++    private final ItemCondition item;
++
++    public PlacedBlockTrigger(@NotNull EntityPredicatesCondition player, @Nullable Material block, @NotNull StateCondition state, @NotNull LocationCondition location, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.block = block;
++        this.state = state;
++        this.location = location;
++        this.item = item;
++    }
++
++    @Nullable
++    public Material getBlock() {
++        return block;
++    }
++
++    @NotNull
++    public StateCondition getState() {
++        return state;
++    }
++
++    @NotNull
++    public LocationCondition getLocation() {
++        return location;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/PlayerHurtEntityTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/PlayerHurtEntityTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..298fedc840fbad0ea18ef9c0f4a5727a82a7a939
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/PlayerHurtEntityTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.DamageCondition;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class PlayerHurtEntityTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("player_hurt_entity");
++
++    private final DamageCondition damage;
++    private final EntityPredicatesCondition entityPredicates;
++
++    public PlayerHurtEntityTrigger(@NotNull EntityPredicatesCondition player, @NotNull DamageCondition damage, @NotNull EntityPredicatesCondition entityPredicates) {
++        super(KEY, player);
++        this.damage = damage;
++        this.entityPredicates = entityPredicates;
++    }
++
++    @NotNull
++    public DamageCondition getDamage() {
++        return damage;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntityPredicates() {
++        return entityPredicates;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/PlayerInteractWithEntityTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/PlayerInteractWithEntityTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..beafd7e80bdcfc5fd9fce8d74665891298f0026b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/PlayerInteractWithEntityTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class PlayerInteractWithEntityTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("player_interacted_with_entity");
++
++    private final ItemCondition item;
++    private final EntityPredicatesCondition entity;
++
++    public PlayerInteractWithEntityTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item, @NotNull EntityPredicatesCondition entity) {
++        super(KEY, player);
++        this.item = item;
++        this.entity = entity;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntity() {
++        return entity;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/RecipeUnlockedTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/RecipeUnlockedTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3797dd0311fc45f4c8ff749a83e1649df6b92d7b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/RecipeUnlockedTrigger.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class RecipeUnlockedTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("recipe_unlocked");
++
++    private final NamespacedKey recipe;
++
++    public RecipeUnlockedTrigger(@NotNull EntityPredicatesCondition player, @NotNull NamespacedKey recipe) {
++        super(KEY, player);
++        this.recipe = recipe;
++    }
++
++    @NotNull
++    public NamespacedKey getRecipe() {
++        return recipe;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ShotCrossbowTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ShotCrossbowTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0c5bc36d41ace9a65e0ed151ccc141193c97de54
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ShotCrossbowTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class ShotCrossbowTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("shot_crossbow");
++
++    private final ItemCondition item;
++
++    public ShotCrossbowTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.item = item;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/SlideDownBlockTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/SlideDownBlockTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..750177e931275f56152127d38c68ec366b83e6e6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/SlideDownBlockTrigger.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.StateCondition;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class SlideDownBlockTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("slide_down_block");
++
++    private final Material block;
++    private final StateCondition state;
++
++    public SlideDownBlockTrigger(@NotNull EntityPredicatesCondition player, @Nullable Material block, @NotNull StateCondition state) {
++        super(KEY, player);
++        this.block = block;
++        this.state = state;
++    }
++
++    @Nullable
++    public Material getBlock() {
++        return block;
++    }
++
++    @NotNull
++    public StateCondition getState() {
++        return state;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/SummonedEntityTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/SummonedEntityTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..209038d6741a990c29e9c1a26a19f423a1494589
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/SummonedEntityTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class SummonedEntityTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("summoned_entity");
++
++    private final EntityPredicatesCondition entityPredicates;
++
++    public SummonedEntityTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition entityPredicates) {
++        super(KEY, player);
++        this.entityPredicates = entityPredicates;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntityPredicates() {
++        return entityPredicates;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/TamedAnimalTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/TamedAnimalTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..5d29af792cda2df94fb15a15dfd6920d8f06b9f9
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/TamedAnimalTrigger.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class TamedAnimalTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("tame_animal");
++
++    private final EntityPredicatesCondition tamedEntity;
++
++    public TamedAnimalTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition tamedEntity) {
++        super(KEY, player);
++        this.tamedEntity = tamedEntity;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getTamedEntity() {
++        return tamedEntity;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/TargetHitTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/TargetHitTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1fe8b672a50291e4a368747458dd2b072764f518
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/TargetHitTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class TargetHitTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("target_hit");
++
++    private final IntegerRange signalStrength;
++    private final EntityPredicatesCondition projectile;
++
++    public TargetHitTrigger(@NotNull EntityPredicatesCondition player, @NotNull IntegerRange signalStrength, @NotNull EntityPredicatesCondition projectile) {
++        super(KEY, player);
++        this.signalStrength = signalStrength;
++        this.projectile = projectile;
++    }
++
++    @NotNull
++    public IntegerRange getSignalStrength() {
++        return signalStrength;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getProjectile() {
++        return projectile;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/ThrownItemPickedUpTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/ThrownItemPickedUpTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1382e4cd5a2cc334fc2b16b1114cd76a6d5adbac
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/ThrownItemPickedUpTrigger.java
+@@ -0,0 +1,31 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class ThrownItemPickedUpTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("thrown_item_picked_up_by_entity");
++
++    private final ItemCondition item;
++    private final EntityPredicatesCondition entity;
++
++    public ThrownItemPickedUpTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item, @NotNull EntityPredicatesCondition entity) {
++        super(KEY, player);
++        this.item = item;
++        this.entity = entity;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getEntity() {
++        return entity;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/TickTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/TickTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..51caa6dce9b2da56bede68a682f4693575ea0f72
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/TickTrigger.java
+@@ -0,0 +1,19 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class TickTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("tick");
++
++    public TickTrigger(@NotNull EntityPredicatesCondition player) {
++        super(KEY, player);
++    }
++
++    public TickTrigger() {
++        super(KEY, EntityPredicatesCondition.ANY);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/Trigger.java b/src/main/java/io/papermc/paper/advancements/triggers/Trigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7653b6ab3148eb921d1ba4bfba8115aaf736f23c
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/Trigger.java
+@@ -0,0 +1,37 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import org.bukkit.Keyed;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public abstract class Trigger implements Keyed {
++
++    private final NamespacedKey key;
++
++    public Trigger(NamespacedKey key) {
++        this.key = key;
++    }
++
++    @NotNull
++    @Override
++    public NamespacedKey getKey() {
++        return key;
++    }
++
++    public abstract static class PlayerTrigger extends Trigger {
++
++        private final EntityPredicatesCondition player;
++
++        public PlayerTrigger(@NotNull NamespacedKey key, @NotNull EntityPredicatesCondition player) {
++            super(key);
++            this.player = player;
++        }
++
++        @NotNull
++        public EntityPredicatesCondition getPlayer() {
++            return player;
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/UsedEnderEyeTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/UsedEnderEyeTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..63e0d43794fbc8ee3db9bb6bc24f964b99d3ff15
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/UsedEnderEyeTrigger.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.FloatRange;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class UsedEnderEyeTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("used_ender_eye");
++
++    private final FloatRange distance;
++
++    public UsedEnderEyeTrigger(@NotNull EntityPredicatesCondition player, @NotNull FloatRange distance) {
++        super(KEY, player);
++        this.distance = distance;
++    }
++
++    @NotNull
++    public FloatRange getDistance() {
++        return distance;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/UsedTotemTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/UsedTotemTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..65758fe9a0630a323e598d5dadd1eb2d9f25ddca
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/UsedTotemTrigger.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public class UsedTotemTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("used_totem");
++
++    private final ItemCondition item;
++
++    public UsedTotemTrigger(@NotNull EntityPredicatesCondition player, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.item = item;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/VillagerTradeTrigger.java b/src/main/java/io/papermc/paper/advancements/triggers/VillagerTradeTrigger.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0b41f4cfaac2e7d081cd2877145089bd0d4420e9
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/VillagerTradeTrigger.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.advancements.triggers;
++
++import io.papermc.paper.advancements.triggers.Trigger.PlayerTrigger;
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition.EntityPredicatesCondition;
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class VillagerTradeTrigger extends PlayerTrigger {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("villager_trade");
++
++    private final EntityPredicatesCondition villager;
++    private final ItemCondition item;
++
++    public VillagerTradeTrigger(@NotNull EntityPredicatesCondition player, @NotNull EntityPredicatesCondition villager, @NotNull ItemCondition item) {
++        super(KEY, player);
++        this.villager = villager;
++        this.item = item;
++    }
++
++    @NotNull
++    public EntityPredicatesCondition getVillager() {
++        return villager;
++    }
++
++    @NotNull
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/BlockCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/BlockCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4ca64f1bea8ecc6d446ec12e2abcf61b43df61a6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/BlockCondition.java
+@@ -0,0 +1,61 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import org.bukkit.Material;
++import org.bukkit.Tag;
++import org.jetbrains.annotations.Contract;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public final class BlockCondition {
++
++    public static final BlockCondition ANY = new BlockCondition(null, null, StateCondition.ANY);
++
++    private final Material block;
++    private final Tag<Material> blockTag;
++    private final StateCondition state;
++
++    private BlockCondition(@Nullable Material block, @Nullable Tag<Material> blockTag, @NotNull StateCondition state) {
++        this.block = block;
++        this.blockTag = blockTag;
++        this.state = state;
++    }
++
++    @NotNull
++    @Contract(value = "_, _, _ -> new", pure = true)
++    public static BlockCondition of(@Nullable Material block, @Nullable Tag<Material> blockTag, @Nullable StateCondition state) {
++        return new BlockCondition(block, blockTag, state);
++    }
++
++    @Nullable
++    public Material getBlock() {
++        return this.block;
++    }
++
++    @Nullable
++    public Tag<Material> getBlockTag() {
++        return this.blockTag;
++    }
++
++    @Nullable
++    public StateCondition getState() {
++        return this.state;
++    }
++
++    @NotNull
++    @Contract("_ -> new")
++    public BlockCondition withBlock(Material block) {
++        return of(block, getBlockTag(), getState());
++    }
++
++    @NotNull
++    @Contract("_ -> new")
++    public BlockCondition withBlockTag(Tag<Material> blockTag) {
++        return of(getBlock(), blockTag, getState());
++    }
++
++    @NotNull
++    @Contract("_ -> new")
++    public BlockCondition withState(StateCondition state) {
++        return of(getBlock(), getBlockTag(), state);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..87c07949d6b092828a1c28498b3e9377b9ec6645
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageCondition.java
+@@ -0,0 +1,83 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.FloatRange;
++
++public class DamageCondition {
++
++    public static final DamageCondition ANY = DamageCondition.builder().build();
++
++    private final FloatRange dealtDamage;
++    private final FloatRange takenDamage;
++    private final EntityCondition entity;
++    private final Boolean blocked;
++    private final DamageSourceCondition damageType;
++
++    public DamageCondition(FloatRange dealtDamage, FloatRange takenDamage, EntityCondition entity, Boolean blocked, DamageSourceCondition damageType) {
++        this.dealtDamage = dealtDamage;
++        this.takenDamage = takenDamage;
++        this.entity = entity;
++        this.blocked = blocked;
++        this.damageType = damageType;
++    }
++
++    public FloatRange getDealtDamage() {
++        return dealtDamage;
++    }
++
++    public FloatRange getTakenDamage() {
++        return takenDamage;
++    }
++
++    public EntityCondition getEntity() {
++        return entity;
++    }
++
++    public Boolean getBlocked() {
++        return blocked;
++    }
++
++    public DamageSourceCondition getDamageType() {
++        return damageType;
++    }
++
++    public static DamageConditionBuilder builder() {
++        return new DamageConditionBuilder();
++    }
++
++    private static final class DamageConditionBuilder {
++        private FloatRange dealtDamage = FloatRange.ANY;
++        private FloatRange takenDamage = FloatRange.ANY;
++        private EntityCondition entity = EntityCondition.ANY;
++        private Boolean blocked = null;
++        private DamageSourceCondition flags = DamageSourceCondition.ANY;
++
++        public DamageConditionBuilder dealtDamage(FloatRange dealtDamage) {
++            this.dealtDamage = dealtDamage;
++            return this;
++        }
++
++        public DamageConditionBuilder takenDamage(FloatRange takenDamage) {
++            this.takenDamage = takenDamage;
++            return this;
++        }
++
++        public DamageConditionBuilder entity(EntityCondition entity) {
++            this.entity = entity;
++            return this;
++        }
++
++        public DamageConditionBuilder blocked(Boolean blocked) {
++            this.blocked = blocked;
++            return this;
++        }
++
++        public DamageConditionBuilder flags(DamageSourceCondition flags) {
++            this.flags = flags;
++            return this;
++        }
++
++        public DamageCondition build() {
++            return new DamageCondition(dealtDamage, takenDamage, entity, blocked, flags);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageSourceCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageSourceCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ba2a5831987ce79b537fdf554698227797ce19b2
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DamageSourceCondition.java
+@@ -0,0 +1,141 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++public class DamageSourceCondition {
++
++    public static final DamageSourceCondition ANY = builder().build();
++
++    private final Boolean isProjectile;
++    private final Boolean isExplosion;
++    private final Boolean bypassesArmor;
++    private final Boolean bypassesInvulnerability;
++    private final Boolean bypassesMagic;
++    private final Boolean isFire;
++    private final Boolean isMagic;
++    private final Boolean isLightning;
++    private final EntityCondition direct;
++    private final EntityCondition source;
++
++    public DamageSourceCondition(Boolean isProjectile, Boolean isExplosion, Boolean bypassesArmor, Boolean bypassesInvulnerability, Boolean bypassesMagic, Boolean isFire, Boolean isMagic, Boolean isLightning, EntityCondition direct, EntityCondition source) {
++        this.isProjectile = isProjectile;
++        this.isExplosion = isExplosion;
++        this.bypassesArmor = bypassesArmor;
++        this.bypassesInvulnerability = bypassesInvulnerability;
++        this.bypassesMagic = bypassesMagic;
++        this.isFire = isFire;
++        this.isMagic = isMagic;
++        this.isLightning = isLightning;
++        this.direct = direct;
++        this.source = source;
++    }
++
++    public Boolean getProjectile() {
++        return isProjectile;
++    }
++
++    public Boolean getExplosion() {
++        return isExplosion;
++    }
++
++    public Boolean getBypassesArmor() {
++        return bypassesArmor;
++    }
++
++    public Boolean getBypassesInvulnerability() {
++        return bypassesInvulnerability;
++    }
++
++    public Boolean getBypassesMagic() {
++        return bypassesMagic;
++    }
++
++    public Boolean getFire() {
++        return isFire;
++    }
++
++    public Boolean getMagic() {
++        return isMagic;
++    }
++
++    public Boolean getLightning() {
++        return isLightning;
++    }
++
++    public EntityCondition getDirect() {
++        return direct;
++    }
++
++    public EntityCondition getSource() {
++        return source;
++    }
++
++    public static DamageFlagsConditionBuilder builder() {
++        return new DamageFlagsConditionBuilder();
++    }
++
++    private static final class DamageFlagsConditionBuilder {
++        private Boolean isProjectile = null;
++        private Boolean isExplosion = null;
++        private Boolean bypassesArmor = null;
++        private Boolean bypassesInvulnerability = null;
++        private Boolean bypassesMagic = null;
++        private Boolean isFire = null;
++        private Boolean isMagic = null;
++        private Boolean isLightning = null;
++        private EntityCondition direct = EntityCondition.ANY;
++        private EntityCondition source = EntityCondition.ANY;
++
++        public DamageFlagsConditionBuilder isProjectile(Boolean isProjectile) {
++            this.isProjectile = isProjectile;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder isExplosion(Boolean isExplosion) {
++            this.isExplosion = isExplosion;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder bypassesArmor(Boolean bypassesArmor) {
++            this.bypassesArmor = bypassesArmor;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder bypassesInvulnerability(Boolean bypassesInvulnerability) {
++            this.bypassesInvulnerability = bypassesInvulnerability;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder bypassesMagic(Boolean bypassesMagic) {
++            this.bypassesMagic = bypassesMagic;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder isFire(Boolean isFire) {
++            this.isFire = isFire;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder isMagic(Boolean isMagic) {
++            this.isMagic = isMagic;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder isLightning(Boolean isLightning) {
++            this.isLightning = isLightning;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder direct(EntityCondition direct) {
++            this.direct = direct;
++            return this;
++        }
++
++        public DamageFlagsConditionBuilder source(EntityCondition source) {
++            this.source = source;
++            return this;
++        }
++
++        public DamageSourceCondition build() {
++            return new DamageSourceCondition(isProjectile, isExplosion, bypassesArmor, bypassesInvulnerability, bypassesMagic, isFire, isMagic, isLightning, direct, source);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/DistanceCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DistanceCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f47579aebb0891f9671c54d99aec9dfe0b025d6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/DistanceCondition.java
+@@ -0,0 +1,83 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.FloatRange;
++
++public class DistanceCondition {
++
++    public static final DistanceCondition ANY = new DistanceCondition(FloatRange.ANY, FloatRange.ANY, FloatRange.ANY, FloatRange.ANY, FloatRange.ANY);
++
++    private final FloatRange xRange;
++    private final FloatRange yRange;
++    private final FloatRange zRange;
++    private final FloatRange absoluteRange;
++    private final FloatRange horizontalRange;
++
++    public DistanceCondition(FloatRange xRange, FloatRange yRange, FloatRange zRange, FloatRange absoluteRange, FloatRange horizontalRange) {
++        this.xRange = xRange;
++        this.yRange = yRange;
++        this.zRange = zRange;
++        this.absoluteRange = absoluteRange;
++        this.horizontalRange = horizontalRange;
++    }
++
++    public FloatRange getXRange() {
++        return xRange;
++    }
++
++    public FloatRange getYRange() {
++        return yRange;
++    }
++
++    public FloatRange getZRange() {
++        return zRange;
++    }
++
++    public FloatRange getAbsoluteRange() {
++        return absoluteRange;
++    }
++
++    public FloatRange getHorizontalRange() {
++        return horizontalRange;
++    }
++
++    public static DistanceConditionBuilder builder() {
++        return new DistanceConditionBuilder();
++    }
++
++    private static final class DistanceConditionBuilder {
++        private FloatRange xRange = FloatRange.ANY;
++        private FloatRange yRange = FloatRange.ANY;
++        private FloatRange zRange = FloatRange.ANY;
++        private FloatRange absoluteRange = FloatRange.ANY;
++        private FloatRange horizontalRange = FloatRange.ANY;
++
++        public DistanceConditionBuilder xRange(FloatRange xRange) {
++            this.xRange = xRange;
++            return this;
++        }
++
++        public DistanceConditionBuilder yRange(FloatRange yRange) {
++            this.yRange = yRange;
++            return this;
++        }
++
++        public DistanceConditionBuilder zRange(FloatRange zRange) {
++            this.zRange = zRange;
++            return this;
++        }
++
++        public DistanceConditionBuilder absoluteRange(FloatRange absoluteRange) {
++            this.absoluteRange = absoluteRange;
++            return this;
++        }
++
++        public DistanceConditionBuilder horizontalRange(FloatRange horizontalRange) {
++            this.horizontalRange = horizontalRange;
++            return this;
++        }
++
++        public DistanceCondition build() {
++            return new DistanceCondition(xRange, yRange, zRange, absoluteRange, horizontalRange);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EffectsCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EffectsCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..df5328709a16423c87c6d67b9d176a170c849d86
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EffectsCondition.java
+@@ -0,0 +1,88 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.potion.PotionEffectType;
++
++import java.util.Collections;
++import java.util.Map;
++
++public class EffectsCondition {
++
++    public static final EffectsCondition ANY = new EffectsCondition(Collections.emptyMap());
++
++    private final Map<PotionEffectType, EffectInfo> effectInfoMap;
++
++    public EffectsCondition(Map<PotionEffectType, EffectInfo> effectInfoMap) {
++        this.effectInfoMap = effectInfoMap;
++    }
++
++    public Map<PotionEffectType, EffectInfo> getEffectInfoMap() {
++        return effectInfoMap;
++    }
++
++    public static class EffectInfo {
++
++        private final IntegerRange amplifer;
++        private final IntegerRange duration;
++        private final Boolean ambient;
++        private final Boolean visible;
++
++        public EffectInfo(IntegerRange amplifer, IntegerRange duration, Boolean ambient, Boolean visible) {
++            this.amplifer = amplifer;
++            this.duration = duration;
++            this.ambient = ambient;
++            this.visible = visible;
++        }
++
++        public IntegerRange getAmplifer() {
++            return amplifer;
++        }
++
++        public IntegerRange getDuration() {
++            return duration;
++        }
++
++        public Boolean getAmbient() {
++            return ambient;
++        }
++
++        public Boolean getVisible() {
++            return visible;
++        }
++
++        public static EffectInfoBuilder builder() {
++            return new EffectInfoBuilder();
++        }
++
++        private static class EffectInfoBuilder {
++            private IntegerRange amplifier = IntegerRange.ANY;
++            private IntegerRange duration = IntegerRange.ANY;
++            private Boolean ambient = null;
++            private Boolean visible = null;
++
++            public EffectInfoBuilder amplifier(IntegerRange amplifier) {
++                this.amplifier = amplifier;
++                return this;
++            }
++
++            public EffectInfoBuilder duration(IntegerRange duration) {
++                this.duration = duration;
++                return this;
++            }
++
++            public EffectInfoBuilder ambient(Boolean ambient) {
++                this.ambient = ambient;
++                return this;
++            }
++
++            public EffectInfoBuilder visible(Boolean visible) {
++                this.visible = visible;
++                return this;
++            }
++
++            public EffectInfo build() {
++                return new EffectInfo(amplifier, duration, ambient, visible);
++            }
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EnchantmentCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EnchantmentCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9acec05c0034f98d7b2da829dd747e661c6944f9
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EnchantmentCondition.java
+@@ -0,0 +1,47 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.enchantments.Enchantment;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.HashSet;
++import java.util.Set;
++
++public class EnchantmentCondition {
++
++    public static final EnchantmentCondition ANY = new EnchantmentCondition(null, IntegerRange.ANY);
++
++    private Enchantment enchantment;
++    private IntegerRange levelRange;
++
++    public EnchantmentCondition(@Nullable Enchantment enchantment, @NotNull IntegerRange levelRange) {
++        this.enchantment = enchantment;
++        this.levelRange = levelRange;
++    }
++
++    public Enchantment getEnchantment() {
++        return enchantment;
++    }
++
++    public void setEnchantment(Enchantment enchantment) {
++        this.enchantment = enchantment;
++    }
++
++    public IntegerRange getLevelRange() {
++        return levelRange;
++    }
++
++    public void setLevelRange(IntegerRange levelRange) {
++        this.levelRange = levelRange;
++    }
++
++    public static class EnchantmentsCondition extends HashSet<EnchantmentCondition> {
++
++        public static final EnchantmentsCondition ANY = new EnchantmentsCondition(new HashSet<>(0));
++
++        public EnchantmentsCondition(Set<EnchantmentCondition> enchantments) {
++            this.addAll(enchantments);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..68dcac86579e9ba819f4adf580a9740b9fd0604c
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityCondition.java
+@@ -0,0 +1,186 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.predicates.PredicateCondition;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class EntityCondition {
++
++    public static final EntityCondition ANY = builder().build();
++
++    private final EntityTypeCondition entityType;
++    private final DistanceCondition distanceToPlayer;
++    private final LocationCondition location;
++    private final EffectsCondition effects;
++    private final EntityFlagsCondition flags;
++    private final EntityEquipmentCondition equipment;
++    private final PlayerCondition player;
++    private final FishingHookCondition fishingHook;
++    private final EntityCondition vehicle;
++    private final EntityCondition target;
++    private final String team;
++    private final NamespacedKey catType;
++
++    public EntityCondition(@NotNull EntityTypeCondition entityType, @NotNull DistanceCondition distanceToPlayer, @NotNull LocationCondition location, @NotNull EffectsCondition effects, @NotNull EntityFlagsCondition flags, @NotNull EntityEquipmentCondition equipment, @NotNull PlayerCondition player, @NotNull FishingHookCondition fishingHook, @NotNull EntityCondition vehicle, @NotNull EntityCondition target, @Nullable String team, @Nullable NamespacedKey catType) {
++        this.entityType = entityType;
++        this.distanceToPlayer = distanceToPlayer;
++        this.location = location;
++        this.effects = effects;
++        this.flags = flags;
++        this.equipment = equipment;
++        this.player = player;
++        this.fishingHook = fishingHook;
++        this.vehicle = vehicle;
++        this.target = target;
++        this.team = team;
++        this.catType = catType;
++    }
++
++    public EntityTypeCondition getEntityType() {
++        return entityType;
++    }
++
++    public DistanceCondition getDistanceToPlayer() {
++        return distanceToPlayer;
++    }
++
++    public LocationCondition getLocation() {
++        return location;
++    }
++
++    public EffectsCondition getEffects() {
++        return effects;
++    }
++
++    public EntityFlagsCondition getFlags() {
++        return flags;
++    }
++
++    public EntityEquipmentCondition getEquipment() {
++        return equipment;
++    }
++
++    public PlayerCondition getPlayer() {
++        return player;
++    }
++
++    public FishingHookCondition getFishingHook() {
++        return fishingHook;
++    }
++
++    public EntityCondition getVehicle() {
++        return vehicle;
++    }
++
++    public EntityCondition getTarget() {
++        return target;
++    }
++
++    public String getTeam() {
++        return team;
++    }
++
++    public NamespacedKey getCatType() {
++        return catType;
++    }
++
++    public static EntityConditionBuilder builder() {
++        return new EntityConditionBuilder();
++    }
++
++    private static final class EntityConditionBuilder {
++        private EntityTypeCondition entityType = EntityTypeCondition.ANY;
++        private DistanceCondition distanceToPlayer = DistanceCondition.ANY;
++        private LocationCondition location = LocationCondition.ANY;
++        private EffectsCondition effects = EffectsCondition.ANY;
++        private EntityFlagsCondition flags = EntityFlagsCondition.ANY;
++        private EntityEquipmentCondition equipment = EntityEquipmentCondition.ANY;
++        private PlayerCondition player = PlayerCondition.ANY;
++        private FishingHookCondition fishingHook = FishingHookCondition.ANY;
++        private EntityCondition vehicle = EntityCondition.ANY;
++        private EntityCondition target = EntityCondition.ANY;
++        private String team = null;
++        private NamespacedKey catType = null;
++
++        public EntityConditionBuilder entityType(EntityTypeCondition entityType) {
++            this.entityType = entityType;
++            return this;
++        }
++
++        public EntityConditionBuilder distanceToPlayer(DistanceCondition distanceToPlayer) {
++            this.distanceToPlayer = distanceToPlayer;
++            return this;
++        }
++
++        public EntityConditionBuilder location(LocationCondition location) {
++            this.location = location;
++            return this;
++        }
++
++        public EntityConditionBuilder effects(EffectsCondition effects) {
++            this.effects = effects;
++            return this;
++        }
++
++        public EntityConditionBuilder flags(EntityFlagsCondition flags) {
++            this.flags = flags;
++            return this;
++        }
++
++        public EntityConditionBuilder equipment(EntityEquipmentCondition equipment) {
++            this.equipment = equipment;
++            return this;
++        }
++
++        public EntityConditionBuilder player(PlayerCondition player) {
++            this.player = player;
++            return this;
++        }
++
++        public EntityConditionBuilder fishingHook(FishingHookCondition fishingHook) {
++            this.fishingHook = fishingHook;
++            return this;
++        }
++
++        public EntityConditionBuilder vehicle(EntityCondition vehicle) {
++            this.vehicle = vehicle;
++            return this;
++        }
++
++        public EntityConditionBuilder target(EntityCondition target) {
++            this.target = target;
++            return this;
++        }
++
++        public EntityConditionBuilder team(String team) {
++            this.team = team;
++            return this;
++        }
++
++        public EntityConditionBuilder catType(NamespacedKey catType) {
++            this.catType = catType;
++            return this;
++        }
++
++        public EntityCondition build() {
++            return new EntityCondition(entityType, distanceToPlayer, location, effects, flags, equipment, player, fishingHook, vehicle, target, team, catType);
++        }
++    }
++
++    public static class EntityPredicatesCondition {
++
++        public static final EntityPredicatesCondition ANY = new EntityPredicatesCondition(new PredicateCondition[0]);
++        public static final EntityPredicatesCondition[] ANY_ARRAY = new EntityPredicatesCondition[0];
++
++        private final PredicateCondition[] predicates;
++
++        public EntityPredicatesCondition(PredicateCondition[] predicates) {
++            this.predicates = predicates;
++        }
++
++        public PredicateCondition[] getPredicates() {
++            return predicates;
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityEquipmentCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityEquipmentCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d4ad043ea6ac1fe317c22e07ac3258c6f1ef146
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityEquipmentCondition.java
+@@ -0,0 +1,93 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++public class EntityEquipmentCondition {
++
++    public static final EntityEquipmentCondition ANY = new EntityEquipmentCondition(ItemCondition.ANY, ItemCondition.ANY, ItemCondition.ANY, ItemCondition.ANY, ItemCondition.ANY, ItemCondition.ANY);
++
++    private final ItemCondition headItem;
++    private final ItemCondition chestItem;
++    private final ItemCondition legsItem;
++    private final ItemCondition feetItem;
++    private final ItemCondition mainHand;
++    private final ItemCondition offHand;
++
++    public EntityEquipmentCondition(ItemCondition headItem, ItemCondition chestItem, ItemCondition legsItem, ItemCondition feetItem, ItemCondition mainHand, ItemCondition offHand) {
++        this.headItem = headItem;
++        this.chestItem = chestItem;
++        this.legsItem = legsItem;
++        this.feetItem = feetItem;
++        this.mainHand = mainHand;
++        this.offHand = offHand;
++    }
++
++    public ItemCondition getHeadItem() {
++        return headItem;
++    }
++
++    public ItemCondition getChestItem() {
++        return chestItem;
++    }
++
++    public ItemCondition getLegsItem() {
++        return legsItem;
++    }
++
++    public ItemCondition getFeetItem() {
++        return feetItem;
++    }
++
++    public ItemCondition getMainHand() {
++        return mainHand;
++    }
++
++    public ItemCondition getOffHand() {
++        return offHand;
++    }
++
++    public static EntityEquipmentConditionBuilder builder() {
++        return new EntityEquipmentConditionBuilder();
++    }
++
++    private static final class EntityEquipmentConditionBuilder {
++        private ItemCondition headItem;
++        private ItemCondition chestItem;
++        private ItemCondition legsItem;
++        private ItemCondition feetItem;
++        private ItemCondition mainHand;
++        private ItemCondition offHand;
++
++        public EntityEquipmentConditionBuilder headItem(ItemCondition headItem) {
++            this.headItem = headItem;
++            return this;
++        }
++
++        public EntityEquipmentConditionBuilder chestItem(ItemCondition chestItem) {
++            this.chestItem = chestItem;
++            return this;
++        }
++
++        public EntityEquipmentConditionBuilder legsItem(ItemCondition legsItem) {
++            this.legsItem = legsItem;
++            return this;
++        }
++
++        public EntityEquipmentConditionBuilder feetItem(ItemCondition feetItem) {
++            this.feetItem = feetItem;
++            return this;
++        }
++
++        public EntityEquipmentConditionBuilder mainHand(ItemCondition mainHand) {
++            this.mainHand = mainHand;
++            return this;
++        }
++
++        public EntityEquipmentConditionBuilder offHand(ItemCondition offHand) {
++            this.offHand = offHand;
++            return this;
++        }
++
++        public EntityEquipmentCondition build() {
++            return new EntityEquipmentCondition(headItem, chestItem, legsItem, feetItem, mainHand, offHand);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityFlagsCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityFlagsCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9fe6ccc852256e8843171fb7bb2987cb11fece51
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityFlagsCondition.java
+@@ -0,0 +1,81 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++public class EntityFlagsCondition {
++
++    public static final EntityFlagsCondition ANY = new EntityFlagsCondition(null, null, null, null, null);
++
++    private final Boolean isOnFire;
++    private final Boolean isSneaking;
++    private final Boolean isSprinting;
++    private final Boolean isSwimming;
++    private final Boolean isBaby;
++
++    public EntityFlagsCondition(Boolean isOnFire, Boolean isSneaking, Boolean isSprinting, Boolean isSwimming, Boolean isBaby) {
++        this.isOnFire = isOnFire;
++        this.isSneaking = isSneaking;
++        this.isSprinting = isSprinting;
++        this.isSwimming = isSwimming;
++        this.isBaby = isBaby;
++    }
++
++    public Boolean getOnFire() {
++        return isOnFire;
++    }
++
++    public Boolean getSneaking() {
++        return isSneaking;
++    }
++
++    public Boolean getSprinting() {
++        return isSprinting;
++    }
++
++    public Boolean getSwimming() {
++        return isSwimming;
++    }
++
++    public Boolean getBaby() {
++        return isBaby;
++    }
++
++    public static EntityFlagsConditionBuilder builder() {
++        return new EntityFlagsConditionBuilder();
++    }
++
++    private static final class EntityFlagsConditionBuilder {
++        private Boolean isOnFire;
++        private Boolean isSneaking;
++        private Boolean isSprinting;
++        private Boolean isSwimming;
++        private Boolean isBaby;
++
++        public EntityFlagsConditionBuilder isOnFire(Boolean isOnFire) {
++            this.isOnFire = isOnFire;
++            return this;
++        }
++
++        public EntityFlagsConditionBuilder isSneaking(Boolean isSneaking) {
++            this.isSneaking = isSneaking;
++            return this;
++        }
++
++        public EntityFlagsConditionBuilder isSprinting(Boolean isSprinting) {
++            this.isSprinting = isSprinting;
++            return this;
++        }
++
++        public EntityFlagsConditionBuilder isSwimming(Boolean isSwimming) {
++            this.isSwimming = isSwimming;
++            return this;
++        }
++
++        public EntityFlagsConditionBuilder isBaby(Boolean isBaby) {
++            this.isBaby = isBaby;
++            return this;
++        }
++
++        public EntityFlagsCondition build() {
++            return new EntityFlagsCondition(isOnFire, isSneaking, isSprinting, isSwimming, isBaby);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityScorePredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityScorePredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..88754807570c30305b0ca4c088b5fdf198565841
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityScorePredicateCondition.java
+@@ -0,0 +1,30 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.predicates.EntityTarget;
++import io.papermc.paper.advancements.triggers.conditions.predicates.PredicateCondition;
++import io.papermc.paper.advancements.triggers.conditions.predicates.values.ValueRange;
++import org.bukkit.NamespacedKey;
++
++import java.util.Map;
++
++public class EntityScorePredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("entity_scores");
++
++    private final Map<String, ValueRange> scores;
++    private final EntityTarget target;
++
++    public EntityScorePredicateCondition(Map<String, ValueRange> scores, EntityTarget target) {
++        super(KEY);
++        this.scores = scores;
++        this.target = target;
++    }
++
++    public Map<String, ValueRange> getScores() {
++        return scores;
++    }
++
++    public EntityTarget getTarget() {
++        return target;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityTypeCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityTypeCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..676b4aacb1caf93ffc4e378879791f3a7fbfbf72
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/EntityTypeCondition.java
+@@ -0,0 +1,46 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import com.google.gson.JsonElement;
++import com.google.gson.JsonNull;
++import com.google.gson.JsonPrimitive;
++import org.bukkit.Tag;
++import org.bukkit.entity.EntityType;
++import org.jetbrains.annotations.NotNull;
++
++public abstract class EntityTypeCondition {
++
++    public static final EntityTypeCondition ANY = new EntityTypeCondition() {
++        @Override
++        public JsonElement getJson() {
++            return JsonNull.INSTANCE;
++        }
++    };
++
++    public abstract JsonElement getJson();
++
++    public static class EntityTypeTypeCondition extends EntityTypeCondition {
++        private final EntityType entityType;
++
++        public EntityTypeTypeCondition(@NotNull EntityType entityType) {
++            this.entityType = entityType;
++        }
++
++        @Override
++        public JsonElement getJson() {
++            return new JsonPrimitive(entityType.getKey().toString());
++        }
++    }
++
++    public static class EntityTypeTagCondition extends EntityTypeCondition {
++        private final Tag<EntityType> entityTypeTag;
++
++        public EntityTypeTagCondition(@NotNull Tag<EntityType> entityTypeTag) {
++            this.entityTypeTag = entityTypeTag;
++        }
++
++        @Override
++        public JsonElement getJson() {
++            return new JsonPrimitive("#" + entityTypeTag.getKey().toString());
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/FishingHookCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/FishingHookCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..89affabfac76224323e1b0bc391134c7633d9161
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/FishingHookCondition.java
+@@ -0,0 +1,16 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++public class FishingHookCondition {
++
++    public static final FishingHookCondition ANY = new FishingHookCondition(false);
++
++    private final boolean inOpenWater;
++
++    public FishingHookCondition(boolean inOpenWater) {
++        this.inOpenWater = inOpenWater;
++    }
++
++    public boolean isInOpenWater() {
++        return inOpenWater;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/FluidCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/FluidCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ce635f0cef8bd88962012097df227fb74303dd1c
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/FluidCondition.java
+@@ -0,0 +1,60 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import org.bukkit.Fluid;
++import org.bukkit.Tag;
++
++public class FluidCondition {
++
++    public static final FluidCondition ANY = FluidCondition.builder().build();
++
++    private final Tag<Fluid> fluidTag;
++    private final Fluid fluid;
++    private final StateCondition state;
++
++    public FluidCondition(Tag<Fluid> fluidTag, Fluid fluid, StateCondition state) {
++        this.fluidTag = fluidTag;
++        this.fluid = fluid;
++        this.state = state;
++    }
++
++    public Tag<Fluid> getFluidTag() {
++        return fluidTag;
++    }
++
++    public Fluid getFluid() {
++        return fluid;
++    }
++
++    public StateCondition getState() {
++        return state;
++    }
++
++    public static FluidConditionBuilder builder() {
++        return new FluidConditionBuilder();
++    }
++
++    private static final class FluidConditionBuilder {
++        private Tag<Fluid> fluidTag;
++        private Fluid fluid;
++        private StateCondition state;
++
++        public FluidConditionBuilder fluidTag(Tag<Fluid> fluidTag) {
++            this.fluidTag = fluidTag;
++            return this;
++        }
++
++        public FluidConditionBuilder fluid(Fluid fluid) {
++            this.fluid = fluid;
++            return this;
++        }
++
++        public FluidConditionBuilder state(StateCondition state) {
++            this.state = state;
++            return this;
++        }
++
++        public FluidCondition build() {
++            return new FluidCondition(fluidTag, fluid, state);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/ItemCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/ItemCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3cd2d0dbe046000883f050372fdd97086fd44292
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/ItemCondition.java
+@@ -0,0 +1,124 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.EnchantmentCondition.EnchantmentsCondition;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.bukkit.Material;
++import org.bukkit.Tag;
++import org.bukkit.potion.PotionType;
++
++import java.util.HashSet;
++import java.util.Set;
++
++public class ItemCondition {
++
++    public static final ItemCondition ANY = new ItemCondition(null, null, IntegerRange.ANY, IntegerRange.ANY, EnchantmentsCondition.ANY, EnchantmentsCondition.ANY, null);
++
++    private final Tag<Material> materialTag;
++    private final Material material;
++    private final IntegerRange count;
++    private final IntegerRange durability;
++    private final EnchantmentsCondition enchantments;
++    private final EnchantmentsCondition storedEnchantments;
++    private final PotionType potionType;
++
++    public ItemCondition(Tag<Material> materialTag, Material material, IntegerRange count, IntegerRange durability, EnchantmentsCondition enchantments, EnchantmentsCondition storedEnchantments, PotionType potionType) {
++        this.materialTag = materialTag;
++        this.material = material;
++        this.count = count;
++        this.durability = durability;
++        this.enchantments = enchantments;
++        this.storedEnchantments = storedEnchantments;
++        this.potionType = potionType;
++    }
++
++    public Tag<Material> getMaterialTag() {
++        return materialTag;
++    }
++
++    public Material getMaterial() {
++        return material;
++    }
++
++    public IntegerRange getCount() {
++        return count;
++    }
++
++    public IntegerRange getDurability() {
++        return durability;
++    }
++
++    public EnchantmentsCondition getEnchantments() {
++        return enchantments;
++    }
++
++    public EnchantmentsCondition getStoredEnchantments() {
++        return storedEnchantments;
++    }
++
++    public PotionType getPotionType() {
++        return potionType;
++    }
++
++    public static ItemConditionBuilder builder() {
++        return new ItemConditionBuilder();
++    }
++
++    private static final class ItemConditionBuilder {
++        private Tag<Material> materialTag;
++        private Material material;
++        private IntegerRange count;
++        private IntegerRange durability;
++        private EnchantmentsCondition enchantments;
++        private EnchantmentsCondition storedEnchantments;
++        private PotionType potionType;
++
++        public ItemConditionBuilder materialTag(Tag<Material> materialTag) {
++            this.materialTag = materialTag;
++            return this;
++        }
++
++        public ItemConditionBuilder material(Material material) {
++            this.material = material;
++            return this;
++        }
++
++        public ItemConditionBuilder count(IntegerRange count) {
++            this.count = count;
++            return this;
++        }
++
++        public ItemConditionBuilder durability(IntegerRange durability) {
++            this.durability = durability;
++            return this;
++        }
++
++        public ItemConditionBuilder enchantments(EnchantmentsCondition enchantments) {
++            this.enchantments = enchantments;
++            return this;
++        }
++
++        public ItemConditionBuilder storedEnchantments(EnchantmentsCondition storedEnchantments) {
++            this.storedEnchantments = storedEnchantments;
++            return this;
++        }
++
++        public ItemConditionBuilder potionType(PotionType potionType) {
++            this.potionType = potionType;
++            return this;
++        }
++
++        public ItemCondition build() {
++            return new ItemCondition(materialTag, material, count, durability, enchantments, storedEnchantments, potionType);
++        }
++    }
++
++
++    public static class ItemsCondition extends HashSet<ItemCondition> {
++
++        public static final ItemsCondition ANY = new ItemsCondition(new HashSet<>(0));
++
++        public ItemsCondition(Set<ItemCondition> items) {
++            this.addAll(items);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/LightCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/LightCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..087ed5239e5e04d3f70490e9c718d95260365c84
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/LightCondition.java
+@@ -0,0 +1,24 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import org.jetbrains.annotations.NotNull;
++
++public class LightCondition {
++
++    public static final LightCondition DEFAULT = new LightCondition(IntegerRange.ANY);
++
++    private IntegerRange range;
++
++    public LightCondition(@NotNull IntegerRange range) {
++        this.range = range;
++    }
++
++    @NotNull
++    public IntegerRange getRange() {
++        return range;
++    }
++
++    public void setRange(@NotNull IntegerRange range) {
++        this.range = range;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/LocationCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/LocationCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2b8ac3520039815f922207e968bad4564d51617e
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/LocationCondition.java
+@@ -0,0 +1,150 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.FloatRange;
++import org.bukkit.NamespacedKey;
++import org.bukkit.block.Biome;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class LocationCondition {
++
++    public static final LocationCondition ANY = new LocationCondition(FloatRange.ANY, FloatRange.ANY, FloatRange.ANY, null, null, null, null, LightCondition.DEFAULT, BlockCondition.ANY);
++
++    private FloatRange xRange;
++    private FloatRange yRange;
++    private FloatRange zRange;
++    private Biome biome;
++    private LocationFeature feature;
++    private NamespacedKey dimension;
++    private Boolean smokey;
++    private LightCondition light;
++    private BlockCondition block;
++    // TODO fluid
++
++
++    public LocationCondition(@NotNull FloatRange xRange, @NotNull FloatRange yRange, @NotNull FloatRange zRange, Biome biome, LocationFeature feature, NamespacedKey dimension, Boolean smokey, @NotNull LightCondition light, @NotNull BlockCondition block) {
++        this.xRange = xRange;
++        this.yRange = yRange;
++        this.zRange = zRange;
++        this.biome = biome;
++        this.feature = feature;
++        this.dimension = dimension;
++        this.smokey = smokey;
++        this.light = light;
++        this.block = block;
++    }
++
++    public FloatRange getXRange() {
++        return xRange;
++    }
++
++    public void setXRange(FloatRange xRange) {
++        this.xRange = xRange;
++    }
++
++    public FloatRange getYRange() {
++        return yRange;
++    }
++
++    public void setYRange(FloatRange yRange) {
++        this.yRange = yRange;
++    }
++
++    public FloatRange getZRange() {
++        return zRange;
++    }
++
++    public void setZRange(FloatRange zRange) {
++        this.zRange = zRange;
++    }
++
++    public Biome getBiome() {
++        return biome;
++    }
++
++    public void setBiome(Biome biome) {
++        this.biome = biome;
++    }
++
++    public LocationFeature getFeature() {
++        return feature;
++    }
++
++    public void setFeature(LocationFeature feature) {
++        this.feature = feature;
++    }
++
++    public NamespacedKey getDimension() {
++        return dimension;
++    }
++
++    public void setDimension(NamespacedKey dimension) {
++        this.dimension = dimension;
++    }
++
++    @Nullable
++    public Boolean isSmokey() {
++        return smokey;
++    }
++
++    public void setSmokey(@Nullable Boolean smokey) {
++        this.smokey = smokey;
++    }
++
++    public LightCondition getLight() {
++        return light;
++    }
++
++    public void setLight(LightCondition light) {
++        this.light = light;
++    }
++
++    public BlockCondition getBlock() {
++        return block;
++    }
++
++    public void setBlock(BlockCondition block) {
++        this.block = block;
++    }
++
++    public enum LocationFeature {
++        BASTION_REMNANT("bastion_remnant"),
++        BURIED_TREASURE("buried_treasure"),
++        END_CITY("endcity"),
++        NETHER_FORTRESS("fortress"),
++        WOODLAND_MANSION("mansion"),
++        MINESHAFT("mineshaft"),
++        OCEAN_MONUMENT("monument"),
++        NETHER_FOSSIL("nether_fossil"),
++        OCEAN_RUINS("ocean_ruins"),
++        PILLAGER_OUTPOST("pillager_outpost"),
++        RUINED_PORTAL("ruined_portal"),
++        SHIPWRECK("shipwreck"),
++        STRONGHOLD("stronghold"),
++        DESERT_TEMPLE("desert_pyramid"),
++        IGLOO("igloo"),
++        JUNGLE_TEMPLE("jungle_pyramid"),
++        WITCH_HUT("swamp_hut"),
++        VILLAGE("village");
++
++        private String idText;
++
++        LocationFeature(@NotNull String idText) {
++            this.idText = idText;
++        }
++
++        @NotNull
++        public String getIdText() {
++            return this.idText;
++        }
++
++        @Nullable
++        public static LocationFeature getByIdText(@Nullable String idText) {
++            if (idText == null) return null;
++            for (LocationFeature feature : LocationFeature.values()) {
++                if (feature.getIdText().equals(idText)) return feature;
++            }
++            return null;
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/PlayerCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/PlayerCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c68dda2da00f56ddd29f7a0233ebd22104f21ff6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/PlayerCondition.java
+@@ -0,0 +1,128 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import com.google.common.collect.Maps;
++import com.google.gson.JsonElement;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonPrimitive;
++import io.papermc.paper.advancements.triggers.conditions.ValueCondition.IntegerRange;
++import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
++import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
++import org.bukkit.GameMode;
++import org.bukkit.NamespacedKey;
++import org.bukkit.Statistic;
++
++import java.util.Map;
++
++public class PlayerCondition {
++
++    public static final PlayerCondition ANY = new PlayerCondition(IntegerRange.ANY, null, Maps.newHashMap(), new Object2BooleanOpenHashMap<>(), Maps.newHashMap());
++
++    private final IntegerRange level;
++    private final GameMode gameMode;
++    private final Map<Statistic, IntegerRange> stats;
++    private final Object2BooleanMap<NamespacedKey> recipes;
++    private final Map<NamespacedKey, AdvancementCondition> advancements;
++
++    public PlayerCondition(IntegerRange level, GameMode gameMode, Map<Statistic, IntegerRange> stats, Object2BooleanMap<NamespacedKey> recipes, Map<NamespacedKey, AdvancementCondition> advancements) {
++        this.level = level;
++        this.gameMode = gameMode;
++        this.stats = stats;
++        this.recipes = recipes;
++        this.advancements = advancements;
++    }
++
++    public IntegerRange getLevel() {
++        return level;
++    }
++
++    public GameMode getGameMode() {
++        return gameMode;
++    }
++
++    public Map<Statistic, IntegerRange> getStats() {
++        return stats;
++    }
++
++    public Object2BooleanMap<NamespacedKey> getRecipes() {
++        return recipes;
++    }
++
++    public Map<NamespacedKey, AdvancementCondition> getAdvancements() {
++        return advancements;
++    }
++
++    public static PlayerConditionBuilder builder() {
++        return new PlayerConditionBuilder();
++    }
++
++    private static final class PlayerConditionBuilder {
++        private IntegerRange level = IntegerRange.ANY;
++        private GameMode gameMode = null;
++        private Map<Statistic, IntegerRange> stats = Maps.newHashMap();
++        private Object2BooleanMap<NamespacedKey> recipes = new Object2BooleanOpenHashMap<>();
++        private Map<NamespacedKey, AdvancementCondition> advancements = Maps.newHashMap();
++
++        public PlayerConditionBuilder level(IntegerRange level) {
++            this.level = level;
++            return this;
++        }
++
++        public PlayerConditionBuilder gameMode(GameMode gameMode) {
++            this.gameMode = gameMode;
++            return this;
++        }
++
++        public PlayerConditionBuilder stats(Map<Statistic, IntegerRange> stats) {
++            this.stats = stats;
++            return this;
++        }
++
++        public PlayerConditionBuilder recipes(Object2BooleanMap<NamespacedKey> recipes) {
++            this.recipes = recipes;
++            return this;
++        }
++
++        public PlayerConditionBuilder advancements(Map<NamespacedKey, AdvancementCondition> advancements) {
++            this.advancements = advancements;
++            return this;
++        }
++
++        public PlayerCondition build() {
++            return new PlayerCondition(level, gameMode, stats, recipes, advancements);
++        }
++    }
++
++    public static class AdvancementCriterionsCondition implements AdvancementCondition {
++
++        private final Object2BooleanMap<String> criterionsMap;
++
++        public AdvancementCriterionsCondition(Object2BooleanMap<String> criterionsMap) {
++            this.criterionsMap = criterionsMap;
++        }
++
++        @Override
++        public JsonElement toJson() {
++            JsonObject jsonObject = new JsonObject();
++            this.criterionsMap.forEach(jsonObject::addProperty);
++            return jsonObject;
++        }
++    }
++
++    public static class AdvancementDoneCondition implements AdvancementCondition {
++
++        private final boolean done;
++
++        public AdvancementDoneCondition(boolean done) {
++            this.done = done;
++        }
++
++        @Override
++        public JsonElement toJson() {
++            return new JsonPrimitive(this.done);
++        }
++    }
++
++    public interface AdvancementCondition {
++        JsonElement toJson();
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/StateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/StateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..71af6dbc131fbc6aa0aea762aa433a1c11ef2524
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/StateCondition.java
+@@ -0,0 +1,89 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import com.google.common.collect.ImmutableList;
++import com.google.gson.JsonElement;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonPrimitive;
++
++import java.util.List;
++
++public class StateCondition {
++
++    public static final StateCondition ANY = new StateCondition(ImmutableList.of());
++
++    private final List<AbstractProperty> properties;
++
++    public StateCondition(List<AbstractProperty> properties) {
++        this.properties = properties;
++    }
++
++    public List<AbstractProperty> getProperties() {
++        return properties;
++    }
++
++    public static class ExactProperty extends AbstractProperty {
++
++        private final String value;
++
++        public ExactProperty(String name, String value) {
++            super(name);
++            this.value = value;
++        }
++
++        public String getValue() {
++            return value;
++        }
++
++        @Override
++        public JsonElement toJson() {
++            return new JsonPrimitive(this.value);
++        }
++    }
++
++    public static class RangedProperty extends AbstractProperty {
++
++        private final String min;
++        private final String max;
++
++        public RangedProperty(String name, String min, String max) {
++            super(name);
++            this.min = min;
++            this.max = max;
++        }
++
++        public String getMin() {
++            return min;
++        }
++
++        public String getMax() {
++            return max;
++        }
++
++        @Override
++        public JsonElement toJson() {
++            JsonObject jsonObject = new JsonObject();
++            if (this.min != null) {
++                jsonObject.addProperty("min", this.min);
++            }
++            if (this.max != null) {
++                jsonObject.addProperty("max", this.max);
++            }
++            return jsonObject;
++        }
++    }
++
++    public abstract static class AbstractProperty {
++
++        private final String name;
++
++        public AbstractProperty(String name) {
++            this.name = name;
++        }
++
++        public String getName() {
++            return name;
++        }
++
++        abstract public JsonElement toJson();
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/ValueCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/ValueCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..21b8cb734544ed6fd6fbc73337bb02bf981ae604
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/ValueCondition.java
+@@ -0,0 +1,42 @@
++package io.papermc.paper.advancements.triggers.conditions;
++
++import org.jetbrains.annotations.Nullable;
++
++public abstract class ValueCondition<T extends Number> {
++
++    private final T min;
++    private final T max;
++
++    public ValueCondition(@Nullable T min, @Nullable T max) {
++        this.min = min;
++        this.max = max;
++    }
++
++    public T getMin() {
++        return min;
++    }
++
++    public T getMax() {
++        return max;
++    }
++
++    public boolean isAnyRange() {
++        return this.min == null && this.max == null;
++    }
++
++    public static class FloatRange extends ValueCondition<Float> {
++        public static final FloatRange ANY = new FloatRange(null, null);
++
++        public FloatRange(@Nullable Float min, @Nullable Float max) {
++            super(min, max);
++        }
++    }
++
++    public static class IntegerRange extends ValueCondition<Integer> {
++        public static final IntegerRange ANY = new IntegerRange(null, null);
++
++        public IntegerRange(@Nullable Integer min, @Nullable Integer max) {
++            super(min, max);
++        }
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/AlternativePredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/AlternativePredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1330f67f50c1eb73ee68f4e51f3394b23a37960a
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/AlternativePredicateCondition.java
+@@ -0,0 +1,19 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class AlternativePredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("alternative");
++
++    private final PredicateCondition[] terms;
++
++    public AlternativePredicateCondition(PredicateCondition[] terms) {
++        super(KEY);
++        this.terms = terms;
++    }
++
++    public PredicateCondition[] getTerms() {
++        return terms;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BlockStatePropertyPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BlockStatePropertyPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6a810d3a3ff679de8e1a4c01a1f3738e8c1edc81
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BlockStatePropertyPredicateCondition.java
+@@ -0,0 +1,27 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.StateCondition;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++
++public class BlockStatePropertyPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("block_state_property");
++
++    private final Material block;
++    private final StateCondition state;
++
++    public BlockStatePropertyPredicateCondition(Material block, StateCondition state) {
++        super(KEY);
++        this.block = block;
++        this.state = state;
++    }
++
++    public Material getBlock() {
++        return block;
++    }
++
++    public StateCondition getState() {
++        return state;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BonusTablePredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BonusTablePredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8f3d0aafa351d8bf7bc72a50e3d1064c786b591b
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/BonusTablePredicateCondition.java
+@@ -0,0 +1,26 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++import org.bukkit.enchantments.Enchantment;
++
++public class BonusTablePredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("table_bonus");
++
++    private final Enchantment enchantment;
++    private final float[] chances;
++
++    public BonusTablePredicateCondition(Enchantment enchantment, float[] chances) {
++        super(KEY);
++        this.enchantment = enchantment;
++        this.chances = chances;
++    }
++
++    public Enchantment getEnchantment() {
++        return enchantment;
++    }
++
++    public float[] getChances() {
++        return chances;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/DamageSourcePropertiesPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/DamageSourcePropertiesPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ae5a29bdadaa032a67947ee68652c6dc7a0df096
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/DamageSourcePropertiesPredicateCondition.java
+@@ -0,0 +1,20 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.DamageSourceCondition;
++import org.bukkit.NamespacedKey;
++
++public class DamageSourcePropertiesPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("damage_source_properties");
++
++    private final DamageSourceCondition damageType;
++
++    public DamageSourcePropertiesPredicateCondition(DamageSourceCondition damageType) {
++        super(KEY);
++        this.damageType = damageType;
++    }
++
++    public DamageSourceCondition getDamageType() {
++        return damageType;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityPropertyPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityPropertyPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..91563bdc2b4b48b80ee3604e3b0970e91381dcba
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityPropertyPredicateCondition.java
+@@ -0,0 +1,26 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.EntityCondition;
++import org.bukkit.NamespacedKey;
++
++public class EntityPropertyPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("entity_properties");
++
++    private final EntityCondition entity;
++    private final EntityTarget target;
++
++    public EntityPropertyPredicateCondition(EntityCondition entity, EntityTarget target) {
++        super(KEY);
++        this.entity = entity;
++        this.target = target;
++    }
++
++    public EntityCondition getEntity() {
++        return entity;
++    }
++
++    public EntityTarget getTarget() {
++        return target;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityTarget.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityTarget.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9dc528862e9dda00ce9a5c2da2b8f4af0e7d86af
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/EntityTarget.java
+@@ -0,0 +1,29 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.jetbrains.annotations.Nullable;
++
++public enum EntityTarget {
++    THIS("this"),
++    KILLER("killer"),
++    DIRECT_KILLER("direct_killer"),
++    KILLER_PLAYER("killer_player"),
++    ;
++
++    private final String name;
++
++    EntityTarget(String name) {
++        this.name = name;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public static EntityTarget getByName(@Nullable String name) {
++        if (name == null) return null;
++        for (EntityTarget target : EntityTarget.values()) {
++            if (target.getName().equalsIgnoreCase(name)) return target;
++        }
++        return null;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/InvertedPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/InvertedPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9177798b0135f3eca4e3c61cb1ddd58f541eee47
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/InvertedPredicateCondition.java
+@@ -0,0 +1,19 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class InvertedPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("inverted");
++
++    private final PredicateCondition term;
++
++    public InvertedPredicateCondition(PredicateCondition term) {
++        super(KEY);
++        this.term = term;
++    }
++
++    public PredicateCondition getTerm() {
++        return term;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/KilledByPlayerPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/KilledByPlayerPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4df477de3f0b974e6edd7613a83c1a8705fd9d9f
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/KilledByPlayerPredicateCondition.java
+@@ -0,0 +1,13 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class KilledByPlayerPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("killed_by_player");
++    public static final KilledByPlayerPredicateCondition INSTANCE = new KilledByPlayerPredicateCondition();
++
++    private KilledByPlayerPredicateCondition() {
++        super(KEY);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/LocationCheckPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/LocationCheckPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0afe2028925a8fa2539337844dd88b2f7c53687c
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/LocationCheckPredicateCondition.java
+@@ -0,0 +1,27 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.LocationCondition;
++import org.bukkit.Location;
++import org.bukkit.NamespacedKey;
++
++public class LocationCheckPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("location_check");
++
++    private final LocationCondition location;
++    private final Location blockPosition;
++
++    public LocationCheckPredicateCondition(LocationCondition location, Location blockPosition) {
++        super(KEY);
++        this.location = location;
++        this.blockPosition = blockPosition;
++    }
++
++    public LocationCondition getLocation() {
++        return location;
++    }
++
++    public Location getBlockPosition() {
++        return blockPosition;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/MatchToolPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/MatchToolPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e70ad372a953927199107d45abbccd967853c1a2
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/MatchToolPredicateCondition.java
+@@ -0,0 +1,20 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.ItemCondition;
++import org.bukkit.NamespacedKey;
++
++public class MatchToolPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("match_tool");
++
++    private final ItemCondition item;
++
++    public MatchToolPredicateCondition(ItemCondition item) {
++        super(KEY);
++        this.item = item;
++    }
++
++    public ItemCondition getItem() {
++        return item;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/PredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/PredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d560343e025898f5503995dea2e5e5d14fe3a1e8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/PredicateCondition.java
+@@ -0,0 +1,20 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.Keyed;
++import org.bukkit.NamespacedKey;
++import org.jetbrains.annotations.NotNull;
++
++public abstract class PredicateCondition implements Keyed {
++
++    private final NamespacedKey key;
++
++    public PredicateCondition(NamespacedKey key) {
++        this.key = key;
++    }
++
++    @NotNull
++    @Override
++    public NamespacedKey getKey() {
++        return key;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChancePredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChancePredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..5f499c921ffd68c21fc95bd7227799f704f54d97
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChancePredicateCondition.java
+@@ -0,0 +1,19 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class RandomChancePredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("random_chance");
++
++    private final float chance;
++
++    public RandomChancePredicateCondition(float chance) {
++        super(KEY);
++        this.chance = chance;
++    }
++
++    public float getChance() {
++        return chance;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChanceWithLootingPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChanceWithLootingPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3fcbb52c94db69b5b703d0243f36c354649fb2eb
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/RandomChanceWithLootingPredicateCondition.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class RandomChanceWithLootingPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("random_chance_with_looting");
++
++    private final float precent;
++    private final float multipler;
++
++    public RandomChanceWithLootingPredicateCondition(float precent, float multipler) {
++        super(KEY);
++        this.precent = precent;
++        this.multipler = multipler;
++    }
++
++    public float getPrecent() {
++        return precent;
++    }
++
++    public float getMultipler() {
++        return multipler;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/ReferencePredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/ReferencePredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2cafe262d953900b7412ca683176c847653924b6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/ReferencePredicateCondition.java
+@@ -0,0 +1,19 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class ReferencePredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("reference");
++
++    private final NamespacedKey reference;
++
++    public ReferencePredicateCondition(NamespacedKey reference) {
++        super(KEY);
++        this.reference = reference;
++    }
++
++    public NamespacedKey getReference() {
++        return reference;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/SurvivesExplosionPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/SurvivesExplosionPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8c08d0c94185c22b8bdd53adb78d721432261f1a
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/SurvivesExplosionPredicateCondition.java
+@@ -0,0 +1,13 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class SurvivesExplosionPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("survives_explosion");
++    public static final SurvivesExplosionPredicateCondition INSTANCE = new SurvivesExplosionPredicateCondition();
++
++    private SurvivesExplosionPredicateCondition() {
++        super(KEY);
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/TimeCheckPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/TimeCheckPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7bf3dce3313a03852ecafe054342177eb96c6ef3
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/TimeCheckPredicateCondition.java
+@@ -0,0 +1,26 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import io.papermc.paper.advancements.triggers.conditions.predicates.values.ValueRange;
++import org.bukkit.NamespacedKey;
++
++public class TimeCheckPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("time_check");
++
++    private final Long period;
++    private final ValueRange value;
++
++    public TimeCheckPredicateCondition(Long period, ValueRange value) {
++        super(KEY);
++        this.period = period;
++        this.value = value;
++    }
++
++    public Long getPeriod() {
++        return period;
++    }
++
++    public ValueRange getValue() {
++        return value;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/WeatherCheckPredicateCondition.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/WeatherCheckPredicateCondition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a9f367bd87e74ca4a4e7af6b3572f49cac82cb99
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/WeatherCheckPredicateCondition.java
+@@ -0,0 +1,25 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates;
++
++import org.bukkit.NamespacedKey;
++
++public class WeatherCheckPredicateCondition extends PredicateCondition {
++
++    public static final NamespacedKey KEY = NamespacedKey.minecraft("weather_check");
++
++    private final Boolean isRaining;
++    private final Boolean isThundering;
++
++    public WeatherCheckPredicateCondition(Boolean isRaining, Boolean isThundering) {
++        super(KEY);
++        this.isRaining = isRaining;
++        this.isThundering = isThundering;
++    }
++
++    public Boolean getRaining() {
++        return isRaining;
++    }
++
++    public Boolean getThundering() {
++        return isThundering;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/Value.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/Value.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..82253896ffb58d3eac8536e81c7a3882ec5d429f
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/Value.java
+@@ -0,0 +1,12 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates.values;
++
++import org.bukkit.NamespacedKey;
++
++public interface Value {
++
++    NamespacedKey CONSTANT = NamespacedKey.minecraft("constant");
++    NamespacedKey UNIFORM = NamespacedKey.minecraft("uniform");
++    NamespacedKey BINOMIAL = NamespacedKey.minecraft("binomial");
++
++    NamespacedKey getType();
++}
+diff --git a/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/ValueRange.java b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/ValueRange.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e6f9164bfb12b15f75df7aeeb75cc4e03bd63603
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancements/triggers/conditions/predicates/values/ValueRange.java
+@@ -0,0 +1,32 @@
++package io.papermc.paper.advancements.triggers.conditions.predicates.values;
++
++import org.bukkit.NamespacedKey;
++
++public class ValueRange implements Value {
++
++    private final float min;
++    private final float max;
++
++    public ValueRange(float min, float max) {
++        this.min = min;
++        this.max = max;
++    }
++
++    public ValueRange(float value) {
++        this.min = value;
++        this.max = value;
++    }
++
++    @Override
++    public NamespacedKey getType() {
++        return UNIFORM;
++    }
++
++    public float getMin() {
++        return min;
++    }
++
++    public float getMax() {
++        return max;
++    }
++}
+diff --git a/src/main/java/org/bukkit/Statistic.java b/src/main/java/org/bukkit/Statistic.java
+index 5cb41f417eb87d4aecd61de30f2a44cec5a9a4cd..5d94461f12e2996be966a299f34bc09447732a03 100644
+--- a/src/main/java/org/bukkit/Statistic.java
++++ b/src/main/java/org/bukkit/Statistic.java
+@@ -2,6 +2,7 @@ package org.bukkit;
+ 
+ import java.util.Locale;
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
+ 
+ /**
+  * Represents a countable statistic, which is tracked by the server.
+@@ -173,4 +174,19 @@ public enum Statistic implements Keyed {
+          */
+         ENTITY;
+     }
++    // Paper start
++    /**
++     * Get a statistic by its namespaced key.
++     * @param key namespaced key
++     * @return the statistic or null
++     */
++    @Nullable
++    public static Statistic getByKey(@Nullable NamespacedKey key) {
++        if (key == null) return null;
++        for (Statistic statistic : Statistic.values()) {
++            if (statistic.getKey().equals(key)) return statistic;
++        }
++        return null;
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/advancement/Advancement.java b/src/main/java/org/bukkit/advancement/Advancement.java
+index 7c5009974ac8d64d0e738e60cec45acb0d4ca89a..af40afabb86c4d61359d1777a61b83b35fb446f1 100644
+--- a/src/main/java/org/bukkit/advancement/Advancement.java
++++ b/src/main/java/org/bukkit/advancement/Advancement.java
+@@ -17,4 +17,22 @@ public interface Advancement extends Keyed {
+      */
+     @NotNull
+     Collection<String> getCriteria();
++    // Paper start
++    @org.jetbrains.annotations.Nullable
++    Advancement getParent();
++
++    void setParent(@org.jetbrains.annotations.Nullable Advancement parent);
++
++    @org.jetbrains.annotations.Nullable
++    io.papermc.paper.advancements.AdvancementDisplay getAdvancementDisplay();
++
++    @org.jetbrains.annotations.Nullable
++    io.papermc.paper.advancements.AdvancementRewards getAdvancementRewards();
++
++    @NotNull
++    java.util.Map<String, io.papermc.paper.advancements.triggers.Trigger> getTriggers();
++
++    @NotNull
++    String[][] getRequirements();
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/block/Biome.java b/src/main/java/org/bukkit/block/Biome.java
+index 52a527bb5f6e5b133d9f75556bf72242928b703b..bed401a0deaf995d20279b52d4151452a5c3ae6b 100644
+--- a/src/main/java/org/bukkit/block/Biome.java
++++ b/src/main/java/org/bukkit/block/Biome.java
+@@ -100,4 +100,15 @@ public enum Biome implements Keyed {
+     public NamespacedKey getKey() {
+         return key;
+     }
++
++    // Paper start
++    @org.jetbrains.annotations.Nullable
++    public static Biome getByKey(@org.jetbrains.annotations.Nullable NamespacedKey key) {
++        if (key == null) return null;
++        for (Biome value : Biome.values()) {
++            if (value.getKey().equals(key)) return value;
++        }
++        return null;
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/entity/EntityType.java b/src/main/java/org/bukkit/entity/EntityType.java
+index 692b75eb78405874077c850bfc72e247ccc80860..2def2fc93b66a739224f80592bf089f539552787 100644
+--- a/src/main/java/org/bukkit/entity/EntityType.java
++++ b/src/main/java/org/bukkit/entity/EntityType.java
+@@ -425,4 +425,20 @@ public enum EntityType implements Keyed {
+     String getTranslationKey() {
+         return org.bukkit.Bukkit.getUnsafe().getTranslationKey(this);
+     }
++    // Paper start
++
++    /**
++     * Get EntityType by NamespacedKey
++     * @param key namespace:key
++     * @return EntityType if found, or null if not
++     */
++    @Nullable
++    public static EntityType getByKey(@Nullable NamespacedKey key) {
++        if (key == null) return null;
++        for (EntityType entityType : EntityType.values()) {
++            if (entityType.getKey().toString().equals(key.toString())) return entityType;
++        }
++        return null;
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/potion/PotionEffectType.java b/src/main/java/org/bukkit/potion/PotionEffectType.java
+index b5790aaac67f5b73f941147008d21a92d716b254..3b3a1357fe729ae42912dddfa595ce6dfe9327ca 100644
+--- a/src/main/java/org/bukkit/potion/PotionEffectType.java
++++ b/src/main/java/org/bukkit/potion/PotionEffectType.java
+@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
+ /**
+  * Represents a type of potion and its effect on an entity.
+  */
+-public abstract class PotionEffectType {
++public abstract class PotionEffectType implements org.bukkit.Keyed { // Paper
+     /**
+      * Increases movement speed.
+      */
+@@ -330,4 +330,19 @@ public abstract class PotionEffectType {
+     public static PotionEffectType[] values() {
+         return Arrays.copyOfRange(byId, 1, byId.length);
+     }
++    // Paper start
++    /**
++     * Gets the PotionEffectType by namespaced key
++     * @param key namespaced:key
++     * @return the requested type or null if not found
++     */
++    @Nullable
++    public static PotionEffectType getByKey(@Nullable org.bukkit.NamespacedKey key) {
++        if (key == null) return null;
++        for (PotionEffectType effectType : PotionEffectType.values()) {
++            if (effectType.getKey().toString().equals(key.toString())) return effectType;
++        }
++        return null;
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/potion/PotionEffectTypeWrapper.java b/src/main/java/org/bukkit/potion/PotionEffectTypeWrapper.java
+index 47d46edc49c8a35ff9e8b462ea045f192f98d1f4..721c26a33590277b3e48ca383538b25850a259de 100644
+--- a/src/main/java/org/bukkit/potion/PotionEffectTypeWrapper.java
++++ b/src/main/java/org/bukkit/potion/PotionEffectTypeWrapper.java
+@@ -39,4 +39,11 @@ public class PotionEffectTypeWrapper extends PotionEffectType {
+     public Color getColor() {
+         return getType().getColor();
+     }
++    // Paper start
++    @NotNull
++    @Override
++    public org.bukkit.NamespacedKey getKey() {
++        return getType().getKey();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/potion/PotionType.java b/src/main/java/org/bukkit/potion/PotionType.java
+index af7dea669cd394db2498e8d9dc88bbd8eac4b83b..2488bead274c35aad2050419448222b3fadb7ea2 100644
+--- a/src/main/java/org/bukkit/potion/PotionType.java
++++ b/src/main/java/org/bukkit/potion/PotionType.java
+@@ -6,38 +6,41 @@ import org.jetbrains.annotations.Nullable;
+  * This enum reflects and matches each potion state that can be obtained from
+  * the Creative mode inventory
+  */
+-public enum PotionType {
+-    UNCRAFTABLE(null, false, false),
+-    WATER(null, false, false),
+-    MUNDANE(null, false, false),
+-    THICK(null, false, false),
+-    AWKWARD(null, false, false),
+-    NIGHT_VISION(PotionEffectType.NIGHT_VISION, false, true),
+-    INVISIBILITY(PotionEffectType.INVISIBILITY, false, true),
+-    JUMP(PotionEffectType.JUMP, true, true),
+-    FIRE_RESISTANCE(PotionEffectType.FIRE_RESISTANCE, false, true),
+-    SPEED(PotionEffectType.SPEED, true, true),
+-    SLOWNESS(PotionEffectType.SLOW, true, true),
+-    WATER_BREATHING(PotionEffectType.WATER_BREATHING, false, true),
+-    INSTANT_HEAL(PotionEffectType.HEAL, true, false),
+-    INSTANT_DAMAGE(PotionEffectType.HARM, true, false),
+-    POISON(PotionEffectType.POISON, true, true),
+-    REGEN(PotionEffectType.REGENERATION, true, true),
+-    STRENGTH(PotionEffectType.INCREASE_DAMAGE, true, true),
+-    WEAKNESS(PotionEffectType.WEAKNESS, false, true),
+-    LUCK(PotionEffectType.LUCK, false, false),
+-    TURTLE_MASTER(PotionEffectType.SLOW, true, true), // TODO: multiple effects
+-    SLOW_FALLING(PotionEffectType.SLOW_FALLING, false, true),
++public enum PotionType implements org.bukkit.Keyed { // Paper start - Add keys
++    UNCRAFTABLE(null, false, false, "empty"),
++    WATER(null, false, false, "water"),
++    MUNDANE(null, false, false, "mundane"),
++    THICK(null, false, false, "think"),
++    AWKWARD(null, false, false, "awkward"),
++    NIGHT_VISION(PotionEffectType.NIGHT_VISION, false, true, "night_vision"),
++    INVISIBILITY(PotionEffectType.INVISIBILITY, false, true, "invisibility"),
++    JUMP(PotionEffectType.JUMP, true, true, "leaping"),
++    FIRE_RESISTANCE(PotionEffectType.FIRE_RESISTANCE, false, true, "fire_resistance"),
++    SPEED(PotionEffectType.SPEED, true, true, "swiftness"),
++    SLOWNESS(PotionEffectType.SLOW, true, true, "slowness"),
++    WATER_BREATHING(PotionEffectType.WATER_BREATHING, false, true, "water_breathing"),
++    INSTANT_HEAL(PotionEffectType.HEAL, true, false, "healing"),
++    INSTANT_DAMAGE(PotionEffectType.HARM, true, false, "harming"),
++    POISON(PotionEffectType.POISON, true, true, "poison"),
++    REGEN(PotionEffectType.REGENERATION, true, true, "regeneration"),
++    STRENGTH(PotionEffectType.INCREASE_DAMAGE, true, true, "strength"),
++    WEAKNESS(PotionEffectType.WEAKNESS, false, true, "weakness"),
++    LUCK(PotionEffectType.LUCK, false, false, "luvk"),
++    TURTLE_MASTER(PotionEffectType.SLOW, true, true, "turtle_master"), // TODO: multiple effects
++    SLOW_FALLING(PotionEffectType.SLOW_FALLING, false, true, "slow_falling"),
++    // Paper end
+     ;
+ 
+     private final PotionEffectType effect;
+     private final boolean upgradeable;
+     private final boolean extendable;
++    private final org.bukkit.NamespacedKey key; // Paper
+ 
+-    PotionType(/*@Nullable*/ PotionEffectType effect, boolean upgradeable, boolean extendable) {
++    PotionType(/*@Nullable*/ PotionEffectType effect, boolean upgradeable, boolean extendable, String key) { // Paper
+         this.effect = effect;
+         this.upgradeable = upgradeable;
+         this.extendable = extendable;
++        this.key = org.bukkit.NamespacedKey.minecraft(key); // Paper
+     }
+ 
+     @Nullable
+@@ -90,4 +93,28 @@ public enum PotionType {
+         }
+         return null;
+     }
++    // Paper start
++    /**
++     * Get the namespaced key for this potion type
++     * @return key in the minecraft namespace
++     */
++    @Override
++    public @org.jetbrains.annotations.NotNull org.bukkit.NamespacedKey getKey() {
++        return this.key;
++    }
++
++    /**
++     * Gets the PotionType based on the NamespacedKey
++     * @param key the namespace:key
++     * @return the PotionType or null if not found
++     */
++    @Nullable
++    public static PotionType getByKey(@Nullable org.bukkit.NamespacedKey key) {
++        if (key == null) return null;
++        for (PotionType potionType : PotionType.values()) {
++            if (potionType.key.toString().equals(key.toString())) return potionType;
++        }
++        return null;
++    }
++    // Paper end
+ }
