@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 12:23:35 -0700
+Subject: [PATCH] Call EntityDropItemEvent for mooshroom shearing
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 6fdcd96fd75cd63d769b012827519f554af4cf54..3664985adaa3c1fddaf2ca40912e5840b0e286c5 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -2013,6 +2013,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+             itemstack.setCount(0); // Paper - destroy this item - if this ever leaks due to game bugs, ensure it doesn't dupe
+ 
+             entityitem.defaultPickupDelay();
++            // Paper start
++            return this.dropEntityItem(entityitem);
++        }
++    }
++    /**
++     * Do not use this for death drops as this is missing the forceDrops check
++     */
++    @Nullable public EntityItem dropEntityItem(EntityItem entityitem) {
++            // Paper end
+             // CraftBukkit start
+             EntityDropItemEvent event = new EntityDropItemEvent(this.getBukkitEntity(), (org.bukkit.entity.Item) entityitem.getBukkitEntity());
+             Bukkit.getPluginManager().callEvent(event);
+@@ -2022,7 +2031,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+             // CraftBukkit end
+             this.world.addEntity(entityitem);
+             return entityitem;
+-        }
+     }
+ 
+     public boolean isAlive() {
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+index 9face4480dcc89d9106ebe596020c1888350ef2d..457aadb5c6c00443dd51a782c98d40db66363070 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+@@ -193,7 +193,7 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+             // CraftBukkit end
+ 
+             for (int i = 0; i < 5; ++i) {
+-                this.world.addEntity(new EntityItem(this.world, this.locX(), this.e(1.0D), this.locZ(), new ItemStack(this.getVariant().d.getBlock())));
++                this.dropEntityItem(new EntityItem(this.world, this.locX(), this.e(1.0D), this.locZ(), new ItemStack(this.getVariant().d.getBlock()))); // Paper - call shear event here
+             }
+         }
+ 
