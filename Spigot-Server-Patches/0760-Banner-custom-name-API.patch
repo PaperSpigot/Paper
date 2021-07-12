@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Swedz <me@swedz.net>
+Date: Fri, 18 Jun 2021 01:20:55 -0400
+Subject: [PATCH] Banner custom name API
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+index 45958ffedca64e08e347ae65033700c0d798beb5..d636ea733296ac2fab1e4d1ce53ee6fe9b1c18f2 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+@@ -49,6 +49,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
+         return this.a;
+     }
+ 
++    public void setCustomName(IChatBaseComponent ichatbasecomponent) { this.a(ichatbasecomponent); } // Paper - OBFHELPER
+     public void a(IChatBaseComponent ichatbasecomponent) {
+         this.a = ichatbasecomponent;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBanner.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBanner.java
+index 870ae6e7a913945804d6d2919cb1710af3316449..f4251c8cf9bfe2461bf3df43a7b831fb77e7d086 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBanner.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBanner.java
+@@ -19,6 +19,7 @@ public class CraftBanner extends CraftBlockEntityState<TileEntityBanner> impleme
+ 
+     private DyeColor base;
+     private List<Pattern> patterns;
++    private net.kyori.adventure.text.Component customName; // Paper - Banner custom name API
+ 
+     public CraftBanner(final Block block) {
+         super(block, TileEntityBanner.class);
+@@ -34,6 +35,7 @@ public class CraftBanner extends CraftBlockEntityState<TileEntityBanner> impleme
+ 
+         base = DyeColor.getByWoolData((byte) ((BlockBannerAbstract) this.data.getBlock()).getColor().getColorIndex());
+         patterns = new ArrayList<Pattern>();
++        customName = banner.hasCustomName() ? io.papermc.paper.adventure.PaperAdventure.asAdventure(banner.getCustomName()) : null; // Paper - Banner custom name API
+ 
+         if (banner.patterns != null) {
+             for (int i = 0; i < banner.patterns.size(); i++) {
+@@ -88,12 +90,32 @@ public class CraftBanner extends CraftBlockEntityState<TileEntityBanner> impleme
+     public int numberOfPatterns() {
+         return patterns.size();
+     }
++    // Paper start
++    @Override
++    public net.kyori.adventure.text.Component customName() {
++        return this.customName;
++    }
++    @Override
++    public void customName(net.kyori.adventure.text.Component name) {
++        this.customName = name;
++    }
++    @Override
++    public String getCustomName() {
++        TileEntityBanner banner = this.getSnapshot();
++        return banner.getCustomName() != null ? org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(banner.getCustomName()) : null;
++    }
++    @Override
++    public void setCustomName(String name) {
++        this.getSnapshot().setCustomName(org.bukkit.craftbukkit.util.CraftChatMessage.fromStringOrNull(name));
++    }
++    // Paper end
+ 
+     @Override
+     public void applyTo(TileEntityBanner banner) {
+         super.applyTo(banner);
+ 
+         banner.color = EnumColor.fromColorIndex(base.getWoolData());
++        banner.setCustomName(this.customName() != null ? io.papermc.paper.adventure.PaperAdventure.asVanilla(this.customName()) : null); // Paper - Banner custom name API
+ 
+         NBTTagList newPatterns = new NBTTagList();
+ 
