@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 18 May 2021 22:42:29 -0700
+Subject: [PATCH] Add BlockDispenseEquipEvent
+
+Implements SPIGOT-6023: https://hub.spigotmc.org/jira/browse/SPIGOT-6023
+
+diff --git a/src/main/java/io/papermc/paper/event/block/BlockDispenseEquipEvent.java b/src/main/java/io/papermc/paper/event/block/BlockDispenseEquipEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..29ff56b76486b1add9f89130128d7a54b7bc7257
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/block/BlockDispenseEquipEvent.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.event.block;
++
++import org.bukkit.block.Block;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.event.block.BlockDispenseEvent;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.util.Vector;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called when an entity is about to equip an item from a dispenser.<br>
++ * Cancelling this event will prevent the item from being equipped, but the item will
++ * fall back to being dropped on the ground as other items are.
++ */
++public class BlockDispenseEquipEvent extends BlockDispenseEvent {
++
++    private final LivingEntity target;
++
++    public BlockDispenseEquipEvent(@NotNull Block block, @NotNull ItemStack dispensed, @NotNull LivingEntity target) {
++        super(block, dispensed, new Vector(0, 0, 0));
++        this.target = target;
++    }
++
++    /**
++     * Get the living entity on which the armor was dispensed.
++     *
++     * @return the target entity
++     */
++    @NotNull
++    public LivingEntity getTarget() {
++        return target;
++    }
++}
+diff --git a/src/main/java/org/bukkit/event/block/BlockDispenseArmorEvent.java b/src/main/java/org/bukkit/event/block/BlockDispenseArmorEvent.java
+index 57b831979c26d7b6a0325e009b3ba627b3b29a2a..e1e8ed9f7fb57135aa5f67fbfc98310adc3c18f7 100644
+--- a/src/main/java/org/bukkit/event/block/BlockDispenseArmorEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockDispenseArmorEvent.java
+@@ -7,28 +7,15 @@ import org.bukkit.util.Vector;
+ import org.jetbrains.annotations.NotNull;
+ 
+ /**
+- * Called when an equippable item is dispensed from a block and equipped on a
++ * Called when an helmet, chestplate, leggings, or boots item is dispensed from a block and equipped on a
+  * nearby entity.
+  * <p>
+  * If a Block Dispense Armor event is cancelled, the equipment will not be
+  * equipped on the target entity.
+  */
+-public class BlockDispenseArmorEvent extends BlockDispenseEvent {
+-
+-    private final LivingEntity target;
++public class BlockDispenseArmorEvent extends io.papermc.paper.event.block.BlockDispenseEquipEvent { // Paper
+ 
+     public BlockDispenseArmorEvent(@NotNull Block block, @NotNull ItemStack dispensed, @NotNull LivingEntity target) {
+-        super(block, dispensed, new Vector(0, 0, 0));
+-        this.target = target;
+-    }
+-
+-    /**
+-     * Get the living entity on which the armor was dispensed.
+-     *
+-     * @return the target entity
+-     */
+-    @NotNull
+-    public LivingEntity getTargetEntity() {
+-        return target;
++        super(block, dispensed, target); // Paper
+     }
+ }
