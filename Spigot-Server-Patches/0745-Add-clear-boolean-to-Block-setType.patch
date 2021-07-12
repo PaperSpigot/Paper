@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 21 May 2021 21:14:31 -0700
+Subject: [PATCH] Add clear boolean to Block#setType
+
+Fixes SPIGOT-3725: https://hub.spigotmc.org/jira/projects/SPIGOT/issues/SPIGOT-3725
+
+diff --git a/src/main/java/net/minecraft/world/Clearable.java b/src/main/java/net/minecraft/world/Clearable.java
+index e6fd8076161cd85d1965c6f650b5ea84837325ce..090c7d51135a75cf72e17af948716541f34b4dcf 100644
+--- a/src/main/java/net/minecraft/world/Clearable.java
++++ b/src/main/java/net/minecraft/world/Clearable.java
+@@ -6,6 +6,7 @@ public interface Clearable {
+ 
+     void clear();
+ 
++    static void clear(@Nullable Object object) { Clearable.a(object); } // Paper - OBFHELPER
+     static void a(@Nullable Object object) {
+         if (object instanceof Clearable) {
+             ((Clearable) object).clear();
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 0006b3cad5fe46e50b0efeae99102f9d80276d61..abb776db1cffa67ed25d8884b26c5a4ff520c95d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -169,8 +169,14 @@ public class CraftBlock implements Block {
+ 
+     @Override
+     public void setType(Material type, boolean applyPhysics) {
++        // Paper start
++        this.setType(type, applyPhysics, false);
++    }
++    @Override
++    public void setType(Material type, boolean applyPhysics, boolean clear) {
++        // Paper end
+         Preconditions.checkArgument(type != null, "Material cannot be null");
+-        setBlockData(type.createBlockData(), applyPhysics);
++        setBlockData(type.createBlockData(), applyPhysics, clear); // Paper
+     }
+ 
+     @Override
+@@ -180,11 +186,26 @@ public class CraftBlock implements Block {
+ 
+     @Override
+     public void setBlockData(BlockData data, boolean applyPhysics) {
++        // Paper start
++        this.setBlockData(data, applyPhysics, false);
++    }
++    @Override
++    public void setBlockData(BlockData data, boolean applyPhysics, boolean clear) {
++        // Paper end
+         Preconditions.checkArgument(data != null, "BlockData cannot be null");
+-        setTypeAndData(((CraftBlockData) data).getState(), applyPhysics);
++        setTypeAndData(((CraftBlockData) data).getState(), applyPhysics, clear); // Paper
+     }
+ 
+     public boolean setTypeAndData(final IBlockData blockData, final boolean applyPhysics) {
++        // Paper start
++        return this.setTypeAndData(blockData, applyPhysics, false);
++    }
++    public boolean setTypeAndData(final IBlockData blockData, final boolean applyPhysics, final boolean clear) {
++        if (clear) {
++            TileEntity tileEntity = world.getTileEntity(position);
++            net.minecraft.world.Clearable.clear(tileEntity);
++        }
++        // Paper end
+         // SPIGOT-611: need to do this to prevent glitchiness. Easier to handle this here (like /setblock) than to fix weirdness in tile entity cleanup
+         if (!blockData.isAir() && blockData.getBlock() instanceof BlockTileEntity && blockData.getBlock() != getNMSBlock()) {
+             // SPIGOT-4612: faster - just clear tile

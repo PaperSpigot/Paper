@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 21 May 2021 21:14:20 -0700
+Subject: [PATCH] Add clear boolean to Block#setType
+
+Fixes SPIGOT-3725: https://hub.spigotmc.org/jira/projects/SPIGOT/issues/SPIGOT-3725
+
+diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
+index 08e6f1741685f54506c8a4ff29bbd30f62cf8e45..bc90c1b47591086f115b63fc102cbb1ad0f576c6 100644
+--- a/src/main/java/org/bukkit/block/Block.java
++++ b/src/main/java/org/bukkit/block/Block.java
+@@ -313,6 +313,51 @@ public interface Block extends Metadatable {
+      * @param applyPhysics False to cancel physics on the changed block.
+      */
+     void setType(@NotNull Material type, boolean applyPhysics);
++    // Paper start
++    /**
++     * Sets the type of this block
++     *
++     * <br>
++     * Note that applyPhysics = false is not in general safe. It should only be
++     * used when you need to avoid triggering a physics update of neighboring
++     * blocks, for example when creating a {@link Bisected} block. If you are
++     * using a custom populator, then this parameter may also be required to
++     * prevent triggering infinite chunk loads on border blocks. This method
++     * should NOT be used to "hack" physics by placing blocks in impossible
++     * locations. Such blocks are liable to be removed on various events such as
++     * world upgrades. Furthermore setting large amounts of such blocks in close
++     * proximity may overload the server physics engine if an update is
++     * triggered at a later point. If this occurs, the resulting behavior is
++     * undefined.
++     *
++     * @param type Material to change this block to
++     * @param applyPhysics False to cancel physics on the changed block.
++     * @param clear true to clear the inventory (if the block has an inventory)
++     */
++    void setType(@NotNull Material type, boolean applyPhysics, boolean clear);
++
++    /**
++     * Sets the complete data for this block
++     *
++     * <br>
++     * Note that applyPhysics = false is not in general safe. It should only be
++     * used when you need to avoid triggering a physics update of neighboring
++     * blocks, for example when creating a {@link Bisected} block. If you are
++     * using a custom populator, then this parameter may also be required to
++     * prevent triggering infinite chunk loads on border blocks. This method
++     * should NOT be used to "hack" physics by placing blocks in impossible
++     * locations. Such blocks are liable to be removed on various events such as
++     * world upgrades. Furthermore setting large amounts of such blocks in close
++     * proximity may overload the server physics engine if an update is
++     * triggered at a later point. If this occurs, the resulting behavior is
++     * undefined.
++     *
++     * @param data new block specific data
++     * @param applyPhysics false to cancel physics from the changed block
++     * @param clear true to clear the inventory (if the block has an inventory)
++     */
++    void setBlockData(@NotNull BlockData data, boolean applyPhysics, boolean clear);
++    // Paper end
+ 
+     /**
+      * Gets the face relation of this block compared to the given block.
