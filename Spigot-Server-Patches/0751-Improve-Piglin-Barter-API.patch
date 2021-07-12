@@ -1,0 +1,293 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 27 May 2021 18:14:40 -0700
+Subject: [PATCH] Improve Piglin Barter API
+
+
+diff --git a/src/main/java/io/papermc/paper/entity/behavior/LovedItemsBehaviorLookTarget.java b/src/main/java/io/papermc/paper/entity/behavior/LovedItemsBehaviorLookTarget.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..826e090c67d4aea698d3fcc53560c656b0a39e56
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/entity/behavior/LovedItemsBehaviorLookTarget.java
+@@ -0,0 +1,50 @@
++package io.papermc.paper.entity.behavior;
++
++import com.google.common.collect.ImmutableMap;
++import net.minecraft.server.level.WorldServer;
++import net.minecraft.world.entity.Entity;
++import net.minecraft.world.entity.EntityLiving;
++import net.minecraft.world.entity.ai.BehaviorController;
++import net.minecraft.world.entity.ai.behavior.Behavior;
++import net.minecraft.world.entity.ai.behavior.BehaviorLookTarget;
++import net.minecraft.world.entity.ai.behavior.BehaviorPositionEntity;
++import net.minecraft.world.entity.ai.memory.MemoryModuleType;
++import net.minecraft.world.entity.ai.memory.MemoryStatus;
++import net.minecraft.world.entity.monster.piglin.EntityPiglin;
++
++import java.util.function.BiPredicate;
++import java.util.function.Predicate;
++
++/**
++ * include loved item check in behaviors<br>
++ * based on {@link BehaviorLookTarget}
++ */
++public class LovedItemsBehaviorLookTarget extends Behavior<EntityPiglin> {
++
++    private final BiPredicate<EntityLiving, EntityPiglin> piglinBiPredicate;
++    private final float distanceSquared;
++
++    public LovedItemsBehaviorLookTarget(float distance, BiPredicate<EntityLiving, EntityPiglin> piglinBiPredicate) {
++        super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.VISIBLE_MOBS, MemoryStatus.VALUE_PRESENT)); // taked from BehaviorLookTarget
++        this.distanceSquared = distance * distance;
++        this.piglinBiPredicate = piglinBiPredicate;
++    }
++
++    @Override // checkExtraStartConditions
++    protected boolean a(WorldServer worldserver, EntityPiglin entityliving) {
++        return entityliving.getBehaviorController().getMemory(MemoryModuleType.VISIBLE_MOBS).get().stream().anyMatch(visibleMob -> this.piglinBiPredicate.test(visibleMob, (EntityPiglin) entityliving));
++    }
++
++    @Override // start
++    protected void a(WorldServer worldserver, EntityPiglin entityPiglin, long i) {
++        BehaviorController<?> behaviorcontroller = entityPiglin.getBehaviorController();
++
++        behaviorcontroller.getMemory(MemoryModuleType.VISIBLE_MOBS).ifPresent((list) -> {
++            list.stream().filter(visibleMob -> this.piglinBiPredicate.test(visibleMob, entityPiglin)).filter((visibleMob) -> {
++                return visibleMob.getDistanceSquared(entityPiglin) <= (double) this.distanceSquared;
++            }).findFirst().ifPresent((visibleMob) -> {
++                behaviorcontroller.setMemory(MemoryModuleType.LOOK_TARGET, (new BehaviorPositionEntity(visibleMob, true))); // Paper - decompile error
++            });
++        });
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 6fdcd96fd75cd63d769b012827519f554af4cf54..837c651ac9f9d7d61fa25443cdc6c97b72a43dea 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1450,6 +1450,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+         return d3 * d3 + d4 * d4 + d5 * d5;
+     }
+ 
++    public double getDistanceSquared(Entity entity) { return this.h(entity); } // Paper - OBFHELPER
+     public double h(Entity entity) {
+         return this.e(entity.getPositionVector());
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorPiglinSpecific.java b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorPiglinSpecific.java
+index db38ca12bd5583fefedf3054192820a1d8360048..0bf91c138bdc83556a95e865a2e6d63904150f98 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/SensorPiglinSpecific.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/SensorPiglinSpecific.java
+@@ -86,7 +86,10 @@ public class SensorPiglinSpecific extends Sensor<EntityLiving> {
+                     optional5 = Optional.of(entityhuman);
+                 }
+ 
+-                if (!optional6.isPresent() && !entityhuman.isSpectator() && PiglinAI.b((EntityLiving) entityhuman)) {
++                // Paper start - include loved item check in sensor
++                boolean isHoldingLoved = entityliving instanceof EntityPiglin ? PiglinAI.isHoldingLovedItem(entityhuman, (EntityPiglin) entityliving) : PiglinAI.isHoldingLovedItem(entityhuman);
++                if (!optional6.isPresent() && !entityhuman.isSpectator() && isHoldingLoved) {
++                    // Paper end
+                     optional6 = Optional.of(entityhuman);
+                 }
+             } else if (!optional.isPresent() && (entityliving1 instanceof EntitySkeletonWither || entityliving1 instanceof EntityWither)) {
+@@ -113,10 +116,10 @@ public class SensorPiglinSpecific extends Sensor<EntityLiving> {
+         behaviorcontroller.setMemory(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, optional4);
+         behaviorcontroller.setMemory(MemoryModuleType.NEAREST_TARGETABLE_PLAYER_NOT_WEARING_GOLD, optional5);
+         behaviorcontroller.setMemory(MemoryModuleType.NEAREST_PLAYER_HOLDING_WANTED_ITEM, optional6);
+-        behaviorcontroller.setMemory(MemoryModuleType.NEARBY_ADULT_PIGLINS, (Object) list1);
+-        behaviorcontroller.setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLINS, (Object) list);
+-        behaviorcontroller.setMemory(MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, (Object) list.size());
+-        behaviorcontroller.setMemory(MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, (Object) i);
++        behaviorcontroller.setMemory(MemoryModuleType.NEARBY_ADULT_PIGLINS, list1); // Paper - decompile error
++        behaviorcontroller.setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLINS, list); // Paper - decompile error
++        behaviorcontroller.setMemory(MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, list.size()); // Paper - decompile error
++        behaviorcontroller.setMemory(MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, i); // Paper - decompile error
+     }
+ 
+     private static Optional<BlockPosition> c(WorldServer worldserver, EntityLiving entityliving) {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/BehaviorStartAdmiringItem.java b/src/main/java/net/minecraft/world/entity/monster/piglin/BehaviorStartAdmiringItem.java
+index 9f715495d0248752e6b001d90cca869fb5331fa1..8f7747e5fb333f762a9528f73a85e1e34811a4f5 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/BehaviorStartAdmiringItem.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/BehaviorStartAdmiringItem.java
+@@ -19,7 +19,7 @@ public class BehaviorStartAdmiringItem<E extends EntityPiglin> extends Behavior<
+     protected boolean a(WorldServer worldserver, E e0) {
+         EntityItem entityitem = (EntityItem) e0.getBehaviorController().getMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM).get();
+ 
+-        return PiglinAI.a(entityitem.getItemStack().getItem());
++        return PiglinAI.isLovedByPiglin(entityitem.getItemStack().getItem(), e0); // Paper - include loved item check in behavior
+     }
+ 
+     protected void a(WorldServer worldserver, E e0, long i) {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/EntityPiglin.java b/src/main/java/net/minecraft/world/entity/monster/piglin/EntityPiglin.java
+index 9a7bebd77302dbfd07ac802acbe2b9cb80eec26f..a89072dc7c0e05512fd4865ee9cbd0f67725ff57 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/EntityPiglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/EntityPiglin.java
+@@ -77,9 +77,10 @@ public class EntityPiglin extends EntityPiglinAbstract implements ICrossbow {
+     protected static final ImmutableList<SensorType<? extends Sensor<? super EntityPiglin>>> d = ImmutableList.of(SensorType.c, SensorType.d, SensorType.b, SensorType.f, SensorType.k);
+     protected static final ImmutableList<MemoryModuleType<?>> bo = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.DOORS_TO_CLOSE, MemoryModuleType.MOBS, MemoryModuleType.VISIBLE_MOBS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_TARGETABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLINS, MemoryModuleType.NEARBY_ADULT_PIGLINS, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.WALK_TARGET, new MemoryModuleType[]{MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.INTERACTION_TARGET, MemoryModuleType.PATH, MemoryModuleType.ANGRY_AT, MemoryModuleType.UNIVERSAL_ANGER, MemoryModuleType.AVOID_TARGET, MemoryModuleType.ADMIRING_ITEM, MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM, MemoryModuleType.ADMIRING_DISABLED, MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM, MemoryModuleType.CELEBRATE_LOCATION, MemoryModuleType.DANCING, MemoryModuleType.HUNTED_RECENTLY, MemoryModuleType.NEAREST_VISIBLE_BABY_HOGLIN, MemoryModuleType.NEAREST_VISIBLE_NEMSIS, MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, MemoryModuleType.RIDE_TARGET, MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, MemoryModuleType.NEAREST_VISIBLE_HUNTABLE_HOGLIN, MemoryModuleType.NEAREST_TARGETABLE_PLAYER_NOT_WEARING_GOLD, MemoryModuleType.NEAREST_PLAYER_HOLDING_WANTED_ITEM, MemoryModuleType.ATE_RECENTLY, MemoryModuleType.NEAREST_REPELLENT});
+     // CraftBukkit start - Custom bartering and interest list
+-    public Set<Item> allowedBarterItems = new HashSet<>();
++    public Set<Item> allowedBarterItems = com.google.common.collect.Sets.newHashSet(net.minecraft.world.entity.monster.piglin.PiglinAI.getDefaultCurrency()); // Paper
+     public Set<Item> interestItems = new HashSet<>();
+     // CraftBukkit end
++    public UUID itemThrower = null; // Paper
+ 
+     public EntityPiglin(EntityTypes<? extends EntityPiglinAbstract> entitytypes, World world) {
+         super(entitytypes, world);
+@@ -106,6 +107,11 @@ public class EntityPiglin extends EntityPiglinAbstract implements ICrossbow {
+         interestItems.stream().map(IRegistry.ITEM::getKey).map(MinecraftKey::toString).map(NBTTagString::a).forEach(interestList::add);
+         nbttagcompound.set("Bukkit.InterestList", interestList);
+         // CraftBukkit end
++        // Paper start
++        if (this.itemThrower != null) {
++            nbttagcompound.setUUID("Paper.ItemThrower", this.itemThrower);
++        }
++        // Paper end
+     }
+ 
+     @Override
+@@ -115,9 +121,20 @@ public class EntityPiglin extends EntityPiglinAbstract implements ICrossbow {
+         this.v(nbttagcompound.getBoolean("CannotHunt"));
+         this.bu.a(nbttagcompound.getList("Inventory", 10));
+         // CraftBukkit start
++        if (nbttagcompound.hasKeyOfType("Bukkit.BarterList", org.bukkit.craftbukkit.util.CraftMagicNumbers.NBT.TAG_LIST)) { // Paper
+         this.allowedBarterItems = nbttagcompound.getList("Bukkit.BarterList", 8).stream().map(NBTBase::asString).map(MinecraftKey::a).map(IRegistry.ITEM::get).collect(Collectors.toCollection(HashSet::new));
++        // Paper start
++        } else {
++            this.allowedBarterItems = com.google.common.collect.Sets.newHashSet(PiglinAI.getDefaultCurrency());
++        }
++        // Paper end
+         this.interestItems = nbttagcompound.getList("Bukkit.InterestList", 8).stream().map(NBTBase::asString).map(MinecraftKey::a).map(IRegistry.ITEM::get).collect(Collectors.toCollection(HashSet::new));
+         // CraftBukkit end
++        // Paper start
++        if (nbttagcompound.hasUUID("Paper.ItemThrower")) {
++            this.itemThrower = nbttagcompound.getUUID("Paper.ItemThrower");
++        }
++        // Paper end
+     }
+ 
+     @Override
+@@ -312,7 +329,7 @@ public class EntityPiglin extends EntityPiglinAbstract implements ICrossbow {
+     }
+ 
+     public EntityPiglinArmPose eN() {
+-        return this.eU() ? EntityPiglinArmPose.DANCING : (PiglinAI.a(this.getItemInOffHand().getItem()) ? EntityPiglinArmPose.ADMIRING_ITEM : (this.isAggressive() && this.eO() ? EntityPiglinArmPose.ATTACKING_WITH_MELEE_WEAPON : (this.eW() ? EntityPiglinArmPose.CROSSBOW_CHARGE : (this.isAggressive() && this.a(Items.CROSSBOW) ? EntityPiglinArmPose.CROSSBOW_HOLD : EntityPiglinArmPose.DEFAULT))));
++        return this.eU() ? EntityPiglinArmPose.DANCING : (PiglinAI.isLovedByPiglin(this.getItemInOffHand().getItem(), this) ? EntityPiglinArmPose.ADMIRING_ITEM : (this.isAggressive() && this.eO() ? EntityPiglinArmPose.ATTACKING_WITH_MELEE_WEAPON : (this.eW() ? EntityPiglinArmPose.CROSSBOW_CHARGE : (this.isAggressive() && this.a(Items.CROSSBOW) ? EntityPiglinArmPose.CROSSBOW_HOLD : EntityPiglinArmPose.DEFAULT)))); // Paper
+     }
+ 
+     public boolean eU() {
+@@ -358,7 +375,7 @@ public class EntityPiglin extends EntityPiglinAbstract implements ICrossbow {
+     }
+ 
+     protected void n(ItemStack itemstack) {
+-        if (itemstack.getItem() == PiglinAI.a || allowedBarterItems.contains(itemstack.getItem())) { // CraftBukkit - Changes to accept custom payment items
++        if (allowedBarterItems.contains(itemstack.getItem())) { // CraftBukkit - Changes to accept custom payment items // Paper
+             this.setSlot(EnumItemSlot.OFFHAND, itemstack);
+             this.d(EnumItemSlot.OFFHAND);
+         } else {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAI.java b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAI.java
+index f2102a970f4bbb49b8206dd8577349b62bf355f7..10054c2575112bf4cc01a1516b85aa950c9d9684 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAI.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAI.java
+@@ -81,7 +81,7 @@ import org.bukkit.event.entity.PiglinBarterEvent;
+ 
+ public class PiglinAI {
+ 
+-    public static final Item a = Items.GOLD_INGOT;
++    public static final Item a = Items.GOLD_INGOT; public static final Item getDefaultCurrency() { return PiglinAI.a; } // Paper - OBFHELPER
+     private static final IntRange b = TimeRange.a(30, 120);
+     private static final IntRange c = TimeRange.a(10, 40);
+     private static final IntRange d = TimeRange.a(10, 30);
+@@ -115,7 +115,7 @@ public class PiglinAI {
+     }
+ 
+     private static void b(BehaviorController<EntityPiglin> behaviorcontroller) {
+-        behaviorcontroller.a(Activity.IDLE, 10, ImmutableList.of(new BehaviorLookTarget(PiglinAI::b, 14.0F), new BehaviorAttackTargetSet<>(EntityPiglinAbstract::eM, PiglinAI::k), new BehaviorRunIf<>(EntityPiglin::m, new BehaviorHuntHoglin<>()), c(), f(), a(), b(), new BehaviorLookInteract(EntityTypes.PLAYER, 4)));
++        behaviorcontroller.a(Activity.IDLE, 10, ImmutableList.of(new io.papermc.paper.entity.behavior.LovedItemsBehaviorLookTarget( 14.0F, PiglinAI::isHoldingLovedItem), new BehaviorAttackTargetSet<>(EntityPiglinAbstract::eM, PiglinAI::k), new BehaviorRunIf<>(EntityPiglin::m, new BehaviorHuntHoglin<>()), c(), f(), a(), b(), new BehaviorLookInteract(EntityTypes.PLAYER, 4))); // Paper - include loved item check in behaviors
+     }
+ 
+     private static void b(EntityPiglin entitypiglin, BehaviorController<EntityPiglin> behaviorcontroller) {
+@@ -126,7 +126,7 @@ public class PiglinAI {
+     }
+ 
+     private static void c(BehaviorController<EntityPiglin> behaviorcontroller) {
+-        behaviorcontroller.a(Activity.CELEBRATE, 10, ImmutableList.of(c(), new BehaviorLookTarget(PiglinAI::b, 14.0F), new BehaviorAttackTargetSet<>(EntityPiglinAbstract::eM, PiglinAI::k), new BehaviorRunIf<>((entitypiglin) -> {
++        behaviorcontroller.a(Activity.CELEBRATE, 10, ImmutableList.of(c(), new io.papermc.paper.entity.behavior.LovedItemsBehaviorLookTarget(14.0F, PiglinAI::isHoldingLovedItem), new BehaviorAttackTargetSet<>(EntityPiglinAbstract::eM, PiglinAI::k), new BehaviorRunIf<>((entitypiglin) -> { // Paper - include loved item check in behaviors
+             return !entitypiglin.eU();
+         }, new BehaviorCelebrateLocation<>(2, 1.0F)), new BehaviorRunIf<>(EntityPiglin::eU, new BehaviorCelebrateLocation<>(4, 0.6F)), new BehaviorGateSingle<>(ImmutableList.of(Pair.of(new BehaviorLookTarget(EntityTypes.PIGLIN, 8.0F), 1), Pair.of(new BehaviorStrollRandomUnconstrained(0.6F, 2, 1), 1), Pair.of(new BehaviorNop(10, 20), 1)))), MemoryModuleType.CELEBRATE_LOCATION);
+     }
+@@ -141,7 +141,7 @@ public class PiglinAI {
+ 
+     private static void f(BehaviorController<EntityPiglin> behaviorcontroller) {
+         // CraftBukkit - decompile error
+-        behaviorcontroller.a(Activity.RIDE, 10, ImmutableList.of(new BehaviorStartRiding<>(0.8F), new BehaviorLookTarget(PiglinAI::b, 8.0F), new BehaviorRunIf<>(Entity::isPassenger, a()), new BehaviorStopRiding<EntityPiglin, Entity>(8, PiglinAI::a)), MemoryModuleType.RIDE_TARGET);
++        behaviorcontroller.a(Activity.RIDE, 10, ImmutableList.of(new BehaviorStartRiding<>(0.8F), new io.papermc.paper.entity.behavior.LovedItemsBehaviorLookTarget( 8.0F, PiglinAI::isHoldingLovedItem), new BehaviorRunIf<>(Entity::isPassenger, a()), new BehaviorStopRiding<EntityPiglin, Entity>(8, PiglinAI::a)), MemoryModuleType.RIDE_TARGET); // Paper - include loved item check in behaviors
+     }
+ 
+     private static BehaviorGateSingle<EntityPiglin> a() {
+@@ -218,6 +218,7 @@ public class PiglinAI {
+         Item item = itemstack.getItem();
+ 
+         if (a(entitypiglin, itemstack)) { // CraftBukkit - Changes to allow for custom payment in bartering
++            if (isBarterItem(item, entitypiglin)) entitypiglin.itemThrower = entityitem.getThrower(); // Paper
+             entitypiglin.getBehaviorController().removeMemory(MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM);
+             c(entitypiglin, itemstack);
+             d((EntityLiving) entitypiglin);
+@@ -263,7 +264,7 @@ public class PiglinAI {
+             flag1 = isBarterItem(itemstack.getItem(), entitypiglin); // CraftBukkit - Changes to allow custom payment for bartering
+             if (flag && flag1) {
+                 // CraftBukkit start
+-                PiglinBarterEvent event = CraftEventFactory.callPiglinBarterEvent(entitypiglin, i(entitypiglin), itemstack);
++                PiglinBarterEvent event = CraftEventFactory.callPiglinBarterEvent(entitypiglin, i(entitypiglin), itemstack, entitypiglin.itemThrower == null ? null : org.bukkit.Bukkit.getPlayer(entitypiglin.itemThrower)); // Paper
+                 if (!event.isCancelled()) {
+                     a(entitypiglin, event.getOutcome().stream().map(CraftItemStack::asNMSCopy).collect(Collectors.toList()));
+                 }
+@@ -455,6 +456,7 @@ public class PiglinAI {
+         ItemStack itemstack = entityhuman.b(enumhand);
+ 
+         if (b(entitypiglin, itemstack)) {
++            entitypiglin.itemThrower = entityhuman.getUniqueID(); // Paper
+             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
+ 
+             c(entitypiglin, itemstack1);
+@@ -732,7 +734,7 @@ public class PiglinAI {
+ 
+     // CraftBukkit start - Changes to allow custom payment for bartering
+     private static boolean isBarterItem(Item item, EntityPiglin piglin) {
+-        return b(item) || piglin.allowedBarterItems.contains(item);
++        return piglin.allowedBarterItems.contains(item); // Paper - dont check default item, is included in set by default
+     }
+     // CraftBukkit end
+ 
+@@ -760,6 +762,12 @@ public class PiglinAI {
+         return !f(entityliving);
+     }
+ 
++    // Paper start
++    public static boolean isHoldingLovedItem(EntityLiving entityliving, EntityPiglin piglin) {
++        return entityliving.getEntityType() == EntityTypes.PLAYER && entityliving.a((item) -> PiglinAI.isLovedByPiglin(item, piglin));
++    }
++    // Paper end
++    public static boolean isHoldingLovedItem(EntityLiving entityliving) { return PiglinAI.b(entityliving); } // Paper - OBFHELPER
+     public static boolean b(EntityLiving entityliving) {
+         return entityliving.getEntityType() == EntityTypes.PLAYER && entityliving.a((java.util.function.Predicate<Item>) PiglinAI::a); // CraftBukkit - decompile error
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index a678277416cd71e01cd6980bcfaf9a9803e7ea17..e0fac49668c3d16e70714d629e0897c1930a66e7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1822,8 +1822,15 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
++    @Deprecated // Paper
+     public static PiglinBarterEvent callPiglinBarterEvent(EntityPiglin piglin, List<ItemStack> outcome, ItemStack input) {
+-        PiglinBarterEvent event = new PiglinBarterEvent((Piglin) piglin.getBukkitEntity(), CraftItemStack.asBukkitCopy(input), outcome.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()));
++        // Paper start
++        return callPiglinBarterEvent(piglin, outcome, input, null);
++    }
++
++    public static PiglinBarterEvent callPiglinBarterEvent(EntityPiglin piglin, List<ItemStack> outcome, ItemStack input, @Nullable Player player) {
++        PiglinBarterEvent event = new PiglinBarterEvent((Piglin) piglin.getBukkitEntity(), CraftItemStack.asBukkitCopy(input), outcome.stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList()), player);
++        // Paper end
+         Bukkit.getPluginManager().callEvent(event);
+         return event;
+     }

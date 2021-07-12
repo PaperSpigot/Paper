@@ -1,0 +1,106 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 27 May 2021 18:14:55 -0700
+Subject: [PATCH] Improve Piglin Barter API
+
+
+diff --git a/src/main/java/org/bukkit/entity/Piglin.java b/src/main/java/org/bukkit/entity/Piglin.java
+index 6fdc0e0bb62189dbf3cf9ce7a87b7fbb995956a3..58c7a62ff90b28e2ad35c8e64b24216291a2a789 100644
+--- a/src/main/java/org/bukkit/entity/Piglin.java
++++ b/src/main/java/org/bukkit/entity/Piglin.java
+@@ -26,6 +26,9 @@ public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystok
+ 
+     /**
+      * Adds a material to the allowed list of materials to barter with.
++     * <br>
++     * All materials returned by {@link #getBarterList()} are also considered
++     * items "Materials of Interest" that the piglins will seek out.
+      *
+      * @param material The material to add
+      *
+@@ -35,10 +38,9 @@ public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystok
+ 
+     /**
+      * Removes a material from the allowed list of materials to barter with.
+-     *
+-     * <strong>Note:</strong> It's not possible to override the default
+-     * bartering item gold_ingots as payment. To block gold_ingots see
+-     * {@link org.bukkit.event.entity.PiglinBarterEvent}.
++     * <br>
++     * <b>Note:</b> By default, piglins already barter with {@link Material#GOLD_INGOT}
++     * so you must remove that if you want to clear the barter materials.
+      *
+      * @param material The material to remove
+      *
+@@ -57,9 +59,9 @@ public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystok
+ 
+     /**
+      * Removes a material from the list of materials the piglin will pickup.
+-     *
+-     * <strong>Note:</strong> It's not possible to override the default list of
+-     * item the piglin will pickup. To cancel pickup see
++     * <br>
++     * <b>Note:</b> By default, piglins already are interested in {@link org.bukkit.Tag#ITEMS_PIGLIN_LOVED} items
++     * and this cannot override that. To cancel pickup see
+      * {@link org.bukkit.event.entity.EntityPickupItemEvent}.
+      *
+      * @param material The material you want removed from the interest list
+@@ -71,7 +73,7 @@ public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystok
+      * Returns a immutable set of materials the piglins will pickup.
+      * <br>
+      * <strong>Note:</strong> This set will not include the items that are set
+-     * by default. To interact with those items see
++     * by default ({@link org.bukkit.Tag#ITEMS_PIGLIN_LOVED}). To interact with those items see
+      * {@link org.bukkit.event.entity.EntityPickupItemEvent}.
+      *
+      * @return An immutable materials set
+@@ -81,10 +83,9 @@ public interface Piglin extends PiglinAbstract, InventoryHolder, com.destroystok
+ 
+     /**
+      * Returns a immutable set of materials the piglins will barter with.
+-     *
+-     * <strong>Note:</strong> This set will not include the items that are set
+-     * by default. To interact with those items see
+-     * {@link org.bukkit.event.entity.PiglinBarterEvent}.
++     * <br>
++     * <strong>Note:</strong> This set will include the items that are set
++     * by default.
+      *
+      * @return An immutable materials set
+      */
+diff --git a/src/main/java/org/bukkit/event/entity/PiglinBarterEvent.java b/src/main/java/org/bukkit/event/entity/PiglinBarterEvent.java
+index c17ff41a688b2cbd877cda25d4ec033ac8ef5524..b191be1f583b44d68ab5e49d237351e595301e0e 100644
+--- a/src/main/java/org/bukkit/event/entity/PiglinBarterEvent.java
++++ b/src/main/java/org/bukkit/event/entity/PiglinBarterEvent.java
+@@ -19,12 +19,31 @@ public class PiglinBarterEvent extends EntityEvent implements Cancellable {
+     private boolean cancelled;
+     private final List<ItemStack> outcome;
+     private final ItemStack input;
++    private final org.bukkit.entity.Player player; // Paper
+ 
++    @Deprecated // Paper
+     public PiglinBarterEvent(@NotNull Piglin what, @NotNull ItemStack input, @NotNull List<ItemStack> outcome) {
++        // Paper start
++        this(what, input, outcome, null);
++    }
++
++    /**
++     * Gets the player (if applicable) that is involved in this event.
++     *
++     * @return the player involved in this event
++     */
++    @org.jetbrains.annotations.Nullable
++    public org.bukkit.entity.Player getPlayer() {
++        return player;
++    }
++
++    public PiglinBarterEvent(@NotNull Piglin what, @NotNull ItemStack input, @NotNull List<ItemStack> outcome, @org.jetbrains.annotations.Nullable org.bukkit.entity.Player player) {
++        // Paper end
+         super(what);
+ 
+         this.input = input;
+         this.outcome = outcome;
++        this.player = player; // Paper
+     }
+ 
+     @NotNull
