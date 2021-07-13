@@ -1,0 +1,91 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sat, 29 May 2021 20:33:55 -0700
+Subject: [PATCH] Improve Riptide API
+
+
+diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
+index ccb81ceee74fff50ec3ed88ae0a41f790c40ae87..fb18d0c2260924aa72ee66e52d42efc205908d7f 100644
+--- a/src/main/java/org/bukkit/entity/LivingEntity.java
++++ b/src/main/java/org/bukkit/entity/LivingEntity.java
+@@ -599,6 +599,28 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+      * @return True if this entity is currently riptiding.
+      */
+     public boolean isRiptiding();
++    // Paper start
++    /**
++     * Starts/Sets the entities riptiding effect for
++     * the specified amount of ticks.<br>
++     * <b>Note: </b> This doesn't currently affect
++     * all entities that extend {@link LivingEntity}.
++     * Some examples include:
++     * <ul>
++     *     <li>{@link EnderDragon}</li>
++     *     <li>{@link ArmorStand}</li>
++     *     <li>and maybe more</li>
++     * </ul>
++     *
++     * @param ticks amount of ticks to be riptiding
++     */
++    public void setRiptiding(int ticks);
++
++    /**
++     * Stops any riptiding currently happening.
++     */
++    public void stopRiptiding();
++    // Paper end
+ 
+     /**
+      * Returns whether this entity is slumbering.
+diff --git a/src/main/java/org/bukkit/event/player/PlayerRiptideEvent.java b/src/main/java/org/bukkit/event/player/PlayerRiptideEvent.java
+index c23142a72b674d81a672f46e3b3063fe6af222ec..0eb90f5159fa10c546a8b81cf26ee3059fbb0275 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerRiptideEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerRiptideEvent.java
+@@ -16,10 +16,19 @@ public class PlayerRiptideEvent extends PlayerEvent {
+ 
+     private static final HandlerList handlers = new HandlerList();
+     private final ItemStack item;
++    private int animationTicks; // Paper
+ 
++    // Paper start
++    @Deprecated
+     public PlayerRiptideEvent(@NotNull final Player who, @NotNull final ItemStack item) {
++        this(who, item, 20);
++    }
++
++    public PlayerRiptideEvent(@NotNull final Player who, @NotNull final ItemStack item, int animationTicks) {
++        // Paper end
+         super(who);
+         this.item = item;
++        this.animationTicks = animationTicks; // Paper
+     }
+ 
+     /**
+@@ -42,4 +51,27 @@ public class PlayerRiptideEvent extends PlayerEvent {
+     public static HandlerList getHandlerList() {
+         return handlers;
+     }
++    // Paper start
++    /**
++     * Gets the number of ticks the riptide animation
++     * will be shown for.
++     *
++     * @return the animation tick count
++     */
++    public int getAnimationTicks() {
++        return animationTicks;
++    }
++
++    /**
++     * Sets the number of ticks the riptide animation
++     * will be shown for.<br>
++     * Any number less than 1 will prevent the animation
++     * from showing at all.
++     *
++     * @param animationTicks the animation tick count
++     */
++    public void setAnimationTicks(int animationTicks) {
++        this.animationTicks = animationTicks;
++    }
++    // Paper end
+ }

@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sat, 29 May 2021 20:33:50 -0700
+Subject: [PATCH] Improve Riptide API
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index b7b07b652b29e6f84f87fc92add99ce68f8bbd09..7e6dfe17d3f4e08040f29c762e210c8808c6fa07 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -3036,6 +3036,13 @@ public abstract class EntityLiving extends Entity {
+ 
+     protected void g(EntityLiving entityliving) {}
+ 
++    // Paper start
++    public void stopRiptiding() {
++        this.bf = 0;
++        this.setFlag(4, false);
++    }
++    // Paper stop
++    public void setRiptiding(int ticks) { this.r(ticks); } // Paper - OBFHELPER
+     public void r(int i) {
+         this.bf = i;
+         if (!this.world.isClientSide) {
+@@ -3238,6 +3245,7 @@ public abstract class EntityLiving extends Entity {
+ 
+     }
+ 
++    public final void setFlag(int flag, boolean flagValue) { this.c(flag, flagValue); } // Paper - OBFHELPER
+     protected void c(int i, boolean flag) {
+         byte b0 = (Byte) this.datawatcher.get(EntityLiving.ag);
+         int j;
+diff --git a/src/main/java/net/minecraft/world/item/ItemTrident.java b/src/main/java/net/minecraft/world/item/ItemTrident.java
+index 9896477b54cf91a88bdfc3d85018a59193b32859..b0dd1f6241d896469620e2bf86d044401b84fa94 100644
+--- a/src/main/java/net/minecraft/world/item/ItemTrident.java
++++ b/src/main/java/net/minecraft/world/item/ItemTrident.java
+@@ -109,7 +109,7 @@ public class ItemTrident extends Item implements ItemVanishable {
+                     entityhuman.b(StatisticList.ITEM_USED.b(this));
+                     if (k > 0) {
+                         // CraftBukkit start
+-                        org.bukkit.event.player.PlayerRiptideEvent event = new org.bukkit.event.player.PlayerRiptideEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack));
++                        org.bukkit.event.player.PlayerRiptideEvent event = new org.bukkit.event.player.PlayerRiptideEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), 20); // Paper - animation ticks
+                         event.getPlayer().getServer().getPluginManager().callEvent(event);
+                         // CraftBukkit end
+                         float f = entityhuman.yaw;
+@@ -124,7 +124,12 @@ public class ItemTrident extends Item implements ItemVanishable {
+                         f3 *= f6 / f5;
+                         f4 *= f6 / f5;
+                         entityhuman.i((double) f2, (double) f3, (double) f4);
+-                        entityhuman.r(20);
++                        // Paper start
++                        if (event.getAnimationTicks() > 0) {
++                            entityhuman.setRiptiding(event.getAnimationTicks());
++                        }
++                        // entityhuman.r(20); // Paper - moved into the even constructor
++                        // Paper end
+                         if (entityhuman.isOnGround()) {
+                             float f7 = 1.1999999F;
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 592dacf8cc924caac339a8810ba5b0d85448ed90..8be924fa91bb97978c029fe3ae6d8c3089913e7b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -675,6 +675,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+     public boolean isRiptiding() {
+         return getHandle().isRiptiding();
+     }
++    // Paper start
++    @Override
++    public void setRiptiding(int ticks) {
++        getHandle().setRiptiding(ticks);
++    }
++
++    @Override
++    public void stopRiptiding() {
++        getHandle().stopRiptiding();
++    }
++    // Paper end
+ 
+     @Override
+     public boolean isSleeping() {
