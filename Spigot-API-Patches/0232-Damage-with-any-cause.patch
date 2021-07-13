@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: NeumimTo <NeumimTo@users.noreply.github.com>
+Date: Wed, 28 Oct 2020 18:42:07 +0100
+Subject: [PATCH] Damage with any cause
+
+
+diff --git a/src/main/java/org/bukkit/entity/Damageable.java b/src/main/java/org/bukkit/entity/Damageable.java
+index fc4d3bcd9b16097086fef7975274d825b65adb10..c103e22752be0448662584264ddbb2e05724673d 100644
+--- a/src/main/java/org/bukkit/entity/Damageable.java
++++ b/src/main/java/org/bukkit/entity/Damageable.java
+@@ -1,6 +1,8 @@
+ package org.bukkit.entity;
+ 
+ import org.bukkit.attribute.Attribute;
++import org.bukkit.event.entity.EntityDamageEvent;
++import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+ /**
+@@ -23,6 +25,35 @@ public interface Damageable extends Entity {
+      */
+     void damage(double amount, @Nullable Entity source);
+ 
++    // Paper start
++    /**
++     * Deals the given amount of damage to this entity with specific {@code DamageCause}.
++     *
++     * Damage types {@code DamageCause.ENTITY_ATTACK}, {@code DamageCause.ENTITY_SWEEP_ATTACK},
++     * {@code DamageCause.PROJECTILE}, {@code DamageCause.THORNS} require to specify an entity,
++     * which triggered the damage, for such cases use {@link Damageable#damage(double, EntityDamageEvent.DamageCause, Entity)},
++     * otherwise they will fallback to Generic damage type.
++     *
++     * @param amount Amount of damage to deal
++     * @param damageCause Type of damage
++     */
++    default void damage(double amount, @NotNull EntityDamageEvent.DamageCause damageCause) {
++        damage(amount, damageCause, null);
++    }
++
++    /**
++     * Deals the given amount of damage to this entity, with specific {@code DamageCause}, from a specified
++     * entity.
++     *
++     * {@code DamageCause.PROJECTILE} needs any {@code Projectile} instance to be passed as the source
++     *
++     * @param amount Amount of damage to deal
++     * @param damageCause Type of damage
++     * @param source The entity who caused this damage
++     */
++    void damage(double amount, @NotNull EntityDamageEvent.DamageCause damageCause, @Nullable Entity source);
++    // Paper end
++
+     /**
+      * Gets the entity's health from 0 to {@link #getMaxHealth()}, where 0 is dead.
+      *
