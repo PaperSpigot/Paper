@@ -1,0 +1,556 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Janmm14 <gitconfig1@janmm14.de>
+Date: Fri, 25 Jun 2021 00:30:53 +0200
+Subject: [PATCH] Add Entity Visibility API
+
+
+diff --git a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+index 6835401bd7863bbd655502547a9fd4ae0f298da1..67c6b4de0fe07af7d6357155e117e3437357ca11 100644
+--- a/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/PlayerChunkMap.java
+@@ -2377,7 +2377,7 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+         // Paper start - use distance map to optimise tracker
+         com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> lastTrackerCandidates;
+ 
+-        final void updatePlayers(com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newTrackerCandidates) {
++        public final void updatePlayers(com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> newTrackerCandidates) {
+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> oldTrackerCandidates = this.lastTrackerCandidates;
+             this.lastTrackerCandidates = newTrackerCandidates;
+ 
+@@ -2468,6 +2468,13 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+                 int i = Math.min(this.b(), (PlayerChunkMap.this.viewDistance - 1) * 16);
+                 boolean flag = vec3d_dx >= (double) (-i) && vec3d_dx <= (double) i && vec3d_dz >= (double) (-i) && vec3d_dz <= (double) i && this.tracker.a(entityplayer); // Paper - remove allocation of Vec3D here
+ 
++                // Paper start - Entity Visibility API
++                if (!(this.tracker instanceof EntityPlayer) && flag) {
++                    org.bukkit.craftbukkit.entity.CraftEntity ce = this.tracker.getBukkitEntity();
++                    flag = entityplayer.getBukkitEntity().canSee(ce);
++                }
++                // Paper end
++
+                 if (flag) {
+                     boolean flag1 = this.tracker.attachedToPlayer;
+ 
+diff --git a/src/main/java/net/minecraft/server/level/RegionLimitedWorldAccess.java b/src/main/java/net/minecraft/server/level/RegionLimitedWorldAccess.java
+index 04006caeeb42b523d986efc313828557854718d7..4aebfe4dcc7bebebf565a8c268fdeb530e59e020 100644
+--- a/src/main/java/net/minecraft/server/level/RegionLimitedWorldAccess.java
++++ b/src/main/java/net/minecraft/server/level/RegionLimitedWorldAccess.java
+@@ -385,6 +385,14 @@ public class RegionLimitedWorldAccess implements GeneratorAccessSeed {
+     @Override
+     public void playSound(@Nullable EntityHuman entityhuman, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {}
+ 
++    // Paper start - add entity param - Entity Visibility API
++    @Override
++    public void playSound(@Nullable EntityHuman entityhuman, Entity source, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {}
++
++    @Override
++    public void playSound(@Nullable EntityHuman entityhuman, Entity source, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {}
++    // Paper end
++
+     @Override
+     public void addParticle(ParticleParam particleparam, double d0, double d1, double d2, double d3, double d4, double d5) {}
+ 
+diff --git a/src/main/java/net/minecraft/server/level/WorldServer.java b/src/main/java/net/minecraft/server/level/WorldServer.java
+index f68a252378a94c8fcab622d2d89d738aceab45a4..6b29abac9b71a0addf3e60831d9b61581f668e23 100644
+--- a/src/main/java/net/minecraft/server/level/WorldServer.java
++++ b/src/main/java/net/minecraft/server/level/WorldServer.java
+@@ -1648,7 +1648,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+                 double d2 = (double) blockposition.getZ() - entityplayer.locZ();
+ 
+                 // CraftBukkit start
+-                if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
++                if (!entityplayer.getBukkitEntity().canSee(entity.getBukkitEntity())) { // Paper - Entity Visibility API
+                     continue;
+                 }
+                 // CraftBukkit end
+@@ -1666,9 +1666,16 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         this.server.getPlayerList().sendPacketNearby(entityhuman, d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, this.getDimensionKey(), new PacketPlayOutNamedSoundEffect(soundeffect, soundcategory, d0, d1, d2, f, f1));
+     }
+ 
++    // Paper start - Entity Visibility API
++    @Override
++    public void playSound(@Nullable EntityHuman entityhuman, Entity source, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
++        this.server.getPlayerList().sendPacketNearby(entityhuman, source, d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, this.getDimensionKey(), new PacketPlayOutNamedSoundEffect(soundeffect, soundcategory, d0, d1, d2, f, f1));
++    }
++    // Paper end
++
+     @Override
+     public void playSound(@Nullable EntityHuman entityhuman, Entity entity, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
+-        this.server.getPlayerList().sendPacketNearby(entityhuman, entity.locX(), entity.locY(), entity.locZ(), f > 1.0F ? (double) (16.0F * f) : 16.0D, this.getDimensionKey(), new PacketPlayOutEntitySound(soundeffect, soundcategory, entity, f, f1));
++        this.server.getPlayerList().sendPacketNearby(entityhuman, entity, entity.locX(), entity.locY(), entity.locZ(), f > 1.0F ? (double) (16.0F * f) : 16.0D, this.getDimensionKey(), new PacketPlayOutEntitySound(soundeffect, soundcategory, entity, f, f1)); // Paper - add entity argument - Entity Visibility API
+     }
+ 
+     @Override
+@@ -1806,15 +1813,27 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+     }
+ 
+     public <T extends ParticleParam> int a(T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
++        // Paper start - Entity Visibility API
++        return a(null, t0, d0, d1, d2, i, d3, d4, d5, d6);
++    }
++
++    public <T extends ParticleParam> int a(@Nullable Entity origin, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
++        // Paper end
+         // CraftBukkit - visibility api support
+-        return sendParticles(null, t0, d0, d1, d2, i, d3, d4, d5, d6, false);
++        return sendParticles(null, origin, t0, d0, d1, d2, i, d3, d4, d5, d6, false); // Paper - add entity param - Entity Visibility API
+     }
+ 
+     public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+-        // Paper start - Particle API Expansion
+-        return sendParticles(players, sender, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
++        // Paper start - Particle API Expansion & Entity Visibility API
++        return sendParticles(sender, null, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
++    }
++    public <T extends ParticleParam> int sendParticles(EntityPlayer sender, @Nullable Entity origin, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
++        return sendParticles(players, sender, origin, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
+     }
+     public <T extends ParticleParam> int sendParticles(List<EntityPlayer> receivers, EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
++        return sendParticles(receivers, sender, null, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
++    }
++    public <T extends ParticleParam> int sendParticles(List<EntityPlayer> receivers, EntityPlayer sender, @Nullable Entity origin, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+         // Paper end
+         PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, force, d0, d1, d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+         // CraftBukkit end
+@@ -1823,6 +1842,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+         for (EntityHuman entityhuman : receivers) { // Paper - Particle API Expansion
+             EntityPlayer entityplayer = (EntityPlayer) entityhuman; // Paper - Particle API Expansion
+             if (sender != null && !entityplayer.getBukkitEntity().canSee(sender.getBukkitEntity())) continue; // CraftBukkit
++            if (origin != null && !entityplayer.getBukkitEntity().canSee(origin.getBukkitEntity())) continue; // Paper - Entity Visibility API
+ 
+             if (this.a(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
+                 ++j;
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 90776231b1faffb11e4394f555f336ca248e3004..a3dba19aa816728e7afe75d56051df6d7a41d01c 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1055,7 +1055,7 @@ public abstract class PlayerList {
+     public void sendAll(Packet packet, EntityHuman entityhuman) {
+         for (int i = 0; i < this.players.size(); ++i) {
+             EntityPlayer entityplayer =  this.players.get(i);
+-            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
++            if (entityhuman != null && !entityplayer.getBukkitEntity().canSee(entityhuman.getBukkitEntity())) { // Paper - Entity Visibility API
+                 continue;
+             }
+             ((EntityPlayer) this.players.get(i)).playerConnection.sendPacket(packet);
+@@ -1211,6 +1211,12 @@ public abstract class PlayerList {
+     }
+ 
+     public void sendPacketNearby(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, double d3, ResourceKey<World> resourcekey, Packet<?> packet) {
++        // Paper start - Entity Visibility API
++        sendPacketNearby(entityhuman, null, d0, d1, d2, d3, resourcekey, packet);
++    }
++
++    public void sendPacketNearby(@Nullable EntityHuman entityhuman, @Nullable Entity source, double d0, double d1, double d2, double d3, ResourceKey<World> resourcekey, Packet<?> packet) {
++        // Paper end
+         WorldServer world = null;
+         if (entityhuman != null && entityhuman.world instanceof WorldServer) {
+             world = (WorldServer) entityhuman.world;
+@@ -1244,7 +1250,16 @@ public abstract class PlayerList {
+             //} // Paper
+             // CraftBukkit end
+ 
+-            if (entityplayer != entityhuman && entityplayer.world.getDimensionKey() == resourcekey && (!(entityhuman instanceof EntityPlayer) || entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity()))) { // Paper
++            if (entityplayer != entityhuman && entityplayer.world.getDimensionKey() == resourcekey) { // Paper
++                // Paper start - Entity Visibility API
++                if (entityhuman != null && !entityplayer.getBukkitEntity().canSee(entityhuman.getBukkitEntity())) {
++                    continue;
++                }
++                if (source != null && !entityplayer.getBukkitEntity().canSee(source.getBukkitEntity())) {
++                    continue;
++                }
++                // Paper end
++
+                 double d4 = d0 - entityplayer.locX();
+                 double d5 = d1 - entityplayer.locY();
+                 double d6 = d2 - entityplayer.locZ();
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 0ec3589df774af366a896b8dc257f138e94e6e18..853be6f6b607700fbc708609ad1a77e6373cf59a 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1140,7 +1140,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, ne
+ 
+     public void playSound(SoundEffect soundeffect, float f, float f1) {
+         if (!this.isSilent()) {
+-            this.world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), soundeffect, this.getSoundCategory(), f, f1);
++            this.world.playSound((EntityHuman) null, this, soundeffect, this.getSoundCategory(), f, f1); // Paper - use method with Entity argument - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/EntityLiving.java b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+index b7b07b652b29e6f84f87fc92add99ce68f8bbd09..8c914ce92037085a7745c74b6d9252f4eaf8cdfd 100644
+--- a/src/main/java/net/minecraft/world/entity/EntityLiving.java
++++ b/src/main/java/net/minecraft/world/entity/EntityLiving.java
+@@ -332,7 +332,7 @@ public abstract class EntityLiving extends Entity {
+                 if (this instanceof EntityPlayer) {
+                     ((WorldServer) this.world).sendParticles((EntityPlayer) this, new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX(), this.locY(), this.locZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D, false);
+                 } else {
+-                    ((WorldServer) this.world).a(new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX(), this.locY(), this.locZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D);
++                    ((WorldServer) this.world).a(this, new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX(), this.locY(), this.locZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                 }
+                 // CraftBukkit end
+             }
+@@ -3653,7 +3653,7 @@ public abstract class EntityLiving extends Entity {
+ 
+     public ItemStack a(World world, ItemStack itemstack) {
+         if (itemstack.F()) {
+-            world.playSound((EntityHuman) null, this.locX(), this.locY(), this.locZ(), this.d(itemstack), SoundCategory.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F);
++            world.playSound((EntityHuman) null, this, this.d(itemstack), SoundCategory.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F); // Paper - use method with Entity argument - Entity Visibility API
+             this.a(itemstack, world, this);
+             if (!(this instanceof EntityHuman) || !((EntityHuman) this).abilities.canInstantlyBuild) {
+                 itemstack.subtract(1);
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
+index 61a62c093b24c43064f116630d85096159e082d3..ce7e2e2902fa4f96a9e712e48af37febd53a6443 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
+@@ -28,7 +28,7 @@ import org.bukkit.event.entity.EntityInteractEvent;
+ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+ 
+     private final Block g;
+-    private final EntityInsentient entity;
++    public final EntityInsentient entity; // Paper - private -> public - Entity Visibility API
+     private int i;
+     private World world; // Paper
+ 
+@@ -92,7 +92,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+                 this.entity.setMot(vec3d.x, 0.3D, vec3d.z);
+                 if (!world.isClientSide) {
+                     d0 = 0.08D;
+-                    ((WorldServer) world).a(new ParticleParamItem(Particles.ITEM, new ItemStack(Items.EGG)), (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY() + 0.7D, (double) blockposition1.getZ() + 0.5D, 3, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, 0.15000000596046448D);
++                    ((WorldServer) world).a(this.entity, new ParticleParamItem(Particles.ITEM, new ItemStack(Items.EGG)), (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY() + 0.7D, (double) blockposition1.getZ() + 0.5D, 3, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                 }
+             }
+ 
+@@ -120,7 +120,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
+                         double d1 = random.nextGaussian() * 0.02D;
+                         double d2 = random.nextGaussian() * 0.02D;
+ 
+-                        ((WorldServer) world).a(Particles.POOF, (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D, 1, d0, d1, d2, 0.15000000596046448D);
++                        ((WorldServer) world).a(this.entity, Particles.POOF, (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D, 1, d0, d1, d2, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                     }
+ 
+                     this.a(world, blockposition1);
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+index 9face4480dcc89d9106ebe596020c1888350ef2d..4355a5fae0d0baeffe7705a5d9d6d9e8cb7ffd9d 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityMushroomCow.java
+@@ -166,7 +166,7 @@ public class EntityMushroomCow extends EntityCow implements IShearable {
+     public void shear(SoundCategory soundcategory) {
+         this.world.playSound((EntityHuman) null, (Entity) this, SoundEffects.ENTITY_MOOSHROOM_SHEAR, soundcategory, 1.0F, 1.0F);
+         if (!this.world.s_()) {
+-            ((WorldServer) this.world).a(Particles.EXPLOSION, this.locX(), this.e(0.5D), this.locZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
++            ((WorldServer) this.world).a(this, Particles.EXPLOSION, this.locX(), this.e(0.5D), this.locZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D); // Paper - add entity param - Entity Visibility API
+             // this.die(); // CraftBukkit - moved down
+             EntityCow entitycow = (EntityCow) EntityTypes.COW.a(this.world);
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntitySquid.java b/src/main/java/net/minecraft/world/entity/animal/EntitySquid.java
+index 1f5f3e0d209426b97e32b82dd15176b800f85816..616a7bbc54317cc75932ff49184fae5d26a7f20a 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntitySquid.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntitySquid.java
+@@ -185,7 +185,7 @@ public class EntitySquid extends EntityWaterAnimal {
+             Vec3D vec3d1 = this.i(new Vec3D((double) this.random.nextFloat() * 0.6D - 0.3D, -1.0D, (double) this.random.nextFloat() * 0.6D - 0.3D));
+             Vec3D vec3d2 = vec3d1.a(0.3D + (double) (this.random.nextFloat() * 2.0F));
+ 
+-            ((WorldServer) this.world).a(Particles.SQUID_INK, vec3d.x, vec3d.y + 0.5D, vec3d.z, 0, vec3d2.x, vec3d2.y, vec3d2.z, 0.10000000149011612D);
++            ((WorldServer) this.world).a(this, Particles.SQUID_INK, vec3d.x, vec3d.y + 0.5D, vec3d.z, 0, vec3d2.x, vec3d2.y, vec3d2.z, 0.10000000149011612D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+index ecec8a3c4d4b5d491f79ad60d7ce5a118f30b3db..0586d841a73fa6e0e557f063f8865606f9918572 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityTurtle.java
+@@ -516,7 +516,7 @@ public class EntityTurtle extends EntityAnimal {
+                     int eggCount = this.g.random.nextInt(4) + 1;
+                     com.destroystokyo.paper.event.entity.TurtleLayEggEvent layEggEvent = new com.destroystokyo.paper.event.entity.TurtleLayEggEvent((org.bukkit.entity.Turtle) this.g.getBukkitEntity(), MCUtil.toLocation(this.g.world, this.e.up()), eggCount);
+                     if (layEggEvent.callEvent() && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.g, this.e.up(), Blocks.TURTLE_EGG.getBlockData().set(BlockTurtleEgg.b, layEggEvent.getEggCount())).isCancelled()) {
+-                    world.playSound((EntityHuman) null, blockposition, SoundEffects.ENTITY_TURTLE_LAY_EGG, SoundCategory.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F);
++                    world.playSound((EntityHuman) null, g, blockposition, SoundEffects.ENTITY_TURTLE_LAY_EGG, SoundCategory.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+                     world.setTypeAndData(this.e.up(), (IBlockData) Blocks.TURTLE_EGG.getBlockData().set(BlockTurtleEgg.b, layEggEvent.getEggCount()), 3);
+                     }
+                     // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+index c0e0750adef0ae6aff7635c84f6585f06c5fc38d..32b9740a0961163126745cf9497c71306b70e873 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/EntityArmorStand.java
+@@ -569,7 +569,7 @@ public class EntityArmorStand extends EntityLiving {
+ 
+     private void D() {
+         if (this.world instanceof WorldServer) {
+-            ((WorldServer) this.world).a(new ParticleParamBlock(Particles.BLOCK, Blocks.OAK_PLANKS.getBlockData()), this.locX(), this.e(0.6666666666666666D), this.locZ(), 10, (double) (this.getWidth() / 4.0F), (double) (this.getHeight() / 4.0F), (double) (this.getWidth() / 4.0F), 0.05D);
++            ((WorldServer) this.world).a(this, new ParticleParamBlock(Particles.BLOCK, Blocks.OAK_PLANKS.getBlockData()), this.locX(), this.e(0.6666666666666666D), this.locZ(), 10, (double) (this.getWidth() / 4.0F), (double) (this.getHeight() / 4.0F), (double) (this.getWidth() / 4.0F), 0.05D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+index 634416c354184bc6a2348c27c55e9868009ccd28..758727b05ec41b719828530c3123d95eb51c4792 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityZombie.java
+@@ -612,12 +612,12 @@ public class EntityZombie extends EntityMonster {
+ 
+         @Override
+         public void a(GeneratorAccess generatoraccess, BlockPosition blockposition) {
+-            generatoraccess.playSound((EntityHuman) null, blockposition, SoundEffects.ENTITY_ZOMBIE_DESTROY_EGG, SoundCategory.HOSTILE, 0.5F, 0.9F + EntityZombie.this.random.nextFloat() * 0.2F);
++            generatoraccess.playSound((EntityHuman) null, entity, blockposition, SoundEffects.ENTITY_ZOMBIE_DESTROY_EGG, SoundCategory.HOSTILE, 0.5F, 0.9F + EntityZombie.this.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         @Override
+         public void a(World world, BlockPosition blockposition) {
+-            world.playSound((EntityHuman) null, blockposition, SoundEffects.ENTITY_TURTLE_EGG_BREAK, SoundCategory.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F);
++            world.playSound((EntityHuman) null, entity, blockposition, SoundEffects.ENTITY_TURTLE_EGG_BREAK, SoundCategory.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         @Override
+diff --git a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+index c39c50e53549e9cb9d3520bc7e8b7e89cfa20163..fe85ff19e3c86674ebe53dea27a6a3473c53c31f 100644
+--- a/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
++++ b/src/main/java/net/minecraft/world/entity/player/EntityHuman.java
+@@ -1310,7 +1310,7 @@ public abstract class EntityHuman extends EntityLiving {
+                             if (this.world instanceof WorldServer && f5 > 2.0F) {
+                                 int k = (int) ((double) f5 * 0.5D);
+ 
+-                                ((WorldServer) this.world).a(Particles.DAMAGE_INDICATOR, entity.locX(), entity.e(0.5D), entity.locZ(), k, 0.1D, 0.0D, 0.1D, 0.2D);
++                                ((WorldServer) this.world).a(this, Particles.DAMAGE_INDICATOR, entity.locX(), entity.e(0.5D), entity.locZ(), k, 0.1D, 0.0D, 0.1D, 0.2D); // Paper - add entity param - Entity Visibility API
+                             }
+                         }
+ 
+@@ -1361,7 +1361,7 @@ public abstract class EntityHuman extends EntityLiving {
+         double d1 = (double) MathHelper.cos(this.yaw * 0.017453292F);
+ 
+         if (this.world instanceof WorldServer) {
+-            ((WorldServer) this.world).a(Particles.SWEEP_ATTACK, this.locX() + d0, this.e(0.5D), this.locZ() + d1, 0, d0, 0.0D, d1, 0.0D);
++            ((WorldServer) this.world).a(this, Particles.SWEEP_ATTACK, this.locX() + d0, this.e(0.5D), this.locZ() + d1, 0, d0, 0.0D, d1, 0.0D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java b/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
+index 45f0f004e97b20e5c6c5b1f205b088bf8aa86017..2e57c2cd9addb7fdd9097b80fceb158e5daab55b 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityFishingHook.java
+@@ -339,14 +339,14 @@ public class EntityFishingHook extends IProjectile {
+                     iblockdata = worldserver.getType(new BlockPosition(d0, d1 - 1.0D, d2));
+                     if (iblockdata.a(Blocks.WATER)) {
+                         if (this.random.nextFloat() < 0.15F) {
+-                            worldserver.a(Particles.BUBBLE, d0, d1 - 0.10000000149011612D, d2, 1, (double) f1, 0.1D, (double) f2, 0.0D);
++                            worldserver.a(this, Particles.BUBBLE, d0, d1 - 0.10000000149011612D, d2, 1, (double) f1, 0.1D, (double) f2, 0.0D); // Paper - add entity param - Entity Visibility API
+                         }
+ 
+                         float f3 = f1 * 0.04F;
+                         float f4 = f2 * 0.04F;
+ 
+-                        worldserver.a(Particles.FISHING, d0, d1, d2, 0, (double) f4, 0.01D, (double) (-f3), 1.0D);
+-                        worldserver.a(Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
++                        worldserver.a(this, Particles.FISHING, d0, d1, d2, 0, (double) f4, 0.01D, (double) (-f3), 1.0D); // Paper - add entity param - Entity Visibility API
++                        worldserver.a(this, Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D); // Paper - add entity param - Entity Visibility API
+                     }
+                 } else {
+                     // CraftBukkit start
+@@ -359,8 +359,8 @@ public class EntityFishingHook extends IProjectile {
+                     this.playSound(SoundEffects.ENTITY_FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+                     double d3 = this.locY() + 0.5D;
+ 
+-                    worldserver.a(Particles.BUBBLE, this.locX(), d3, this.locZ(), (int) (1.0F + this.getWidth() * 20.0F), (double) this.getWidth(), 0.0D, (double) this.getWidth(), 0.20000000298023224D);
+-                    worldserver.a(Particles.FISHING, this.locX(), d3, this.locZ(), (int) (1.0F + this.getWidth() * 20.0F), (double) this.getWidth(), 0.0D, (double) this.getWidth(), 0.20000000298023224D);
++                    worldserver.a(this, Particles.BUBBLE, this.locX(), d3, this.locZ(), (int) (1.0F + this.getWidth() * 20.0F), (double) this.getWidth(), 0.0D, (double) this.getWidth(), 0.20000000298023224D); // Paper - add entity param - Entity Visibility API
++                    worldserver.a(this, Particles.FISHING, this.locX(), d3, this.locZ(), (int) (1.0F + this.getWidth() * 20.0F), (double) this.getWidth(), 0.0D, (double) this.getWidth(), 0.20000000298023224D); // Paper - add entity param - Entity Visibility API
+                     this.ag = MathHelper.nextInt(this.random, 20, 40);
+                     this.getDataWatcher().set(EntityFishingHook.f, true);
+                 }
+@@ -383,7 +383,7 @@ public class EntityFishingHook extends IProjectile {
+                     d2 = this.locZ() + (double) (MathHelper.cos(f1) * f2 * 0.1F);
+                     iblockdata = worldserver.getType(new BlockPosition(d0, d1 - 1.0D, d2));
+                     if (iblockdata.a(Blocks.WATER)) {
+-                        worldserver.a(Particles.SPLASH, d0, d1, d2, 2 + this.random.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D, 0.0D);
++                        worldserver.a(this, Particles.SPLASH, d0, d1, d2, 2 + this.random.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D, 0.0D); // Paper - add entity param - Entity Visibility API
+                     }
+                 }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityShulkerBullet.java b/src/main/java/net/minecraft/world/entity/projectile/EntityShulkerBullet.java
+index 24076f3de298173e293507f2024105532f833455..770c7f9a8350e59864f99dfea87317b5325a5b74 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityShulkerBullet.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityShulkerBullet.java
+@@ -302,7 +302,7 @@ public class EntityShulkerBullet extends IProjectile {
+     @Override
+     protected void a(MovingObjectPositionBlock movingobjectpositionblock) {
+         super.a(movingobjectpositionblock);
+-        ((WorldServer) this.world).a(Particles.EXPLOSION, this.locX(), this.locY(), this.locZ(), 2, 0.2D, 0.2D, 0.2D, 0.0D);
++        ((WorldServer) this.world).a(this, Particles.EXPLOSION, this.locX(), this.locY(), this.locZ(), 2, 0.2D, 0.2D, 0.2D, 0.0D); // Paper - add entity param - Entity Visibility API
+         this.playSound(SoundEffects.ENTITY_SHULKER_BULLET_HIT, 1.0F, 1.0F);
+     }
+ 
+@@ -326,7 +326,7 @@ public class EntityShulkerBullet extends IProjectile {
+         // CraftBukkit end
+         if (!this.world.isClientSide) {
+             this.playSound(SoundEffects.ENTITY_SHULKER_BULLET_HURT, 1.0F, 1.0F);
+-            ((WorldServer) this.world).a(Particles.CRIT, this.locX(), this.locY(), this.locZ(), 15, 0.2D, 0.2D, 0.2D, 0.0D);
++            ((WorldServer) this.world).a(this, Particles.CRIT, this.locX(), this.locY(), this.locZ(), 15, 0.2D, 0.2D, 0.2D, 0.0D); // Paper - add entity param - Entity Visibility API
+             this.die();
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/GeneratorAccess.java b/src/main/java/net/minecraft/world/level/GeneratorAccess.java
+index 96efd974f1eb9c1e7c70e576e51ed69e15aacb99..b05ea9369164f9a45a88b9bcb5f59a47388633b0 100644
+--- a/src/main/java/net/minecraft/world/level/GeneratorAccess.java
++++ b/src/main/java/net/minecraft/world/level/GeneratorAccess.java
+@@ -46,6 +46,10 @@ public interface GeneratorAccess extends ICombinedAccess, IWorldTime {
+ 
+     void playSound(@Nullable EntityHuman entityhuman, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1);
+ 
++    void playSound(@Nullable EntityHuman entityhuman, net.minecraft.world.entity.Entity source, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1); // Paper - add entity param - Entity Visibility API
++
++    void playSound(@Nullable EntityHuman entityhuman, net.minecraft.world.entity.Entity source, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1); // Paper - add entity param - Entity Visibility API
++
+     void addParticle(ParticleParam particleparam, double d0, double d1, double d2, double d3, double d4, double d5);
+ 
+     void a(@Nullable EntityHuman entityhuman, int i, BlockPosition blockposition, int j);
+diff --git a/src/main/java/net/minecraft/world/level/World.java b/src/main/java/net/minecraft/world/level/World.java
+index f7f593a9e58b537109fa6ca1c783f6614f4bfad5..915fa27aae0467694e3470c689a5a47ed0259c58 100644
+--- a/src/main/java/net/minecraft/world/level/World.java
++++ b/src/main/java/net/minecraft/world/level/World.java
+@@ -283,8 +283,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         for (int i = 0, len = entities.size(); i < len; ++i) {
+             Entity entity = entities.get(i);
+ 
+-            if (checkCanSee && source instanceof EntityPlayer && entity instanceof EntityPlayer
+-                && !((EntityPlayer) source).getBukkitEntity().canSee(((EntityPlayer) entity).getBukkitEntity())) {
++            if (checkCanSee && source instanceof EntityPlayer
++                && !((EntityPlayer) source).getBukkitEntity().canSee(entity.getBukkitEntity())) { // Paper - Entity Visibility API
+                 continue;
+             }
+ 
+@@ -771,6 +771,12 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+     public void playSound(@Nullable EntityHuman entityhuman, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
+         this.playSound(entityhuman, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, soundeffect, soundcategory, f, f1);
+     }
++    // Paper start - Entity Visibility API
++    @Override
++    public void playSound(@Nullable EntityHuman entityhuman, Entity source, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
++        this.playSound(entityhuman, source, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, soundeffect, soundcategory, f, f1);
++    }
++    // Paper end
+ 
+     public abstract void playSound(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 295ffab08672d77d88aca368cb5b56f80bc4f1b5..40b9edf7f8e14a7f280aaa48d00a0a64f447c092 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1166,4 +1166,23 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         return getHandle().isTicking();
+     }
+     // Paper end
++
++    // Paper start - Entity Visibility API
++    public boolean shownByDefault = true;
++    public final java.util.Set<CraftEntity> visibilityOverrides = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
++
++    @Override
++    public boolean isShownByDefault() {
++        return shownByDefault;
++    }
++
++    @Override
++    public void resetAndSetShownByDefault(boolean shownByDefault) {
++        this.shownByDefault = shownByDefault;
++        visibilityOverrides.clear();
++        if (isValid()) { // only update tracking if spawned
++            getHandle().tracker.updatePlayers(getHandle().getPlayersInTrackRange());
++        }
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index cfe6898dc373fe55a08acf5c90e200061aa7d0fc..daa12538d90e9c843ee7e1be04302dd571227a86 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2444,4 +2444,68 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return spigot;
+     }
+     // Spigot end
++
++    // Paper start - Entity Visibility API
++    @Override
++    public boolean canSee(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            return canSee((Player) entity);
++        }
++        CraftEntity ce = (CraftEntity) entity;
++        return Boolean.logicalXor(ce.shownByDefault, ce.visibilityOverrides.contains(this));
++    }
++
++    @Override
++    public void showEntity(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            showPlayer((Player) entity);
++        } else {
++            CraftEntity ce = (CraftEntity) entity;
++            boolean nowShown;
++            if (ce.shownByDefault) {
++                nowShown = ce.visibilityOverrides.remove(this);
++            } else {
++                nowShown = ce.visibilityOverrides.add(this);
++            }
++            if (nowShown) {
++                registerEntity(ce.getHandle());
++            }
++        }
++    }
++
++    @Override
++    public void hideEntity(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            hidePlayer((Player) entity);
++        } else {
++            CraftEntity ce = (CraftEntity) entity;
++            boolean nowHidden;
++            if (ce.shownByDefault) {
++                nowHidden = ce.visibilityOverrides.add(this);
++            } else {
++                nowHidden = ce.visibilityOverrides.remove(this);
++            }
++            if (nowHidden) {
++                unregisterEntity(ce.getHandle());
++            }
++        }
++    }
++
++    private void registerEntity(Entity other) {
++        PlayerChunkMap tracker = ((WorldServer) entity.world).getChunkProvider().playerChunkMap;
++        PlayerChunkMap.EntityTracker entry = tracker.trackedEntities.get(other.getId());
++        if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
++            entry.updatePlayer(getHandle());
++        }
++    }
++    private void unregisterEntity(Entity other) {
++        PlayerChunkMap tracker = ((WorldServer) entity.world).getChunkProvider().playerChunkMap;
++        PlayerChunkMap.EntityTracker entry = tracker.trackedEntities.get(other.getId());
++        if (entry != null) {
++            entry.clear(getHandle());
++        }
++    }
++
++    // Paper end
++
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java b/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
+index b2b14eada44231a619622a2baef27abdb798aa47..fecf1aa4cff0979daef7bb6e293755f8abc69de0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
+@@ -74,6 +74,18 @@ public class DummyGeneratorAccess implements GeneratorAccess {
+         throw new UnsupportedOperationException("Not supported yet.");
+     }
+ 
++    // Paper start - add entity param - Entity Visibility API
++    @Override
++    public void playSound(@org.jetbrains.annotations.Nullable EntityHuman entityhuman, Entity source, BlockPosition blockposition, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++
++    @Override
++    public void playSound(@org.jetbrains.annotations.Nullable EntityHuman entityhuman, Entity source, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++    // Paper end
++
+     @Override
+     public void addParticle(ParticleParam particleparam, double d0, double d1, double d2, double d3, double d4, double d5) {
+         throw new UnsupportedOperationException("Not supported yet.");

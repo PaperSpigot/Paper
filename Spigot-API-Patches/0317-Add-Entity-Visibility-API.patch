@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Janmm14 <gitconfig1@janmm14.de>
+Date: Fri, 25 Jun 2021 00:30:54 +0200
+Subject: [PATCH] Add Entity Visibility API
+
+
+diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
+index 46985eaea3d3b00d1dd88c2dd5a2bc53d518c64f..c7f6fb784bd4d9fee9ba4a2e7001214db47f6703 100644
+--- a/src/main/java/org/bukkit/entity/Entity.java
++++ b/src/main/java/org/bukkit/entity/Entity.java
+@@ -704,4 +704,18 @@ public interface Entity extends Metadatable, CommandSender, Nameable, Persistent
+      */
+     public boolean isTicking();
+     // Paper end
++
++    // Paper start - Entity Visibility API
++    /**
++     * Check if the entity is shown to players by default. Default: true
++     * @return True if the entity is shown to players by default
++     */
++    boolean isShownByDefault();
++
++    /**
++     * Resets to which players this entity is shown and updates the default shown or hidden state
++     * @param shownByDefault True if entity should not be visible to players by default
++     */
++    void resetAndSetShownByDefault(boolean shownByDefault);
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index a4b236d75e77176a163094edd31f81725bbf4eca..149fe4edd0e7193e98a0f83f5b09b3a9d2053c30 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1959,6 +1959,27 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+     Set<Player> getTrackedPlayers();
+     // Paper end
+ 
++    // Paper start - Entity Visibility API
++    /**
++     * Checks whether this player can currently see the given entity
++     * @param entity the entity to check
++     * @return True if this player can see the given entity
++     */
++    boolean canSee(@NotNull org.bukkit.entity.Entity entity);
++
++    /**
++     * Allows this player to see an entity that was previously hidden
++     * @param entity Entity to show
++     */
++    void showEntity(@NotNull org.bukkit.entity.Entity entity);
++
++    /**
++     * Hides an entity from this player
++     * @param entity Entity to hide
++     */
++    void hideEntity(@NotNull org.bukkit.entity.Entity entity);
++    // Paper end
++
+     // Spigot start
+     public class Spigot extends Entity.Spigot {
+ 
