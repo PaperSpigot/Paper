@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TwoLeggedCat <80929284+TwoLeggedCat@users.noreply.github.com>
+Date: Wed, 23 Jun 2021 15:44:04 -0500
+Subject: [PATCH] Add corner getter to WorldBorder
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorldBorder.java b/src/main/java/org/bukkit/craftbukkit/CraftWorldBorder.java
+index 15e0a57e2cb5b9a67f776ff71902e33e47c93fd8..fcb48e7d759a060802ce8e37eb9aa8a0eccd87bb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorldBorder.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorldBorder.java
+@@ -71,6 +71,17 @@ public class CraftWorldBorder implements WorldBorder {
+         this.setCenter(location.getX(), location.getZ());
+     }
+ 
++    // Paper start
++    @Override
++    public @org.jetbrains.annotations.NotNull Location getCornerLocation(@org.jetbrains.annotations.NotNull Corner corner) {
++        org.apache.commons.lang.Validate.notNull(corner, "Corner cannot be null");
++        double halfSize = this.getHalfLength();
++        double x = this.handle.getCenterX() + (corner.isEast() ? halfSize : -halfSize);
++        double z = this.handle.getCenterZ() + (corner.isNorth() ? -halfSize : halfSize);
++        return new Location(world, x, world.getMinHeight(), z);
++    }
++    // Paper end
++
+     @Override
+     public double getDamageBuffer() {
+         return this.handle.getDamageSafeZone();
+@@ -117,4 +128,10 @@ public class CraftWorldBorder implements WorldBorder {
+ 
+         return location.getWorld().equals(this.world) && this.handle.isWithinBounds(new BlockPos(location.getX(), location.getY(), location.getZ()));
+     }
++
++    // Paper start
++    private double getHalfLength() {
++        return this.handle.getSize() / 2;
++    }
++    // Paper end
+ }

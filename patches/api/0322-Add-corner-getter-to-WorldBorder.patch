@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TwoLeggedCat <80929284+TwoLeggedCat@users.noreply.github.com>
+Date: Wed, 23 Jun 2021 15:44:10 -0500
+Subject: [PATCH] Add corner getter to WorldBorder
+
+
+diff --git a/src/main/java/org/bukkit/WorldBorder.java b/src/main/java/org/bukkit/WorldBorder.java
+index afb7b136b461202026290624836446cff9f9e45d..f1743cca7a87835a425d643cca2d02e4b82a64be 100644
+--- a/src/main/java/org/bukkit/WorldBorder.java
++++ b/src/main/java/org/bukkit/WorldBorder.java
+@@ -47,6 +47,16 @@ public interface WorldBorder {
+      */
+     public void setCenter(double x, double z);
+ 
++    // Paper start
++    /**
++     * Returns the specified corner of the WorldBorder
++     *
++     * @param corner Which corner to return
++     * @return Location of corner where y is always the minimum height of the world
++     */
++    public @NotNull Location getCornerLocation(@NotNull Corner corner);
++    // Paper end
++
+     /**
+      * Sets the new border center.
+      *
+@@ -130,5 +140,32 @@ public interface WorldBorder {
+     public default boolean isInBounds(@NotNull Location location) {
+         return this.isInside(location);
+     }
++
++    public enum Corner {
++        NORTH_EAST,
++        NORTH_WEST,
++        SOUTH_EAST,
++        SOUTH_WEST;
++
++        public boolean isNorth() {
++            switch (this) {
++                case NORTH_EAST:
++                case NORTH_WEST:
++                    return true;
++                default:
++                    return false;
++            }
++        }
++
++        public boolean isEast() {
++            switch (this) {
++                case NORTH_EAST:
++                case SOUTH_EAST:
++                    return true;
++                default:
++                    return false;
++            }
++        }
++    }
+     // Paper end
+ }
