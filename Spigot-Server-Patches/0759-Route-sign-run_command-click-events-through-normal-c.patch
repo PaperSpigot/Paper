@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mdcfe <1917406+mdcfe@users.noreply.github.com>
+Date: Wed, 7 Jul 2021 09:44:45 -0700
+Subject: [PATCH] Route sign run_command click events through normal chat logic
+
+This patch changes sign command logic so that `run_command` click events are routed through the standard chat/command
+logic used for inbound chat messages.
+
+This fixes numerous issues related to sign click commands:
+  - Signs with a `run_command` value of "/<plugin command>" would fail and show the "Unknown command" warning. This
+    prevents usage of commands like `//wand` from WorldEdit in sign click events entirely and requires users to drop
+    the leading slash from other plugins' commands. This patch now executes the plugin commands as would be expected,
+    adding a leading slash if necessary.
+  - Signs with a `run_command` value that doesn't match an existing command could fail silently. This patch causes
+    these to *always* show "Unknown command" instead.
+  - Plugins listening to `PlayerCommandPreprocessEvent` would not be able to intercept any command executions from
+    sign click events. This patch allows plugins to intercept player commands when fired by a click event, in the same
+    manner as commands executed by the player typing or clicking on a chat message.
+  - Commands executed from signs would not be logged to the console. This patch fixes this.
+
+This patch also prepends a leading slash if the `run_command` value lacks one, which matches vanilla behaviour (old
+code would strip this slash away) while also ensuring `PlayerCommandPreprocessEvent#getMessage` remains consistent
+with other command executions from chat (which always include the leading slash).
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index 7f78f388584899b13ff983f0dc37c679bfb1507e..2f51a5d9fdc4d73fd2228df7deb878d5880be1d8 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -155,7 +155,10 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+                 ChatClickable chatclickable = chatmodifier.getClickEvent();
+ 
+                 if (chatclickable.a() == ChatClickable.EnumClickAction.RUN_COMMAND) {
+-                    entityhuman.getMinecraftServer().getCommandDispatcher().a(this.a((EntityPlayer) entityhuman), chatclickable.b());
++                    // Paper start - route through standard chat/command logic
++                    final String command = chatclickable.b().startsWith("/") ? chatclickable.b() : "/" + chatclickable.b();
++                    ((EntityPlayer) entityhuman).playerConnection.chat(command, false);
++                    // Paper end
+                 }
+             }
+         }
