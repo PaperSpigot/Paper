@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jamesjulich <51384945+jamesjulich@users.noreply.github.com>
+Date: Thu, 17 Jun 2021 14:42:23 -0500
+Subject: [PATCH] Log commands issued via sign click
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index 7f78f388584899b13ff983f0dc37c679bfb1507e..1d9b47d94a5fb03ce92e824615f7d4cb8a9e6b03 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -155,6 +155,11 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+                 ChatClickable chatclickable = chatmodifier.getClickEvent();
+ 
+                 if (chatclickable.a() == ChatClickable.EnumClickAction.RUN_COMMAND) {
++                    // Paper start - log commands issued via sign click
++                    if (org.spigotmc.SpigotConfig.logCommands) {
++                        entityhuman.getMinecraftServer().server.getLogger().info(entityhuman.getName() + " issued server command (via sign click): /" + chatclickable.b());
++                    }
++                    // Paper end
+                     entityhuman.getMinecraftServer().getCommandDispatcher().a(this.a((EntityPlayer) entityhuman), chatclickable.b());
+                 }
+             }
