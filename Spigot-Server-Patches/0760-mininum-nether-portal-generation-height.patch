@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Malfrador <malfrador@gmail.com>
+Date: Wed, 9 Jun 2021 00:13:04 +0200
+Subject: [PATCH] mininum nether portal generation height
+
+
+diff --git a/src/main/java/net/minecraft/world/level/portal/PortalTravelAgent.java b/src/main/java/net/minecraft/world/level/portal/PortalTravelAgent.java
+index 77dfa7eaf178baa55041a829c9dec4851efeedfc..73fad302747a930c79de94ca31445519852bf576 100644
+--- a/src/main/java/net/minecraft/world/level/portal/PortalTravelAgent.java
++++ b/src/main/java/net/minecraft/world/level/portal/PortalTravelAgent.java
+@@ -99,7 +99,7 @@ public class PortalTravelAgent {
+                             ;
+                         }
+ 
+-                        if (k + 4 <= i) {
++                        if (k + 4 <= i && k - 4 > 0) { // Paper - fix MC-101602
+                             int i1 = l - k;
+ 
+                             if (i1 <= 0 || i1 >= 3) {
