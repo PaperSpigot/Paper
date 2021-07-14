@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jason Penilla <11360596+jpenilla@users.noreply.github.com>
+Date: Tue, 29 Jun 2021 19:24:53 -0700
+Subject: [PATCH] Fix HugeFungusFeature adding entities to world off main
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/FungusBlock.java b/src/main/java/net/minecraft/world/level/block/FungusBlock.java
+index a0bbdbe3856efc7b85255ed40583c3df5d7fe478..6e3fbe702c68a9ed0656787198aa6553bca1d700 100644
+--- a/src/main/java/net/minecraft/world/level/block/FungusBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/FungusBlock.java
+@@ -58,6 +58,11 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
+             SaplingBlock.treeType = org.bukkit.TreeType.CRIMSON_FUNGUS;
+         }
+         // CraftBukkit end
++        // Paper start - enable drops when using bonemeal
++        if (this.feature.get().feature() instanceof final net.minecraft.world.level.levelgen.feature.HugeFungusFeature hugeFungusFeature) {
++            hugeFungusFeature.place(new net.minecraft.world.level.levelgen.feature.FeaturePlaceContext<>(world, world.getChunkSource().getGenerator(), random, pos, this.feature.get().config()), true);
++        } else
+         ((ConfiguredFeature) this.feature.get()).place(world, world.getChunkSource().getGenerator(), random, pos);
++        // Paper end
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java b/src/main/java/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java
+index 44ae76882096cc6270a39754adf6070433c1e8d7..55bc2dfe84880b7507b14cd745a7744970d495a1 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java
+@@ -22,6 +22,11 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+ 
+     @Override
+     public boolean place(FeaturePlaceContext<HugeFungusConfiguration> context) {
++        // Paper start - add drops param, default false as to not add items to world during worldgen
++        return this.place(context, false);
++    }
++    public boolean place(FeaturePlaceContext<HugeFungusConfiguration> context, final boolean drops) {
++        // Paper end
+         WorldGenLevel worldGenLevel = context.level();
+         BlockPos blockPos = context.origin();
+         Random random = context.random();
+@@ -51,8 +56,10 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+ 
+             boolean bl = !hugeFungusConfiguration.planted && random.nextFloat() < 0.06F;
+             worldGenLevel.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 4);
+-            this.placeStem(worldGenLevel, random, hugeFungusConfiguration, blockPos2, i, bl);
+-            this.placeHat(worldGenLevel, random, hugeFungusConfiguration, blockPos2, i, bl);
++            // Paper start - pass drops param
++            this.placeStem(worldGenLevel, random, hugeFungusConfiguration, blockPos2, i, bl, drops);
++            this.placeHat(worldGenLevel, random, hugeFungusConfiguration, blockPos2, i, bl, drops);
++            // Paper end
+             return true;
+         }
+     }
+@@ -65,6 +72,11 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+     }
+ 
+     private void placeStem(LevelAccessor world, Random random, HugeFungusConfiguration config, BlockPos pos, int stemHeight, boolean thickStem) {
++        // Paper start - add drops param
++        this.placeStem(world, random, config, pos, stemHeight, thickStem, true);
++    }
++    private void placeStem(LevelAccessor world, Random random, HugeFungusConfiguration config, BlockPos pos, int stemHeight, boolean thickStem, final boolean drops) {
++        // Paper end
+         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
+         BlockState blockState = config.stemState;
+         int i = thickStem ? 1 : 0;
+@@ -78,7 +90,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+                     if (isReplaceable(world, mutableBlockPos, true)) {
+                         if (config.planted) {
+                             if (!world.getBlockState(mutableBlockPos.below()).isAir()) {
+-                                world.destroyBlock(mutableBlockPos, true);
++                                world.destroyBlock(mutableBlockPos, drops); // Paper - don't add drops to world during worldgen
+                             }
+ 
+                             world.setBlock(mutableBlockPos, blockState, 3);
+@@ -97,6 +109,11 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+     }
+ 
+     private void placeHat(LevelAccessor world, Random random, HugeFungusConfiguration config, BlockPos pos, int hatHeight, boolean thickStem) {
++        // Paper start - add drops param
++        this.placeHat(world, random, config, pos, hatHeight, thickStem, true);
++    }
++    private void placeHat(LevelAccessor world, Random random, HugeFungusConfiguration config, BlockPos pos, int hatHeight, boolean thickStem, final boolean drops) {
++        // Paper end
+         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
+         boolean bl = config.hatState.is(Blocks.NETHER_WART_BLOCK);
+         int i = Math.min(random.nextInt(1 + hatHeight / 3) + 5, hatHeight);
+@@ -122,7 +139,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
+                     mutableBlockPos.setWithOffset(pos, m, k, n);
+                     if (isReplaceable(world, mutableBlockPos, false)) {
+                         if (config.planted && !world.getBlockState(mutableBlockPos.below()).isAir()) {
+-                            world.destroyBlock(mutableBlockPos, true);
++                            world.destroyBlock(mutableBlockPos, drops); // Paper - don't add drops to world during worldgen
+                         }
+ 
+                         if (bl6) {
