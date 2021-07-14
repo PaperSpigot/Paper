@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 23 May 2021 18:32:38 -0700
+Subject: [PATCH] Fix cancelling ender dragon spawn
+
+Previously, the boss bar and fog would still show up if the dragon spawn
+had been cancelled.
+
+diff --git a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+index 0ab6319aa3e4e1f5679f37be36999ca56ca2484c..3e46a501f21a89552aeedc7d23a1bb9915d214ef 100644
+--- a/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
++++ b/src/main/java/net/minecraft/world/level/dimension/end/EnderDragonBattle.java
+@@ -249,7 +249,12 @@ public class EnderDragonBattle {
+             if (enumdragonrespawn == EnumDragonRespawn.END) {
+                 this.respawnPhase = null;
+                 this.dragonKilled = false;
+-                EntityEnderDragon entityenderdragon = this.o();
++                EntityEnderDragon entityenderdragon = this.spawnDragon(true); // Paper
++                // Paper start - handle cancelled CreatureSpawnEvent
++                if (entityenderdragon == null) {
++                    return;
++                }
++                // Paper end
+                 Iterator iterator = this.bossBattle.getPlayers().iterator();
+ 
+                 while (iterator.hasNext()) {
+@@ -454,12 +459,26 @@ public class EnderDragonBattle {
+     }
+ 
+     private EntityEnderDragon o() {
++        // Paper start
++        return this.spawnDragon(false);
++    }
++    private EntityEnderDragon spawnDragon(boolean respawn) {
++        // Paper end
+         this.world.getChunkAtWorldCoords(new BlockPosition(0, 128, 0));
+         EntityEnderDragon entityenderdragon = (EntityEnderDragon) EntityTypes.ENDER_DRAGON.a((World) this.world);
+ 
+         entityenderdragon.getDragonControllerManager().setControllerPhase(DragonControllerPhase.HOLDING_PATTERN);
+         entityenderdragon.setPositionRotation(0.0D, 128.0D, 0.0D, this.world.random.nextFloat() * 360.0F, 0.0F);
+-        this.world.addEntity(entityenderdragon);
++        // Paper start - handle cancelled CreatureSpawnEvent
++        if (!this.world.addEntity(entityenderdragon, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.ENDER_DRAGON_BOSS)) {
++            this.dragonKilled = true;
++            this.bossBattle.setVisible(false);
++            if (respawn) {
++                this.generateExitPortal(true); // revert to lit portal
++            }
++            return null;
++        }
++        // Paper end
+         this.dragonUUID = entityenderdragon.getUniqueID();
+         this.resetCrystals(); // Paper
+         return entityenderdragon;
