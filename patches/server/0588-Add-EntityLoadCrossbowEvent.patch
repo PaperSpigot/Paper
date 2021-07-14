@@ -5,10 +5,10 @@ Subject: [PATCH] Add EntityLoadCrossbowEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/item/CrossbowItem.java b/src/main/java/net/minecraft/world/item/CrossbowItem.java
-index 35f3f3887c0696b757553af9a5997506c97b24c0..77562d7c7248835532f2d9582cce6ef6725a12a6 100644
+index 35f3f3887c0696b757553af9a5997506c97b24c0..1c03fe7bc1d9547ae8bbce7882d30b76531387ac 100644
 --- a/src/main/java/net/minecraft/world/item/CrossbowItem.java
 +++ b/src/main/java/net/minecraft/world/item/CrossbowItem.java
-@@ -90,7 +90,11 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
+@@ -90,7 +90,14 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
          int j = this.getUseDuration(stack) - remainingUseTicks;
          float f = CrossbowItem.getPowerForTime(j, stack);
  
@@ -16,12 +16,15 @@ index 35f3f3887c0696b757553af9a5997506c97b24c0..77562d7c7248835532f2d9582cce6ef6
 +        // Paper start - EntityLoadCrossbowEvent
 +        if (f >= 1.0F && !CrossbowItem.isCharged(stack) /*&& CrossbowItem.tryLoadProjectiles(entityliving, itemstack)*/) {
 +            final io.papermc.paper.event.entity.EntityLoadCrossbowEvent event = new io.papermc.paper.event.entity.EntityLoadCrossbowEvent(user.getBukkitLivingEntity(), stack.asBukkitMirror(), user.getUsedItemHand() == InteractionHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND);
-+            if (!event.callEvent() || !tryLoadProjectiles(user, stack, event.shouldConsumeItem())) return;
++            if (!event.callEvent() || !tryLoadProjectiles(user, stack, event.shouldConsumeItem())) {
++                if (user instanceof ServerPlayer player) player.getBukkitEntity().updateInventory();
++                return;
++            }
 +            // Paper end
              CrossbowItem.setCharged(stack, true);
              SoundSource soundcategory = user instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
  
-@@ -100,9 +104,14 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
+@@ -100,9 +107,14 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
      }
  
      private static boolean tryLoadProjectiles(LivingEntity shooter, ItemStack projectile) {
