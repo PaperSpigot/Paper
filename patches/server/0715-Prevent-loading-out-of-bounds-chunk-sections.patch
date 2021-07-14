@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jason Penilla <11360596+jpenilla@users.noreply.github.com>
+Date: Sat, 19 Jun 2021 23:42:00 -0700
+Subject: [PATCH] Prevent loading out of bounds chunk sections
+
+
+diff --git a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
+index f4c8b6485bd36241e1f0413140f04d7398848063..b35f5651f96e5261e0f0563f1165c46cfe253b9f 100644
+--- a/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
++++ b/src/main/java/net/minecraft/world/level/chunk/storage/ChunkSerializer.java
+@@ -102,6 +102,7 @@ public class ChunkSerializer {
+     // Paper start
+     private static final int CURRENT_DATA_VERSION = SharedConstants.getCurrentVersion().getWorldVersion();
+     private static final boolean JUST_CORRUPT_IT = Boolean.getBoolean("Paper.ignoreWorldDataVersion");
++    private static final boolean JUST_CORRUPT_IT_2 = Boolean.getBoolean("Paper.ignoreOutOfBoundsChunkSections");
+     // Paper end
+ 
+     public static InProgressChunkHolder loadChunk(ServerLevel world, StructureManager structureManager, PoiManager poiStorage, ChunkPos pos, CompoundTag nbt, boolean distinguish) {
+@@ -135,7 +136,7 @@ public class ChunkSerializer {
+         }, pos, nbttagcompound1.getList("LiquidsToBeTicked", 9), world);
+         boolean flag = nbttagcompound1.getBoolean("isLightOn");
+         ListTag nbttaglist = nbttagcompound1.getList("Sections", 10);
+-        int i = world.getSectionsCount();
++        int i = world.getSectionsCount(); final int sectionsCount = i; // Paper - OBFHELPER
+         LevelChunkSection[] achunksection = new LevelChunkSection[i];
+         boolean flag1 = world.dimensionType().hasSkyLight();
+         ServerChunkCache chunkproviderserver = world.getChunkSource();
+@@ -157,7 +158,14 @@ public class ChunkSerializer {
+                 chunksection.getStates().read(nbttagcompound2.getList("Palette", 10), nbttagcompound2.getLongArray("BlockStates"));
+                 chunksection.recalcBlockCounts();
+                 if (!chunksection.isEmpty()) {
+-                    achunksection[world.getSectionIndexFromSectionY(b0)] = chunksection;
++                    // Paper start - prevent loading chunks with out of bounds sections
++                    final int sectionIndex = world.getSectionIndexFromSectionY(b0);
++                    if (!JUST_CORRUPT_IT_2 && (sectionIndex < 0 || sectionIndex >= sectionsCount)) {
++                        new RuntimeException("Server attempted to load chunk with out of bounds chunk sections! (section index: " + sectionIndex + ", sectionsCount: " + sectionsCount + ") Did you uninstall a datapack modifying world height limits?").printStackTrace();
++                        System.exit(1);
++                    }
++                    achunksection[sectionIndex] = chunksection;
++                    // Paper end
+                 }
+ 
+                 tasksToExecuteOnMain.add(() -> { // Paper - delay this task since we're executing off-main
