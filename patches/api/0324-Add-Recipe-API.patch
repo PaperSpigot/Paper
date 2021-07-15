@@ -105,7 +105,7 @@ index 0000000000000000000000000000000000000000..a595aeebd2bc5b5e2fcd29ab72615e72
 +    }
 +}
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe83cc9878f 100644
+index 8ae9198ba7fdb006dc420504a984627add20dbb5..9dd7d12938821de8a1b323a2e025f163c5c9f156 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -84,6 +84,84 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
@@ -133,7 +133,7 @@ index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe8
 +     * @return a recipe resulting from the input items, or null if no result is found
 +     */
 +    @Nullable
-+    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<ItemStack> items);
++    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<@Nullable ItemStack> items);
 +
 +    /**
 +     * Gets a recipe from an index of items.
@@ -146,7 +146,7 @@ index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe8
 +     * @return a recipe resulting from the input items, or null if no result is found
 +     */
 +    @Nullable
-+    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull ItemStack... items);
++    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @Nullable ItemStack... items);
 +
 +    /**
 +     * Gets all applicable recipes from the items inside of an inventory.
@@ -168,7 +168,7 @@ index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe8
 +     * @return the recipes resulting from the input items
 +     */
 +    @Nullable
-+    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<ItemStack> items);
++    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<@Nullable ItemStack> items);
 +
 +    /**
 +     * Gets all applicable recipes from an array of items.
@@ -181,7 +181,7 @@ index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe8
 +     * @return the recipes resulting from the input items
 +     */
 +    @NotNull
-+    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull ItemStack... items);
++    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @Nullable ItemStack... items);
 +
 +    /**
 +     * Gets all recipes of a certain type.
