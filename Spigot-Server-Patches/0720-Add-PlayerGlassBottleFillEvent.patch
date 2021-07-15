@@ -1,0 +1,140 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dmitry Sidorov <jonmagon@gmail.com>
+Date: Mon, 3 May 2021 10:56:33 +0300
+Subject: [PATCH] Add PlayerGlassBottleFillEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/item/ItemGlassBottle.java b/src/main/java/net/minecraft/world/item/ItemGlassBottle.java
+index 4a1c87b46cb017a5e5f12331c4d274e34f90d3a9..a57eeb74f70d72f690175e0302a341934e51e2f5 100644
+--- a/src/main/java/net/minecraft/world/item/ItemGlassBottle.java
++++ b/src/main/java/net/minecraft/world/item/ItemGlassBottle.java
+@@ -1,7 +1,10 @@
+ package net.minecraft.world.item;
+ 
+ import java.util.List;
++
++import io.papermc.paper.event.player.PlayerGlassBottleFillEvent; // Paper
+ import net.minecraft.core.BlockPosition;
++import net.minecraft.server.level.EntityPlayer; // Paper - PlayerGlassBottleFillEvent
+ import net.minecraft.sounds.SoundCategory;
+ import net.minecraft.sounds.SoundEffects;
+ import net.minecraft.stats.StatisticList;
+@@ -37,7 +40,10 @@ public class ItemGlassBottle extends Item {
+ 
+             entityareaeffectcloud.setRadius(entityareaeffectcloud.getRadius() - 0.5F);
+             world.playSound((EntityHuman) null, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ITEM_BOTTLE_FILL_DRAGONBREATH, SoundCategory.NEUTRAL, 1.0F, 1.0F);
+-            return InteractionResultWrapper.a(this.a(itemstack, entityhuman, new ItemStack(Items.DRAGON_BREATH)), world.s_());
++            // Paper start - PlayerGlassBottleFillEvent
++            //return InteractionResultWrapper.a(this.a(itemstack, entityhuman, new ItemStack(Items.DRAGON_BREATH)), world.s_());
++            return handleInteractedItemStack(world, entityhuman, itemstack, new ItemStack(Items.DRAGON_BREATH));
++            // Paper end - PlayerGlassBottleFillEvent
+         } else {
+             MovingObjectPositionBlock movingobjectpositionblock = a(world, entityhuman, RayTrace.FluidCollisionOption.SOURCE_ONLY);
+ 
+@@ -53,7 +59,10 @@ public class ItemGlassBottle extends Item {
+ 
+                     if (world.getFluid(blockposition).a((Tag) TagsFluid.WATER)) {
+                         world.playSound(entityhuman, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ITEM_BOTTLE_FILL, SoundCategory.NEUTRAL, 1.0F, 1.0F);
+-                        return InteractionResultWrapper.a(this.a(itemstack, entityhuman, PotionUtil.a(new ItemStack(Items.POTION), Potions.WATER)), world.s_());
++                        // Paper start - PlayerGlassBottleFillEvent
++                        //return InteractionResultWrapper.a(this.a(itemstack, entityhuman, PotionUtil.a(new ItemStack(Items.POTION), Potions.WATER)), world.s_());
++                        return handleInteractedItemStack(world, entityhuman, itemstack, PotionUtil.a(new ItemStack(Items.POTION), Potions.WATER));
++                        // Paper end - PlayerGlassBottleFillEvent
+                     }
+                 }
+ 
+@@ -62,6 +71,22 @@ public class ItemGlassBottle extends Item {
+         }
+     }
+ 
++    // Paper start - PlayerGlassBottleFillEvent
++    protected InteractionResultWrapper<ItemStack> handleInteractedItemStack(World world, EntityHuman entityhuman, ItemStack itemstack, ItemStack newitemstack) {
++        PlayerGlassBottleFillEvent event = new PlayerGlassBottleFillEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(newitemstack));
++        if (event.callEvent()) {
++            // Copied from the function above
++            return InteractionResultWrapper.a(this.a(itemstack, entityhuman, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getNewItem())), world.s_());
++        }
++        else {
++            if (entityhuman instanceof EntityPlayer) {
++                ((EntityPlayer) entityhuman).updateInventory(entityhuman.defaultContainer);
++            }
++            return InteractionResultWrapper.pass(itemstack);
++        }
++    }
++    // Paper end - PlayerGlassBottleFillEvent
++
+     protected ItemStack a(ItemStack itemstack, EntityHuman entityhuman, ItemStack itemstack1) {
+         entityhuman.b(StatisticList.ITEM_USED.b(this));
+         return ItemLiquidUtil.a(itemstack, entityhuman, itemstack1);
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockBeehive.java b/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
+index 828d231a963f1962d88fe170ac86590d86e1df40..a9ad2c8b38914939c31ec93fe65d5b58318e973c 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockBeehive.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.world.level.block;
+ 
++import io.papermc.paper.event.player.PlayerGlassBottleFillEvent; // Paper
+ import io.papermc.paper.event.block.PlayerShearBlockEvent; // Paper - PlayerShearBlockEvent namespace conflicts
+ 
+ import java.util.Iterator;
+@@ -137,13 +138,29 @@ public class BlockBeehive extends BlockTileEntity {
+                 });
+                 flag = true;
+             } else if (itemstack.getItem() == Items.GLASS_BOTTLE) {
++                // Paper start - PlayerGlassBottleFillEvent
++                PlayerGlassBottleFillEvent event = new PlayerGlassBottleFillEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), new org.bukkit.inventory.ItemStack(org.bukkit.Material.HONEY_BOTTLE));
++                if (!event.callEvent()) {
++                    if (entityhuman instanceof EntityPlayer) {
++                        ((EntityPlayer) entityhuman).updateInventory(entityhuman.defaultContainer);
++                    }
++                    return EnumInteractionResult.PASS;
++                }
++                ItemStack newitem = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getNewItem());
++                // Paper end - PlayerGlassBottleFillEvent
+                 itemstack.subtract(1);
+                 world.playSound(entityhuman, entityhuman.locX(), entityhuman.locY(), entityhuman.locZ(), SoundEffects.ITEM_BOTTLE_FILL, SoundCategory.NEUTRAL, 1.0F, 1.0F);
++                // Paper - replace new ItemStack(Items.HONEY_BOTTLE) with newitem
+                 if (itemstack.isEmpty()) {
+-                    entityhuman.a(enumhand, new ItemStack(Items.HONEY_BOTTLE));
+-                } else if (!entityhuman.inventory.pickup(new ItemStack(Items.HONEY_BOTTLE))) {
+-                    entityhuman.drop(new ItemStack(Items.HONEY_BOTTLE), false);
++                    entityhuman.a(enumhand, newitem);
++                } else if (!entityhuman.inventory.pickup(newitem)) {
++                    entityhuman.drop(newitem, false);
++                }
++                // Paper start - PlayerGlassBottleFillEvent, fix visual glitch
++                else if (entityhuman instanceof EntityPlayer) {
++                    ((EntityPlayer) entityhuman).updateInventory(entityhuman.defaultContainer);
+                 }
++                // Paper end - PlayerGlassBottleFillEvent
+ 
+                 flag = true;
+             }
+diff --git a/src/main/java/net/minecraft/world/level/block/BlockCauldron.java b/src/main/java/net/minecraft/world/level/block/BlockCauldron.java
+index 66d0a08f250fc947ec2d978a527ad77e32114b84..4d01e14ed5a775ff0e91ef755dcdb4ccd937544a 100644
+--- a/src/main/java/net/minecraft/world/level/block/BlockCauldron.java
++++ b/src/main/java/net/minecraft/world/level/block/BlockCauldron.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.world.level.block;
+ 
++import io.papermc.paper.event.player.PlayerGlassBottleFillEvent; // Paper
+ import net.minecraft.core.BlockPosition;
+ import net.minecraft.server.level.EntityPlayer;
+ import net.minecraft.sounds.SoundCategory;
+@@ -134,6 +135,16 @@ public class BlockCauldron extends Block {
+                         }
+                         if (!entityhuman.abilities.canInstantlyBuild) {
+                             itemstack1 = PotionUtil.a(new ItemStack(Items.POTION), Potions.WATER);
++                            // Paper start - PlayerGlassBottleFillEvent
++                            PlayerGlassBottleFillEvent event = new PlayerGlassBottleFillEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack1));
++                            if (!event.callEvent()) {
++                                if (entityhuman instanceof EntityPlayer) {
++                                    ((EntityPlayer) entityhuman).updateInventory(entityhuman.defaultContainer);
++                                }
++                                return EnumInteractionResult.PASS;
++                            }
++                            itemstack1 = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getNewItem());
++                            // Paper end - PlayerGlassBottleFillEvent
+                             entityhuman.a(StatisticList.USE_CAULDRON);
+                             itemstack.subtract(1);
+                             if (itemstack.isEmpty()) {

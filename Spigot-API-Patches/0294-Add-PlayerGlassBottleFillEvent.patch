@@ -1,0 +1,103 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dmitry Sidorov <jonmagon@gmail.com>
+Date: Mon, 3 May 2021 10:56:53 +0300
+Subject: [PATCH] Add PlayerGlassBottleFillEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerGlassBottleFillEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerGlassBottleFillEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e9d3bd3ff1f5a959c06eeaafd038ebfce8295ce6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/player/PlayerGlassBottleFillEvent.java
+@@ -0,0 +1,91 @@
++package io.papermc.paper.event.player;
++
++import org.bukkit.Material;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Called when a player fills a bottle with water, honey or dragon's breath.
++ */
++public class PlayerGlassBottleFillEvent extends PlayerEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++
++    @NotNull
++    private final ItemStack item;
++    @NotNull
++    private ItemStack newitem;
++
++    private boolean cancelled;
++
++    public PlayerGlassBottleFillEvent(@NotNull final Player player, @NotNull final ItemStack item,
++                                      @NotNull final ItemStack newitem) {
++        super(player);
++        this.item = item;
++        this.newitem = newitem;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    /**
++     * Set whether or not to cancel filling. If canceled,
++     * the bottle will not be filled.
++     *
++     * @param cancel true if you wish to cancel this event
++     */
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    /**
++     * Gets the existing item that's being replaced.
++     *
++     * @return old item
++     */
++    @NotNull
++    public ItemStack getItem() {
++        return item;
++    }
++
++    /**
++     * Gets the new item that's replacing the old.
++     *
++     * @return new item
++     */
++    @NotNull
++    public ItemStack getNewItem() {
++        return newitem;
++    }
++
++    /**
++     * Set the new item that's replacing the old
++     *
++     * @param item the new item
++     */
++    public void setNewItem(@Nullable ItemStack item) {
++        if (item == null) {
++            this.newitem = new ItemStack(Material.AIR);
++        } else {
++            this.newitem = item;
++        }
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
