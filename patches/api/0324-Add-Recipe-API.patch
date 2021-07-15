@@ -1,0 +1,195 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lexikiq <noellekiq@gmail.com>
+Date: Thu, 15 Jul 2021 01:39:12 -0400
+Subject: [PATCH] Add Recipe API
+
+Adds methods to utilize a world's RecipeManager to obtain recipes
+
+diff --git a/src/main/java/io/papermc/paper/inventory/RecipeType.java b/src/main/java/io/papermc/paper/inventory/RecipeType.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a595aeebd2bc5b5e2fcd29ab72615e720f4064b0
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/RecipeType.java
+@@ -0,0 +1,93 @@
++package io.papermc.paper.inventory;
++
++import com.google.common.base.Preconditions;
++import net.kyori.adventure.key.Key;
++import net.kyori.adventure.key.Keyed;
++import org.bukkit.NamespacedKey;
++import org.bukkit.inventory.BlastingRecipe;
++import org.bukkit.inventory.CampfireRecipe;
++import org.bukkit.inventory.CraftingInventory;
++import org.bukkit.inventory.FurnaceRecipe;
++import org.bukkit.inventory.Inventory;
++import org.bukkit.inventory.Recipe;
++import org.bukkit.inventory.SmithingRecipe;
++import org.bukkit.inventory.SmokingRecipe;
++import org.bukkit.inventory.StonecuttingRecipe;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.HashMap;
++import java.util.Map;
++import java.util.Objects;
++
++/**
++ * A type of recipe registered by the game or a datapack.
++ * @param <R> recipe class this type represents
++ * @param <I> inventory class used for matching recipes
++ */
++public class RecipeType<R extends Recipe, I extends Inventory> implements Keyed, org.bukkit.Keyed {
++    private final @NotNull NamespacedKey key;
++
++    public RecipeType(@NotNull String key) {
++        this.key = Objects.requireNonNull(org.bukkit.NamespacedKey.fromString(key));
++    }
++
++    public RecipeType(@NotNull NamespacedKey key) {
++        this.key = Preconditions.checkNotNull(key, "key");
++    }
++
++    @Override
++    public @NotNull NamespacedKey getKey() {
++        return key;
++    }
++
++    @Override
++    public @NotNull Key key() {
++        return key;
++    }
++
++    private static final Map<NamespacedKey, RecipeType<?, ?>> recipeTypes = new HashMap<>(7);
++
++    private static <R extends Recipe, C extends Inventory> RecipeType<R, C> register(final @NotNull String id) {
++        RecipeType<R, C> recipeType = new RecipeType<>(id);
++        recipeTypes.put(recipeType.key, recipeType);
++        return recipeType;
++    }
++
++    /**
++     * Recipes for crafting in a {@link org.bukkit.Material#CRAFTING_TABLE CRAFTING_TABLE}.
++     */
++    public static final RecipeType<Recipe, CraftingInventory> CRAFTING = register("crafting");
++    /**
++     * Recipes for smelting inside of a {@link org.bukkit.Material#FURNACE FURNACE}.
++     */
++    public static final RecipeType<FurnaceRecipe, Inventory> SMELTING = register("smelting");
++    /**
++     * Recipes for smelting inside of a {@link org.bukkit.Material#BLAST_FURNACE BLAST_FURNACE}.
++     */
++    public static final RecipeType<BlastingRecipe, Inventory> BLASTING = register("blasting");
++    /**
++     * Recipes for smelting inside of a {@link org.bukkit.Material#SMOKER SMOKER}.
++     */
++    public static final RecipeType<SmokingRecipe, Inventory> SMOKING = register("smoking");
++    /**
++     * Recipes for smelting on a {@link org.bukkit.Material#CAMPFIRE CAMPFIRE}.
++     */
++    public static final RecipeType<CampfireRecipe, Inventory> CAMPFIRE_COOKING = register("campfire_cooking");
++    /**
++     * Recipes for cutting in a {@link org.bukkit.Material#STONECUTTER STONECUTTER}.
++     */
++    public static final RecipeType<StonecuttingRecipe, Inventory> STONECUTTING = register("stonecutting");
++    /**
++     * Recipes for upgrading items in a {@link org.bukkit.Material#SMITHING_TABLE SMITHING_TABLE}.
++     */
++    public static final RecipeType<SmithingRecipe, Inventory> SMITHING = register("smithing");
++
++    /**
++     * Gets a registered recipe type by its key.
++     * @return a registered recipe type or null
++     */
++    public static @Nullable RecipeType<?, ?> getByKey(final @NotNull NamespacedKey key) {
++        return recipeTypes.get(Preconditions.checkNotNull(key, "key"));
++    }
++}
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index 8ae9198ba7fdb006dc420504a984627add20dbb5..caabd19406c843226a339226c403ebe83cc9878f 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -84,6 +84,84 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+      * @return whether a line of sight exists between {@code from} and {@code to}
+      */
+     public boolean lineOfSightExists(@NotNull Location from, @NotNull Location to);
++
++    /**
++     * Gets a recipe from the items inside of an inventory.
++     * @param recipeType recipe type to check against
++     * @param inventory the inventory to check
++     * @return a recipe resulting from the input items, or null if no result is found
++     */
++    @Nullable
++    <R extends org.bukkit.inventory.Recipe, I extends org.bukkit.inventory.Inventory> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, I> recipeType, @NotNull I inventory);
++
++    /**
++     * Gets a recipe from a collection of items.
++     * <p>
++     * The collection should be ordered from left-to-right, top-to-bottom.
++     * The zeroth index would be the top left slot of a crafting table,
++     * the first index would be the top middle slot, et cetera.
++     * @param recipeType recipe type to check against
++     * @param items items to craft with
++     * @return a recipe resulting from the input items, or null if no result is found
++     */
++    @Nullable
++    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<ItemStack> items);
++
++    /**
++     * Gets a recipe from an index of items.
++     * <p>
++     * The index should be ordered from left-to-right, top-to-bottom.
++     * The zeroth index would be the top left slot of a crafting table,
++     * the first index would be the top middle slot, et cetera.
++     * @param recipeType recipe type to check against
++     * @param items items to craft with
++     * @return a recipe resulting from the input items, or null if no result is found
++     */
++    @Nullable
++    <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull ItemStack... items);
++
++    /**
++     * Gets all applicable recipes from the items inside of an inventory.
++     * @param recipeType recipe type to check against
++     * @param inventory the inventory to check
++     * @return the recipes resulting from the input items
++     */
++    @NotNull
++    <R extends org.bukkit.inventory.Recipe, I extends org.bukkit.inventory.Inventory> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, I> recipeType, @NotNull I inventory);
++
++    /**
++     * Gets all applicable recipes from a collection of items.
++     * <p>
++     * The collection should be ordered from left-to-right, top-to-bottom.
++     * The zeroth index would be the top left slot of a crafting table,
++     * the first index would be the top middle slot, et cetera.
++     * @param recipeType recipe type to check against
++     * @param items items to craft with
++     * @return the recipes resulting from the input items
++     */
++    @Nullable
++    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull Collection<ItemStack> items);
++
++    /**
++     * Gets all applicable recipes from an array of items.
++     * <p>
++     * The array should be ordered from left-to-right, top-to-bottom.
++     * The zeroth index would be the top left slot of a crafting table,
++     * the first index would be the top middle slot, et cetera.
++     * @param recipeType recipe type to check against
++     * @param items items to craft with
++     * @return the recipes resulting from the input items
++     */
++    @NotNull
++    <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType, @NotNull ItemStack... items);
++
++    /**
++     * Gets all recipes of a certain type.
++     * @param recipeType recipe type to check against
++     * @return all recipes registered under the input type
++     */
++    @NotNull
++    <R extends org.bukkit.inventory.Recipe> List<R> getAllRecipes(io.papermc.paper.inventory.@NotNull RecipeType<R, ?> recipeType);
+     // Paper end
+ 
+     /**
