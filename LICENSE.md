@@ -49,4 +49,5 @@ Bjarne Koll <lynxplay101@gmail.com>
 MeFisto94 <MeFisto94@users.noreply.github.com>
 Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
 LemonCaramel <admin@caramel.moe>
+lexikiq <noellekiq@gmail.com>
 ```
