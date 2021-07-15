@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Fri, 19 Mar 2021 09:15:34 +0100
+Subject: [PATCH] fix enderman universal anger
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/IEntityAngerable.java b/src/main/java/net/minecraft/world/entity/IEntityAngerable.java
+index 3e390ba135f358500ee742678ef2f69acb29fa40..e2ebb5b5556c7ce1ae18a8aedaf2cadf81a17f10 100644
+--- a/src/main/java/net/minecraft/world/entity/IEntityAngerable.java
++++ b/src/main/java/net/minecraft/world/entity/IEntityAngerable.java
+@@ -75,7 +75,7 @@ public interface IEntityAngerable {
+         }
+     }
+ 
+-    default boolean a_(EntityLiving entityliving) {
++    default boolean shouldAttack(EntityLiving entity) { return a_(entity); } default boolean a_(EntityLiving entityliving) { // Paper - OBFHELPER
+         return !IEntitySelector.f.test(entityliving) ? false : (entityliving.getEntityType() == EntityTypes.PLAYER && this.a(entityliving.world) ? true : entityliving.getUniqueID().equals(this.getAngerTarget()));
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+index e993b1849beb60515c51ee4f37617faab63ca223..31ed2e8b49f097ec07552ea06ed4f47dde9f7e96 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EntityEnderman.java
+@@ -96,8 +96,11 @@ public class EntityEnderman extends EntityMonster implements IEntityAngerable {
+         this.goalSelector.a(11, new EntityEnderman.PathfinderGoalEndermanPickupBlock(this));
+         this.targetSelector.a(1, new EntityEnderman.PathfinderGoalPlayerWhoLookedAtTarget(this, this::a_));
+         this.targetSelector.a(2, new PathfinderGoalHurtByTarget(this, new Class[0]));
+-        this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityEndermite.class, 10, true, false, EntityEnderman.bq));
+-        this.targetSelector.a(4, new PathfinderGoalUniversalAngerReset<>(this, false));
++        // Paper start - fix enderman universal anger
++        this.targetSelector.addGoal(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, this::shouldAttack));
++        this.targetSelector.a(4, new PathfinderGoalNearestAttackableTarget<>(this, EntityEndermite.class, 10, true, false, EntityEnderman.bq));
++        this.targetSelector.a(5, new PathfinderGoalUniversalAngerReset<>(this, false));
++        // Paper stop - fix enderman universal anger
+     }
+ 
+     public static AttributeProvider.Builder m() {
