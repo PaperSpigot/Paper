@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: LemonCaramel <admin@caramel.moe>
+Date: Fri, 16 Jul 2021 00:39:03 +0900
+Subject: [PATCH] Add more Campfire API
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/CampfireBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
+index 9f00de75b6f206c11ce7d1c59ba98fafe02fa9ab..9616d6e824f6d8d03d1a0bf099a652afbc490758 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/CampfireBlockEntity.java
+@@ -33,12 +33,14 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
+     private final NonNullList<ItemStack> items;
+     public final int[] cookingProgress;
+     public final int[] cookingTime;
++    public final byte[] stopCooking; // Paper
+ 
+     public CampfireBlockEntity(BlockPos pos, BlockState state) {
+         super(BlockEntityType.CAMPFIRE, pos, state);
+         this.items = NonNullList.withSize(4, ItemStack.EMPTY);
+         this.cookingProgress = new int[4];
+         this.cookingTime = new int[4];
++        this.stopCooking = new byte[4]; // Paper
+     }
+ 
+     public static void cookTick(Level world, BlockPos pos, BlockState state, CampfireBlockEntity campfire) {
+@@ -49,7 +51,9 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
+ 
+             if (!itemstack.isEmpty()) {
+                 flag = true;
++                if (campfire.stopCooking[i] == 0) { // Paper
+                 int j = campfire.cookingProgress[i]++;
++                } // Paper
+ 
+                 if (campfire.cookingProgress[i] >= campfire.cookingTime[i]) {
+                     SimpleContainer inventorysubcontainer = new SimpleContainer(new ItemStack[]{itemstack});
+@@ -156,6 +160,12 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
+             System.arraycopy(aint, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, aint.length));
+         }
+ 
++        // Paper start
++        if (nbt.contains("Paper.StopCooking", 7)) { // 7: Byte Array
++            byte[] abyte = nbt.getByteArray("Paper.StopCooking");
++            System.arraycopy(abyte, 0, this.stopCooking, 0, Math.min(this.stopCooking.length, abyte.length));
++        }
++        // Paper end
+     }
+ 
+     @Override
+@@ -163,6 +173,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
+         this.saveMetadataAndItems(nbt);
+         nbt.putIntArray("CookingTimes", this.cookingProgress);
+         nbt.putIntArray("CookingTotalTimes", this.cookingTime);
++        nbt.putByteArray("Paper.StopCooking", this.stopCooking); // Paper
+         return nbt;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCampfire.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCampfire.java
+index 5ac24016f13f0739425c95861f6337a930d3d08e..a5597b714e85d1bed4f05f4ed8b4e7749e815ca3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftCampfire.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCampfire.java
+@@ -52,4 +52,29 @@ public class CraftCampfire extends CraftBlockEntityState<CampfireBlockEntity> im
+     public void setCookTimeTotal(int index, int cookTimeTotal) {
+         getSnapshot().cookingTime[index] = cookTimeTotal;
+     }
++
++    // Paper start
++    @Override
++    public void setStopCook(boolean stopCook) {
++        for (int i = 0; i < getSnapshot().stopCooking.length; ++i)
++            this.setStopCook(i, stopCook);
++    }
++
++    @Override
++    public void setStopCook(int index, boolean stopCook) {
++        getSnapshot().stopCooking[index] = (byte) (stopCook ? 1 : 0);
++    }
++
++    @Override
++    public boolean isStopCook() {
++        for (int i = 0; i < getSnapshot().stopCooking.length; ++i)
++            if (!this.isStopCook(i)) return false;
++        return true;
++    }
++
++    @Override
++    public boolean isStopCook(int index) {
++        return getSnapshot().stopCooking[index] == (byte) 1;
++    }
++    // Paper end
+ }
