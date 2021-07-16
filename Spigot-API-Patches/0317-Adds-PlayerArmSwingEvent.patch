@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 12 Mar 2021 19:20:03 -0800
+Subject: [PATCH] Adds PlayerArmSwingEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerArmSwingEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerArmSwingEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1a4550a73e89f9cf92d2831d21bcfb46f92fd189
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/player/PlayerArmSwingEvent.java
+@@ -0,0 +1,27 @@
++package io.papermc.paper.event.player;
++
++import org.bukkit.entity.Player;
++import org.bukkit.event.player.PlayerAnimationEvent;
++import org.bukkit.event.player.PlayerAnimationType;
++import org.bukkit.inventory.EquipmentSlot;
++import org.jetbrains.annotations.NotNull;
++
++public class PlayerArmSwingEvent extends PlayerAnimationEvent {
++
++    private final EquipmentSlot equipmentSlot;
++
++    public PlayerArmSwingEvent(@NotNull Player player, @NotNull EquipmentSlot equipmentSlot) {
++        super(player, PlayerAnimationType.ARM_SWING);
++        this.equipmentSlot = equipmentSlot;
++    }
++
++    /**
++     * Returns the hand of the arm swing.
++     *
++     * @return the hand
++     */
++    @NotNull
++    public EquipmentSlot getHand() {
++        return this.equipmentSlot;
++    }
++}
+diff --git a/src/main/java/org/bukkit/event/player/PlayerAnimationEvent.java b/src/main/java/org/bukkit/event/player/PlayerAnimationEvent.java
+index 6cd236cd1fa10ec37e6e0228c7bbd4415b39399d..4d18b0f2984b301bb2d909c9c362de4cbd4366fe 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerAnimationEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerAnimationEvent.java
+@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ 
+ /**
+  * Represents a player animation event
++ * <br>Use {@link io.papermc.paper.event.player.PlayerArmSwingEvent} for determining which arm was swung.
+  */
+ public class PlayerAnimationEvent extends PlayerEvent implements Cancellable {
+     private static final HandlerList handlers = new HandlerList();
+@@ -18,12 +19,19 @@ public class PlayerAnimationEvent extends PlayerEvent implements Cancellable {
+      *
+      * @param player The player instance
+      */
++    @Deprecated // Paper
+     public PlayerAnimationEvent(@NotNull final Player player) {
+         super(player);
+ 
+         // Only supported animation type for now:
+         animationType = PlayerAnimationType.ARM_SWING;
+     }
++    // Paper start
++    public PlayerAnimationEvent(@NotNull final Player player, @NotNull PlayerAnimationType animationType) {
++        super(player);
++        this.animationType = animationType;
++    }
++    // Paper end
+ 
+     /**
+      * Get the type of this animation event
