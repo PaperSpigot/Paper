@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Mon, 17 May 2021 18:32:18 -0700
+Subject: [PATCH] Fix World#getBiome
+
+Biomes are now stored in 4x4x4 cubes, and fuzzed to get the Biome of
+individual blocks. The previous World#getBiome impl was calling a method
+which used the BiomeStorage directly, this patch changes it to get from
+the BiomeManager which handles the aforementioned fuzzing.
+
+diff --git a/src/main/java/net/minecraft/world/level/biome/BiomeManager.java b/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
+index 3b1d9b26ba3249b1df0c15a22428e4211ae0e024..95dc499f0bbf6872fe7b5a1122e94567b2e8b3fe 100644
+--- a/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
++++ b/src/main/java/net/minecraft/world/level/biome/BiomeManager.java
+@@ -5,9 +5,9 @@ import net.minecraft.core.BlockPosition;
+ 
+ public class BiomeManager {
+ 
+-    private final BiomeManager.Provider a;
+-    private final long b;
+-    private final GenLayerZoomer c;
++    private final BiomeManager.Provider a; private BiomeManager.Provider biomeManagerProvider() { return this.a; } // Paper - OBFHELPER
++    private final long b; private long biomeZoomSeed() { return this.b; } // Paper - OBFHELPER
++    private final GenLayerZoomer c; private GenLayerZoomer zoomer() { return this.c; } // Paper - OBFHELPER
+ 
+     public BiomeManager(BiomeManager.Provider biomemanager_provider, long i, GenLayerZoomer genlayerzoomer) {
+         this.a = biomemanager_provider;
+@@ -24,6 +24,7 @@ public class BiomeManager {
+     }
+ 
+     public BiomeBase getBiome(BlockPosition blockposition) { return a(blockposition); } // Paper - OBFHELPER
++    public BiomeBase getBiome(final int blockX, final int blockY, final int blockZ) { return this.zoomer().getBiome(this.biomeZoomSeed(), blockX, blockY, blockZ, this.biomeManagerProvider()); } // Paper - same as below without using BlockPosition
+     public BiomeBase a(BlockPosition blockposition) {
+         return this.c.a(this.b, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a);
+     }
+diff --git a/src/main/java/net/minecraft/world/level/biome/GenLayerZoomer.java b/src/main/java/net/minecraft/world/level/biome/GenLayerZoomer.java
+index 543eec1c3cb62846c725f2cd0ac1b1a73fdfb4bb..619f929db64498eb85058bc1a4776569bc8fdd4f 100644
+--- a/src/main/java/net/minecraft/world/level/biome/GenLayerZoomer.java
++++ b/src/main/java/net/minecraft/world/level/biome/GenLayerZoomer.java
+@@ -2,5 +2,6 @@ package net.minecraft.world.level.biome;
+ 
+ public interface GenLayerZoomer {
+ 
++    default BiomeBase getBiome(long seed, int x, int y, int z, BiomeManager.Provider provider) { return this.a(seed, x, y, z, provider); } // Paper - OBFHELPER
+     BiomeBase a(long i, int j, int k, int l, BiomeManager.Provider biomemanager_provider);
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 3b3eda95c0ff8b129adedbae6561bba2d01c2f3a..25ff9f23828db75bf1f12113d6793897b88e3f2f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -1096,7 +1096,7 @@ public class CraftWorld implements World {
+ 
+     @Override
+     public Biome getBiome(int x, int y, int z) {
+-        return CraftBlock.biomeBaseToBiome(getHandle().r().b(IRegistry.ay), this.world.getBiome(x >> 2, y >> 2, z >> 2));
++        return CraftBlock.biomeBaseToBiome(getHandle().r().b(IRegistry.ay), this.world.getBiomeManager().getBiome(x, y, z)); // Paper - use correct getBiome method
+     }
+ 
+     @Override
