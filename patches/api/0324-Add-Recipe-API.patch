@@ -7,10 +7,10 @@ Adds methods to utilize a world's RecipeManager to obtain recipes
 
 diff --git a/src/main/java/io/papermc/paper/inventory/RecipeType.java b/src/main/java/io/papermc/paper/inventory/RecipeType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a595aeebd2bc5b5e2fcd29ab72615e720f4064b0
+index 0000000000000000000000000000000000000000..bc3991590c6ffb29a267abc9efcf06d2ddcaacb7
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/inventory/RecipeType.java
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,102 @@
 +package io.papermc.paper.inventory;
 +
 +import com.google.common.base.Preconditions;
@@ -30,6 +30,7 @@ index 0000000000000000000000000000000000000000..a595aeebd2bc5b5e2fcd29ab72615e72
 +import org.jetbrains.annotations.Nullable;
 +
 +import java.util.HashMap;
++import java.util.Iterator;
 +import java.util.Map;
 +import java.util.Objects;
 +
@@ -103,7 +104,46 @@ index 0000000000000000000000000000000000000000..a595aeebd2bc5b5e2fcd29ab72615e72
 +    public static @Nullable RecipeType<?, ?> getByKey(final @NotNull NamespacedKey key) {
 +        return recipeTypes.get(Preconditions.checkNotNull(key, "key"));
 +    }
++
++    /**
++     * Gets an iterator across all registered recipe types.
++     * @return recipe type iterator
++     */
++    public static @NotNull Iterator<RecipeType<?, ?>> iterator() {
++        return recipeTypes.values().iterator();
++    }
 +}
+diff --git a/src/main/java/org/bukkit/Registry.java b/src/main/java/org/bukkit/Registry.java
+index a696fcaffa03af9e6c92e2ef3e12b38eb59e5db4..fb082e495fa1e9c3392f88431c0a37b0bbf33c2c 100644
+--- a/src/main/java/org/bukkit/Registry.java
++++ b/src/main/java/org/bukkit/Registry.java
+@@ -189,6 +189,26 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
+             return GameEvent.getByKey(key);
+         }
+     };
++    // Paper start
++    /**
++     * Recipe types.
++     *
++     * @see io.papermc.paper.inventory.RecipeType RecipeType
++     */
++    Registry<io.papermc.paper.inventory.RecipeType<?, ?>> RECIPE_TYPE = new Registry<>() {
++        @NotNull
++        @Override
++        public Iterator<io.papermc.paper.inventory.RecipeType<?, ?>> iterator() {
++            return io.papermc.paper.inventory.RecipeType.iterator();
++        }
++
++        @Nullable
++        @Override
++        public io.papermc.paper.inventory.RecipeType<?, ?> get(@org.jetbrains.annotations.NotNull NamespacedKey key) {
++            return io.papermc.paper.inventory.RecipeType.getByKey(key);
++        }
++    };
++    // Paper end
+ 
+     /**
+      * Get the object by its key.
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
 index 8ae9198ba7fdb006dc420504a984627add20dbb5..9dd7d12938821de8a1b323a2e025f163c5c9f156 100644
 --- a/src/main/java/org/bukkit/World.java
