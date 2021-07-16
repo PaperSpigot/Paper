@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheShermanTanker <josephtay19@gmail.com>
+Date: Sat, 1 May 2021 15:02:11 +0800
+Subject: [PATCH] 
+ Add-API-to-change-friction-and-gravity-for-Arrows-and-similar-projectiles
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+index 2f8b3587f527620152609d5be342b328a7621e0f..0452d9308fc73197911e8ced006e32c3c9540e8f 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityArrow.java
+@@ -67,6 +67,9 @@ public abstract class EntityArrow extends IProjectile {
+     private SoundEffect ak;
+     private IntOpenHashSet al;
+     private List<Entity> am;
++    protected float waterInertia = 0.6F; public void setWaterInertia(float inertia) { this.waterInertia = inertia; }
++    protected float normalInertia = 0.99F; public float getInertia() { return this.normalInertia; } public void setInertia(float inertia) { this.normalInertia = inertia; }
++    protected float gravity = 0.05F; public float getGravity() { return this.gravity; } public void setGravity(float gravity) { this.gravity = gravity; }
+ 
+     // Spigot Start
+     @Override
+@@ -247,8 +250,7 @@ public abstract class EntityArrow extends IProjectile {
+             this.pitch = (float) (MathHelper.d(d1, (double) f1) * 57.2957763671875D);
+             this.pitch = e(this.lastPitch, this.pitch);
+             this.yaw = e(this.lastYaw, this.yaw);
+-            float f2 = 0.99F;
+-            float f3 = 0.05F;
++            float f2 = this.normalInertia;
+ 
+             if (this.isInWater()) {
+                 for (int j = 0; j < 4; ++j) {
+@@ -257,14 +259,14 @@ public abstract class EntityArrow extends IProjectile {
+                     this.world.addParticle(Particles.BUBBLE, d3 - d0 * 0.25D, d4 - d1 * 0.25D, d5 - d2 * 0.25D, d0, d1, d2);
+                 }
+ 
+-                f2 = this.s();
++                f2 = this.getWaterInertia();
+             }
+ 
+             this.setMot(vec3d.a((double) f2));
+             if (!this.isNoGravity() && !flag) {
+                 Vec3D vec3d3 = this.getMot();
+ 
+-                this.setMot(vec3d3.x, vec3d3.y - 0.05000000074505806D, vec3d3.z);
++                this.setMot(vec3d3.x, vec3d3.y - this.gravity, vec3d3.z);
+             }
+ 
+             this.setPosition(d3, d4, d5);
+@@ -644,8 +646,9 @@ public abstract class EntityArrow extends IProjectile {
+ 
+     }
+ 
++    public float getWaterInertia() { return this.s(); } //Paper - OBFHELPER
+     protected float s() {
+-        return 0.6F;
++        return this.waterInertia;
+     }
+ 
+     public void o(boolean flag) {
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/EntityThrownTrident.java b/src/main/java/net/minecraft/world/entity/projectile/EntityThrownTrident.java
+index 646043987e1102ae8e9becc9820e6c6d86ef844d..9bf47763e1c2355c5310fe817ee2ea0b690ed784 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/EntityThrownTrident.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/EntityThrownTrident.java
+@@ -35,6 +35,7 @@ public class EntityThrownTrident extends EntityArrow {
+     public EntityThrownTrident(EntityTypes<? extends EntityThrownTrident> entitytypes, World world) {
+         super(entitytypes, world);
+         this.trident = new ItemStack(Items.TRIDENT);
++        this.waterInertia = 0.99F;
+     }
+ 
+     public EntityThrownTrident(World world, EntityLiving entityliving, ItemStack itemstack) {
+@@ -205,8 +206,4 @@ public class EntityThrownTrident extends EntityArrow {
+ 
+     }
+ 
+-    @Override
+-    protected float s() {
+-        return 0.99F;
+-    }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftArrow.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftArrow.java
+index 2ab41a24a22e736753276b95fa0d060017cca0bc..e449955c8e3180122a5b3b3fe8bbb3443ae5a9c0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftArrow.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftArrow.java
+@@ -142,4 +142,34 @@ public class CraftArrow extends AbstractProjectile implements AbstractArrow {
+     public EntityType getType() {
+         return EntityType.UNKNOWN;
+     }
++
++	@Override
++	public float getGravity() {
++		return getHandle().getGravity();
++	}
++
++	@Override
++	public void setGravity(float gravity) {
++		getHandle().setGravity(gravity);
++	}
++
++	@Override
++	public float getInertia() {
++		return getHandle().getInertia();
++	}
++
++	@Override
++	public void setInertia(float inertia) {
++		getHandle().setInertia(inertia);
++	}
++
++	@Override
++	public float getWaterInertia() {
++		return getHandle().getWaterInertia();
++	}
++
++	@Override
++	public void setWaterInertia(float inertia) {
++		getHandle().setWaterInertia(inertia);
++	}
+ }

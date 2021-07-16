@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheShermanTanker <josephtay19@gmail.com>
+Date: Sat, 1 May 2021 15:02:28 +0800
+Subject: [PATCH] 
+ Add-API-to-change-friction-and-gravity-for-Arrows-and-similar-projectiles
+
+
+diff --git a/src/main/java/org/bukkit/entity/AbstractArrow.java b/src/main/java/org/bukkit/entity/AbstractArrow.java
+index b1d8007eed489aa061c1a6813bcdafc101231e56..77e9a93456459033cca342acc964b646f2c73bad 100644
+--- a/src/main/java/org/bukkit/entity/AbstractArrow.java
++++ b/src/main/java/org/bukkit/entity/AbstractArrow.java
+@@ -9,6 +9,77 @@ import org.jetbrains.annotations.Nullable;
+  */
+ public interface AbstractArrow extends Projectile {
+ 
++	/**
++	 * Gets the current gravity of this arrow like projectile in
++	 * blocks per tick
++	 *
++	 * @return The Gravity of this projectile in blocks per tick
++	 * */
++	public float getGravity();
++
++	/**
++	 * Sets the current gravity of this arrow like projectile in
++	 * blocks per tick
++	 *
++	 * For Example, setting a gravity value of 1.0F will give
++	 * this object a gravity of 400ms-2 (Gravity in Minecraft can
++	 * be translated to real world values by multiplying it by
++	 * 400)
++	 *
++	 * @param gravity The new gravity that this object should have
++	 * */
++	public void setGravity(float gravity);
++
++	/**
++	 * Gets the current Inertia of the projectile
++	 *
++	 * @return The Inertia of the projectile
++	 **/
++	public float getInertia();
++
++	/**
++	 * Sets the current Inertia of this arrow like projectile in
++	 * percentage of speed retained per tick
++	 *
++	 * Internally Air Resistance in Minecraft is calculated by multiplying
++	 * the projectile's current velocity by a percentage value 20 times
++	 * every second. For example, setting this to 0.99F would mean the object's
++	 * speed loss is 1% of it's current speed, and this calculation is
++	 * performed 20 times a second.
++	 *
++	 * Setting this value to 1 will mean the projectile is not affected
++	 * by air resistance at all, while setting it to 0 will make the object
++	 * impossible to move since the air resistance it encounters is infinite.
++	 *
++	 * For equivalent methods for water resistance, see {@link AbstractArrow#getWaterInertia()}
++	 * and {@link AbstractArrow#setWaterInertia(float)}
++	 *
++	 * @param inertia The new inertia (In Air) that this object should have
++	 **/
++	public void setInertia(float inertia);
++
++	/**
++	 * Sets the current Inertia of this arrow like projectile in
++	 * percentage of speed retained per tick
++	 *
++	 * Same as {@link AbstractArrow#getInertia()} but for water
++	 * instead of air
++	 *
++	 * @return The Inertia of the projectile if it is in water
++	 **/
++	public float getWaterInertia();
++
++	/**
++	 * Sets the current Inertia of this arrow like projectile in
++	 * percentage of speed retained per tick
++	 *
++	 * Same as {@link AbstractArrow#setInertia(float)} but for water
++	 * instead of air
++	 *
++	 * @param inertia The new inertia (In Water) that this object should have
++	 **/
++	public void setWaterInertia(float inertia);
++
+     /**
+      * Gets the knockback strength for an arrow, which is the
+      * {@link org.bukkit.enchantments.Enchantment#KNOCKBACK KnockBack} level
