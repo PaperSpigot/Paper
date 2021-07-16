@@ -5,7 +5,7 @@ Subject: [PATCH] Build system changes
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index f99a9702fe9282a1982c25cd0c003d8df80e97de..f06e7871780e863f5dd34338b008b739a471709a 100644
+index c077f4edebcdcb22733a4d4ed23360294c6937db..b5d8db2e988685fd9245b1e1068e0e48bb5318e2 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -20,21 +20,23 @@ repositories {
@@ -44,13 +44,14 @@ index f99a9702fe9282a1982c25cd0c003d8df80e97de..f06e7871780e863f5dd34338b008b739
          )
          for (tld in setOf("net", "com", "org")) {
              attributes("$tld/bukkit", "Sealed" to true)
-@@ -72,15 +75,23 @@ publishing {
+@@ -72,18 +75,25 @@ publishing {
      }
  }
  
 +val generatePom = tasks.named<GenerateMavenPom>("generatePomFileForMavenPublication")
-+
+ val noRelocation = providers.systemProperty("Paper.no-relocation").forUseAtConfigurationTime();
  tasks.shadowJar {
+     inputs.property("noRelocations", noRelocation)
      archiveClassifier.set("mojang-mapped")
  
 +    // Needed for Paperclip's install to maven local feature
@@ -59,16 +60,17 @@ index f99a9702fe9282a1982c25cd0c003d8df80e97de..f06e7871780e863f5dd34338b008b739
 +        rename { "pom.xml" }
 +    }
 +
-     val packageVersion = "1_17_R1"
-     relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v$packageVersion") {
-         exclude("org.bukkit.craftbukkit.Main*")
-     }
-     listOf(
--        "jline", "it.unimi", "org.apache.commons.codec", "org.apache.commons.io",
-+        "jline", "org.apache.commons.codec", "org.apache.commons.io", // Paper - don't relocate fastutil
-         "org.apache.commons.lang3", "org.apache.http", "org.apache.maven", "org.codehaus.plexus",
-         "org.eclipse.aether", "org.eclipse.sisu", "org.objectweb.asm"
-     ).forEach { pack ->
+     if (!noRelocation.getOrElse("false").toBoolean()) {
+         val packageVersion = "1_17_R1"
+         relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v$packageVersion") {
+             exclude("org.bukkit.craftbukkit.Main*")
+         }
+         listOf(
+-            "jline", "it.unimi", "org.apache.commons.codec", "org.apache.commons.io",
++            "jline", "org.apache.commons.codec", "org.apache.commons.io", // Paper - don't relocate fastutil
+             "org.apache.commons.lang3", "org.apache.http", "org.apache.maven", "org.codehaus.plexus",
+             "org.eclipse.aether", "org.eclipse.sisu", "org.objectweb.asm"
+         ).forEach { pack ->
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
 index b06a4c8f5e1dfcbda171910279d6861dc3d4d2e7..7f818c6bed25e0b793cca268b786f61440c429ef 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java

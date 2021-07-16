@@ -20,10 +20,10 @@ index 67fb370cad6924895a6b27052dbd5c1767e3f0c9..3e05459f27c4c5697ae65da504d67a6a
  /.project
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..f99a9702fe9282a1982c25cd0c003d8df80e97de
+index 0000000000000000000000000000000000000000..c077f4edebcdcb22733a4d4ed23360294c6937db
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,146 @@
+@@ -0,0 +1,150 @@
 +import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 +import com.github.jengelman.gradle.plugins.shadow.transformers.Transformer
 +import io.papermc.paperweight.util.Git
@@ -98,19 +98,23 @@ index 0000000000000000000000000000000000000000..f99a9702fe9282a1982c25cd0c003d8d
 +    }
 +}
 +
++val noRelocation = providers.systemProperty("Paper.no-relocation").forUseAtConfigurationTime();
 +tasks.shadowJar {
++    inputs.property("noRelocations", noRelocation)
 +    archiveClassifier.set("mojang-mapped")
 +
-+    val packageVersion = "1_17_R1"
-+    relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v$packageVersion") {
-+        exclude("org.bukkit.craftbukkit.Main*")
-+    }
-+    listOf(
-+        "jline", "it.unimi", "org.apache.commons.codec", "org.apache.commons.io",
-+        "org.apache.commons.lang3", "org.apache.http", "org.apache.maven", "org.codehaus.plexus",
-+        "org.eclipse.aether", "org.eclipse.sisu", "org.objectweb.asm"
-+    ).forEach { pack ->
-+        relocate(pack, "org.bukkit.craftbukkit.libs.$pack")
++    if (!noRelocation.getOrElse("false").toBoolean()) {
++        val packageVersion = "1_17_R1"
++        relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v$packageVersion") {
++            exclude("org.bukkit.craftbukkit.Main*")
++        }
++        listOf(
++            "jline", "it.unimi", "org.apache.commons.codec", "org.apache.commons.io",
++            "org.apache.commons.lang3", "org.apache.http", "org.apache.maven", "org.codehaus.plexus",
++            "org.eclipse.aether", "org.eclipse.sisu", "org.objectweb.asm"
++        ).forEach { pack ->
++            relocate(pack, "org.bukkit.craftbukkit.libs.$pack")
++        }
 +    }
 +    mergeServiceFiles()
 +    transform(ModifiedLog4j2PluginsCacheFileTransformer::class.java)
