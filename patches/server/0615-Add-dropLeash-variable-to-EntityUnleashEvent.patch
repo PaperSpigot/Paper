@@ -5,10 +5,10 @@ Subject: [PATCH] Add dropLeash variable to EntityUnleashEvent
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
-index eec836e5e66a7255a31f1e9311cdb4e9819c84b2..0ce0e7a923da812a02d9ab83607d3cc9c87047df 100644
+index 290fe7a7a9a72ae72b3d95299b4c9c5ada6d54b7..3e6c9e39b0e072ddbdfe5a3ac5a88001e71ed783 100644
 --- a/src/main/java/net/minecraft/world/entity/Mob.java
 +++ b/src/main/java/net/minecraft/world/entity/Mob.java
-@@ -1209,12 +1209,15 @@ public abstract class Mob extends LivingEntity {
+@@ -1211,12 +1211,15 @@ public abstract class Mob extends LivingEntity {
              return InteractionResult.PASS;
          } else if (this.getLeashHolder() == player) {
              // CraftBukkit start - fire PlayerUnleashEntityEvent
@@ -26,7 +26,7 @@ index eec836e5e66a7255a31f1e9311cdb4e9819c84b2..0ce0e7a923da812a02d9ab83607d3cc9
              return InteractionResult.sidedSuccess(this.level.isClientSide);
          } else {
              InteractionResult enuminteractionresult = this.checkAndHandleImportantInteractions(player, hand);
-@@ -1372,8 +1375,11 @@ public abstract class Mob extends LivingEntity {
+@@ -1374,8 +1377,11 @@ public abstract class Mob extends LivingEntity {
  
          if (this.leashHolder != null) {
              if (!this.isAlive() || !this.leashHolder.isAlive()) {
@@ -40,7 +40,7 @@ index eec836e5e66a7255a31f1e9311cdb4e9819c84b2..0ce0e7a923da812a02d9ab83607d3cc9
              }
  
          }
-@@ -1436,8 +1442,11 @@ public abstract class Mob extends LivingEntity {
+@@ -1438,8 +1444,11 @@ public abstract class Mob extends LivingEntity {
          boolean flag1 = super.startRiding(entity, force);
  
          if (flag1 && this.isLeashed()) {
@@ -54,7 +54,7 @@ index eec836e5e66a7255a31f1e9311cdb4e9819c84b2..0ce0e7a923da812a02d9ab83607d3cc9
          }
  
          return flag1;
-@@ -1607,8 +1616,11 @@ public abstract class Mob extends LivingEntity {
+@@ -1609,8 +1618,11 @@ public abstract class Mob extends LivingEntity {
      @Override
      protected void removeAfterChangingDimensions() {
          super.removeAfterChangingDimensions();
@@ -122,10 +122,10 @@ index b9b67134f02fd7484ed19905c9ae1f9b8a26ce26..c05f173b7642380900fdd77ce5d2c020
                          }
                      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index c2ddbde78c861c33f25c63483fc8928307161f1a..b4509c4a03b82d7c49329aa74087818499430e58 100644
+index dc2f761f20422776fe9a4fe06cd512e135c5b4db..83842d043c44e596be07d108acf292d9ed264d69 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -1466,8 +1466,10 @@ public class CraftEventFactory {
+@@ -1472,8 +1472,10 @@ public class CraftEventFactory {
          return itemInHand;
      }
  

@@ -5,10 +5,10 @@ Subject: [PATCH] Prevent consuming the wrong itemstack
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 84a2b846022a198a93ca924882d503b889290363..1f46e8eaa41c37bcd065ae064521c3c0772d7832 100644
+index 50610d40ad4a2d1cadb6c059a8436c496823bc73..ff5647effb19b281f8eb662f2cd6a4b249f7ec4b 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -3554,15 +3554,18 @@ public abstract class LivingEntity extends Entity {
+@@ -3563,15 +3563,18 @@ public abstract class LivingEntity extends Entity {
          this.entityData.set(LivingEntity.DATA_LIVING_ENTITY_FLAGS, (byte) j);
      }
  
@@ -31,7 +31,7 @@ index 84a2b846022a198a93ca924882d503b889290363..1f46e8eaa41c37bcd065ae064521c3c0
              }
  
          }
-@@ -3635,6 +3638,7 @@ public abstract class LivingEntity extends Entity {
+@@ -3644,6 +3647,7 @@ public abstract class LivingEntity extends Entity {
              this.releaseUsingItem();
          } else {
              if (!this.useItem.isEmpty() && this.isUsingItem()) {
@@ -39,7 +39,7 @@ index 84a2b846022a198a93ca924882d503b889290363..1f46e8eaa41c37bcd065ae064521c3c0
                  this.triggerItemUseEffects(this.useItem, 16);
                  // CraftBukkit start - fire PlayerItemConsumeEvent
                  ItemStack itemstack;
-@@ -3669,8 +3673,8 @@ public abstract class LivingEntity extends Entity {
+@@ -3678,8 +3682,8 @@ public abstract class LivingEntity extends Entity {
                  }
  
                  this.stopUsingItem();
