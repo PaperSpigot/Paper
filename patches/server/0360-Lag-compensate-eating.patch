@@ -7,10 +7,10 @@ When the server is lagging, players will wait longer when eating.
 Change to also use a time check instead if it passes.
 
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 1f46e8eaa41c37bcd065ae064521c3c0772d7832..e7673a72892c2a6b08020c1abaf4f89b82148024 100644
+index ff5647effb19b281f8eb662f2cd6a4b249f7ec4b..aadd4161ae72fd1f436632db4c9b82f72f44d4fd 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -3498,6 +3498,11 @@ public abstract class LivingEntity extends Entity {
+@@ -3507,6 +3507,11 @@ public abstract class LivingEntity extends Entity {
          return ((Byte) this.entityData.get(LivingEntity.DATA_LIVING_ENTITY_FLAGS) & 2) > 0 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
      }
  
@@ -22,7 +22,7 @@ index 1f46e8eaa41c37bcd065ae064521c3c0772d7832..e7673a72892c2a6b08020c1abaf4f89b
      private void updatingUsingItem() {
          if (this.isUsingItem()) {
              if (ItemStack.isSameIgnoreDurability(this.getItemInHand(this.getUsedItemHand()), this.useItem)) {
-@@ -3515,8 +3520,12 @@ public abstract class LivingEntity extends Entity {
+@@ -3524,8 +3529,12 @@ public abstract class LivingEntity extends Entity {
          if (this.shouldTriggerItemUseEffects()) {
              this.triggerItemUseEffects(stack, 5);
          }
@@ -37,7 +37,7 @@ index 1f46e8eaa41c37bcd065ae064521c3c0772d7832..e7673a72892c2a6b08020c1abaf4f89b
              this.completeUsingItem();
          }
  
-@@ -3562,7 +3571,10 @@ public abstract class LivingEntity extends Entity {
+@@ -3571,7 +3580,10 @@ public abstract class LivingEntity extends Entity {
  
          if (!itemstack.isEmpty() && !this.isUsingItem() || forceUpdate) { // Paper use override flag
              this.useItem = itemstack;
@@ -49,7 +49,7 @@ index 1f46e8eaa41c37bcd065ae064521c3c0772d7832..e7673a72892c2a6b08020c1abaf4f89b
              if (!this.level.isClientSide) {
                  this.setLivingEntityFlag(1, true);
                  this.setLivingEntityFlag(2, enumhand == InteractionHand.OFF_HAND);
-@@ -3586,7 +3598,10 @@ public abstract class LivingEntity extends Entity {
+@@ -3595,7 +3607,10 @@ public abstract class LivingEntity extends Entity {
                  }
              } else if (!this.isUsingItem() && !this.useItem.isEmpty()) {
                  this.useItem = ItemStack.EMPTY;
@@ -61,7 +61,7 @@ index 1f46e8eaa41c37bcd065ae064521c3c0772d7832..e7673a72892c2a6b08020c1abaf4f89b
              }
          }
  
-@@ -3712,7 +3727,10 @@ public abstract class LivingEntity extends Entity {
+@@ -3721,7 +3736,10 @@ public abstract class LivingEntity extends Entity {
          }
  
          this.useItem = ItemStack.EMPTY;
