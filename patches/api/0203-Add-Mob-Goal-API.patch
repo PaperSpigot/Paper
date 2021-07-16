@@ -227,7 +227,7 @@ index 0000000000000000000000000000000000000000..e21f7574763dd4f13794f91bbef192ef
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a93d052e8
+index 0000000000000000000000000000000000000000..fb0c77c66ca117eaff9487a41f1e280afe6253c6
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/entity/ai/VanillaGoal.java
 @@ -0,0 +1,288 @@
@@ -375,7 +375,7 @@ index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a
 +    GoalKey<Llama> TRADER_LLAMA_DEFEND_WANDERING_TRADER = GoalKey.of(Llama.class, NamespacedKey.minecraft("trader_llama_defend_wandering_trader"));
 +    GoalKey<Wither> WITHER_DO_NOTHING = GoalKey.of(Wither.class, NamespacedKey.minecraft("wither_do_nothing"));
 +    GoalKey<Illager> RAIDER_OPEN_DOOR = GoalKey.of(Illager.class, NamespacedKey.minecraft("raider_open_door"));
-+    GoalKey<Skeleton> SKELETON_MELEE = GoalKey.of(Skeleton.class, NamespacedKey.minecraft("skeleton_melee"));
++    GoalKey<AbstractSkeleton> SKELETON_MELEE = GoalKey.of(AbstractSkeleton.class, NamespacedKey.minecraft("abstract_skeleton_melee"));
 +    GoalKey<Blaze> BLAZE_ATTACK = GoalKey.of(Blaze.class, NamespacedKey.minecraft("blaze_attack"));
 +    GoalKey<Drowned> DROWNED_ATTACK = GoalKey.of(Drowned.class, NamespacedKey.minecraft("drowned_attack"));
 +    GoalKey<Drowned> DROWNED_GO_TO_BEACH = GoalKey.of(Drowned.class, NamespacedKey.minecraft("drowned_go_to_beach"));
@@ -396,7 +396,7 @@ index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a
 +    GoalKey<Guardian> GUARDIAN_ATTACK = GoalKey.of(Guardian.class, NamespacedKey.minecraft("guardian_attack"));
 +    GoalKey<Illusioner> ILLUSIONER_BLINDNESS_SPELL = GoalKey.of(Illusioner.class, NamespacedKey.minecraft("illusioner_blindness_spell"));
 +    GoalKey<Illusioner> ILLUSIONER_MIRROR_SPELL = GoalKey.of(Illusioner.class, NamespacedKey.minecraft("illusioner_mirror_spell"));
-+    GoalKey<Monster> LONG_DISTANCE_PATROL = GoalKey.of(Monster.class, NamespacedKey.minecraft("long_distance_patrol"));
++    GoalKey<Raider> LONG_DISTANCE_PATROL = GoalKey.of(Raider.class, NamespacedKey.minecraft("long_distance_patrol"));
 +    GoalKey<Phantom> PHANTOM_ATTACK_PLAYER = GoalKey.of(Phantom.class, NamespacedKey.minecraft("phantom_attack_player"));
 +    GoalKey<Phantom> PHANTOM_ATTACK_STRATEGY = GoalKey.of(Phantom.class, NamespacedKey.minecraft("phantom_attack_strategy"));
 +    GoalKey<Phantom> PHANTOM_CIRCLE_AROUND_ANCHOR = GoalKey.of(Phantom.class, NamespacedKey.minecraft("phantom_circle_around_anchor"));
@@ -520,7 +520,7 @@ index 0000000000000000000000000000000000000000..659193fc0596084031c09aa47fbb428a
 +    @Deprecated GoalKey<Mob> UNIVERSAL_ANGER_RESET = GoalKey.of(Mob.class, NamespacedKey.minecraft("universal_anger_reset"));
 +}
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index ca3690c502f0b269e13ebefa9797140a8243cc92..260f5432e979a19af23fa3150c3b5752ee269faf 100644
+index 152ba4281d730643957ead601a91beefce7893da..f9f9a3f0689e6494bd56f288319930018052c38b 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -1891,6 +1891,16 @@ public final class Bukkit {
@@ -541,7 +541,7 @@ index ca3690c502f0b269e13ebefa9797140a8243cc92..260f5432e979a19af23fa3150c3b5752
  
      @NotNull
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 6d313381c7aeb1cdc0e20bd4517af71b0897f886..6698320d76201b28811472a3185ddf129931bd3d 100644
+index b45551e606369f69a3777d15c35ffa5af3dfdf67..e0b79d23f4c16505cf54afb822b2f6c370560931 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1658,5 +1658,13 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
