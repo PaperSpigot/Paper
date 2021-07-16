@@ -1813,7 +1813,7 @@ index bf26a5175e672b51561a6c5a32a32068541ae656..d096bd229ee581bd8fe40a4e02705d18
      // Paper end
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index ce548fe73dcef10adb99045b06ce58135935aee6..3fd48807c554b176cd8e925bdcd68e7f808e5881 100644
+index 1ac3243555c2c61d6b6717e6826539d9d6a3248b..4d1f1f1438da0cb41188a89c23f6d295b6840808 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -19,6 +19,12 @@ public class Main {
@@ -2938,20 +2938,15 @@ index ed4415f6dd588c08c922efd5beebb3b124beb9d6..78a7ac47f20e84ccd67ff44d0bc7a2f2
          return new CraftInventoryCustom(owner, size, title);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-index 4e705b7367b78c2da98d0b174807ecbce75f3a59..0899afd175f969da0df9371d96d3b5e1de4c8533 100644
+index 4e705b7367b78c2da98d0b174807ecbce75f3a59..4972ce5d876d74e04a4fbfeb860f1d44e25b3470 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-@@ -43,6 +43,17 @@ public final class CraftInventoryCreator {
+@@ -43,6 +43,12 @@ public final class CraftInventoryCreator {
          return this.converterMap.get(type).createInventory(holder, type);
      }
  
 +    // Paper start
 +    public Inventory createInventory(InventoryHolder holder, InventoryType type, net.kyori.adventure.text.Component title) {
-+        // Paper start
-+        if (holder != null) {
-+            return DEFAULT_CONVERTER.createInventory(holder, type, title);
-+        }
-+        //noinspection ConstantConditions // Paper end
 +        return converterMap.get(type).createInventory(holder, type, title);
 +    }
 +    // Paper end
@@ -2959,7 +2954,7 @@ index 4e705b7367b78c2da98d0b174807ecbce75f3a59..0899afd175f969da0df9371d96d3b5e1
      public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
          return this.converterMap.get(type).createInventory(holder, type, title);
      }
-@@ -51,6 +62,12 @@ public final class CraftInventoryCreator {
+@@ -51,6 +57,12 @@ public final class CraftInventoryCreator {
          return this.DEFAULT_CONVERTER.createInventory(holder, size);
      }
  
@@ -2972,7 +2967,7 @@ index 4e705b7367b78c2da98d0b174807ecbce75f3a59..0899afd175f969da0df9371d96d3b5e1
      public Inventory createInventory(InventoryHolder holder, int size, String title) {
          return this.DEFAULT_CONVERTER.createInventory(holder, size, title);
      }
-@@ -59,6 +76,10 @@ public final class CraftInventoryCreator {
+@@ -59,6 +71,10 @@ public final class CraftInventoryCreator {
  
          Inventory createInventory(InventoryHolder holder, InventoryType type);
  

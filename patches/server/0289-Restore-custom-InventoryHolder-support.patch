@@ -16,31 +16,280 @@ This provides a "best of both worlds" scenario: plugins with InventoryHolder's
 will always work as intended in the past, those without will create implementation
 based inventories.
 
-diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-index 0899afd175f969da0df9371d96d3b5e1de4c8533..fc307213a4bc9675c6011a81e4e06cd23a22926d 100644
---- a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-+++ b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftInventoryCreator.java
-@@ -40,6 +40,11 @@ public final class CraftInventoryCreator {
-     }
+diff --git a/src/main/java/io/papermc/paper/inventory/PaperInventoryCustomHolderContainer.java b/src/main/java/io/papermc/paper/inventory/PaperInventoryCustomHolderContainer.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..bad8fdffd42bb7495ada4ccee10101e10e1b6607
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/PaperInventoryCustomHolderContainer.java
+@@ -0,0 +1,107 @@
++package io.papermc.paper.inventory;
++
++import net.minecraft.world.Container;
++import net.minecraft.world.entity.player.Player;
++import net.minecraft.world.item.ItemStack;
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryHolder;
++
++import java.util.List;
++
++public class PaperInventoryCustomHolderContainer implements Container {
++
++    private final InventoryHolder owner;
++    private final Container delegate;
++
++    public PaperInventoryCustomHolderContainer(InventoryHolder owner, Container delegate) {
++        this.owner = owner;
++        this.delegate = delegate;
++    }
++
++    @Override
++    public int getContainerSize() {
++        return delegate.getContainerSize();
++    }
++
++    @Override
++    public boolean isEmpty() {
++        return delegate.isEmpty();
++    }
++
++    @Override
++    public ItemStack getItem(int slot) {
++        return delegate.getItem(slot);
++    }
++
++    @Override
++    public ItemStack removeItem(int slot, int amount) {
++        return delegate.removeItem(slot, amount);
++    }
++
++    @Override
++    public ItemStack removeItemNoUpdate(int slot) {
++        return delegate.removeItemNoUpdate(slot);
++    }
++
++    @Override
++    public void setItem(int slot, ItemStack stack) {
++        delegate.setItem(slot, stack);
++    }
++
++    @Override
++    public int getMaxStackSize() {
++        return delegate.getMaxStackSize();
++    }
++
++    @Override
++    public void setChanged() {
++        delegate.setChanged();
++    }
++
++    @Override
++    public boolean stillValid(Player player) {
++        return delegate.stillValid(player);
++    }
++
++    @Override
++    public List<ItemStack> getContents() {
++        return delegate.getContents();
++    }
++
++    @Override
++    public void onOpen(CraftHumanEntity who) {
++        delegate.onOpen(who);
++    }
++
++    @Override
++    public void onClose(CraftHumanEntity who) {
++        delegate.onClose(who);
++    }
++
++    @Override
++    public List<HumanEntity> getViewers() {
++        return delegate.getViewers();
++    }
++
++    @Override
++    public InventoryHolder getOwner() {
++        return owner;
++    }
++
++    @Override
++    public void setMaxStackSize(int size) {
++        delegate.setMaxStackSize(size);
++    }
++
++    @Override
++    public Location getLocation() {
++        return delegate.getLocation();
++    }
++
++    @Override
++    public void clearContent() {
++        delegate.clearContent();
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
+index 99d52dc4a3619200e8eb864e8ed8f4a6e469b443..e02a3bd3a8fe45d05d5bdd87a4fb5d98c2c20610 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
+@@ -173,7 +173,11 @@ public class CraftContainer extends AbstractContainerMenu {
+                 this.delegate = new DispenserMenu(windowId, bottom, top);
+                 break;
+             case FURNACE:
+-                this.delegate = new FurnaceMenu(windowId, bottom, top, new SimpleContainerData(4));
++                // Paper start
++                net.minecraft.world.inventory.ContainerData furnaceContainerData = new SimpleContainerData(4);
++                this.delegate = new FurnaceMenu(windowId, bottom, top, furnaceContainerData);
++                this.addDataSlots(furnaceContainerData);
++                // Paper end
+                 break;
+             case CRAFTING: // TODO: This should be an error?
+             case WORKBENCH:
+@@ -183,7 +187,11 @@ public class CraftContainer extends AbstractContainerMenu {
+                 this.delegate = new EnchantmentMenu(windowId, bottom);
+                 break;
+             case BREWING:
+-                this.delegate = new BrewingStandMenu(windowId, bottom, top, new SimpleContainerData(2));
++                // Paper start
++                net.minecraft.world.inventory.ContainerData brewingContainerData = new SimpleContainerData(2);
++                this.delegate = new BrewingStandMenu(windowId, bottom, top, brewingContainerData);
++                this.addDataSlots(brewingContainerData);
++                // Paper end
+                 break;
+             case HOPPER:
+                 this.delegate = new HopperMenu(windowId, bottom, top);
+@@ -201,13 +209,21 @@ public class CraftContainer extends AbstractContainerMenu {
+                 this.delegate = new ShulkerBoxMenu(windowId, bottom, top);
+                 break;
+             case BLAST_FURNACE:
+-                this.delegate = new BlastFurnaceMenu(windowId, bottom, top, new SimpleContainerData(4));
++                // Paper start
++                net.minecraft.world.inventory.ContainerData blastFurnaceContainerData = new SimpleContainerData(4);
++                this.delegate = new BlastFurnaceMenu(windowId, bottom, top, blastFurnaceContainerData);
++                this.addDataSlots(blastFurnaceContainerData);
++                // Paper end
+                 break;
+             case LECTERN:
+                 this.delegate = new LecternMenu(windowId, top, new SimpleContainerData(1), bottom);
+                 break;
+             case SMOKER:
+-                this.delegate = new SmokerMenu(windowId, bottom, top, new SimpleContainerData(4));
++                // Paper start
++                net.minecraft.world.inventory.ContainerData smokerContainerData = new SimpleContainerData(4);
++                this.delegate = new SmokerMenu(windowId, bottom, top, smokerContainerData);
++                this.addDataSlots(smokerContainerData);
++                // Paper end
+                 break;
+             case LOOM:
+                 this.delegate = new LoomMenu(windowId, bottom);
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
+index 08fc05836b26f5f93ae74324705d5f593b57315a..f96480f05ffb161a6c30bf5a75e7a1bf086ac109 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryCustom.java
+@@ -15,6 +15,21 @@ import org.bukkit.event.inventory.InventoryType;
+ import org.bukkit.inventory.InventoryHolder;
  
-     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
-+        // Paper start
-+        if (holder != null) {
-+            return this.DEFAULT_CONVERTER.createInventory(holder, type);
+ public class CraftInventoryCustom extends CraftInventory {
++    // Paper start
++    private InventoryType type;
++    public CraftInventoryCustom(InventoryHolder owner, InventoryType type, Container delegate) {
++        super(new io.papermc.paper.inventory.PaperInventoryCustomHolderContainer(owner, delegate));
++        this.type = type;
++    }
++
++    @Override
++    public InventoryType getType() {
++        if (this.type != null) {
++            return this.type;
 +        }
-+        //noinspection ConstantConditions // Paper end
-         return this.converterMap.get(type).createInventory(holder, type);
++        return super.getType();
++    }
++    // Paper end
+     public CraftInventoryCustom(InventoryHolder owner, InventoryType type) {
+         super(new MinecraftInventory(owner, type));
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftTileInventoryConverter.java b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftTileInventoryConverter.java
+index 7a7f3f53aef601f124d474d9890e23d87dd96900..834fe12fad8f5f7047f25cceeac2b399fc647025 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftTileInventoryConverter.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/util/CraftTileInventoryConverter.java
+@@ -28,7 +28,7 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+ 
+     @Override
+     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
+-        return this.getInventory(this.getTileEntity());
++        return this.getInventory(holder, type, this.getTileEntity()); // Paper
      }
  
-@@ -55,6 +60,11 @@ public final class CraftInventoryCreator {
+     // Paper start
+@@ -39,7 +39,7 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+             ((RandomizableContainerBlockEntity) te).setCustomName(io.papermc.paper.adventure.PaperAdventure.asVanilla(title));
+         }
+ 
+-        return getInventory(te);
++        return getInventory(owner, type, te); // Paper
+     }
      // Paper end
  
-     public Inventory createInventory(InventoryHolder holder, InventoryType type, String title) {
-+        // Paper start
-+        if (holder != null) {
-+            return DEFAULT_CONVERTER.createInventory(holder, type, title);
-+        }
-+        //noinspection ConstantConditions // Paper end
-         return this.converterMap.get(type).createInventory(holder, type, title);
+@@ -50,10 +50,11 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+             ((RandomizableContainerBlockEntity) te).setCustomName(CraftChatMessage.fromStringOrNull(title));
+         }
+ 
+-        return this.getInventory(te);
++        return this.getInventory(holder, type, te); // Paper
      }
  
+-    public Inventory getInventory(Container tileEntity) {
++    public Inventory getInventory(InventoryHolder owner, InventoryType type, Container tileEntity) { // Paper
++        if (owner != null) return new org.bukkit.craftbukkit.inventory.CraftInventoryCustom(owner, type, tileEntity); // Paper
+         return new CraftInventory(tileEntity);
+     }
+ 
+@@ -70,7 +71,7 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+         public Inventory createInventory(InventoryHolder owner, InventoryType type, net.kyori.adventure.text.Component title) {
+             Container tileEntity = getTileEntity();
+             ((AbstractFurnaceBlockEntity) tileEntity).setCustomName(io.papermc.paper.adventure.PaperAdventure.asVanilla(title));
+-            return getInventory(tileEntity);
++            return getInventory(owner, type, tileEntity); // Paper
+         }
+         // Paper end
+ 
+@@ -78,11 +79,12 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+         public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
+             Container tileEntity = this.getTileEntity();
+             ((AbstractFurnaceBlockEntity) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
+-            return this.getInventory(tileEntity);
++            return this.getInventory(owner, type, tileEntity); // Paper
+         }
+ 
+         @Override
+-        public Inventory getInventory(Container tileEntity) {
++        public Inventory getInventory(InventoryHolder owner, InventoryType type, net.minecraft.world.Container tileEntity) { // Paper
++            if (owner != null) return new org.bukkit.craftbukkit.inventory.CraftInventoryCustom(owner, type, tileEntity); // Paper
+             return new CraftInventoryFurnace((AbstractFurnaceBlockEntity) tileEntity);
+         }
+     }
+@@ -102,7 +104,7 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+             if (tileEntity instanceof BrewingStandBlockEntity) {
+                 ((BrewingStandBlockEntity) tileEntity).setCustomName(io.papermc.paper.adventure.PaperAdventure.asVanilla(title));
+             }
+-            return getInventory(tileEntity);
++            return getInventory(owner, type, tileEntity); // Paper
+         }
+         // Paper end
+ 
+@@ -113,11 +115,12 @@ public abstract class CraftTileInventoryConverter implements CraftInventoryCreat
+             if (tileEntity instanceof BrewingStandBlockEntity) {
+                 ((BrewingStandBlockEntity) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
+             }
+-            return this.getInventory(tileEntity);
++            return this.getInventory(holder, type, tileEntity); // Paper
+         }
+ 
+         @Override
+-        public Inventory getInventory(Container tileEntity) {
++        public Inventory getInventory(InventoryHolder owner, InventoryType type, net.minecraft.world.Container tileEntity) { // Paper
++            if (owner != null) return new org.bukkit.craftbukkit.inventory.CraftInventoryCustom(owner, type, tileEntity); // Paper
+             return new CraftInventoryBrewer(tileEntity);
+         }
+     }
