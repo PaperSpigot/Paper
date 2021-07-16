@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Fri, 12 Mar 2021 19:22:21 -0800
+Subject: [PATCH] Adds PlayerArmSwingEvent
+
+
+diff --git a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInArmAnimation.java b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInArmAnimation.java
+index ab9ef34782f483bb297a8cdd82eb3388bd2df706..a463aca7279e1ae69598b609fad2a08ceda1e23b 100644
+--- a/src/main/java/net/minecraft/network/protocol/game/PacketPlayInArmAnimation.java
++++ b/src/main/java/net/minecraft/network/protocol/game/PacketPlayInArmAnimation.java
+@@ -29,6 +29,7 @@ public class PacketPlayInArmAnimation implements Packet<PacketListenerPlayIn> {
+         packetlistenerplayin.a(this);
+     }
+ 
++    public EnumHand getHand() { return b(); } // Paper - OBFHELPER
+     public EnumHand b() {
+         return this.a;
+     }
+diff --git a/src/main/java/net/minecraft/server/network/PlayerConnection.java b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+index 4001078e2a408dfd5a93c21f55a58c1fde32abbb..7044620e7fb5874913e7911adb606668a76ac0de 100644
+--- a/src/main/java/net/minecraft/server/network/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/network/PlayerConnection.java
+@@ -2224,7 +2224,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
+         }
+ 
+         // Arm swing animation
+-        PlayerAnimationEvent event = new PlayerAnimationEvent(this.getPlayer());
++        io.papermc.paper.event.player.PlayerArmSwingEvent event = new io.papermc.paper.event.player.PlayerArmSwingEvent(this.getPlayer(), packetplayinarmanimation.getHand() == EnumHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND); // Paper
+         this.server.getPluginManager().callEvent(event);
+ 
+         if (event.isCancelled()) return;
