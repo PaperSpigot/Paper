@@ -26,12 +26,12 @@ index 0000000000000000000000000000000000000000..890d5e3ffd5da23f05d456232568fc6d
 +        return RecipeType.getByKey(NamespacedKey.minecraft(nms.toString()));
 +    }
 +}
-diff --git a/src/main/java/io/papermc/paper/inventory/SizedContainer.java b/src/main/java/io/papermc/paper/inventory/SizedContainer.java
+diff --git a/src/main/java/io/papermc/paper/inventory/MenulessContainer.java b/src/main/java/io/papermc/paper/inventory/MenulessContainer.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..24090e43868c61b8ad9e8cfa32b20c89e23f69d9
+index 0000000000000000000000000000000000000000..fa82f292583a862829f9a5c696b82539487f91e4
 --- /dev/null
-+++ b/src/main/java/io/papermc/paper/inventory/SizedContainer.java
-@@ -0,0 +1,40 @@
++++ b/src/main/java/io/papermc/paper/inventory/MenulessContainer.java
+@@ -0,0 +1,41 @@
 +package io.papermc.paper.inventory;
 +
 +import net.minecraft.world.ContainerHelper;
@@ -41,19 +41,20 @@ index 0000000000000000000000000000000000000000..24090e43868c61b8ad9e8cfa32b20c89
 +
 +import java.util.Collection;
 +
-+public class SizedContainer extends CraftingContainer {
-+    public SizedContainer(int width, int height) {
++// "Simulates" an NMS crafting container by removing the need for a menu
++public class MenulessContainer extends CraftingContainer {
++    public MenulessContainer(int width, int height) {
 +        super(null, width, height);
 +    }
 +
-+    public SizedContainer(int width, int height, ItemStack... items) {
++    public MenulessContainer(int width, int height, ItemStack... items) {
 +        super(null, width, height);
 +        for (int i = 0; i < items.length && i < (width * height); i++) {
 +            setItem(i, items[i]);
 +        }
 +    }
 +
-+    public SizedContainer(int width, int height, Collection<ItemStack> items) {
++    public MenulessContainer(int width, int height, Collection<ItemStack> items) {
 +        this(width, height, items.toArray(new ItemStack[]{}));
 +    }
 +
@@ -85,7 +86,7 @@ index 057b92a2948543644618c63abd3f61d1120db4dd..2931f8bf83408eaa41d4ae80e5a6b16f
              return irecipe;
          }).collect(Collectors.toList());
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef73334311cbb 100644
+index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..7d5a3d0cecaaa82ecfebe5ddcd6a64037981f75b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -342,6 +342,91 @@ public class CraftWorld implements World {
@@ -115,7 +116,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef733
 +        for (ItemStack item : items) {
 +            nmsItems.add(CraftItemStack.asNMSCopy(item));
 +        }
-+        return getRecipe(recipeType, new io.papermc.paper.inventory.SizedContainer(3, 3, nmsItems));
++        return getRecipe(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
 +    }
 +
 +    @Override
@@ -126,7 +127,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef733
 +        for (int i = 0; i < items.length; i++) {
 +            nmsItems[i] = CraftItemStack.asNMSCopy(items[i]);
 +        }
-+        return getRecipe(recipeType, new io.papermc.paper.inventory.SizedContainer(3, 3, nmsItems));
++        return getRecipe(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
 +    }
 +
 +    public <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, net.minecraft.world.Container container) {
@@ -154,7 +155,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef733
 +        for (ItemStack item : items) {
 +            nmsItems.add(CraftItemStack.asNMSCopy(item));
 +        }
-+        return getRecipes(recipeType, new io.papermc.paper.inventory.SizedContainer(3, 3, nmsItems));
++        return getRecipes(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
 +    }
 +
 +    @Override
@@ -165,7 +166,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef733
 +        for (int i = 0; i < items.length; i++) {
 +            nmsItems[i] = CraftItemStack.asNMSCopy(items[i]);
 +        }
-+        return getRecipes(recipeType, new io.papermc.paper.inventory.SizedContainer(3, 3, nmsItems));
++        return getRecipes(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
 +    }
 +
 +    @Override
