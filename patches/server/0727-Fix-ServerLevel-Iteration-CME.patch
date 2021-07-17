@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: thamid-gamer <60953955+thamid-gamer@users.noreply.github.com>
+Date: Tue, 13 Jul 2021 13:53:13 -0400
+Subject: [PATCH] Fix ServerLevel Iteration CME
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 3dded5c491ace6b073a7bc3178976bd70f0b9393..07a3f7f9bcaefb6491e6adffb1110eed937020ef 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -231,6 +231,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     private int port;
+     public final RegistryAccess.RegistryHolder registryHolder;
+     public final Map<ResourceKey<Level>, ServerLevel> levels;
++    private ServerLevel[] safeLevelsArray; // Paper - avoid CME
+     private PlayerList playerList;
+     private volatile boolean running;
+     private volatile boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
+@@ -1124,6 +1125,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         try {
+             long serverStartTime = Util.getNanos(); // Paper
+             if (this.initServer()) {
++                this.safeLevelsArray = this.levels.values().toArray(new ServerLevel[0]); // Paper
+                 this.nextTickTime = Util.getMillis();
+                 this.status.setDescription(new TextComponent(this.motd));
+                 this.status.setVersion(new ServerStatus.Version(SharedConstants.getCurrentVersion().getName(), SharedConstants.getCurrentVersion().getProtocolVersion()));
+@@ -1496,7 +1498,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         MinecraftTimings.commandFunctionsTimer.stopTiming(); // Spigot // Paper
+         midTickLoadChunks(); // Paper
+         this.profiler.popPush("levels");
+-        Iterator iterator = this.getAllLevels().iterator();
++        // Iterator iterator = this.getAllLevels().iterator(); // Paper - unnecessary
+ 
+         // CraftBukkit start
+         // Run tasks that are waiting on processing
+@@ -1528,8 +1530,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         // Paper end
+         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot // Paper
+ 
+-        while (iterator.hasNext()) {
+-            ServerLevel worldserver = (ServerLevel) iterator.next();
++        for (ServerLevel worldserver : this.safeLevelsArray) { // Paper - avoid CME
++            // ServerLevel worldserver = (ServerLevel) iterator.next(); // Paper
+             worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
+             worldserver.hasEntityMoveEvent =  io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
+             net.minecraft.world.level.block.entity.HopperBlockEntity.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
+@@ -1572,6 +1574,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             this.profiler.pop();
+             worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+         }
++        // Paper start
++        if (this.levels.size() != this.safeLevelsArray.length) {
++            this.safeLevelsArray = this.levels.values().toArray(new ServerLevel[0]);
++        }
++        // Paper end
+ 
+         this.profiler.popPush("connection");
+         MinecraftTimings.connectionTimer.startTiming(); // Spigot
