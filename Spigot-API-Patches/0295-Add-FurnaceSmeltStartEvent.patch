@@ -1,0 +1,91 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dmitry Sidorov <jonmagon@gmail.com>
+Date: Mon, 3 May 2021 12:32:08 +0300
+Subject: [PATCH] Add FurnaceSmeltStartEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/block/FurnaceSmeltStartEvent.java b/src/main/java/io/papermc/paper/event/block/FurnaceSmeltStartEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c155003d814af9d8fa4840db058bccd676b89b00
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/block/FurnaceSmeltStartEvent.java
+@@ -0,0 +1,79 @@
++package io.papermc.paper.event.block;
++
++import org.bukkit.block.Block;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.block.BlockEvent;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called when an item starts to smelt.
++ */
++public class FurnaceSmeltStartEvent extends BlockEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private final ItemStack source;
++    private int cookTimeTotal;
++    private boolean cancelled;
++
++    public FurnaceSmeltStartEvent(@NotNull Block furnace, @NotNull ItemStack source, int cookTimeTotal) {
++        super(furnace);
++        this.source = source;
++        this.cookTimeTotal = cookTimeTotal;
++    }
++
++    /**
++     * Gets the ItemStack will being smelted for this event
++     *
++     * @return smelting source ItemStack
++     */
++    @NotNull
++    public ItemStack getSource() {
++        return this.source;
++    }
++
++    /***
++     * Gets cooking total time
++     *
++     * @return cooking total time in ticks
++     */
++    public int getCookTimeTotal() {
++        return this.cookTimeTotal;
++    }
++
++    /***
++     * Sets cooking total time
++     *
++     * @param cookTimeTotal non-negative value in ticks
++     */
++    public void setCookTimeTotal(int cookTimeTotal) {
++        this.cookTimeTotal = Math.max(cookTimeTotal, 0);
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return this.cancelled;
++    }
++
++    /**
++     * Set whether or not to cancel smelting. If canceled,
++     * the smelting will not be started.
++     *
++     * @param cancel true if you wish to cancel this event
++     */
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}

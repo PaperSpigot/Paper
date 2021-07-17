@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dmitry Sidorov <jonmagon@gmail.com>
+Date: Mon, 3 May 2021 12:33:45 +0300
+Subject: [PATCH] Add FurnaceSmeltStartEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+index 9ce19b89c16eb6edd3d5d5cc87a966a37f66895c..5cd525a8d5d8647445ac36e962ef6f99965c7ae9 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityFurnace.java
+@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
+ import com.google.common.collect.ImmutableMap;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
++import io.papermc.paper.event.block.FurnaceSmeltStartEvent; // Paper - Add FurnaceSmeltStartEvent
+ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+ import it.unimi.dsi.fastutil.objects.ObjectIterator;
+@@ -61,6 +62,7 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+     public int burnTime;
+     private int ticksForCurrentFuel;
+     public double cookSpeedMultiplier = 1.0; // Paper - cook speed multiplier API
++    public boolean isSmelting; // Paper - Add FurnaceSmeltStartEvent
+     public int cookTime;
+     public int cookTimeTotal;
+     protected final IContainerProperties b;
+@@ -345,11 +347,21 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+                 }
+ 
+                 if (this.isBurning() && this.canBurn(irecipe)) {
++                    // Paper start - Add FurnaceSmeltStartEvent
++                    if (this.cookTime == 0) { // Not yet started cooking
++                        FurnaceSmeltStartEvent event = new FurnaceSmeltStartEvent(CraftBlock.at(this.world, this.position), CraftItemStack.asCraftMirror(this.items.get(0)), this.cookTimeTotal);
++                        this.items.set(0, CraftItemStack.asNMSCopy(event.getSource()));
++                        this.isSmelting = event.callEvent();
++                        this.cookTimeTotal = event.getCookTimeTotal();
++                    }
++                    else if (!this.isSmelting) this.isSmelting = true;
++                    if (this.isSmelting) // Paper end
+                     ++this.cookTime;
+                     if (this.cookTime >= this.cookTimeTotal) { // Paper - cook speed multiplier API
+                         this.cookTime = 0;
+                         this.cookTimeTotal = this.getRecipeCookingTime();
+                         this.burn(irecipe);
++                        this.isSmelting = false; // Paper - Add FurnaceSmeltStartEvent
+                         flag1 = true;
+                     }
+                 } else {
+@@ -360,6 +372,11 @@ public abstract class TileEntityFurnace extends TileEntityContainer implements I
+             if (flag != this.isBurning()) {
+                 flag1 = true;
+                 this.world.setTypeAndData(this.position, (IBlockData) this.world.getType(this.position).set(BlockFurnace.LIT, this.isBurning()), 3);
++                // Paper start - Add FurnaceSmeltStartEvent
++                if (!this.isBurning()) {
++                    this.isSmelting = false;
++                }
++                // Paper end
+             }
+         }
+ 
