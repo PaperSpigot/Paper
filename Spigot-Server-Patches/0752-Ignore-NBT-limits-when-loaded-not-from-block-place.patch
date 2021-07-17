@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sat, 29 May 2021 17:05:59 -0700
+Subject: [PATCH] Ignore NBT limits when loaded not from block place
+
+
+diff --git a/src/main/java/net/minecraft/world/item/ItemBlock.java b/src/main/java/net/minecraft/world/item/ItemBlock.java
+index 59d52c252b2e59923b8e513dd4d2e1ec9ce34dc7..9bf1b7d671a19e898e591042e6d3c4e5cae4ae82 100644
+--- a/src/main/java/net/minecraft/world/item/ItemBlock.java
++++ b/src/main/java/net/minecraft/world/item/ItemBlock.java
+@@ -220,7 +220,10 @@ public class ItemBlock extends Item {
+                     nbttagcompound1.setInt("y", blockposition.getY());
+                     nbttagcompound1.setInt("z", blockposition.getZ());
+                     if (!nbttagcompound1.equals(nbttagcompound2)) {
++                        boolean prevForceLoadState = tileentity.forceLoad; // Paper
++                        tileentity.forceLoad = false; // Paper
+                         tileentity.load(world.getType(blockposition), nbttagcompound1);
++                        tileentity.forceLoad = prevForceLoadState; // Paper
+                         tileentity.update();
+                         return true;
+                     }
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+index 93d02ccb87c17404c55884f52ae40c7b7ddfb103..6874ab7b77668cb44802fa529330d44ae8c0afbd 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntity.java
+@@ -44,6 +44,7 @@ public abstract class TileEntity implements net.minecraft.server.KeyedObject { /
+     @Nullable
+     private IBlockData c;
+     private boolean g;
++    public boolean forceLoad = true; // Paper
+ 
+     public TileEntity(TileEntityTypes<?> tileentitytypes) {
+         this.position = BlockPosition.ZERO;
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+index 45958ffedca64e08e347ae65033700c0d798beb5..f4b1fbf709050eb5f8d573b8462d14d46bdd5872 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntityBanner.java
+@@ -82,7 +82,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
+ 
+         this.patterns = nbttagcompound.getList("Patterns", 10);
+         // CraftBukkit start
+-        while (this.patterns.size() > 20) {
++        while (this.patterns.size() > 20 && !this.forceLoad) { // Paper
+             this.patterns.remove(20);
+         }
+         // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+index 7f78f388584899b13ff983f0dc37c679bfb1507e..d05086a0d6ccdcd5c4ddf8998b4ea24a218fa300 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/TileEntitySign.java
+@@ -75,7 +75,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { //
+ 
+         for (int i = 0; i < 4; ++i) {
+             String s = nbttagcompound.getString("Text" + (i + 1));
+-            if (s != null && s.length() > 2048) {
++            if (s != null && s.length() > 2048 && !this.forceLoad) { // Paper
+                 s = "\"\"";
+             }
+ 
