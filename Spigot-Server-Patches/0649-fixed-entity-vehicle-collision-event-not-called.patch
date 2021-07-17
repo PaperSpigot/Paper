@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lukas81298 <lukas81298@gmail.com>
+Date: Tue, 12 Jan 2021 14:41:38 +0100
+Subject: [PATCH] fixed entity vehicle collision event not called
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
+index 68722b7a156f2c0834c835ec59fb019174742ead..b9f5abe232881c623bd71db434f2ee31a814552a 100644
+--- a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
++++ b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
+@@ -103,7 +103,16 @@ public abstract class EntityMinecartAbstract extends Entity {
+ 
+     @Override
+     public boolean j(Entity entity) {
+-        return EntityBoat.a((Entity) this, entity);
++        // Paper start - fixed VehicleEntityCollisionEvent not called when colliding with player
++        boolean b = EntityBoat.a(this, entity);
++        if(!b) {
++            return false;
++        }
++        org.bukkit.event.vehicle.VehicleEntityCollisionEvent collisionEvent = new org.bukkit.event.vehicle.VehicleEntityCollisionEvent((org.bukkit.entity.Vehicle) getBukkitEntity(), entity.getBukkitEntity());
++        org.bukkit.Bukkit.getPluginManager().callEvent(collisionEvent);
++
++        return !collisionEvent.isCancelled();
++        // Paper end
+     }
+ 
+     @Override
