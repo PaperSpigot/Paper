@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jos=C3=A9=20Miguel=20Moreno?= <josemmo@pm.me>
+Date: Sat, 5 Jun 2021 13:45:15 +0200
+Subject: [PATCH] Fix plugin loggers on server shutdown
+
+
+diff --git a/src/main/java/io/papermc/paper/log/CustomLogManager.java b/src/main/java/io/papermc/paper/log/CustomLogManager.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c1d3bac79bb8b4796c013ff4472f75dcd79602dc
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/log/CustomLogManager.java
+@@ -0,0 +1,26 @@
++package io.papermc.paper.log;
++
++import java.util.logging.LogManager;
++
++public class CustomLogManager extends LogManager {
++    private static CustomLogManager instance;
++
++    public CustomLogManager() {
++        instance = this;
++    }
++
++    @Override
++    public void reset() {
++        // Ignore calls to this method
++    }
++
++    private void superReset() {
++        super.reset();
++    }
++
++    public static void forceReset() {
++        if (instance != null) {
++            instance.superReset();
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index bf80e870e6a2a6fe1d4ae1bea355bcd7a0735d3b..9bbad437983d406ceb285ad2a431a653b270a73b 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -14,6 +14,7 @@ import io.netty.buffer.ByteBufOutputStream;
+ import io.netty.buffer.Unpooled;
+ import io.papermc.paper.adventure.PaperAdventure; // Paper
+ import io.papermc.paper.event.entity.EntityMoveEvent;
++import io.papermc.paper.log.CustomLogManager;
+ import io.papermc.paper.util.TraceUtil;
+ import it.unimi.dsi.fastutil.longs.LongIterator;
+ import java.awt.image.BufferedImage;
+@@ -969,6 +970,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+             net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // Paper - Use TerminalConsoleAppender
+         } catch (Exception e) {
+         }
++        CustomLogManager.forceReset(); // Paper - Reset loggers after shutdown
+         this.exit();
+         // Paper end
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 409fbeeb66fb8f58a72d94686bc9515299927b75..80848a00a3e3ac5e5a9ce858327a22362a907cb1 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -20,6 +20,12 @@ public class Main {
+     public static boolean useJline = true;
+     public static boolean useConsole = true;
+ 
++    // Paper start - Hijack log manager to ensure logging on shutdown
++    static {
++        System.setProperty("java.util.logging.manager", "io.papermc.paper.log.CustomLogManager");
++    }
++    // Paper end
++
+     public static void main(String[] args) {
+         // Paper start
+         final String warnWhenLegacyFormattingDetected = String.join(".", "net", "kyori", "adventure", "text", "warnWhenLegacyFormattingDetected");
