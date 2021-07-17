@@ -85,10 +85,10 @@ index 057b92a2948543644618c63abd3f61d1120db4dd..2931f8bf83408eaa41d4ae80e5a6b16f
              return irecipe;
          }).collect(Collectors.toList());
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..ae8c4916d222a38cc7562f5dcd2db2f2558ce48f 100644
+index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..febedbb95b4a4b333cf00e417e2ef73334311cbb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -342,6 +342,92 @@ public class CraftWorld implements World {
+@@ -342,6 +342,91 @@ public class CraftWorld implements World {
  
          return this.getHandle().clip(new ClipContext(vec3d, vec3d1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null)).getType() == HitResult.Type.MISS;
      }
@@ -96,7 +96,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..ae8c4916d222a38cc7562f5dcd2db2f2
 +    public <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, net.minecraft.world.Container container) {
 +        Validate.notNull(recipeType, "recipeType parameter in getRecipe cannot be null");
 +        Validate.notNull(container, "container parameter in getRecipe cannot be null");
-+        java.util.Optional<net.minecraft.world.item.crafting.Recipe> optionalRecipe = world.getRecipeManager().getRecipeFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, world);
++        java.util.Optional<net.minecraft.world.item.crafting.Recipe> optionalRecipe = this.world.getRecipeManager().getRecipeFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, this.world);
 +        return (R) optionalRecipe.map(recipe -> recipe.toBukkitRecipe()).orElse(null);
 +    }
 +
@@ -133,7 +133,7 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..ae8c4916d222a38cc7562f5dcd2db2f2
 +        Validate.notNull(recipeType, "recipeType parameter in getRecipes cannot be null");
 +        Validate.notNull(container, "container parameter in getRecipes cannot be null");
 +        List<R> recipes = new ArrayList<>();
-+        for (net.minecraft.world.item.crafting.Recipe recipe : (List<net.minecraft.world.item.crafting.Recipe>) world.getRecipeManager().getRecipesFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, world)) {
++        for (net.minecraft.world.item.crafting.Recipe recipe : (List<net.minecraft.world.item.crafting.Recipe>) this.world.getRecipeManager().getRecipesFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, this.world)) {
 +            recipes.add((R) recipe.toBukkitRecipe());
 +        }
 +        return recipes;
@@ -177,7 +177,6 @@ index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..ae8c4916d222a38cc7562f5dcd2db2f2
 +        }
 +        return recipes;
 +    }
-+
      // Paper end
  
      private static final Random rand = new Random();
