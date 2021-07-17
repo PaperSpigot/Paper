@@ -1,0 +1,161 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 25 May 2021 12:08:48 -0700
+Subject: [PATCH] Itemstack Glint API
+
+
+diff --git a/src/main/java/io/papermc/paper/enchantments/PaperGlintEnchantment.java b/src/main/java/io/papermc/paper/enchantments/PaperGlintEnchantment.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..42d12205ea368680fbd615b7de6e1967412ca383
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/enchantments/PaperGlintEnchantment.java
+@@ -0,0 +1,22 @@
++package io.papermc.paper.enchantments;
++
++import net.minecraft.world.entity.EnumItemSlot;
++import net.minecraft.world.item.enchantment.Enchantment;
++import net.minecraft.world.item.enchantment.EnchantmentSlotType;
++
++public class PaperGlintEnchantment extends Enchantment {
++
++    public PaperGlintEnchantment() {
++        super(Rarity.COMMON, EnchantmentSlotType.ALL, EnumItemSlot.values());
++    }
++
++    @Override // isTradeable
++    public boolean h() {
++        return false;
++    }
++
++    @Override // isDiscoverable
++    public boolean i() {
++        return false;
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/item/enchantment/EnchantmentSlotType.java b/src/main/java/net/minecraft/world/item/enchantment/EnchantmentSlotType.java
+index cf41863bc8b0be9f2a73ca2dd02a4d414d4f230e..d9c3e82cf436e9124d460046e5d06668bf477d0e 100644
+--- a/src/main/java/net/minecraft/world/item/enchantment/EnchantmentSlotType.java
++++ b/src/main/java/net/minecraft/world/item/enchantment/EnchantmentSlotType.java
+@@ -15,6 +15,14 @@ import net.minecraft.world.level.block.Block;
+ 
+ public enum EnchantmentSlotType {
+ 
++    // Paper start
++    ALL {
++        @Override
++        public boolean canEnchant(Item item) {
++            return true;
++        }
++    },
++    // Paper end
+     ARMOR {
+         @Override
+         public boolean canEnchant(Item item) {
+@@ -96,7 +104,7 @@ public enum EnchantmentSlotType {
+     VANISHABLE {
+         @Override
+         public boolean canEnchant(Item item) {
+-            return item instanceof ItemVanishable || Block.asBlock(item) instanceof ItemVanishable || null.BREAKABLE.canEnchant(item);
++            return item instanceof ItemVanishable || Block.asBlock(item) instanceof ItemVanishable || BREAKABLE.canEnchant(item); // Paper - decompile fix
+         }
+     };
+ 
+diff --git a/src/main/java/net/minecraft/world/item/enchantment/Enchantments.java b/src/main/java/net/minecraft/world/item/enchantment/Enchantments.java
+index 0b96c02bbf0aa2f086e9f21b07876ca538e4c4b5..68063e8ffc3b468005c6de90d4a183a60c42daff 100644
+--- a/src/main/java/net/minecraft/world/item/enchantment/Enchantments.java
++++ b/src/main/java/net/minecraft/world/item/enchantment/Enchantments.java
+@@ -44,6 +44,7 @@ public class Enchantments {
+     public static final Enchantment PIERCING = a("piercing", new EnchantmentPiercing(Enchantment.Rarity.COMMON, new EnumItemSlot[]{EnumItemSlot.MAINHAND}));
+     public static final Enchantment MENDING = a("mending", new EnchantmentMending(Enchantment.Rarity.RARE, EnumItemSlot.values()));
+     public static final Enchantment VANISHING_CURSE = a("vanishing_curse", new EnchantmentVanishing(Enchantment.Rarity.VERY_RARE, EnumItemSlot.values()));
++    public static final Enchantment PAPER_GLINT = a("paper_glint", new io.papermc.paper.enchantments.PaperGlintEnchantment()); // Paper
+ 
+     // CraftBukkit start
+     static {
+diff --git a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+index 3b83852249e56609074ef1e8cdad6416db66007b..e345a5bdbadc7e96e045bf61de06a3e6890c6b64 100644
+--- a/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
++++ b/src/main/java/org/bukkit/craftbukkit/enchantments/CraftEnchantment.java
+@@ -59,6 +59,10 @@ public class CraftEnchantment extends Enchantment {
+             return EnchantmentTarget.CROSSBOW;
+         case VANISHABLE:
+             return EnchantmentTarget.VANISHABLE;
++            // Paper start
++        case ALL:
++            return EnchantmentTarget.ALL_ITEMS;
++            // Paper end
+         default:
+             return null;
+         }
+@@ -159,6 +163,10 @@ public class CraftEnchantment extends Enchantment {
+             return "MENDING";
+         case 37:
+             return "VANISHING_CURSE";
++            // Paper start
++        case 38:
++            return "PAPER_GLINT";
++            // Paper end
+         default:
+             return "UNKNOWN_ENCHANT_" + IRegistry.ENCHANTMENT.a(target);
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+index 5c1319a86f6314c1d0a979af34424ee025a8030f..297e1c11c2214ba5f9b6f4d20826864c7e185908 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+@@ -855,7 +855,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
+ 
+     @Overridden
+     boolean isEmpty() {
+-        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || (lore != null) || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers() || hasPlaceableKeys() || hasDestroyableKeys()); // Paper - Implement an API for CanPlaceOn and CanDestroy NBT values
++        return !(hasDisplayName() || hasLocalizedName() || isGlinted() || hasEnchants() || (lore != null) || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers() || hasPlaceableKeys() || hasDestroyableKeys()); // Paper - Implement an API for CanPlaceOn and CanDestroy NBT values
+     }
+ 
+     // Paper start
+@@ -1303,6 +1303,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
+     boolean equalsCommon(CraftMetaItem that) {
+         return ((this.hasDisplayName() ? that.hasDisplayName() && this.displayName.equals(that.displayName) : !that.hasDisplayName()))
+                 && (this.hasLocalizedName() ? that.hasLocalizedName() && this.locName.equals(that.locName) : !that.hasLocalizedName())
++                && (this.isGlinted() == that.isGlinted()) // Paper
+                 && (this.hasEnchants() ? that.hasEnchants() && this.enchantments.equals(that.enchantments) : !that.hasEnchants())
+                 && (Objects.equals(this.lore, that.lore))
+                 && (this.hasCustomModelData() ? that.hasCustomModelData() && this.customModelData.equals(that.customModelData) : !that.hasCustomModelData())
+@@ -1725,6 +1726,23 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
+         return this.destroyableKeys != null && !this.destroyableKeys.isEmpty();
+     }
+ 
++    @Override
++    public boolean isGlinted() {
++        return this.enchantments != null ? this.enchantments.containsKey(Enchantment.PAPER_GLINT) : false;
++    }
++
++    @Override
++    public void setGlinted(boolean glinted) {
++        if (glinted) {
++            if (this.enchantments == null) {
++                this.enchantments = new EnchantmentMap();
++            }
++            this.enchantments.put(Enchantment.PAPER_GLINT, 1);
++        } else if (this.enchantments != null) {
++            this.enchantments.remove(Enchantment.PAPER_GLINT);
++        }
++    }
++
+     @Deprecated
+     private void legacyClearAndReplaceKeys(Collection<Namespaced> toUpdate, Collection<Material> beingSet) {
+         if (beingSet.stream().anyMatch(Material::isLegacy)) {
+diff --git a/src/test/java/org/bukkit/enchantments/EnchantmentTargetTest.java b/src/test/java/org/bukkit/enchantments/EnchantmentTargetTest.java
+index 2a0507866703c6bfd5307ab151b0862695497b24..77aeecf3167647befb1d2dd3afd0bff4cf41d15c 100644
+--- a/src/test/java/org/bukkit/enchantments/EnchantmentTargetTest.java
++++ b/src/test/java/org/bukkit/enchantments/EnchantmentTargetTest.java
+@@ -21,6 +21,11 @@ public class EnchantmentTargetTest {
+                 case DIGGER:
+                     bukkitTarget = EnchantmentTarget.TOOL;
+                     break;
++                    // Paper start
++                case ALL:
++                    bukkitTarget = EnchantmentTarget.ALL_ITEMS;
++                    break;
++                    // Paper end
+                 default:
+                     bukkitTarget = EnchantmentTarget.valueOf(nmsSlot.name());
+                     break;

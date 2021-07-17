@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 25 May 2021 12:08:41 -0700
+Subject: [PATCH] Itemstack Glint API
+
+
+diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java
+index 799813410f40589ba1d7d530a47d87f609764705..b30dab3bff650f8c3d2cc0df33adf5a8ef03c6e9 100644
+--- a/src/main/java/org/bukkit/enchantments/Enchantment.java
++++ b/src/main/java/org/bukkit/enchantments/Enchantment.java
+@@ -204,6 +204,11 @@ public abstract class Enchantment implements Keyed {
+      * Walk quicker on soul blocks
+      */
+     public static final Enchantment SOUL_SPEED = new EnchantmentWrapper("soul_speed");
++    // Paper start
++    /**
++     * Dummy enchantment for glint
++     */
++    public static final Enchantment PAPER_GLINT = new EnchantmentWrapper("paper_glint");
+ 
+     private static final Map<NamespacedKey, Enchantment> byKey = new HashMap<NamespacedKey, Enchantment>();
+     private static final Map<String, Enchantment> byName = new HashMap<String, Enchantment>();
+diff --git a/src/main/java/org/bukkit/enchantments/EnchantmentTarget.java b/src/main/java/org/bukkit/enchantments/EnchantmentTarget.java
+index 635e07a6b0e255c4fdad58ba9d281c807af4e229..ba7c5ea4377bacaece7fd1213d4ab701ff74f811 100644
+--- a/src/main/java/org/bukkit/enchantments/EnchantmentTarget.java
++++ b/src/main/java/org/bukkit/enchantments/EnchantmentTarget.java
+@@ -8,6 +8,14 @@ import org.jetbrains.annotations.NotNull;
+  * Represents the applicable target for a {@link Enchantment}
+  */
+ public enum EnchantmentTarget {
++    // Paper start
++    ALL_ITEMS {
++        @Override
++        public boolean includes(@NotNull Material item) {
++            return item.isItem();
++        }
++    },
++    // Paper end
+     /**
+      * Allows the Enchantment to be placed on all items
+      *
+diff --git a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
+index f093f991f1fedd20fcef041b093398250b7fb286..675549fdbf082d036a24a8790b2552437a7595a2 100644
+--- a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
++++ b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
+@@ -562,5 +562,9 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
+      * @return true if this item has destroyable keys
+      */
+     boolean hasDestroyableKeys();
++
++    boolean isGlinted();
++
++    void setGlinted(boolean glinted);
+     // Paper end
+ }
