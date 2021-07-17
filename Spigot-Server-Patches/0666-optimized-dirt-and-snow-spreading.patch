@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lukas81298 <lukas81298@gommehd.net>
+Date: Fri, 22 Jan 2021 21:50:18 +0100
+Subject: [PATCH] optimized dirt and snow spreading
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockDirtSnowSpreadable.java b/src/main/java/net/minecraft/server/BlockDirtSnowSpreadable.java
+index 7b29d47dfdef7611db58068af285f76d92a9f12a..0054e9651b242553a9c2df0d1c876470c48c9ed5 100644
+--- a/src/main/java/net/minecraft/server/BlockDirtSnowSpreadable.java
++++ b/src/main/java/net/minecraft/server/BlockDirtSnowSpreadable.java
+@@ -8,9 +8,10 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
+         super(blockbase_info);
+     }
+ 
+-    private static boolean b(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
++    private static final boolean b(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) { return canBeGrass(iworldreader.getChunkAt(blockposition.getX(), blockposition.getZ()), iblockdata, iworldreader, blockposition); } // Paper - fallback method
++    private static boolean canBeGrass(IChunkAccess chunk, IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) { // Paper - added chunk parameter
+         BlockPosition blockposition1 = blockposition.up();
+-        IBlockData iblockdata1 = iworldreader.getType(blockposition1);
++        IBlockData iblockdata1 = chunk.getType(blockposition1); // Paper - reuse chunk
+ 
+         if (iblockdata1.a(Blocks.SNOW) && (Integer) iblockdata1.get(BlockSnow.LAYERS) == 1) {
+             return true;
+@@ -23,16 +24,22 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
+         }
+     }
+ 
+-    private static boolean c(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
++    private static final boolean c(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) { return canBeGrass(iworldreader.getChunkAt(blockposition.getX(), blockposition.getZ()), iblockdata, iworldreader, blockposition); } // Paper - legacy fallback
++    private static boolean canPropagate(IChunkAccess chunk, IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) { // Paper - added chunk parameter
+         BlockPosition blockposition1 = blockposition.up();
+ 
+-        return b(iblockdata, iworldreader, blockposition) && !iworldreader.getFluid(blockposition1).a((Tag) TagsFluid.WATER);
++        return canBeGrass(chunk, iblockdata, iworldreader, blockposition) && !chunk.getFluid(blockposition1).a((Tag) TagsFluid.WATER); // Paper - reuse chunk
+     }
+ 
+     @Override
+     public void tick(IBlockData iblockdata, WorldServer worldserver, BlockPosition blockposition, Random random) {
+         if (this instanceof BlockGrass && worldserver.paperConfig.grassUpdateRate != 1 && (worldserver.paperConfig.grassUpdateRate < 1 || (MinecraftServer.currentTick + blockposition.hashCode()) % worldserver.paperConfig.grassUpdateRate != 0)) { return; } // Paper
+-        if (!b(iblockdata, (IWorldReader) worldserver, blockposition)) {
++        // Paper - reuse chunk
++        Chunk chunk = worldserver.getChunkIfLoaded(blockposition);
++        if(chunk == null) {
++            return;
++        }
++        if (!canBeGrass(chunk, iblockdata, (IWorldReader) worldserver, blockposition)) {
+             // CraftBukkit start
+             if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(worldserver, blockposition, Blocks.DIRT.getBlockData()).isCancelled()) {
+                 return;
+@@ -46,9 +53,20 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
+                 for (int i = 0; i < 4; ++i) {
+                     BlockPosition blockposition1 = blockposition.b(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
+ 
+-                    if (worldserver.getType(blockposition1).a(Blocks.DIRT) && c(iblockdata1, (IWorldReader) worldserver, blockposition1)) {
+-                        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(worldserver, blockposition, blockposition1, (IBlockData) iblockdata1.set(BlockDirtSnowSpreadable.a, worldserver.getType(blockposition1.up()).a(Blocks.SNOW))); // CraftBukkit
++                    // Paper - reuse chunks
++                    if(blockposition.getX() == blockposition1.getX() && blockposition.getY() == blockposition1.getY() && blockposition.getZ() == blockposition1.getZ()) {
++                        continue;
++                    }
++                    final int cx = blockposition1.getX() >> 4;
++                    final int cz = blockposition1.getZ() >> 4;
++                    Chunk chunk1 = (cx == chunk.locX && cz == chunk.locZ) ? chunk : worldserver.getChunkAt(cx, cz);
++                    if(chunk1 == null) {
++                        return;
++                    }
++                    if (chunk1.getType(blockposition1).a(Blocks.DIRT) && canPropagate(chunk1, iblockdata1, (IWorldReader) worldserver, blockposition1)) {
++                        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(worldserver, blockposition, blockposition1, (IBlockData) iblockdata1.set(BlockDirtSnowSpreadable.a, chunk1.getType(blockposition1.up()).a(Blocks.SNOW))); // CraftBukkit
+                     }
++                    // Paper end
+                 }
+             }
+ 
