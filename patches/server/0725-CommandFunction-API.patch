@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 6 Jan 2021 23:38:05 -0800
+Subject: [PATCH] CommandFunction API
+
+
+diff --git a/src/main/java/io/papermc/paper/datapack/PaperCommandFunction.java b/src/main/java/io/papermc/paper/datapack/PaperCommandFunction.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2cb225319710e3a3948f00e179f1c6b978ec10df
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/datapack/PaperCommandFunction.java
+@@ -0,0 +1,46 @@
++package io.papermc.paper.datapack;
++
++import net.minecraft.commands.CommandFunction;
++import net.minecraft.server.MinecraftServer;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public class PaperCommandFunction implements io.papermc.paper.datapack.CommandFunction {
++
++    private final CommandFunction handle;
++    private NamespacedKey functionKey;
++    private List<String> commands;
++
++    public PaperCommandFunction(CommandFunction handle) {
++        this.handle = handle;
++    }
++
++    @Override
++    public int execute() {
++        return MinecraftServer.getServer().getFunctions().execute(handle, MinecraftServer.getServer().createCommandSourceStack().withSuppressedOutput().withMaximumPermission(2)); // Taken from /function command
++    }
++
++    @Override
++    public List<String> getCommands() {
++        if (this.commands == null) {
++            this.commands = new ArrayList<>();
++            for (CommandFunction.Entry entry : handle.getEntries()) {
++                if (entry instanceof CommandFunction.CommandEntry) {
++                    commands.add(((CommandFunction.CommandEntry) entry).toString());
++                }
++            }
++        }
++        return this.commands;
++    }
++
++    @Override
++    public NamespacedKey getKey() {
++        if (this.functionKey == null) {
++            this.functionKey = CraftNamespacedKey.fromMinecraft(handle.getId());
++        }
++        return this.functionKey;
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/datapack/PaperDatapackManager.java b/src/main/java/io/papermc/paper/datapack/PaperDatapackManager.java
+index cf4374493c11057451a62a655514415cf6b298e0..b0a4acef24ac59855ff2ed4c8f309a9852ee171e 100644
+--- a/src/main/java/io/papermc/paper/datapack/PaperDatapackManager.java
++++ b/src/main/java/io/papermc/paper/datapack/PaperDatapackManager.java
+@@ -22,4 +22,14 @@ public class PaperDatapackManager implements DatapackManager {
+     public Collection<Datapack> getEnabledPacks() {
+         return repository.getSelectedPacks().stream().map(loader -> new PaperDatapack(loader, true)).collect(Collectors.toList());
+     }
++
++    @Override
++    public Collection<CommandFunction> getCommandFunctions() {
++        return net.minecraft.server.MinecraftServer.getServer().getFunctions().library.getFunctions().values().stream().map(net.minecraft.commands.CommandFunction::getPaperCommandFunction).collect(Collectors.toSet());
++    }
++
++    @Override
++    public CommandFunction getCommandFunction(org.bukkit.NamespacedKey functionKey) {
++        return net.minecraft.server.MinecraftServer.getServer().getFunctions().get(org.bukkit.craftbukkit.util.CraftNamespacedKey.toMinecraft(functionKey)).map(net.minecraft.commands.CommandFunction::getPaperCommandFunction).orElse(null);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/commands/CommandFunction.java b/src/main/java/net/minecraft/commands/CommandFunction.java
+index b94038e2da0f986403c1ec9b27384344e2bb22f0..5e730b10e55762e5a2b10ac366e8ec73ac9f909c 100644
+--- a/src/main/java/net/minecraft/commands/CommandFunction.java
++++ b/src/main/java/net/minecraft/commands/CommandFunction.java
+@@ -24,6 +24,7 @@ public class CommandFunction {
+         }
+         return timing;
+     }
++    private final io.papermc.paper.datapack.PaperCommandFunction paperCommandFunction = new io.papermc.paper.datapack.PaperCommandFunction(this); public final io.papermc.paper.datapack.PaperCommandFunction getPaperCommandFunction() { return paperCommandFunction; }
+     // Paper end
+ 
+     public CommandFunction(ResourceLocation id, CommandFunction.Entry[] elements) {
