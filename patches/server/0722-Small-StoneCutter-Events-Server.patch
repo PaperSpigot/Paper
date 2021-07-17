@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jayson <jaysonjson@web.de>
+Date: Thu, 24 Jun 2021 06:36:53 +0200
+Subject: [PATCH] Small StoneCutter Events -Server
+
+
+diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+index 8708eb173fbb17cf84a0c6d9a42623750472f650..dd55d844c68e812a1e441d872d025cdf944fd240 100644
+--- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
++++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
+@@ -7,6 +7,7 @@ import com.mojang.brigadier.StringReader;
+ import io.netty.buffer.Unpooled;
+ import io.netty.util.concurrent.Future;
+ import io.netty.util.concurrent.GenericFutureListener;
++import io.papermc.paper.event.inventory.StonecutEvent;
+ import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
+ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+ import it.unimi.dsi.fastutil.objects.ObjectIterator;
+@@ -209,10 +210,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
+ import org.bukkit.event.player.PlayerToggleFlightEvent;
+ import org.bukkit.event.player.PlayerToggleSneakEvent;
+ import org.bukkit.event.player.PlayerToggleSprintEvent;
+-import org.bukkit.inventory.CraftingInventory;
+-import org.bukkit.inventory.EquipmentSlot;
+-import org.bukkit.inventory.InventoryView;
+-import org.bukkit.inventory.SmithingInventory;
++import org.bukkit.inventory.*;
+ import org.bukkit.util.NumberConversions;
+ import co.aikar.timings.MinecraftTimings; // Paper
+ // CraftBukkit end
+@@ -2723,6 +2721,17 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Ser
+                         }
+                     }
+ 
++                    if(packet.getSlotNum() == 1 && top instanceof StonecutterInventory) {
++                        org.bukkit.inventory.ItemStack result = ((StonecutterInventory) top).getResult();
++                        if(result != null) {
++                            if (click == ClickType.NUMBER_KEY) {
++                                event = new StonecutEvent(inventory, type, packet.getSlotNum(), click, action, packet.getButtonNum());
++                            } else {
++                                event = new StonecutEvent(inventory, type, packet.getSlotNum(), click, action);
++                            }
++                        }
++                    }
++
+                     event.setCancelled(cancelled);
+                     AbstractContainerMenu oldContainer = this.player.containerMenu; // SPIGOT-1224
+                     this.cserver.getPluginManager().callEvent(event);
+diff --git a/src/main/java/net/minecraft/world/inventory/StonecutterMenu.java b/src/main/java/net/minecraft/world/inventory/StonecutterMenu.java
+index 72d1d7722691ff411cb481ac8be6afba0c3b989c..f3fbea54deac0b3146fe1894c6bc3bf3112dad78 100644
+--- a/src/main/java/net/minecraft/world/inventory/StonecutterMenu.java
++++ b/src/main/java/net/minecraft/world/inventory/StonecutterMenu.java
+@@ -192,13 +192,11 @@ public class StonecutterMenu extends AbstractContainerMenu {
+     @Override
+     public void slotsChanged(Container inventory) {
+         ItemStack itemstack = this.inputSlot.getItem();
+-
+         if (!itemstack.is(this.input.getItem())) {
+             this.input = itemstack.copy();
+             this.setupRecipeList(inventory, itemstack);
+         }
+ 
+-        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareResultEvent(this, 1); // Paper
+     }
+ 
+     private void setupRecipeList(Container input, ItemStack stack) {
+@@ -221,6 +219,8 @@ public class StonecutterMenu extends AbstractContainerMenu {
+             this.resultSlot.set(ItemStack.EMPTY);
+         }
+ 
++        org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareStonecuttingEvent(getBukkitView(), getRecipes()); // Paper
++
+         this.broadcastChanges();
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index a59a449c0a7b76527f009031aee2d11d6b43cadf..5ba6c1fde23314e3005c3b100e59f00611471ee6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -12,6 +12,8 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.stream.Collectors;
+ import javax.annotation.Nullable;
++
++import io.papermc.paper.event.inventory.PrepareStonecuttingEvent;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
+ import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+@@ -45,6 +47,7 @@ import net.minecraft.world.inventory.MerchantMenu;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.Items;
+ import net.minecraft.world.item.context.UseOnContext;
++import net.minecraft.world.item.crafting.StonecutterRecipe;
+ import net.minecraft.world.level.Explosion;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelAccessor;
+@@ -212,6 +215,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
+ import org.bukkit.event.world.LootGenerateEvent;
+ import org.bukkit.inventory.EquipmentSlot;
+ import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.StonecuttingRecipe;
+ import org.bukkit.inventory.meta.BookMeta;
+ import org.bukkit.potion.PotionEffect;
+ 
+@@ -1581,6 +1585,20 @@ public class CraftEventFactory {
+     }
+     // Paper end
+ 
++    // Paper start
++
++    public static void callPrepareStonecuttingEvent(InventoryView view, List<StonecutterRecipe> recipes) {
++        List<StonecuttingRecipe> bukkitRecipes = new ArrayList<>();
++        for (StonecutterRecipe recipe : recipes) {
++            bukkitRecipes.add((StonecuttingRecipe) recipe.toBukkitRecipe());
++        }
++        PrepareStonecuttingEvent event = new PrepareStonecuttingEvent(view, view.getItem(1), bukkitRecipes);
++        event.callEvent();
++        event.getInventory().setItem(1, event.getResult());
++    }
++
++    // Paper end
++
+     // Paper start - support specific overrides for prepare result
+     public static void callPrepareResultEvent(AbstractContainerMenu container, int resultSlot) {
+         com.destroystokyo.paper.event.inventory.PrepareResultEvent event;
+@@ -1598,7 +1616,7 @@ public class CraftEventFactory {
+         }
+         event.callEvent();
+         event.getInventory().setItem(resultSlot, event.getResult());
+-        container.broadcastChanges();;
++        container.broadcastChanges();
+     }
+     // Paper end
+ 

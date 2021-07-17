@@ -1,0 +1,91 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jayson <jaysonjson@web.de>
+Date: Thu, 24 Jun 2021 06:36:37 +0200
+Subject: [PATCH] Small StoneCutter Events -API
+
+
+diff --git a/src/main/java/io/papermc/paper/event/inventory/PrepareStonecuttingEvent.java b/src/main/java/io/papermc/paper/event/inventory/PrepareStonecuttingEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1f0f2c9558dc2a774864ba2e43aa0af84d264174
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/inventory/PrepareStonecuttingEvent.java
+@@ -0,0 +1,43 @@
++package io.papermc.paper.event.inventory;
++
++import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.StonecutterInventory;
++import org.bukkit.inventory.StonecuttingRecipe;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.List;
++
++/**
++ * Called when an item is put in a slot for cutting in a Stonecutter
++ */
++
++public class PrepareStonecuttingEvent extends PrepareResultEvent {
++
++    private final List<StonecuttingRecipe> recipes;
++    public PrepareStonecuttingEvent(@NotNull InventoryView inventory, @Nullable ItemStack result, List<StonecuttingRecipe> recipes) {
++        super(inventory, result);
++        this.recipes = recipes;
++    }
++
++
++    /**
++     * Recipe list from Input Item
++     * @return bukkit recipes
++     */
++    public List<StonecuttingRecipe> getRecipes() {
++        return recipes;
++    }
++
++    public ItemStack getInput() {
++        return getInventory().getInputItem();
++    }
++
++    @Override
++    public @NotNull StonecutterInventory getInventory() {
++        return (StonecutterInventory) super.getInventory();
++    }
++
++}
+diff --git a/src/main/java/io/papermc/paper/event/inventory/StonecutEvent.java b/src/main/java/io/papermc/paper/event/inventory/StonecutEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d66b52e416d7ada5e217f007b193de05645c3399
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/inventory/StonecutEvent.java
+@@ -0,0 +1,30 @@
++package io.papermc.paper.event.inventory;
++
++import org.bukkit.event.inventory.ClickType;
++import org.bukkit.event.inventory.InventoryAction;
++import org.bukkit.event.inventory.InventoryClickEvent;
++import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.StonecutterInventory;
++import org.jetbrains.annotations.NotNull;
++
++public class StonecutEvent extends InventoryClickEvent {
++
++    public StonecutEvent(@NotNull InventoryView view, InventoryType.@NotNull SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action) {
++        super(view, type, slot, click, action);
++    }
++
++    public StonecutEvent(@NotNull InventoryView view, InventoryType.@NotNull SlotType type, int slot, @NotNull ClickType click, @NotNull InventoryAction action, int key) {
++        super(view, type, slot, click, action, key);
++    }
++
++    @Override
++    public @NotNull StonecutterInventory getInventory() {
++        return (StonecutterInventory) super.getInventory();
++    }
++
++    public ItemStack getItem() {
++        return getCurrentItem();
++    }
++}
