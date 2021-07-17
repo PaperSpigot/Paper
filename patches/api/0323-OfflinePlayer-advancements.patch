@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Thu, 22 Apr 2021 01:42:02 -0700
+Subject: [PATCH] OfflinePlayer advancements
+
+
+diff --git a/src/main/java/org/bukkit/OfflinePlayer.java b/src/main/java/org/bukkit/OfflinePlayer.java
+index 3afd5f5c0208a4ee93b5dbfc2aab2b9d2e8a7544..a733737ad288ca722ffa8a505e90daaf57ffe728 100644
+--- a/src/main/java/org/bukkit/OfflinePlayer.java
++++ b/src/main/java/org/bukkit/OfflinePlayer.java
+@@ -190,6 +190,18 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
+      * @return last seen time
+      */
+     public long getLastSeen();
++
++    /**
++     * Return the player's progression on the specified advancement.
++     * May cause an I/O operation.
++     * <p>
++     * <b>You cannot award criteria to an offline player!</b>
++     *
++     * @param advancement advancement
++     * @return object detailing the player's progress
++     */
++    @NotNull
++    org.bukkit.advancement.AdvancementProgress getAdvancementProgress(@NotNull org.bukkit.advancement.Advancement advancement);
+     // Paper end
+ 
+     /**
