@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 3 Jan 2021 21:25:39 -0800
+Subject: [PATCH] Make EntityUnleashEvent cancellable
+
+
+diff --git a/src/main/java/org/bukkit/event/entity/EntityUnleashEvent.java b/src/main/java/org/bukkit/event/entity/EntityUnleashEvent.java
+index e0e068799a1868c8e561869015f41f553ef4fbdb..2c4802c5e19e84216dd57bbbaa4e02d800535491 100644
+--- a/src/main/java/org/bukkit/event/entity/EntityUnleashEvent.java
++++ b/src/main/java/org/bukkit/event/entity/EntityUnleashEvent.java
+@@ -6,11 +6,14 @@ import org.jetbrains.annotations.NotNull;
+ 
+ /**
+  * Called immediately prior to an entity being unleashed.
++ * <br>Cancelling this event when either the leashed entity dies,
++ * or the client has disconnected the leash will have no effect.
+  */
+-public class EntityUnleashEvent extends EntityEvent {
++public class EntityUnleashEvent extends EntityEvent implements org.bukkit.event.Cancellable { // Paper
+     private static final HandlerList handlers = new HandlerList();
+     private final UnleashReason reason;
+     private boolean dropLeash; // Paper
++    private boolean cancelled; // Paper
+ 
+     // Paper start - drop leash variable
+     @Deprecated
+@@ -53,6 +56,16 @@ public class EntityUnleashEvent extends EntityEvent {
+     public void setDropLeash(boolean dropLeash) {
+         this.dropLeash = dropLeash;
+     }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
+     // Paper end
+ 
+     @NotNull
