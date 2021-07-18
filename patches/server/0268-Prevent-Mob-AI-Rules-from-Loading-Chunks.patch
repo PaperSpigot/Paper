@@ -4,6 +4,18 @@ Date: Mon, 10 Sep 2018 23:56:36 -0400
 Subject: [PATCH] Prevent Mob AI Rules from Loading Chunks
 
 
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
+index 70a51ba19fb34f652858b18f24554261787d97e2..5f593700053b17acc2a1fc9d280c6900655d3cd5 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
+@@ -107,6 +107,7 @@ public abstract class MoveToBlockGoal extends Goal {
+                 for(int m = 0; m <= l; m = m > 0 ? -m : 1 - m) {
+                     for(int n = m < l && m > -l ? l : 0; n <= l; n = n > 0 ? -n : 1 - n) {
+                         mutableBlockPos.setWithOffset(blockPos, m, k - 1, n);
++                        if (!this.mob.level.hasChunkAt(mutableBlockPos)) continue; // Paper - it's an invalid target if it's not loaded
+                         if (this.mob.isWithinRestriction(mutableBlockPos) && this.isValidTarget(this.mob.level, mutableBlockPos)) {
+                             this.blockPos = mutableBlockPos;
+                             return true;
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
 index b255eed15cfc7282167a9bed01653b34bb8d13f1..ac5779319081a6894373877067edf958da8a9cf5 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java

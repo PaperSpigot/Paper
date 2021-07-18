@@ -227,7 +227,7 @@ index dc7da3b806d1c759958d7c51b05efbc4b6c42653..69bf112655615337e0df3ea56b9e42fa
          this.availableGoals.stream().filter((wrappedGoal) -> {
              return wrappedGoal.getGoal() == goal;
 diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
-index 27ea9c10b7f66c2133b0829c0b1c37143dd80b56..c28ade67f6a59146064a57bf016a646197f47ac4 100644
+index 6c7bd4b3c753cb568615f287839aed7a95236d2a..d927993c751fce4dd536eec627947996b7e4a807 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
 +++ b/src/main/java/net/minecraft/world/entity/ai/goal/MoveToBlockGoal.java
 @@ -14,7 +14,7 @@ public abstract class MoveToBlockGoal extends Goal {
@@ -253,8 +253,8 @@ index 27ea9c10b7f66c2133b0829c0b1c37143dd80b56..c28ade67f6a59146064a57bf016a6461
  
      public MoveToBlockGoal(PathfinderMob mob, double speed, int range, int maxYDifference) {
          this.mob = mob;
-@@ -109,6 +116,7 @@ public abstract class MoveToBlockGoal extends Goal {
-                         mutableBlockPos.setWithOffset(blockPos, m, k - 1, n);
+@@ -110,6 +117,7 @@ public abstract class MoveToBlockGoal extends Goal {
+                         if (!this.mob.level.hasChunkAt(mutableBlockPos)) continue; // Paper - it's an invalid target if it's not loaded
                          if (this.mob.isWithinRestriction(mutableBlockPos) && this.isValidTarget(this.mob.level, mutableBlockPos)) {
                              this.blockPos = mutableBlockPos;
 +                            setTargetPosition(mutableBlockPos.immutable()); // Paper
