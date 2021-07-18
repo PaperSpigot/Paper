@@ -44,18 +44,28 @@ How To (Plugin Developers)
 
 **Or alternatively, with Gradle:**
 
- * Repository:
-```groovy
+```kotlin
 repositories {
     maven {
-        url 'https://papermc.io/repo/repository/maven-public/'
+        url = uri("https://papermc.io/repo/repository/maven-public/")
     }
 }
-```
- * Artifact:
-```groovy
+
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
+    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+}
+
+configure<JavaPluginConvention> {
+    // Additionally, you need to do either:
+
+    // Require Java 16 (or newer) for compilation:
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = sourceCompatibility
+
+    // Or: stop requiring the dependencies to be at most your own Java version.
+    // This will not work with Java N plugins using Java N+1 or above dependencies (e.g. Java 8 plugin + Java 16 API).
+    // Note: This will NOT break the plugin; however, you will get errors if the API returns non-existent classes in earlier versions.
+    disableAutoTargetJvm()
 }
 ```
 
