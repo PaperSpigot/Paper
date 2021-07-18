@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Camotoy <20743703+Camotoy@users.noreply.github.com>
+Date: Sun, 3 Jan 2021 11:28:57 -0500
+Subject: [PATCH] Add per-player block reach
+
+Plugins are able to specify the server-accepted block range of a specific player.
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index a23c08c48ec627147d94ab4bf4fdf4dae1edeaca..42217e4381b81062712bd1df463fac8bcb9d33b9 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1791,6 +1791,36 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      */
+     @Nullable
+     Firework boostElytra(@NotNull ItemStack firework);
++
++    /**
++     * This number is squared for all internal block calculations.
++     *
++     * @return the maximum survival block range of the player. This number will never be lower than 6.
++     */
++    int getSurvivalBlockRange();
++
++    /**
++     * Set a custom maximum survival block range for the player.
++     *
++     * @param range the block range to set for the player. This value will be set to 6 if the given number is lower,
++     *              to prevent block ghosting issues.
++     */
++    void setSurvivalBlockRange(int range);
++
++    /**
++     * This number is squared for all internal block calculations.
++     *
++     * @return the maximum creative block range of the player. This number will never be lower than 7.
++     */
++    int getCreativeBlockRange();
++
++    /**
++     * Set a custom maximum creative block range for the player.
++     *
++     * @param range the block range to set for the player. This value will be set to 7 if the given number is lower,
++     *              to prevent block ghosting issues.
++     */
++    void setCreativeBlockRange(int range);
+     // Paper end
+ 
+     // Spigot start
