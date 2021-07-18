@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: LemonCaramel <admin@caramel.moe>
+Date: Thu, 15 Jul 2021 19:39:19 +0900
+Subject: [PATCH] Add more EntityDismountEvent API
+
+
+diff --git a/src/main/java/org/spigotmc/event/entity/EntityDismountEvent.java b/src/main/java/org/spigotmc/event/entity/EntityDismountEvent.java
+index a7632c8f5cb1bce4be0e456ec34f4a69c5ce80f3..8ec0c30530e884908f0ce400ff30c8da0cd896cd 100644
+--- a/src/main/java/org/spigotmc/event/entity/EntityDismountEvent.java
++++ b/src/main/java/org/spigotmc/event/entity/EntityDismountEvent.java
+@@ -15,6 +15,106 @@ public class EntityDismountEvent extends EntityEvent implements Cancellable {
+     private boolean cancelled;
+     private final Entity dismounted;
+     private final boolean isCancellable; // Paper
++    // Paper start - Add EntityDismountEvent Reason
++    private final Reason reason;
++    @NotNull
++    public Reason getReason() {
++        return reason;
++    }
++
++    public enum Reason {
++        /**
++         * Unknown reason
++         */
++        UNKNOWN,
++        /**
++         * Passenger is teleporting
++         */
++        TELEPORT,
++        /**
++         * Passenger or vehicle moves the world
++         */
++        MOVE_WORLD,
++        /**
++         * (boat) In water or can't move
++         */
++        IN_WATER,
++        /**
++         * Dismount by Bukkit API
++         */
++        PLUGIN,
++        /**
++         * Dismount by Bukkit API (teleport)
++         */
++        PLUGIN_TELEPORT,
++        /**
++         * Passenger or vehicle is disconnect
++         *
++         * You must check the online status of the passenger or vehicle
++         */
++        DISCONNECT,
++        /**
++         * Mounted on a new vehicle while mount the vehicle
++         */
++        NEW_MOUNT,
++        /**
++         * Passenger pressed the unmount key
++         */
++        SHIFT_KEY,
++        /**
++         * Teleport by chorus fruit
++         */
++        CHORUS_FRUIT,
++        /**
++         * Teleport by ender pearl
++         */
++        ENDER_PEARL,
++        /**
++         * Passenger or vehicle was destroyed or dead
++         */
++        DESTROY_OR_DEAD,
++        /**
++         * (bee) Bee is entering the hive
++         */
++        BEE_HIVE,
++        /**
++         * Passenger change the Gamemode
++         */
++        GAMEMODE_CHANGE,
++        /**
++         * Usually when the vehicle starts spectating.
++         */
++        START_SPECTATING,
++        /**
++         * When the passenger sleep
++         */
++        START_SLEEP,
++        /**
++         * Horses hate you
++         */
++        HORSE_HATES_YOU,
++        /**
++         * The vehicle is swimming
++         */
++        SWIMMING,
++        /**
++         * Passenger has been despawn
++         */
++        DESPAWN,
++        /**
++         * Vehicle has been transformed
++         */
++        TRANSFORM,
++        /**
++         * Passenger has been leashed
++         */
++        LEASH,
++        /**
++         * By Vanilla AI
++         */
++        VANILLA_AI
++    }
++    // Paper end - Add EntityDismountEvent Reason
+ 
+     public EntityDismountEvent(@NotNull Entity what, @NotNull Entity dismounted) {
+         // Paper start
+@@ -23,10 +123,17 @@ public class EntityDismountEvent extends EntityEvent implements Cancellable {
+ 
+ 
+     public EntityDismountEvent(@NotNull Entity what, @NotNull Entity dismounted, boolean isCancellable) {
++        // Paper start - Add EntityDismountEvent Reason
++        this(what, dismounted, isCancellable, Reason.UNKNOWN);
++    }
++
++    public EntityDismountEvent(@NotNull Entity what, @NotNull Entity dismounted, boolean isCancellable, @NotNull Reason reason) {
++        // Paper end - Add EntityDismountEvent Reason
+         // Paper end
+         super( what );
+         this.dismounted = dismounted;
+         this.isCancellable = isCancellable; // Paper
++        this.reason = reason; // Paper - Add EntityDismountEvent Reason
+     }
+ 
+     @NotNull

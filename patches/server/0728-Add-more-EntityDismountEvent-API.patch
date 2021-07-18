@@ -1,0 +1,456 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: LemonCaramel <admin@caramel.moe>
+Date: Thu, 15 Jul 2021 19:39:31 +0900
+Subject: [PATCH] Add more EntityDismountEvent API
+
+
+diff --git a/src/main/java/net/minecraft/server/commands/TeleportCommand.java b/src/main/java/net/minecraft/server/commands/TeleportCommand.java
+index d0109df7fad51fc0444459f5d367254c8f4c355e..50851bceaddc576266ad3bf5934a40f645f9dfb3 100644
+--- a/src/main/java/net/minecraft/server/commands/TeleportCommand.java
++++ b/src/main/java/net/minecraft/server/commands/TeleportCommand.java
+@@ -165,7 +165,7 @@ public class TeleportCommand {
+                 ChunkPos chunkcoordintpair = new ChunkPos(new BlockPos(x, y, z));
+ 
+                 world.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkcoordintpair, 1, target.getId());
+-                target.stopRiding();
++                target.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TELEPORT); // Paper - Add EntityDismountEvent reason
+                 if (((ServerPlayer) target).isSleeping()) {
+                     ((ServerPlayer) target).stopSleepInBed(true, true);
+                 }
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index c2e0417ee15018ec31c4aa8eec3dff7a0d16aa9e..9b65d6d4a1e97885ce001cf57a54127d0073d4be 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -593,7 +593,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+                                 return;
+                             }
+ 
+-                            entity.stopRiding();
++                            entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESPAWN); // Paper - Add EntityDismountEvent reason
+                         }
+ 
+                         gameprofilerfiller.push("tick");
+@@ -956,7 +956,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+             } finally { timer.stopTiming(); }// Paper - EAR2 timings
+             }
+         } else {
+-            passenger.stopRiding();
++            passenger.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESTROY_OR_DEAD); // Paper - Add EntityDismountEvent reason
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 8e2bccc3a9ddb17a4978596056189eb776976338..b256796b9819536a445aaf2c4e83a3fe533eca4c 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -1630,11 +1630,11 @@ public class ServerPlayer extends Player {
+ 
+     public void disconnect() {
+         this.disconnected = true;
+-        this.ejectPassengers();
++        this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.DISCONNECT); // Paper - Add EntityDismountEvent reason
+ 
+         // Paper start - Workaround an issue where the vehicle doesn't track the passenger disconnection dismount.
+         if (this.isPassenger() && this.getVehicle() instanceof ServerPlayer) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DISCONNECT); // Paper - Add EntityDismountEvent reason
+         }
+         // Paper end
+ 
+@@ -1799,7 +1799,7 @@ public class ServerPlayer extends Player {
+             this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, (float) gameMode.getId()));
+             if (gameMode == GameType.SPECTATOR) {
+                 this.removeEntitiesOnShoulder();
+-                this.stopRiding();
++                this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.GAMEMODE_CHANGE); // Paper - Add EntityDismountEvent reason
+             } else {
+                 this.setCamera(this);
+             }
+@@ -1972,7 +1972,7 @@ public class ServerPlayer extends Player {
+ 
+         if (entity != this) {
+             // Make sure we're in the right place
+-            this.ejectPassengers(); // teleport can fail if we have passengers...
++            this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.START_SPECTATING); // teleport can fail if we have passengers... // Paper - Add EntityDismountEvent reason
+             this.getBukkitEntity().teleport(new Location(entity.getCommandSenderWorld().getWorld(), entity.getX(), entity.getY(), entity.getZ(), this.getYRot(), this.getXRot()), TeleportCause.SPECTATE); // Correctly handle cross-world entities from api calls by using CB teleport
+ 
+             // Make sure we're tracking the entity before sending
+@@ -2040,7 +2040,7 @@ public class ServerPlayer extends Player {
+     public void a(ServerLevel worldserver, double d0, double d1, double d2, float f, float f1, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause) {
+         // CraftBukkit end
+         this.setCamera(this);
+-        this.stopRiding();
++        this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TELEPORT); // Paper - Add EntityDismountEvent reason
+         /* CraftBukkit start - replace with bukkit handling for multi-world
+         if (worldserver == this.level) {
+             this.connection.b(d0, d1, d2, f, f1);
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 48045993c8ad4b014cf4a67f7c4db42e014d1c81..d46345d3e50272236037cbfcaa0fa601290bc0e8 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -633,7 +633,7 @@ public abstract class PlayerList {
+ 
+             if (entity.hasExactlyOnePlayerPassenger()) {
+                 PlayerList.LOGGER.debug("Removing player mount");
+-                entityplayer.stopRiding();
++                entityplayer.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DISCONNECT); // Paper - Add EntityDismountEvent reason
+                 entity.getPassengersAndSelf().forEach((entity1) -> {
+                     // Paper start
+                     if (entity1 instanceof net.minecraft.world.entity.npc.AbstractVillager) {
+@@ -819,7 +819,7 @@ public abstract class PlayerList {
+ 
+     public ServerPlayer moveToWorld(ServerPlayer entityplayer, ServerLevel worldserver, boolean flag, Location location, boolean avoidSuffocation, org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag...respawnFlags) {
+         // Paper end
+-        entityplayer.stopRiding(); // CraftBukkit
++        entityplayer.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TELEPORT); // CraftBukkit // Paper - Add EntityDismountEvent reason
+         this.players.remove(entityplayer);
+         this.playersByName.remove(entityplayer.getScoreboardName().toLowerCase(java.util.Locale.ROOT)); // Spigot
+         entityplayer.getLevel().removePlayerImmediately(entityplayer, Entity.RemovalReason.DISCARDED);
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index a11507c630248b98153275f78c15ebee59a6b0a3..1909ddd96266f7cd14e5ae80a25c96dcc4216d98 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -636,7 +636,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+     public void baseTick() {
+         this.level.getProfiler().push("entityBaseTick");
+         if (this.isPassenger() && this.getVehicle().isRemoved()) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESTROY_OR_DEAD); // Paper - Add EntityDismountEvent reason
+         }
+ 
+         if (this.boardingCooldown > 0) {
+@@ -2314,7 +2314,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+                 return false;
+             } else {
+                 if (this.isPassenger()) {
+-                    this.stopRiding();
++                    this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.NEW_MOUNT); // Paper - Add EntityDismountEvent reason
+                 }
+ 
+                 this.setPose(net.minecraft.world.entity.Pose.STANDING);
+@@ -2339,8 +2339,13 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+     }
+ 
+     public void ejectPassengers() {
++        // Paper start - Add EntityDismountEvent reason
++        this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.UNKNOWN);
++    }
++    public void ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason reason) {
++        // Paper end - Add EntityDismountEvent reason
+         for (int i = this.passengers.size() - 1; i >= 0; --i) {
+-            ((Entity) this.passengers.get(i)).stopRiding();
++            ((Entity) this.passengers.get(i)).stopRiding(reason); // Paper - Add EntityDismountEvent reason
+         }
+ 
+     }
+@@ -2348,12 +2353,19 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+     // Paper start
+     public void removeVehicle() { stopRiding(false); }
+     public void stopRiding(boolean suppressCancellation) {
++        // Paper start - Add EntityDismountEvent reason
++        stopRiding(suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason.UNKNOWN);
++    }
++    public void removeVehicle(org.spigotmc.event.entity.EntityDismountEvent.Reason reason) { stopRiding(false, reason); }
++    public void stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason reason) { this.removeVehicle(reason); }
++    public void stopRiding(boolean suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason reason) {
++    // Paper end - Add EntityDismountEvent reason
+     // Paper end
+         if (this.vehicle != null) {
+             Entity entity = this.vehicle;
+ 
+             this.vehicle = null;
+-            if (!entity.removePassenger(this, suppressCancellation)) this.vehicle = entity; // CraftBukkit // Paper
++            if (!entity.removePassenger(this, suppressCancellation, reason)) this.vehicle = entity; // CraftBukkit // Paper // Paper - Add EntityDismountEvent reason
+         }
+ 
+     }
+@@ -2419,6 +2431,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+     // Paper start
+     protected boolean removePassenger(Entity entity) { return removePassenger(entity, false);}
+     protected boolean removePassenger(Entity entity, boolean suppressCancellation) { // CraftBukkit
++        // Paper start - Add EntityDismountEvent Reason
++        return removePassenger(entity, suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason.UNKNOWN);
++    }
++    protected boolean removePassenger(Entity entity, boolean suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason reason) {
++        // Paper end - Add EntityDismountEvent Reason
+         // Paper end
+         if (entity.getVehicle() == this) {
+             throw new IllegalStateException("Use x.stopRiding(y), not y.removePassenger(x)");
+@@ -2443,7 +2460,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+             }
+             // CraftBukkit end
+             // Spigot start
+-            org.spigotmc.event.entity.EntityDismountEvent event = new org.spigotmc.event.entity.EntityDismountEvent(entity.getBukkitEntity(), this.getBukkitEntity(), !suppressCancellation); // Paper
++            org.spigotmc.event.entity.EntityDismountEvent event = new org.spigotmc.event.entity.EntityDismountEvent(entity.getBukkitEntity(), this.getBukkitEntity(), !suppressCancellation, reason); // Paper // Paper - Add EntityDismountEvent Reason
+             // Suppress during worldgen
+             if (this.valid) {
+                 Bukkit.getPluginManager().callEvent(event);
+@@ -3901,10 +3918,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+         }
+ 
+         if (this.removalReason.shouldDestroy()) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESTROY_OR_DEAD); // Paper - Add EntityDismountEvent reason
+         }
+ 
+-        this.getPassengers().forEach(Entity::stopRiding);
++        this.getPassengers().forEach(entity -> entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESTROY_OR_DEAD)); // Paper - Add EntityDismountEvent reason
+         this.levelCallback.onRemove(reason);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 24c629d5f26bc5aadebcf39a63930b3448525242..90bc0ace96b80a9e66193f0dd8b5562405b828f1 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -436,7 +436,7 @@ public abstract class LivingEntity extends Entity {
+                 }
+ 
+                 if (!this.level.isClientSide && this.isPassenger() && this.getVehicle() != null && !this.getVehicle().rideableUnderWater()) {
+-                    this.stopRiding();
++                    this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.SWIMMING); // Paper - Add EntityDismountEvent reason
+                 }
+             } else if (this.getAirSupply() < this.getMaxAirSupply()) {
+                 this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
+@@ -3369,10 +3369,16 @@ public abstract class LivingEntity extends Entity {
+     // Paper start
+     @Override public void stopRiding() { stopRiding(false); }
+     @Override public void stopRiding(boolean suppressCancellation) {
++        // Paper start - Add EntityDismountEvent reason
++        stopRiding(suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason.UNKNOWN);
++    }
++    @Override public void stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason reason) { this.removeVehicle(reason); }
++    @Override public void stopRiding(boolean suppressCancellation, org.spigotmc.event.entity.EntityDismountEvent.Reason reason) {
++        // Paper end - Add EntityDismountEvent reason
+         // Paper end
+         Entity entity = this.getVehicle();
+ 
+-        super.stopRiding(suppressCancellation); // Paper - suppress
++        super.stopRiding(suppressCancellation, reason); // Paper - suppress // Paper - Add EntityDismountEvent reason
+         if (entity != null && entity != this.getVehicle() && !this.level.isClientSide && entity.valid) { // Paper - don't process on world gen
+             this.dismountVehicle(entity);
+         }
+@@ -3992,7 +3998,7 @@ public abstract class LivingEntity extends Entity {
+ 
+     public void startSleeping(BlockPos pos) {
+         if (this.isPassenger()) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.START_SLEEP); // Paper - Add EntityDismountEvent reason
+         }
+ 
+         BlockState iblockdata = this.level.getBlockState(pos);
+diff --git a/src/main/java/net/minecraft/world/entity/Mob.java b/src/main/java/net/minecraft/world/entity/Mob.java
+index 0ce0e7a923da812a02d9ab83607d3cc9c87047df..bf770ed1c2251c9be5492f6d1039a09279d7de37 100644
+--- a/src/main/java/net/minecraft/world/entity/Mob.java
++++ b/src/main/java/net/minecraft/world/entity/Mob.java
+@@ -1359,7 +1359,7 @@ public abstract class Mob extends LivingEntity {
+             if (this.isPassenger()) {
+                 Entity entity = this.getVehicle();
+ 
+-                this.stopRiding();
++                this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TRANSFORM); // Paper - Add EntityDismountEvent reason
+                 t0.startRiding(entity, true);
+             }
+ 
+@@ -1427,7 +1427,7 @@ public abstract class Mob extends LivingEntity {
+         }
+ 
+         if (this.isPassenger()) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.LEASH); // Paper - Add EntityDismountEvent reason
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/behavior/DismountOrSkipMounting.java b/src/main/java/net/minecraft/world/entity/ai/behavior/DismountOrSkipMounting.java
+index 5f169fb5d26f623062b735a643815dd84fe0b5fc..5e92a3be29467126117ec789b26901bce16cd801 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/behavior/DismountOrSkipMounting.java
++++ b/src/main/java/net/minecraft/world/entity/ai/behavior/DismountOrSkipMounting.java
+@@ -36,7 +36,7 @@ public class DismountOrSkipMounting<E extends LivingEntity, T extends Entity> ex
+ 
+     @Override
+     protected void start(ServerLevel world, E entity, long time) {
+-        entity.stopRiding();
++        entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.VANILLA_AI); // Paper - Add EntityDismountEvent reason
+         entity.getBrain().eraseMemory(MemoryModuleType.RIDE_TARGET);
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/RunAroundLikeCrazyGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/RunAroundLikeCrazyGoal.java
+index fd0f5c255729b2c05ead5843ab58fe880971b3db..62c68acdde484ed88149ef8b5c109fc6617dacb6 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/RunAroundLikeCrazyGoal.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/RunAroundLikeCrazyGoal.java
+@@ -71,7 +71,7 @@ public class RunAroundLikeCrazyGoal extends Goal {
+                 this.horse.modifyTemper(5);
+             }
+ 
+-            this.horse.ejectPassengers();
++            this.horse.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.HORSE_HATES_YOU); // Paper - Add EntityDismountEvent reason
+             this.horse.makeMad();
+             this.horse.level.broadcastEntityEvent(this.horse, (byte) 6);
+         }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Shulker.java b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+index ca0d1c059a6ad94590bcbff34b37b9c13ef19474..553d7078ca96e731be68fb375e4f82937ebc9f02 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Shulker.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+@@ -289,7 +289,7 @@ public class Shulker extends AbstractGolem implements Enemy {
+ 
+     @Override
+     public void stopRiding() {
+-        super.stopRiding();
++        super.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TELEPORT); // Paper - Add EntityDismountEvent reason
+         if (this.level.isClientSide) {
+             this.clientOldAttachPosition = this.blockPosition();
+         }
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+index 01d307e0022656509bc8fd02d6bac78a6af3a7be..e7c4a1313ac32249e341b231a4b3522f91a7ac91 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+@@ -211,7 +211,7 @@ public class PiglinAi {
+ 
+         piglin.setAggressive(behaviorcontroller.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
+         if (!behaviorcontroller.hasMemoryValue(MemoryModuleType.RIDE_TARGET) && PiglinAi.isBabyRidingBaby(piglin)) {
+-            piglin.stopRiding();
++            piglin.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.VANILLA_AI); // Paper - Add EntityDismountEvent reason
+         }
+ 
+         if (!behaviorcontroller.hasMemoryValue(MemoryModuleType.CELEBRATE_LOCATION)) {
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 19980b2d627eb3cacf8d0c3e6785ad2206910fbc..14dbfa3048b0db196a6fd70dd1426e7f8e3d15ad 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -506,7 +506,7 @@ public abstract class Player extends LivingEntity {
+     @Override
+     public void rideTick() {
+         if (!this.level.isClientSide && this.wantsToStopRiding() && this.isPassenger()) {
+-            this.stopRiding();
++            this.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.SHIFT_KEY); // Paper - Add EntityDismountEvent reason
+             this.setShiftKeyDown(false);
+         } else {
+             double d0 = this.getX();
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+index 541ca82405d0b4d1457dcd63b58dc61eb67482d6..0821d96503434ce1e51eb24c83c0130ade672ff0 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/ThrownEnderpearl.java
+@@ -77,7 +77,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
+                         }
+ 
+                         if (entity.isPassenger()) {
+-                            entity.stopRiding();
++                            entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.ENDER_PEARL); // Paper - Add EntityDismountEvent reason
+                         }
+ 
+                         entityplayer.connection.teleport(teleEvent.getTo());
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java b/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
+index 309bafd257d4932cfd69c2c212b32306938cd234..921710d6c515343c4ab362d9b9907d771b15afca 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
+@@ -268,7 +268,7 @@ public abstract class AbstractMinecart extends Entity {
+                         return true;
+                     }
+                     // CraftBukkit end
+-                    this.ejectPassengers();
++                    this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.DESTROY_OR_DEAD); // Paper - Add EntityDismountEvent reason
+                     if (flag && !this.hasCustomName()) {
+                         this.discard();
+                     } else {
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+index aa7c022c4faade23bd9061311d4152cf845d3331..5cbd763ce33e2466d9531a1d8d08fc9cd4dac30b 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+@@ -329,7 +329,7 @@ public class Boat extends Entity {
+         }
+ 
+         if (!this.level.isClientSide && this.outOfControlTicks >= 60.0F) {
+-            this.ejectPassengers();
++            this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.IN_WATER); // Paper - Add EntityDismountEvent reason
+         }
+ 
+         if (this.getHurtTime() > 0) {
+@@ -449,7 +449,7 @@ public class Boat extends Entity {
+ 
+                     if (this.bubbleColumnDirectionIsDown) {
+                         this.setDeltaMovement(vec3d.add(0.0D, -0.7D, 0.0D));
+-                        this.ejectPassengers();
++                        this.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.IN_WATER); // Paper - Add EntityDismountEvent reason (ex. magma_block)
+                     } else {
+                         this.setDeltaMovement(vec3d.x, this.hasPassenger((entity) -> {
+                             return entity instanceof Player;
+diff --git a/src/main/java/net/minecraft/world/item/ChorusFruitItem.java b/src/main/java/net/minecraft/world/item/ChorusFruitItem.java
+index c2d87fa4c4dc1c7ec89143a96c340b3429c0042c..e575661e5e0b53551567b45ba974bd624aa4f69f 100644
+--- a/src/main/java/net/minecraft/world/item/ChorusFruitItem.java
++++ b/src/main/java/net/minecraft/world/item/ChorusFruitItem.java
+@@ -31,7 +31,7 @@ public class ChorusFruitItem extends Item {
+                 double d5 = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * 16.0D;
+ 
+                 if (user.isPassenger()) {
+-                    user.stopRiding();
++                    user.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.CHORUS_FRUIT); // Paper - Add EntityDismountEvent reason
+                 }
+ 
+                 // CraftBukkit start - handle canceled status of teleport event
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
+index 8484e80a70129fb0358d56efab6fd54798b54e6e..f3605b71f515e2e70863740ed36fcd9ae3e4f848 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
+@@ -163,8 +163,8 @@ public class BeehiveBlockEntity extends BlockEntity {
+                 }
+             }
+             // CraftBukkit end
+-            entity.stopRiding();
+-            entity.ejectPassengers();
++            entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.BEE_HIVE); // Paper - Add EntityDismountEvent reason
++            entity.ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.BEE_HIVE); // Paper - Add EntityDismountEvent reason
+             CompoundTag nbttagcompound = new CompoundTag();
+ 
+             entity.save(nbttagcompound);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 3acb5f8a1f863b5ba47eac4190be8228324fc8e7..b07e8a6277d08f60d5cff63c04a019bf12fd589c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -556,7 +556,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         }
+ 
+         // If this entity is riding another entity, we must dismount before teleporting.
+-        this.entity.stopRiding();
++        this.entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.PLUGIN_TELEPORT); // Paper - Add EntityDismountEvent reason
+ 
+         // Let the server handle cross world teleports
+         if (!location.getWorld().equals(this.getWorld())) {
+@@ -721,7 +721,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+     public boolean removePassenger(org.bukkit.entity.Entity passenger) {
+         Preconditions.checkArgument(passenger != null, "passenger == null");
+ 
+-        ((CraftEntity) passenger).getHandle().stopRiding();
++        ((CraftEntity) passenger).getHandle().stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.PLUGIN); // Paper - Add EntityDismountEvent reason
+         return true;
+     }
+ 
+@@ -736,7 +736,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+             return false;
+         }
+ 
+-        this.getHandle().ejectPassengers();
++        this.getHandle().ejectPassengers(org.spigotmc.event.entity.EntityDismountEvent.Reason.PLUGIN); // Paper - Add EntityDismountEvent reason
+         return true;
+     }
+ 
+@@ -851,7 +851,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+             return false;
+         }
+ 
+-        this.getHandle().stopRiding();
++        this.getHandle().stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.PLUGIN); // Paper - Add EntityDismountEvent reason
+         return true;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 7b8885f48245c37ba7166abd44486027779e134e..c0f7bccb6b0a7e8c454e3827e0729284ecb97a87 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -960,7 +960,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+ 
+         // If this player is riding another entity, we must dismount before teleporting.
+-        entity.stopRiding();
++        entity.stopRiding(org.spigotmc.event.entity.EntityDismountEvent.Reason.TELEPORT); // Paper - Add EntityDismountEvent reason
+ 
+         // SPIGOT-5509: Wakeup, similar to riding
+         if (this.isSleeping()) {
