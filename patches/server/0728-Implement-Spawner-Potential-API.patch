@@ -1,0 +1,294 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: thamid-gamer <60953955+thamid-gamer@users.noreply.github.com>
+Date: Sat, 17 Jul 2021 20:31:25 -0400
+Subject: [PATCH] Implement Spawner Potential API
+
+
+diff --git a/src/main/java/net/minecraft/world/level/BaseSpawner.java b/src/main/java/net/minecraft/world/level/BaseSpawner.java
+index c601b8b12756682a4cb300be8ebed4319902c5b5..00ff06c27c4f04a094135d627515f400a0e3f857 100644
+--- a/src/main/java/net/minecraft/world/level/BaseSpawner.java
++++ b/src/main/java/net/minecraft/world/level/BaseSpawner.java
+@@ -361,6 +361,14 @@ public abstract class BaseSpawner {
+         this.nextSpawnData = mobspawnerdata;
+     }
+ 
++    // Paper start
++    public void chooseNextSpawnData(@Nullable Level world, BlockPos pos) {
++        this.spawnPotentials.getRandom(this.random).ifPresent((mobspawnerdata) -> {
++            this.setSpawnData(world, pos, mobspawnerdata);
++        });
++    }
++    // Paper end
++
+     public abstract void broadcastEvent(Level world, BlockPos pos, int i);
+ 
+     public double getSpin() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
+index 75575b24aa0291c26d65de9787bc9d2f88c867e4..8f3822db544714213588086e8ad8abda5d75e939 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftCreatureSpawner.java
+@@ -133,6 +133,73 @@ public class CraftCreatureSpawner extends CraftBlockEntityState<SpawnerBlockEnti
+         this.getSnapshot().getSpawner().delay(world.getHandle(), getPosition());
+     }
+ 
++
++    @Override
++    public java.util.List<SpawnerEntry> getSpawnPotentials() {
++        java.util.List<net.minecraft.world.level.SpawnData> spawnPotentials = this.getSnapshot().getSpawner().spawnPotentials.unwrap();
++        java.util.List<SpawnerEntry> bukkitPotentials = new java.util.ArrayList<>(spawnPotentials.size());
++
++        for (net.minecraft.world.level.SpawnData potential : spawnPotentials) {
++            String id = potential.getTag().getString("id");
++
++            net.minecraft.resources.ResourceLocation key;
++            try {
++                key = net.minecraft.util.StringUtil.isNullOrEmpty(id) ? null : new net.minecraft.resources.ResourceLocation(id);
++            } catch (net.minecraft.ResourceLocationException resourcekeyinvalidexception) {
++                continue;
++            }
++
++            if (key != null) {
++                EntityType creatureType = EntityType.fromName(key.getPath());
++
++                if (creatureType == EntityType.DROPPED_ITEM) {
++                    net.minecraft.world.item.ItemStack item = net.minecraft.world.item.ItemStack.of(potential.getTag().getCompound("Item"));
++                    org.bukkit.inventory.ItemStack bukkitItem = org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(item);
++                    bukkitPotentials.add(new ItemStackEntry(bukkitItem, potential.getWeight().asInt()));
++                } else if (creatureType != null) {
++                    bukkitPotentials.add(new SpawnerEntry(creatureType, potential.getWeight().asInt()));
++                }
++            }
++        }
++
++        return bukkitPotentials;
++    }
++
++    @Override
++    public void setSpawnPotentials(java.util.List<SpawnerEntry> spawnPotentials) {
++        if (spawnPotentials.isEmpty()) {
++            this.getSnapshot().getSpawner().spawnPotentials = net.minecraft.world.level.BaseSpawner.EMPTY_POTENTIALS;
++        } else {
++            java.util.List<net.minecraft.world.level.SpawnData> nmsPotentials = new java.util.ArrayList<>(spawnPotentials.size());
++
++            for (SpawnerEntry potential : spawnPotentials) {
++                String entityTypeString = potential.getEntityType().getName();
++                if (entityTypeString != null) {
++                    java.util.Optional<net.minecraft.world.entity.EntityType<?>> entityType = net.minecraft.world.entity.EntityType.byString(entityTypeString);
++
++                    if (entityType.isPresent()) {
++                        net.minecraft.nbt.CompoundTag entity = new net.minecraft.nbt.CompoundTag();
++                        entity.putString("id", net.minecraft.core.Registry.ENTITY_TYPE.getKey(entityType.get()).toString());
++                        if (potential instanceof ItemStackEntry itemStackPotential) {
++                            net.minecraft.world.item.ItemStack item = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemStackPotential.getItemStack());
++                            entity.put("Item", item.save(new net.minecraft.nbt.CompoundTag()));
++                        }
++
++                        net.minecraft.nbt.CompoundTag compound = new net.minecraft.nbt.CompoundTag();
++                        compound.putInt("Weight", potential.getWeight());
++                        compound.put("Entity", entity);
++
++                        nmsPotentials.add(new net.minecraft.world.level.SpawnData(compound));
++                    }
++                }
++            }
++
++            net.minecraft.world.level.BaseSpawner spawner = this.getSnapshot().getSpawner();
++            spawner.spawnPotentials = net.minecraft.util.random.WeightedRandomList.create(nmsPotentials);
++            spawner.chooseNextSpawnData(world.getHandle(), getPosition());
++        }
++    }
++
+     @Override
+     public void setSpawnedItem(org.bukkit.inventory.ItemStack itemStack) {
+         Preconditions.checkArgument(itemStack != null && !itemStack.getType().isAir(), "spawners cannot spawn air");
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartMobSpawner.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartMobSpawner.java
+index cc55a78d899c2b1e740e6364eb4c1d08b7bdf737..7126f62d184ccb77de5ad68bc59970283470af72 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartMobSpawner.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftMinecartMobSpawner.java
+@@ -19,4 +19,186 @@ final class CraftMinecartMobSpawner extends CraftMinecart implements SpawnerMine
+     public EntityType getType() {
+         return EntityType.MINECART_MOB_SPAWNER;
+     }
++
++    // Paper start
++    @org.jetbrains.annotations.NotNull
++    public net.minecraft.world.level.BaseSpawner getSpawner() {
++        return ((MinecartSpawner) this.getHandle()).getSpawner();
++    }
++
++    @Override
++    public EntityType getSpawnedType() {
++        net.minecraft.resources.ResourceLocation key = this.getSpawner().getEntityId(null, net.minecraft.core.BlockPos.ZERO);
++        return (key == null) ? EntityType.PIG : EntityType.fromName(key.getPath());
++    }
++
++    @Override
++    public void setSpawnedType(EntityType entityType) {
++        if (entityType == null || entityType.getName() == null) {
++            throw new IllegalArgumentException("Can't spawn EntityType " + entityType + " from mobspawners!");
++        }
++
++        this.getSpawner().setEntityId(net.minecraft.world.entity.EntityType.byString(entityType.getName()).get());
++    }
++
++    @Override
++    public int getDelay() {
++        return this.getSpawner().spawnDelay;
++    }
++
++    @Override
++    public void setDelay(int delay) {
++        this.getSpawner().spawnDelay = delay;
++    }
++
++    @Override
++    public int getMinSpawnDelay() {
++        return this.getSpawner().minSpawnDelay;
++    }
++
++    @Override
++    public void setMinSpawnDelay(int delay) {
++        com.google.common.base.Preconditions.checkArgument(delay <= this.getMaxSpawnDelay(), "Minimum Spawn Delay must be less than or equal to Maximum Spawn Delay");
++        this.getSpawner().minSpawnDelay = delay;
++    }
++
++    @Override
++    public int getMaxSpawnDelay() {
++        return this.getSpawner().maxSpawnDelay;
++    }
++
++    @Override
++    public void setMaxSpawnDelay(int delay) {
++        com.google.common.base.Preconditions.checkArgument(delay > 0, "Maximum Spawn Delay must be greater than 0.");
++        com.google.common.base.Preconditions.checkArgument(delay >= this.getMinSpawnDelay(), "Maximum Spawn Delay must be greater than or equal to Minimum Spawn Delay");
++        this.getSpawner().maxSpawnDelay = delay;
++    }
++
++    @Override
++    public int getSpawnCount() {
++        return this.getSpawner().spawnCount;
++    }
++
++    @Override
++    public void setSpawnCount(int count) {
++        this.getSpawner().spawnCount = count;
++    }
++
++    @Override
++    public int getMaxNearbyEntities() {
++        return this.getSpawner().maxNearbyEntities;
++    }
++
++    @Override
++    public void setMaxNearbyEntities(int maxNearbyEntities) {
++        this.getSpawner().maxNearbyEntities = maxNearbyEntities;
++    }
++
++    @Override
++    public int getRequiredPlayerRange() {
++        return this.getSpawner().requiredPlayerRange;
++    }
++
++    @Override
++    public void setRequiredPlayerRange(int requiredPlayerRange) {
++        this.getSpawner().requiredPlayerRange = requiredPlayerRange;
++    }
++
++    @Override
++    public int getSpawnRange() {
++        return this.getSpawner().spawnRange;
++    }
++
++    @Override
++    public void setSpawnRange(int range) {
++        this.getSpawner().spawnRange = range;
++    }
++
++    @Override
++    public boolean isActivated() {
++        return this.getSpawner().isNearPlayer(getHandle().level, getHandle().blockPosition());
++    }
++
++    @Override
++    public void resetTimer() {
++        this.getSpawner().delay(getHandle().level, getHandle().blockPosition());
++    }
++
++    @Override
++    public java.util.List<SpawnerEntry> getSpawnPotentials() {
++        java.util.List<net.minecraft.world.level.SpawnData> spawnPotentials = this.getSpawner().spawnPotentials.unwrap();
++        java.util.List<SpawnerEntry> bukkitPotentials = new java.util.ArrayList<>(spawnPotentials.size());
++
++        for (net.minecraft.world.level.SpawnData potential : spawnPotentials) {
++            String id = potential.getTag().getString("id");
++
++            net.minecraft.resources.ResourceLocation key;
++            try {
++                key = net.minecraft.util.StringUtil.isNullOrEmpty(id) ? null : new net.minecraft.resources.ResourceLocation(id);
++            } catch (net.minecraft.ResourceLocationException resourcekeyinvalidexception) {
++                continue;
++            }
++
++            if (key != null) {
++                EntityType creatureType = EntityType.fromName(key.getPath());
++
++                if (creatureType == EntityType.DROPPED_ITEM) {
++                    net.minecraft.world.item.ItemStack item = net.minecraft.world.item.ItemStack.of(potential.getTag().getCompound("Item"));
++                    org.bukkit.inventory.ItemStack bukkitItem = org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(item);
++                    bukkitPotentials.add(new ItemStackEntry(bukkitItem, potential.getWeight().asInt()));
++                } else if (creatureType != null) {
++                    bukkitPotentials.add(new SpawnerEntry(creatureType, potential.getWeight().asInt()));
++                }
++            }
++        }
++
++        return bukkitPotentials;
++    }
++
++    @Override
++    public void setSpawnPotentials(java.util.List<SpawnerEntry> spawnPotentials) {
++        if (spawnPotentials.isEmpty()) {
++            this.getSpawner().spawnPotentials = net.minecraft.world.level.BaseSpawner.EMPTY_POTENTIALS;
++        } else {
++            java.util.List<net.minecraft.world.level.SpawnData> nmsPotentials = new java.util.ArrayList<>(spawnPotentials.size());
++
++            for (SpawnerEntry potential : spawnPotentials) {
++                String entityTypeString = potential.getEntityType().getName();
++                if (entityTypeString != null) {
++                    java.util.Optional<net.minecraft.world.entity.EntityType<?>> entityType = net.minecraft.world.entity.EntityType.byString(entityTypeString);
++
++                    if (entityType.isPresent()) {
++                        net.minecraft.nbt.CompoundTag entity = new net.minecraft.nbt.CompoundTag();
++                        entity.putString("id", net.minecraft.core.Registry.ENTITY_TYPE.getKey(entityType.get()).toString());
++                        if (potential instanceof ItemStackEntry itemStackPotential) {
++                            net.minecraft.world.item.ItemStack item = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemStackPotential.getItemStack());
++                            entity.put("Item", item.save(new net.minecraft.nbt.CompoundTag()));
++                        }
++
++                        net.minecraft.nbt.CompoundTag compound = new net.minecraft.nbt.CompoundTag();
++                        compound.putInt("Weight", potential.getWeight());
++                        compound.put("Entity", entity);
++
++                        nmsPotentials.add(new net.minecraft.world.level.SpawnData(compound));
++                    }
++                }
++            }
++
++            net.minecraft.world.level.BaseSpawner spawner = this.getSpawner();
++            spawner.spawnPotentials = net.minecraft.util.random.WeightedRandomList.create(nmsPotentials);
++            spawner.chooseNextSpawnData(getHandle().level, getHandle().blockPosition());
++        }
++    }
++
++    @Override
++    public void setSpawnedItem(org.bukkit.inventory.ItemStack itemStack) {
++        com.google.common.base.Preconditions.checkArgument(itemStack != null && !itemStack.getType().isAir(), "spawners cannot spawn air");
++        net.minecraft.world.item.ItemStack item = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemStack);
++        net.minecraft.nbt.CompoundTag entity = new net.minecraft.nbt.CompoundTag();
++        entity.putString("id", net.minecraft.core.Registry.ENTITY_TYPE.getKey(net.minecraft.world.entity.EntityType.ITEM).toString());
++        entity.put("Item", item.save(new net.minecraft.nbt.CompoundTag()));
++        this.getSpawner().setSpawnData(getHandle().level, getHandle().blockPosition(), new net.minecraft.world.level.SpawnData(1, entity));
++        this.getSpawner().spawnPotentials = net.minecraft.world.level.BaseSpawner.EMPTY_POTENTIALS;
++    }
++    // Paper end
+ }
