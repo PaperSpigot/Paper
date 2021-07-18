@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 21 Jun 2021 22:29:15 -0400
+Subject: [PATCH] Add custom grounded field for players
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 19980b2d627eb3cacf8d0c3e6785ad2206910fbc..ac6bfbab32a87842c7a65a73065728feddbbc24f 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -182,6 +182,7 @@ public abstract class Player extends LivingEntity {
+     // Paper start
+     public boolean affectsSpawning = true;
+     // Paper end
++    public boolean playerGrounded = false; // Paper - Custom grounded field
+ 
+     // CraftBukkit start
+     public boolean fauxSleeping;
+@@ -313,6 +314,7 @@ public abstract class Player extends LivingEntity {
+         this.turtleHelmetTick();
+         this.cooldowns.tick();
+         this.updatePlayerPose();
++        this.playerGrounded = onGround; // Paper
+     }
+ 
+     public boolean isSecondaryUseActive() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 2e41a1bc20f257f4f461a74623a3ffe2d3112fdd..2c0dc304bdf71b034b37d917cd370fec0483e474 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -590,6 +590,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     public boolean performCommand(String command) {
+         return server.dispatchCommand(this, command);
+     }
++    // Paper start
++    @Override
++    public boolean isGrounded() {
++        return getHandle().playerGrounded;
++    }
++    // Paper end
+ 
+     @Override
+     public void playNote(Location loc, byte instrument, byte note) {

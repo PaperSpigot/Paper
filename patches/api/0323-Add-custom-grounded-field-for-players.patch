@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 21 Jun 2021 22:29:32 -0400
+Subject: [PATCH] Add custom grounded field for players
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 37ad0c478b83ecf63edfe62b5b2dcd81d6fe1e77..2c1b7290a00f0f1683c2e44ae42f61509f8b7ae9 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -274,11 +274,24 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @deprecated This value is controlled only by the client and is therefore
+      * unreliable and vulnerable to spoofing and/or desync depending on the
+      * context/time which it is accessed
++     * @see #isGrounded()
+      */
+     @Override
+     @Deprecated
+     public boolean isOnGround();
+ 
++    // Paper start
++    /**
++      * Returns true if the player is supported by a block.
++      *
++      * Unlike {@link #isOnGround()}, this is not modified by the client and
++      * is calculated when the player is ticked.
++      *
++      * @return True if player is on ground.
++      */
++    public boolean isGrounded();
++    // Paper end
++
+     /**
+      * Returns if the player is in sneak mode
+      *
