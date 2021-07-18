@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jason Penilla <11360596+jpenilla@users.noreply.github.com>
+Date: Wed, 2 Dec 2020 03:07:58 -0800
+Subject: [PATCH] Config option for Piglins guarding chests
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 26e18a08a7f0bd704ff3055ce3a7814191450c85..197756f89b7d4d0e20e2ba48ab42b0ac59ded47f 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -49,6 +49,11 @@ public class PaperWorldConfig {
+         zombiesTargetTurtleEggs = getBoolean("zombies-target-turtle-eggs", zombiesTargetTurtleEggs);
+     }
+ 
++    public boolean piglinsGuardChests = true;
++    private void piglinsGuardChests() {
++        piglinsGuardChests = getBoolean("piglins-guard-chests", piglinsGuardChests);
++    }
++
+     public boolean useEigencraftRedstone = false;
+     private void useEigencraftRedstone() {
+         useEigencraftRedstone = this.getBoolean("use-faster-eigencraft-redstone", false);
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+index 01d307e0022656509bc8fd02d6bac78a6af3a7be..2366735f571113a543fd15607b5ff74c09cd0d24 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+@@ -468,6 +468,7 @@ public class PiglinAi {
+     }
+ 
+     public static void angerNearbyPiglins(Player player, boolean blockOpen) {
++        if (!player.level.paperConfig.piglinsGuardChests) return; // Paper
+         List<AbstractPiglin> list = (List) player.level.getEntitiesOfClass(Piglin.class, player.getBoundingBox().inflate(16.0D)); // CraftBukkit - decompile error
+ 
+         list.stream().filter(PiglinAi::isIdle).filter((entitypiglin) -> {
