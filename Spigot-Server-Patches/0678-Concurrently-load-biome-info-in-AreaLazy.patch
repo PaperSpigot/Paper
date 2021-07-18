@@ -1,0 +1,218 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Techcable <Techcable@techcable.net>
+Date: Sun, 14 Jun 2020 12:23:43 -0700
+Subject: [PATCH] Concurrently load biome info in AreaLazy
+
+The underlying logic was already thread-safe and called from the async chunk-loading threads. The problem was that the cache used a single lock for all threads.
+
+While lazy loading biome values, a thread would lock the entire cache,
+preventing any other threads from computing their (or even accessing previous values).
+Sometimes the main thread wanted to create treasure maps for villages and treasures chests.
+It would call `ItemWorldMap.applySepiaFilter`, which causes extreme contention with
+the async chunk loading threads (which also need biome information from the cache).
+
+Instead of having a single global lock shared between all values, each value has its own independent lock.
+The `LazyInt` utility class is responsible for this locking, and ensures we never initialize a value more than once.
+Lazy-loading a single chunk's biome information via `LazyInt::getOrLoad` doesn't affect any of the other entries in the cache.
+
+Unfortunately, we still need some global synchronization because `fastutils` isn't thread safe.
+The good news is that synchronization is only needed for access to the hashmap itself and clearing the cache.
+The actual logic to load, which is what takes up the vast majority of the time is still parallel.
+
+One might wonder if we could use a `ConcurrentHashMap` for the cache,
+and lazy load each value via `computeIfAbsent`. In reality fastutil is superior for a couple of reasons:
+1. ConcurrentHashMap uses 'coarse locking'. A write operation blocks a large portion of the map (about 1/16th)
+    whenever you call `computeIfAbsent` and will not give it up until the computation is complete. This prevents other threads
+    from loading any pre-existing cache info from that section of the map
+ 2. Even worse, the biome-computation is recursive and calls this `AreaLazy` again to ask for nearby chunk info.
+    Since the underlying lock is not 're-entrant', the sub-call could DEADLOCK in 'computeIfAbsent' if the super-call
+    is computinig biome-info in the same section of the map.
+ 3. ConcurrentHashMap doesn't have a linked-list of entries, so it can't support LRU eviction. Other eviction behaviors do
+    not work very well based on my tests. Furthermore, clearing the cache effectively write-locks the entire map
+
+The cache uses LRU eviction just like in vanilla.
+Technically our increased concurrency can result in different
+cache eviction behavior from vanilla.
+However, this is probably safe. The usage pattern of the biome cache
+is likely
+somewhat random already, so the vanilla code is unlikely to depend on
+the exact eviction order.
+
+See PaperMC/Paper#3536
+The server owner didn't pregenerate his world so there was often
+async chunk loading and world generation going on in the background.
+Whenever players traded treasure maps with villagers,
+maps caused severe lag by their contention with world generation.
+
+diff --git a/src/main/java/io/papermc/paper/util/LazyInt.java b/src/main/java/io/papermc/paper/util/LazyInt.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d7c8b0cc51265e6553a898062b92742c0f11b7bf
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/util/LazyInt.java
+@@ -0,0 +1,35 @@
++package io.papermc.paper.util;
++
++import java.util.OptionalInt;
++import java.util.function.IntSupplier;
++
++/**
++ * A lazily loaded integer.
++ *
++ * This is thread safe and implicitly synchronizes.
++ * Once initialized to a specific value, it will never change.
++ */
++public final class LazyInt {
++    private volatile boolean present = false;
++    private volatile int value = 0;
++
++    /**
++     * Create a new, empty, lazy-loaded integer.
++     */
++    public LazyInt() {}
++
++    public OptionalInt get() {
++        return this.present ? OptionalInt.of(this.value) : OptionalInt.empty();
++    }
++
++    public int getOrLoad(IntSupplier load) {
++        if (this.present) return this.value;
++        synchronized (this) {
++            if (this.present) return this.value;
++            int result = load.getAsInt();
++            this.value = result;
++            this.present = true;
++            return result;
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/AreaLazy.java b/src/main/java/net/minecraft/server/AreaLazy.java
+index c274b9c560afbae75aab7c201559e54400c98a5f..705ed202de5fd18e506421fdda94e76830cf117d 100644
+--- a/src/main/java/net/minecraft/server/AreaLazy.java
++++ b/src/main/java/net/minecraft/server/AreaLazy.java
+@@ -1,9 +1,56 @@
+ package net.minecraft.server;
+ 
+-import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
++import com.google.common.base.Preconditions;
++import com.google.common.base.Verify;
++import io.papermc.paper.util.LazyInt;
++import it.unimi.dsi.fastutil.longs.Long2ReferenceLinkedOpenHashMap;
++import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
++import it.unimi.dsi.fastutil.longs.LongIterator;
++
++import java.util.Iterator;
++import java.util.LinkedList;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
++import java.util.concurrent.locks.Lock;
++import java.util.concurrent.locks.ReentrantLock;
+ 
+ public final class AreaLazy implements Area {
+ 
++    // Paper start
++    /*
++     * Allow concurrently loading biome information instead.
++     *
++     * The underlying logic was already thread-safe and called from the async chunk-loading threads.
++     * The problem was that the cache used a single lock for all threads.
++     * 
++     * While lazy loading biome values, a thread would lock the entire cache,
++     * preventing any other threads from computing their (or even accessing previous values).
++     * Sometimes the main thread wanted to create treasure maps for villages and treasures chests.
++     * It would call calls `ItemWorldMap.applySepiaFilter`, which causes extreme contention with 
++     * async chunk loading threads (which also need biome information from the cache).
++     *
++     * Instead of having a single global lock shared between all values, each value has its own
++     * independent lock managed by a `LazyInt`.
++     *
++     * See the message in the patch file for more information.
++     */
++    private final AreaTransformer8 transformer;
++    private final Long2ReferenceLinkedOpenHashMap<LazyInt> cache;
++    private final int sizeLimit;
++
++    public AreaLazy(Long2ReferenceLinkedOpenHashMap<LazyInt> cache, int sizeLimit, AreaTransformer8 transformer) {
++        Preconditions.checkArgument(
++            sizeLimit > 0,
++            "Invalid sizeLimit: %s",
++            sizeLimit
++        );
++        this.cache = Preconditions.checkNotNull(cache);
++        this.sizeLimit = sizeLimit;
++        this.transformer = Preconditions.checkNotNull(transformer);
++    }
++
++    /*
+     private final AreaTransformer8 a;
+     private final Long2IntLinkedOpenHashMap b;
+     private final int c;
+@@ -13,10 +60,55 @@ public final class AreaLazy implements Area {
+         this.c = i;
+         this.a = areatransformer8;
+     }
++    */
++    // Paper end
+ 
+     @Override
+     public int a(int i, int j) {
+         long k = ChunkCoordIntPair.pair(i, j);
++        // Paper start - rewrite
++        final LazyInt lazyInt;
++        synchronized(this.cache) {
++            lazyInt = this.cache.computeIfAbsent(k, (k2) -> new LazyInt());
++        }
++        /*
++         * NOTE: While doing the computation, we implicitly lock per each individual `LazyInt`,
++         * instead of stalling all computation while waiting globally on the lock (vanilla).
++         *
++         * NOTE: We still need to lock on `this.cache` while loading from the map itself,
++         * but this should result in much less contention than locking the cache for the whole computation.
++         *
++         * See above for description of why we need this locking strategy.
++         */
++        int computedResult = lazyInt.getOrLoad(() -> this.transformer.apply(i, j));
++        /*
++         * Check cache size.
++         *
++         * We only consider entries that have already been loaded. Those that are in
++         * progress are ignored.
++         */
++        synchronized (this.cache) {
++            if (this.cache.size() > this.sizeLimit) {
++                final int toRemove = this.sizeLimit / 16;
++                int removed = 0;
++                Iterator<LazyInt> iter = this.cache.values().iterator();
++                while (removed < toRemove && iter.hasNext()) {
++                    LazyInt value = iter.next();
++                    if (value == null) continue; // Ok?
++                    /*
++                     * We should only be removing values we already loaded...
++                     *
++                     * If it's not already loaded, we'll just ignore it
++                     */
++                    if (value.get().isPresent()) {
++                        iter.remove();
++                        removed += 1;
++                    }
++                }
++            }
++        }
++        return computedResult;
++        /*
+         Long2IntLinkedOpenHashMap long2intlinkedopenhashmap = this.b;
+ 
+         synchronized (this.b) {
+@@ -37,9 +129,11 @@ public final class AreaLazy implements Area {
+                 return i1;
+             }
+         }
++         */
++        // Paper end
+     }
+ 
+     public int a() {
+-        return this.c;
++        return this.sizeLimit; // Paper - deobf
+     }
+ }
