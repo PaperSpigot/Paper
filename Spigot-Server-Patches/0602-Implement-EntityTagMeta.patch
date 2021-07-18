@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MiniDigger <admin@minidigger.me>
+Date: Thu, 19 Nov 2020 22:31:55 +0100
+Subject: [PATCH] Implement EntityTagMeta
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaEntityTag.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaEntityTag.java
+index 325fec72abeaaeae9cb0a38d144b1a5fb123fb74..fba45c52f2714197b524f43d377cd8ad92c60bef 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaEntityTag.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaEntityTag.java
+@@ -8,11 +8,16 @@ import org.bukkit.Material;
+ import org.bukkit.configuration.serialization.DelegateDeserialization;
+ 
+ @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
+-public class CraftMetaEntityTag extends CraftMetaItem {
++public class CraftMetaEntityTag extends CraftMetaItem implements io.papermc.paper.inventory.meta.EntityTagMeta { // Paper - add entity tag meta
+ 
+     static final ItemMetaKey ENTITY_TAG = new ItemMetaKey("EntityTag", "entity-tag");
+     NBTTagCompound entityTag;
+ 
++    // Paper start
++    static final ItemMetaKey INVISIBLE = new ItemMetaKey("Invisible", "invisible");
++    private boolean invisible;
++    // Paper end
++
+     CraftMetaEntityTag(CraftMetaItem meta) {
+         super(meta);
+ 
+@@ -22,6 +27,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+ 
+         CraftMetaEntityTag entity = (CraftMetaEntityTag) meta;
+         this.entityTag = entity.entityTag;
++        this.invisible = entity.invisible; // Paper
+     }
+ 
+     CraftMetaEntityTag(NBTTagCompound tag) {
+@@ -29,11 +35,18 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+ 
+         if (tag.hasKey(ENTITY_TAG.NBT)) {
+             entityTag = tag.getCompound(ENTITY_TAG.NBT);
++
++            // Paper start
++            if (entityTag.hasKey(INVISIBLE.NBT)) {
++                invisible = entityTag.getBoolean(INVISIBLE.NBT);
++            }
++            // Paper end
+         }
+     }
+ 
+     CraftMetaEntityTag(Map<String, Object> map) {
+         super(map);
++        this.invisible = SerializableMeta.getBoolean(map, INVISIBLE.BUKKIT); // Paper
+     }
+ 
+     @Override
+@@ -56,7 +69,18 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+     void applyToItem(NBTTagCompound tag) {
+         super.applyToItem(tag);
+ 
++        // Paper start
++        if (!isEntityTagEmpty() && entityTag == null) {
++            entityTag = new NBTTagCompound();
++        }
++        // Paper end
++
+         if (entityTag != null) {
++            // Paper start
++            if (isInvisible()) {
++                entityTag.setBoolean(INVISIBLE.NBT, invisible);
++            }
++            // Paper end
+             tag.set(ENTITY_TAG.NBT, entityTag);
+         }
+     }
+@@ -81,7 +105,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+     }
+ 
+     boolean isEntityTagEmpty() {
+-        return !(entityTag != null);
++        return !(entityTag != null || isInvisible());
+     }
+ 
+     @Override
+@@ -92,7 +116,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+         if (meta instanceof CraftMetaEntityTag) {
+             CraftMetaEntityTag that = (CraftMetaEntityTag) meta;
+ 
+-            return entityTag != null ? that.entityTag != null && this.entityTag.equals(that.entityTag) : entityTag == null;
++            return entityTag != null ? that.entityTag != null && this.entityTag.equals(that.entityTag) && invisible == that.invisible : entityTag == null; // Paper
+         }
+         return true;
+     }
+@@ -109,6 +133,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+ 
+         if (entityTag != null) {
+             hash = 73 * hash + entityTag.hashCode();
++            hash += isInvisible() ? 61 * hash + 1231 : 0; // Paper
+         }
+ 
+         return original != hash ? CraftMetaEntityTag.class.hashCode() ^ hash : hash;
+@@ -118,6 +143,12 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+     Builder<String, Object> serialize(Builder<String, Object> builder) {
+         super.serialize(builder);
+ 
++        // Paper start
++        if (isInvisible()) {
++            builder.put(INVISIBLE.BUKKIT, invisible);
++        }
++        // Paper end
++
+         return builder;
+     }
+ 
+@@ -127,8 +158,21 @@ public class CraftMetaEntityTag extends CraftMetaItem {
+ 
+         if (entityTag != null) {
+             clone.entityTag = entityTag.clone();
++            clone.invisible = invisible; // Paper
+         }
+ 
+         return clone;
+     }
++
++    // Paper start
++    @Override
++    public boolean isInvisible() {
++        return invisible;
++    }
++
++    @Override
++    public void setInvisible(boolean invisible) {
++        this.invisible = invisible;
++    }
++    // Paper end
+ }

@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MiniDigger <admin@minidigger.me>
+Date: Thu, 19 Nov 2020 22:30:57 +0100
+Subject: [PATCH] Add EntityTagMeta
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/inventory/meta/ArmorStandMeta.java b/src/main/java/com/destroystokyo/paper/inventory/meta/ArmorStandMeta.java
+index 7e4acfff16db80a75e1ff2fee1972b16955b0918..41521510d920faf70c20bdb0a8eb99fd2e610883 100644
+--- a/src/main/java/com/destroystokyo/paper/inventory/meta/ArmorStandMeta.java
++++ b/src/main/java/com/destroystokyo/paper/inventory/meta/ArmorStandMeta.java
+@@ -1,8 +1,8 @@
+ package com.destroystokyo.paper.inventory.meta;
+ 
+-import org.bukkit.inventory.meta.ItemMeta;
++import io.papermc.paper.inventory.meta.EntityTagMeta;
+ 
+-public interface ArmorStandMeta extends ItemMeta {
++public interface ArmorStandMeta extends EntityTagMeta {
+ 
+     /**
+      * Gets whether the ArmorStand should be invisible when spawned
+diff --git a/src/main/java/io/papermc/paper/inventory/meta/EntityTagMeta.java b/src/main/java/io/papermc/paper/inventory/meta/EntityTagMeta.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..38f3dcc5c8ddc55f1e0f41efc9d80715d45879cd
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/meta/EntityTagMeta.java
+@@ -0,0 +1,23 @@
++package io.papermc.paper.inventory.meta;
++
++import org.bukkit.inventory.meta.ItemMeta;
++
++/**
++ * Represents items that spawns entities, such as fish buckets, armorstands, item frames or paintings
++ */
++public interface EntityTagMeta extends ItemMeta {
++
++    /**
++     * Gets whether the entity that will be spawned by this item should be invisible when spawned
++     *
++     * @return true if this should be invisible
++     */
++    boolean isInvisible();
++
++    /**
++     * Sets whether the entity that will be spawned by this item should be invisible when spawned
++     *
++     * @param invisible true if this should be invisible
++     */
++    void setInvisible(boolean invisible);
++}
