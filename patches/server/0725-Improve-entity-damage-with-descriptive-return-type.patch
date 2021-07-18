@@ -1,0 +1,1478 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Bjarne Koll <lynxplay101@gmail.com>
+Date: Sun, 20 Jun 2021 13:01:25 +0200
+Subject: [PATCH] Improve entity damage with descriptive return type
+
+As the vanilla source code never had any need for descriptive and
+non-binary return values for the Entity#damageEntity method upstream
+simply returned false from this method if the entity could have been
+damaged but plugins prevent it.
+
+This meant that outside of the method itself no code was capable of
+identifying whether or not the entity damage event did not occure due to
+vanilla mechanics or plugin interference.
+
+The problem became apperant due to the Explosion.java code skipping
+knockback for all entities that were not damaged, whether or not that
+was due to plugin influence.
+While vanilla would apply knockback to any entity caught in the
+explosion, ignoring whether or not the entity actually takes damage,
+spigot cannot do so as that would knockback entities for which the
+damage event was cancelled.
+
+This commit introduces the Entity#applyDamage method which
+returns an enum constant of DAMAGED (which replaces the vanilla true),
+NOT_DAMAGED (which replaces the vanilla false) and
+BUKKIT_EVENT_CANCELLED which is returnd if the damage failed due to an
+event.
+The Explosion.java code now also uses this return value to apply
+knockback to all entities for which the damage event was not cancelled.
+
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 935b22199ebdf84db591f8442e0506d8fcc92e02..af069ae5d85e3651bbbb5f82a90c75dbda48e4a7 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -966,20 +966,20 @@ public class ServerPlayer extends Player {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             boolean flag = this.server.isDedicatedServer() && this.isPvpAllowed() && "fall".equals(source.msgId);
+ 
+             if (!flag && this.spawnInvulnerableTime > 0 && source != DamageSource.OUT_OF_WORLD) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else {
+                 if (source instanceof EntityDamageSource) {
+                     Entity entity = source.getEntity();
+ 
+                     if (entity instanceof Player && !this.canHarmPlayer((Player) entity)) {
+-                        return false;
++                        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                     }
+ 
+                     if (entity instanceof AbstractArrow) {
+@@ -987,20 +987,20 @@ public class ServerPlayer extends Player {
+                         Entity entity1 = entityarrow.getOwner();
+ 
+                         if (entity1 instanceof Player && !this.canHarmPlayer((Player) entity1)) {
+-                            return false;
++                            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                         }
+                     }
+                 }
+                 // Paper start - cancellable death events
+                 //return super.hurt(source, amount);
+                 this.queueHealthUpdatePacket = true;
+-                boolean damaged = super.hurt(source, amount);
++                final EntityHurtResult hurt = super.tryToHurt(source, amount);
+                 this.queueHealthUpdatePacket = false;
+                 if (this.queuedHealthUpdatePacket != null) {
+                     this.connection.send(this.queuedHealthUpdatePacket);
+                     this.queuedHealthUpdatePacket = null;
+                 }
+-                return damaged;
++                return hurt;
+                 // Paper end
+             }
+         }
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 4fd030ef9537d9b31c6167d73349f4c4a6b33a15..16f7c8b47e88f515a291b4815172bac17fae4ffd 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1678,14 +1678,24 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+         this.hurtMarked = true;
+     }
+ 
+-    public boolean hurt(DamageSource source, float amount) {
++    // Paper start - improved entity damage return value
++    public enum EntityHurtResult {
++        HURT, BUKKIT_EVENT_CANCELLED, NOT_HURT;
++        public boolean isHurt() { return this == HURT; }
++        public static EntityHurtResult wrap(boolean hurtResult) { return hurtResult ? HURT : NOT_HURT; }
++    }
++    public final boolean hurt(DamageSource source, float amount) { // Paper - finalize as no entity should be implementing this method anymore.
++        return this.tryToHurt(source, amount).isHurt();
++    }
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT;
+         } else {
+             this.markHurt();
+-            return false;
++            return EntityHurtResult.NOT_HURT;
+         }
+     }
++    // Paper end
+ 
+     public final Vec3 getViewVector(float tickDelta) {
+         return this.calculateViewVector(this.getViewXRot(tickDelta), this.getViewYRot(tickDelta));
+diff --git a/src/main/java/net/minecraft/world/entity/ExperienceOrb.java b/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
+index 1caf10ecf949e0f465ffe573f3bed1a3c5733a7f..4627d131ac8f992572f70faf63fdf66d583f358f 100644
+--- a/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
++++ b/src/main/java/net/minecraft/world/entity/ExperienceOrb.java
+@@ -265,9 +265,9 @@ public class ExperienceOrb extends Entity {
+     protected void doWaterSplashEffect() {}
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             this.markHurt();
+             this.health = (int) ((float) this.health - amount);
+@@ -275,7 +275,7 @@ public class ExperienceOrb extends Entity {
+                 this.discard();
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/GlowSquid.java b/src/main/java/net/minecraft/world/entity/GlowSquid.java
+index d28cecd9bea7c82fa675d333810e2e63a91c615e..bc8f984a645320e19fc1f323097e64f5d37a4083 100644
+--- a/src/main/java/net/minecraft/world/entity/GlowSquid.java
++++ b/src/main/java/net/minecraft/world/entity/GlowSquid.java
+@@ -73,15 +73,17 @@ public class GlowSquid extends Squid {
+         this.level.addParticle(ParticleTypes.GLOW, this.getRandomX(0.6D), this.getRandomY(), this.getRandomZ(0.6D), 0.0D, 0.0D, 0.0D);
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        boolean bl = super.hurt(source, amount);
+-        if (bl) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult result = super.tryToHurt(source, amount);
++        if (result.isHurt()) {
+             this.setDarkTicks(100);
+         }
+ 
+-        return bl;
++        return result;
+     }
++    // Paper end
+ 
+     public void setDarkTicks(int ticks) {
+         this.entityData.set(DATA_DARK_TICKS_REMAINING, ticks);
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 57c448ee93df76fc2a17c75fafc78408d720ced3..dd6c1de19bb3398ae0375a16d30a40aef8622a50 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -1294,15 +1294,15 @@ public abstract class LivingEntity extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (this.level.isClientSide) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (this.isRemoved() || this.dead || this.getHealth() <= 0.0F) { // CraftBukkit - Don't allow entities that got set to dead/killed elsewhere to get damaged and die
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (source.isFire() && this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             if (this.isSleeping() && !this.level.isClientSide) {
+                 this.stopSleeping();
+@@ -1335,21 +1335,27 @@ public abstract class LivingEntity extends Entity {
+             if ((float) this.invulnerableTime > (float) this.invulnerableDuration / 2.0F) { // CraftBukkit - restore use of maxNoDamageTicks
+                 if (amount <= this.lastHurt) {
+                     this.forceExplosionKnockback = true; // CraftBukkit - SPIGOT-949 - for vanilla consistency, cooldown does not prevent explosion knockback
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 }
+ 
+                 // CraftBukkit start
+-                if (!this.damageEntity0(source, amount - this.lastHurt)) {
+-                    return false;
++                // Paper start - improved entity damage return value
++                final EntityHurtResult result = this.damageEntity0(source, amount - this.lastHurt);
++                if (!result.isHurt()) {
++                    return result;
+                 }
++                // Paper end
+                 // CraftBukkit end
+                 this.lastHurt = amount;
+                 flag1 = false;
+             } else {
+                 // CraftBukkit start
+-                if (!this.damageEntity0(source, amount)) {
+-                    return false;
++                // Paper start - improved entity damage return value
++                final EntityHurtResult result = this.damageEntity0(source, amount);
++                if (!result.isHurt()) {
++                    return result;
+                 }
++                // Paper end
+                 this.lastHurt = amount;
+                 this.invulnerableTime = this.invulnerableDuration; // CraftBukkit - restore use of maxNoDamageTicks
+                 // this.damageEntity0(damagesource, f);
+@@ -1477,7 +1483,7 @@ public abstract class LivingEntity extends Entity {
+                 CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer) entity1, this, source, f1, amount, flag);
+             }
+ 
+-            return flag2;
++            return EntityHurtResult.wrap(flag2); // Paper - improved entity damage return value
+         }
+     }
+ 
+@@ -1964,7 +1970,7 @@ public abstract class LivingEntity extends Entity {
+     }
+ 
+     // CraftBukkit start
+-    protected boolean damageEntity0(final DamageSource damagesource, float f) { // void -> boolean, add final
++    protected EntityHurtResult damageEntity0(final DamageSource damagesource, float f) { // void -> boolean, add final // Paper - improved entity damage return value
+        if (!this.isInvulnerableTo(damagesource)) {
+             final boolean human = this instanceof net.minecraft.world.entity.player.Player;
+             float originalDamage = f;
+@@ -2045,7 +2051,7 @@ public abstract class LivingEntity extends Entity {
+                 // Paper end
+             }
+             if (event.isCancelled()) {
+-                return false;
++                return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+             }
+ 
+             f = (float) event.getFinalDamage();
+@@ -2114,7 +2120,7 @@ public abstract class LivingEntity extends Entity {
+                 }
+                 this.gameEvent(GameEvent.ENTITY_DAMAGED, damagesource.getEntity());
+ 
+-                return true;
++                return EntityHurtResult.HURT; // Paper - improved entity damage return value
+             } else {
+                 // Duplicate triggers if blocking
+                 if (event.getDamage(DamageModifier.BLOCKING) < 0) {
+@@ -2130,14 +2136,14 @@ public abstract class LivingEntity extends Entity {
+                         CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer) damagesource.getEntity(), this, damagesource, f, originalDamage, true);
+                     }
+ 
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 } else {
+-                    return originalDamage > 0;
++                    return EntityHurtResult.wrap(originalDamage > 0); // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+             }
+         }
+-        return false; // CraftBukkit
++        return EntityHurtResult.NOT_HURT; // CraftBukkit // Paper - improved entity damage return value
+     }
+ 
+     public CombatTracker getCombatTracker() {
+diff --git a/src/main/java/net/minecraft/world/entity/ambient/Bat.java b/src/main/java/net/minecraft/world/entity/ambient/Bat.java
+index 153194d937d210e2e4fd8864e4a3c000f85d7e2e..f729ae7e3c0e3cf165e7192a1e40fec677db0d50 100644
+--- a/src/main/java/net/minecraft/world/entity/ambient/Bat.java
++++ b/src/main/java/net/minecraft/world/entity/ambient/Bat.java
+@@ -209,9 +209,9 @@ public class Bat extends AmbientCreature {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             if (!this.level.isClientSide && this.isResting()) {
+                 // CraftBukkit Start - Call BatToggleSleepEvent
+@@ -221,7 +221,7 @@ public class Bat extends AmbientCreature {
+                 // CraftBukkit End - Call BatToggleSleepEvent
+             }
+ 
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Bee.java b/src/main/java/net/minecraft/world/entity/animal/Bee.java
+index 2639f64f1a50faddc0284fb26b73b563b3e9eba9..ec6a86a5820bcb0d7ef37088ce326df01060fa0a 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Bee.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Bee.java
+@@ -656,18 +656,20 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             // CraftBukkit start
+-            boolean result = super.hurt(source, amount);
++            // Paper start - improved entity damage return value
++            final EntityHurtResult result = super.tryToHurt(source, amount);
+ 
+-            if (result && !this.level.isClientSide) {
++            if (result.isHurt() && !this.level.isClientSide) {
+                 this.beePollinateGoal.stopPollinating();
+             }
+ 
+             return result;
++            // Paper end
+             // CraftBukkit end
+         }
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java b/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
+index ec00c2dd8f969eb99ec6a014e3bcd09c7484b237..0f900d63a7f3dbc3c4830c9af7024af7d920045b 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
++++ b/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
+@@ -205,17 +205,19 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
+         return flag;
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
+         IronGolem.Crackiness entityirongolem_cracklevel = this.getCrackiness();
+-        boolean flag = super.hurt(source, amount);
++        final EntityHurtResult flag = super.tryToHurt(source, amount);
+ 
+-        if (flag && this.getCrackiness() != entityirongolem_cracklevel) {
++        if (flag.isHurt() && this.getCrackiness() != entityirongolem_cracklevel) {
+             this.playSound(SoundEvents.IRON_GOLEM_DAMAGE, 1.0F, 1.0F);
+         }
+ 
+         return flag;
+     }
++    // Paper end
+ 
+     public IronGolem.Crackiness getCrackiness() {
+         return IronGolem.Crackiness.byFraction(this.getHealth() / this.getMaxHealth());
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Panda.java b/src/main/java/net/minecraft/world/entity/animal/Panda.java
+index 851ee58e52c6003d6ae7b58c9b6b9a9a9795fa85..7725070b176b20b75d31900c6554e39c4accfb27 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Panda.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Panda.java
+@@ -541,9 +541,9 @@ public class Panda extends Animal {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         this.sit(false);
+-        return super.hurt(source, amount);
++        return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Nullable
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Parrot.java b/src/main/java/net/minecraft/world/entity/animal/Parrot.java
+index 345fe87d5d6c3883c28d2c1b34d1020e18864d97..2dbae43afb3442f0c26ba2a2ebeb866f3bbe3921 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Parrot.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Parrot.java
+@@ -392,12 +392,12 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             // this.setWillSit(false); // CraftBukkit - moved into EntityLiving.damageEntity(DamageSource, float)
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Squid.java b/src/main/java/net/minecraft/world/entity/animal/Squid.java
+index 56838c9f214c0f75041e75c45ad1a0c72fcacc66..4d9b72e5a64965e166d85af88d5c825a5bc56c59 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Squid.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Squid.java
+@@ -172,12 +172,12 @@ public class Squid extends WaterAnimal {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        if (super.hurt(source, amount) && this.getLastHurtByMob() != null) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        if (super.tryToHurt(source, amount).isHurt() && this.getLastHurtByMob() != null) { // Paper - improved entity damage return value
+             this.spawnInk();
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         } else {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Wolf.java b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
+index 80caabee4d2100208f117a1c3e35247b65e318ad..dcff9cc4e89b9d6d7fcebb2d2b2b3369b6fa4677 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Wolf.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
+@@ -303,9 +303,9 @@ public class Wolf extends TamableAnimal implements NeutralMob {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             Entity entity = source.getEntity();
+ 
+@@ -314,7 +314,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
+                 amount = (amount + 1.0F) / 2.0F;
+             }
+ 
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java b/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+index 25ebcb30cf5165675f26802983b6f68404b93b06..c4376c9a46a938cc2199e254d563d8a51e27ef8d 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
++++ b/src/main/java/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+@@ -317,14 +317,14 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         float f1 = this.getHealth();
+ 
+         if (!this.level.isClientSide && !this.isNoAi() && this.level.random.nextInt(3) == 0 && ((float) this.level.random.nextInt(3) < amount || f1 / this.getMaxHealth() < 0.5F) && amount < f1 && this.isInWater() && (source.getEntity() != null || source.getDirectEntity() != null) && !this.isPlayingDead()) {
+             this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, (int) 200);
+         }
+ 
+-        return super.hurt(source, amount);
++        return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/boss/EnderDragonPart.java b/src/main/java/net/minecraft/world/entity/boss/EnderDragonPart.java
+index 305a891e4b51d1031d9e9238ff00e2ea7de8d954..b648effdb10f518c643dbc7cb4c077d9680491e1 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/EnderDragonPart.java
++++ b/src/main/java/net/minecraft/world/entity/boss/EnderDragonPart.java
+@@ -39,8 +39,8 @@ public class EnderDragonPart extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        return this.isInvulnerableTo(source) ? false : this.parentMob.hurt(this, source, amount);
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        return this.isInvulnerableTo(source) ? EntityHurtResult.NOT_HURT : this.parentMob.hurt(this, source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EndCrystal.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EndCrystal.java
+index b643a2449e329560c936c0a06fb4cc494d0737a7..1e3c98bc0d5a67b4d65ea6a841f3b9b26203c7a3 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EndCrystal.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EndCrystal.java
+@@ -112,16 +112,16 @@ public class EndCrystal extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (source.getEntity() instanceof EnderDragon) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             if (!this.isRemoved() && !this.level.isClientSide) {
+                 // CraftBukkit start - All non-living entities need this
+                 if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount, false)) {
+-                    return false;
++                    return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 this.remove(Entity.RemovalReason.KILLED);
+@@ -131,7 +131,7 @@ public class EndCrystal extends Entity {
+                     this.level.getCraftServer().getPluginManager().callEvent(event);
+                     if (event.isCancelled()) {
+                         this.unsetRemoved();
+-                        return false;
++                        return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+                     }
+                     this.level.explode(this, this.getX(), this.getY(), this.getZ(), event.getRadius(), event.getFire(), Explosion.BlockInteraction.DESTROY);
+                     // CraftBukkit end
+@@ -140,7 +140,7 @@ public class EndCrystal extends Entity {
+                 this.onDestroyedBy(source);
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+index c98202092752a9015aaf95bd1471135b88e84425..052f51334ac45e4c43d93a1d238afac3c14d0f11 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+@@ -557,9 +557,9 @@ public class EnderDragon extends Mob implements Enemy {
+         return flag;
+     }
+ 
+-    public boolean hurt(EnderDragonPart part, DamageSource source, float amount) {
++    public EntityHurtResult hurt(EnderDragonPart part, DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.phaseManager.getCurrentPhase().getPhase() == EnderDragonPhase.DYING) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             amount = this.phaseManager.getCurrentPhase().onHurt(source, amount);
+             if (part != this.head) {
+@@ -567,7 +567,7 @@ public class EnderDragon extends Mob implements Enemy {
+             }
+ 
+             if (amount < 0.01F) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else {
+                 if (source.getEntity() instanceof Player || source.isExplosion()) {
+                     float f1 = this.getHealth();
+@@ -587,22 +587,22 @@ public class EnderDragon extends Mob implements Enemy {
+                     }
+                 }
+ 
+-                return true;
++                return EntityHurtResult.HURT; // Paper - improved entity damage return value
+             }
+         }
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (source instanceof EntityDamageSource && ((EntityDamageSource) source).isThorns()) {
+             this.hurt(this.body, source, amount);
+         }
+ 
+-        return false;
++        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+     }
+ 
+-    protected boolean reallyHurt(DamageSource source, float amount) {
+-        return super.hurt(source, amount);
++    protected boolean reallyHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        return super.tryToHurt(source, amount).isHurt(); // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java b/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
+index 1c8f6863b976cfcb559de9b3e3cf9292831166ee..fe4c12c1894ee2ba027485d610498f73b00b4e42 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
++++ b/src/main/java/net/minecraft/world/entity/boss/wither/WitherBoss.java
+@@ -486,25 +486,25 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (source != DamageSource.DROWN && !(source.getEntity() instanceof WitherBoss)) {
+             if (this.getInvulnerableTicks() > 0 && source != DamageSource.OUT_OF_WORLD) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else {
+                 Entity entity;
+ 
+                 if (this.isPowered()) {
+                     entity = source.getDirectEntity();
+                     if (entity instanceof AbstractArrow) {
+-                        return false;
++                        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                     }
+                 }
+ 
+                 entity = source.getEntity();
+                 if (entity != null && !(entity instanceof Player) && entity instanceof LivingEntity && ((LivingEntity) entity).getMobType() == this.getMobType()) {
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 } else {
+                     if (this.destroyBlocksTick <= 0) {
+                         this.destroyBlocksTick = 20;
+@@ -514,11 +514,11 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
+                         this.idleHeadUpdates[i] += 3;
+                     }
+ 
+-                    return super.hurt(source, amount);
++                    return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+                 }
+             }
+         } else {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
+index 5fc66d7096afcfe63eba774e1dc330ac3263e4b0..49f974f25b9b4f0b76a3af8e11ae19b48aa4d812 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
+@@ -481,26 +481,26 @@ public class ArmorStand extends LivingEntity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (!this.level.isClientSide && !this.isRemoved()) {
+             if (DamageSource.OUT_OF_WORLD.equals(source)) {
+                 // CraftBukkit start
+                 if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount)) {
+-                    return false;
++                    return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 this.kill();
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else if (!this.isInvulnerableTo(source) && (true || !this.invisible) && !this.isMarker()) { // CraftBukkit
+                 // CraftBukkit start
+                 if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount, true, this.invisible)) {
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 if (source.isExplosion()) {
+                     this.brokenByAnything(source);
+                     this.kill();
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 } else if (DamageSource.IN_FIRE.equals(source)) {
+                     if (this.isOnFire()) {
+                         this.causeDamage(source, 0.15F);
+@@ -508,24 +508,24 @@ public class ArmorStand extends LivingEntity {
+                         this.setSecondsOnFire(5);
+                     }
+ 
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 } else if (DamageSource.ON_FIRE.equals(source) && this.getHealth() > 0.5F) {
+                     this.causeDamage(source, 4.0F);
+-                    return false;
++                    return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                 } else {
+                     boolean flag = source.getDirectEntity() instanceof AbstractArrow;
+                     boolean flag1 = flag && ((AbstractArrow) source.getDirectEntity()).getPierceLevel() > 0;
+                     boolean flag2 = "player".equals(source.getMsgId());
+ 
+                     if (!flag2 && !flag) {
+-                        return false;
++                        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                     } else if (source.getEntity() instanceof net.minecraft.world.entity.player.Player && !((net.minecraft.world.entity.player.Player) source.getEntity()).getAbilities().mayBuild) {
+-                        return false;
++                        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+                     } else if (source.isCreativePlayer()) {
+                         this.playBrokenSound();
+                         this.showBreakingParticles();
+                         this.kill();
+-                        return flag1;
++                        return EntityHurtResult.wrap(flag1); // Paper - improved entity damage return value
+                     } else {
+                         long i = this.level.getGameTime();
+ 
+@@ -539,14 +539,14 @@ public class ArmorStand extends LivingEntity {
+                             this.discard(); // CraftBukkit - SPIGOT-4890: remain as this.die() since above damagesource method will call death event
+                         }
+ 
+-                        return true;
++                        return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                     }
+                 }
+             } else {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             }
+         } else {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/HangingEntity.java b/src/main/java/net/minecraft/world/entity/decoration/HangingEntity.java
+index ca9decf85dd1af0baf0d34a48aa67cbb9f4eb586..b1d07412e6e4938f7a1753941f636e5dcff417ea 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/HangingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/HangingEntity.java
+@@ -194,9 +194,9 @@ public abstract class HangingEntity extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             if (!this.isRemoved() && !this.level.isClientSide) {
+                 // CraftBukkit start - fire break events
+@@ -211,7 +211,7 @@ public abstract class HangingEntity extends Entity {
+                 this.level.getCraftServer().getPluginManager().callEvent(event);
+ 
+                 if (this.isRemoved() || event.isCancelled()) {
+-                    return true;
++                    return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+ 
+@@ -220,7 +220,7 @@ public abstract class HangingEntity extends Entity {
+                 this.dropItem(source.getEntity());
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java b/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
+index b829efdb40051a41b3bf1cabb8bf7d7c952797b5..eb5bef88cb2f85f93577633640849da0cb399f67 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
+@@ -173,25 +173,25 @@ public class ItemFrame extends HangingEntity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.fixed) {
+-            return source != DamageSource.OUT_OF_WORLD && !source.isCreativePlayer() ? false : super.hurt(source, amount);
++            return source != DamageSource.OUT_OF_WORLD && !source.isCreativePlayer() ? EntityHurtResult.NOT_HURT : super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         } else if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (!source.isExplosion() && !this.getItem().isEmpty()) {
+             if (!this.level.isClientSide) {
+                 // CraftBukkit start - fire EntityDamageEvent
+                 if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount, false) || this.isRemoved()) {
+-                    return true;
++                    return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 this.dropItem(source.getEntity(), false);
+                 this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         } else {
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+index 158719d46c96bb733a00e08c8285f41a48406abf..5e03e5fb678e634710599ddccb07ba214b4b4652 100644
+--- a/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
++++ b/src/main/java/net/minecraft/world/entity/item/ItemEntity.java
+@@ -315,17 +315,17 @@ public class ItemEntity extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && source.isExplosion()) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (!this.getItem().getItem().canBeHurtBy(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             // CraftBukkit start
+             if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount)) {
+-                return false;
++                return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+             }
+             // CraftBukkit end
+             this.markHurt();
+@@ -336,7 +336,7 @@ public class ItemEntity extends Entity {
+                 this.discard();
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
+index e1e220b3e4967590a2a77370e2a6ab919ad50eaa..e21620198b966acae9ee2b8dd6dcfbae410b644c 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
+@@ -370,27 +370,27 @@ public class EnderMan extends Monster implements NeutralMob {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (source instanceof IndirectEntityDamageSource) {
+             if (this.tryEscape(com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper start
+             for (int i = 0; i < 64; ++i) {
+                 if (this.teleport()) {
+-                    return true;
++                    return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                 }
+             }
+             } // Paper end
+ 
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+-            boolean flag = super.hurt(source, amount);
++            final EntityHurtResult flag = super.tryToHurt(source, amount); // Paper - improved entity damage return value
+ 
+             if (!this.level.isClientSide() && !(source.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0 && this.tryEscape(source == DamageSource.DROWN ? com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.DROWN : com.destroystokyo.paper.event.entity.EndermanEscapeEvent.Reason.INDIRECT)) { // Paper - use to be critical hits as else, but mojang removed critical hits in 1.16.2 due to MC-185684
+                 this.teleport();
+             }
+ 
+-            return flag;
++            return flag; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Ghast.java b/src/main/java/net/minecraft/world/entity/monster/Ghast.java
+index 886b6eac6c6ae4d97b1b25624504c0f48e20efc4..aac9135e2a24af3b46b8f7581206d36945ad90f8 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Ghast.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Ghast.java
+@@ -71,17 +71,19 @@ public class Ghast extends FlyingMob implements Enemy {
+         return true;
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT;
+         } else if (source.getDirectEntity() instanceof LargeFireball && source.getEntity() instanceof Player) {
+-            super.hurt(source, 1000.0F);
+-            return true;
++            super.tryToHurt(source, 1000.0F);
++            return EntityHurtResult.HURT;
+         } else {
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount);
+         }
+     }
++    // Paper end
+ 
+     @Override
+     protected void defineSynchedData() {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Guardian.java b/src/main/java/net/minecraft/world/entity/monster/Guardian.java
+index 012e43aa6e2f6e4970257988620ab76d0f75f494..3c4c4d46db7ea9afee0529c3b4c2b396d4ef07f4 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Guardian.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Guardian.java
+@@ -305,7 +305,7 @@ public class Guardian extends Monster {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (!this.isMoving() && !source.isMagic() && source.getDirectEntity() instanceof LivingEntity) {
+             LivingEntity livingEntity = (LivingEntity)source.getDirectEntity();
+             if (!source.isExplosion()) {
+@@ -317,7 +317,7 @@ public class Guardian extends Monster {
+             this.randomStrollGoal.trigger();
+         }
+ 
+-        return super.hurt(source, amount);
++        return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Shulker.java b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+index ca0d1c059a6ad94590bcbff34b37b9c13ef19474..5d26f0432ca619c4950dbe6618fb0d992cce751b 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Shulker.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Shulker.java
+@@ -443,18 +443,21 @@ public class Shulker extends AbstractGolem implements Enemy {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         Entity entity;
+ 
+         if (this.isClosed()) {
+             entity = source.getDirectEntity();
+             if (entity instanceof AbstractArrow) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             }
+         }
+ 
+-        if (!super.hurt(source, amount)) {
+-            return false;
++        // Paper start - improved entity damage return value
++        final EntityHurtResult result = super.tryToHurt(source, amount);
++        if (!result.isHurt()) {
++            return result;
++        // Paper end
+         } else {
+             if ((double) this.getHealth() < (double) this.getMaxHealth() * 0.5D && this.random.nextInt(4) == 0) {
+                 this.teleportSomewhere();
+@@ -465,7 +468,7 @@ public class Shulker extends AbstractGolem implements Enemy {
+                 }
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Silverfish.java b/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
+index 2459ae800a5f6b234a4f4bb1cd3738e4e9cac67d..c439df60a1cd46a2c39da8c452b73a59d1fff837 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Silverfish.java
+@@ -90,15 +90,15 @@ public class Silverfish extends Monster {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             if ((source instanceof EntityDamageSource || source == DamageSource.MAGIC) && this.friendsGoal != null) {
+                 this.friendsGoal.notifyHurt();
+             }
+ 
+-            return super.hurt(source, amount);
++            return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Zoglin.java b/src/main/java/net/minecraft/world/entity/monster/Zoglin.java
+index 056c0e66d2f90850906c78a25d759f22c20e4d35..07cf1febb384c41a05f02a32bb620eeffb5ce083 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Zoglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Zoglin.java
+@@ -89,11 +89,11 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
+     }
+ 
+     private static void initIdleActivity(Brain<Zoglin> brain) {
+-        brain.addActivity(Activity.IDLE, 10, ImmutableList.of(new StartAttacking<>(Zoglin::findNearestValidAttackTarget), new RunSometimes(new SetEntityLookTarget(8.0F), UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(new RandomStroll(0.4F), 2), Pair.of(new SetWalkTargetFromLookTarget(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
++        brain.addActivity(Activity.IDLE, 10, ImmutableList.of(new StartAttacking<>(Zoglin::findNearestValidAttackTarget), new RunSometimes<>(new SetEntityLookTarget(8.0F), UniformInt.of(30, 60)), new RunOne<>(ImmutableList.of(Pair.of(new RandomStroll(0.4F), 2), Pair.of(new SetWalkTargetFromLookTarget(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))); // Paper - decompile error - generify behaviour constructors
+     }
+ 
+     private static void initFightActivity(Brain<Zoglin> brain) {
+-        brain.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(new SetWalkTargetFromAttackTargetIfTargetOutOfReach(1.0F), new RunIf<>(Zoglin::isAdult, new MeleeAttack(40)), new RunIf<>(Zoglin::isBaby, new MeleeAttack(15)), new StopAttackingIfTargetInvalid()), MemoryModuleType.ATTACK_TARGET);
++        brain.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(new SetWalkTargetFromAttackTargetIfTargetOutOfReach(1.0F), new RunIf<>(Zoglin::isAdult, new MeleeAttack(40)), new RunIf<>(Zoglin::isBaby, new MeleeAttack(15)), new StopAttackingIfTargetInvalid<>()), MemoryModuleType.ATTACK_TARGET); // Paper - decompile error - generify behaviour constructors
+     }
+ 
+     private Optional<? extends LivingEntity> findNearestValidAttackTarget() {
+@@ -158,12 +158,13 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
+         return (double)this.getBbHeight() - (this.isBaby() ? 0.2D : 0.15D);
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        boolean bl = super.hurt(source, amount);
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult bl = super.tryToHurt(source, amount);
+         if (this.level.isClientSide) {
+-            return false;
+-        } else if (bl && source.getEntity() instanceof LivingEntity) {
++            return EntityHurtResult.NOT_HURT;
++        } else if (bl.isHurt() && source.getEntity() instanceof LivingEntity) {
+             LivingEntity livingEntity = (LivingEntity)source.getEntity();
+             if (this.canAttack(livingEntity) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, livingEntity, 4.0D)) {
+                 this.setAttackTarget(livingEntity);
+@@ -174,6 +175,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
+             return bl;
+         }
+     }
++    // Paper end
+ 
+     private void setAttackTarget(LivingEntity entity) {
+         this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+@@ -182,7 +184,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
+ 
+     @Override
+     public Brain<Zoglin> getBrain() {
+-        return super.getBrain();
++        return (Brain<Zoglin>) super.getBrain(); // Paper - decompile error - unchecked generic cast
+     }
+ 
+     protected void updateActivity() {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+index bb3b932c57fd1e5b1517940c7602c7f4aeeaf17e..d95924a5e7eafbaf3efdf8d3bc79ee1bb16900f3 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+@@ -310,12 +310,15 @@ public class Zombie extends Monster {
+     }
+     // Paper end
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        if (!super.hurt(source, amount)) {
+-            return false;
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult result = super.tryToHurt(source, amount);
++        if (!result.isHurt()) {
++            return result;
+         } else if (!(this.level instanceof ServerLevel)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT;
++            // Paper end
+         } else {
+             ServerLevel worldserver = (ServerLevel) this.level;
+             LivingEntity entityliving = this.getTarget();
+@@ -352,7 +355,7 @@ public class Zombie extends Monster {
+                 }
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/hoglin/Hoglin.java b/src/main/java/net/minecraft/world/entity/monster/hoglin/Hoglin.java
+index c510da19883d1aa79b2fc25e2d9c8f5cd8dd7bfa..e968787ebd66990aafd8f212bd15f8b0a31db727 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/hoglin/Hoglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/hoglin/Hoglin.java
+@@ -97,19 +97,21 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
+ 
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        boolean bl = super.hurt(source, amount);
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult bl = super.tryToHurt(source, amount);
+         if (this.level.isClientSide) {
+-            return false;
++            return EntityHurtResult.NOT_HURT;
+         } else {
+-            if (bl && source.getEntity() instanceof LivingEntity) {
++            if (bl.isHurt() && source.getEntity() instanceof LivingEntity) {
+                 HoglinAi.wasHurtBy(this, (LivingEntity)source.getEntity());
+             }
+ 
+             return bl;
+         }
+     }
++    // Paper end
+ 
+     @Override
+     protected Brain.Provider<Hoglin> brainProvider() {
+@@ -123,7 +125,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
+ 
+     @Override
+     public Brain<Hoglin> getBrain() {
+-        return super.getBrain();
++        return (Brain<Hoglin>) super.getBrain(); // Paper - decompile error - unchecked generic cast
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/Piglin.java b/src/main/java/net/minecraft/world/entity/monster/piglin/Piglin.java
+index adc2feafd0c1a38d1b6b65b8aee59d21725b84fe..85c8b65a9483233c881707a235c08a8ff779e5dd 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/Piglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/Piglin.java
+@@ -342,17 +342,17 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        boolean flag = super.hurt(source, amount);
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult flag = super.tryToHurt(source, amount); // Paper - improved entity damage return value
+ 
+         if (this.level.isClientSide) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+-            if (flag && source.getEntity() instanceof LivingEntity) {
++            if (flag.isHurt() && source.getEntity() instanceof LivingEntity) { // Paper - improved entity damage return value
+                 PiglinAi.wasHurtBy(this, (LivingEntity) source.getEntity());
+             }
+ 
+-            return flag;
++            return flag; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinBrute.java b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinBrute.java
+index af579b2b6f6e18da70e67ce74431a57d9a1236dd..b3c44d102591a40d923f2768034a636b9a899fbb 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinBrute.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinBrute.java
+@@ -69,7 +69,7 @@ public class PiglinBrute extends AbstractPiglin {
+ 
+     @Override
+     public Brain<PiglinBrute> getBrain() {
+-        return super.getBrain();
++        return (Brain<PiglinBrute>) super.getBrain(); // Paper - decompile error - unchecked generic cast
+     }
+ 
+     @Override
+@@ -97,19 +97,21 @@ public class PiglinBrute extends AbstractPiglin {
+         return this.isAggressive() && this.isHoldingMeleeWeapon() ? PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON : PiglinArmPose.DEFAULT;
+     }
+ 
++    // Paper start - improved entity damage return value
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        boolean bl = super.hurt(source, amount);
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) {
++        final EntityHurtResult bl = super.tryToHurt(source, amount);
+         if (this.level.isClientSide) {
+-            return false;
++            return EntityHurtResult.NOT_HURT;
+         } else {
+-            if (bl && source.getEntity() instanceof LivingEntity) {
++            if (bl.isHurt() && source.getEntity() instanceof LivingEntity) {
+                 PiglinBruteAi.wasHurtBy(this, (LivingEntity)source.getEntity());
+             }
+ 
+             return bl;
+         }
+     }
++    // Paper end
+ 
+     @Override
+     protected SoundEvent getAmbientSound() {
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 1bccd932851045c374e3092d33dc77fab680d0db..5d8a89b89bdc8b7c827ea54b6d6d8d85ab5c42f8 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -892,21 +892,21 @@ public abstract class Player extends LivingEntity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (this.abilities.invulnerable && !source.isBypassInvul()) {
+             this.forceExplosionKnockback = true; // SPIGOT-5258 - Make invulnerable players get knockback from explosions
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             this.noActionTime = 0;
+             if (this.isDeadOrDying()) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else {
+                 // this.releaseShoulderEntities(); // CraftBukkit - moved down
+                 if (source.scalesWithDifficulty()) {
+                     if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
+-                        return false; // CraftBukkit - f = 0.0f -> return false
++                        return EntityHurtResult.NOT_HURT; // CraftBukkit - f = 0.0f -> return false // Paper - improved entity damage return value
+                     }
+ 
+                     if (this.level.getDifficulty() == Difficulty.EASY) {
+@@ -919,11 +919,13 @@ public abstract class Player extends LivingEntity {
+                 }
+ 
+                 // CraftBukkit start - Don't filter out 0 damage
+-                boolean damaged = super.hurt(source, amount);
+-                if (damaged) {
++                // Paper start - improved entity damage return value
++                final EntityHurtResult result = super.tryToHurt(source, amount);
++                if (result.isHurt()) {
+                     this.removeEntitiesOnShoulder();
+                 }
+-                return damaged;
++                return result;
++                // Paper end
+                 // CraftBukkit end
+             }
+         }
+@@ -1010,7 +1012,7 @@ public abstract class Player extends LivingEntity {
+ 
+     // CraftBukkit start
+     @Override
+-    protected boolean damageEntity0(DamageSource damagesource, float f) { // void -> boolean
++    protected EntityHurtResult damageEntity0(DamageSource damagesource, float f) { // void -> boolean // Paper - improved entity damage return value
+         if (true) {
+             return super.damageEntity0(damagesource, f);
+         }
+@@ -1040,7 +1042,7 @@ public abstract class Player extends LivingEntity {
+ 
+             }
+         }
+-        return false; // CraftBukkit
++        return EntityHurtResult.NOT_HURT; // CraftBukkit // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/AbstractHurtingProjectile.java b/src/main/java/net/minecraft/world/entity/projectile/AbstractHurtingProjectile.java
+index 3a088afd8269606543ebc9fb2074eb70431fcd39..1c3e2a01e6af2715cc473a761918b1743e347e33 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/AbstractHurtingProjectile.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/AbstractHurtingProjectile.java
+@@ -176,9 +176,9 @@ public abstract class AbstractHurtingProjectile extends Projectile {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else {
+             this.markHurt();
+             Entity entity = source.getEntity();
+@@ -186,7 +186,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
+             if (entity != null) {
+                 // CraftBukkit start
+                 if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount, false)) {
+-                    return false;
++                    return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 Vec3 vec3d = entity.getLookAngle();
+@@ -196,9 +196,9 @@ public abstract class AbstractHurtingProjectile extends Projectile {
+                 this.yPower = vec3d.y * 0.1D;
+                 this.zPower = vec3d.z * 0.1D;
+                 this.setOwner(entity);
+-                return true;
++                return EntityHurtResult.HURT; // Paper - improved entity damage return value
+             } else {
+-                return false;
++                return EntityHurtResult.NOT_HURT;// Paper - improved entity damage return value
+             }
+         }
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java b/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
+index 6afe37e42d88701af38df5793a9ea9d7d2cda5c5..8d3c43326a2ac7ddec684fd0ab75fefcba5ec19b 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/DragonFireball.java
+@@ -68,8 +68,8 @@ public class DragonFireball extends AbstractHurtingProjectile {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        return false;
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java b/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
+index 123f9a93b014107c8f609d38a2b8d37261bb5d18..0032bfb9222a133a2d1903e61cde6e95b64f2f86 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
+@@ -330,10 +330,10 @@ public class ShulkerBullet extends Projectile {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         // CraftBukkit start
+         if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, source, amount, false)) {
+-            return false;
++            return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+         }
+         // CraftBukkit end
+         if (!this.level.isClientSide) {
+@@ -342,7 +342,7 @@ public class ShulkerBullet extends Projectile {
+             this.discard();
+         }
+ 
+-        return true;
++        return EntityHurtResult.HURT; // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/SmallFireball.java b/src/main/java/net/minecraft/world/entity/projectile/SmallFireball.java
+index b77d04ef22711a4f90e274e81faa261f3f6c25af..c3399839d8fcdbd12c1665b9b9837062bb4cd0ba 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/SmallFireball.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/SmallFireball.java
+@@ -96,7 +96,7 @@ public class SmallFireball extends Fireball {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        return false;
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/WitherSkull.java b/src/main/java/net/minecraft/world/entity/projectile/WitherSkull.java
+index 4a11f7417b438ee5711a720aca3321c88e970b2a..457f7432972d6ed50d4e52e3675c19aefd4cad2d 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/WitherSkull.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/WitherSkull.java
+@@ -115,8 +115,8 @@ public class WitherSkull extends AbstractHurtingProjectile {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
+-        return false;
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
++        return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/raid/Raider.java b/src/main/java/net/minecraft/world/entity/raid/Raider.java
+index 54b5cfa35e5fe9138d39a73f2085f594f1987cda..da0ac7a2c497b231384222857eacfb8a857b9a1a 100644
+--- a/src/main/java/net/minecraft/world/entity/raid/Raider.java
++++ b/src/main/java/net/minecraft/world/entity/raid/Raider.java
+@@ -286,12 +286,12 @@ public abstract class Raider extends PatrollingMonster {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.hasActiveRaid()) {
+             this.getCurrentRaid().updateBossbar();
+         }
+ 
+-        return super.hurt(source, amount);
++        return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Nullable
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java b/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
+index 309bafd257d4932cfd69c2c212b32306938cd234..dcc360c632481ebea072bc1e93b5b73c85141d4e 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/AbstractMinecart.java
+@@ -233,10 +233,10 @@ public abstract class AbstractMinecart extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (!this.level.isClientSide && !this.isRemoved()) {
+             if (this.isInvulnerableTo(source)) {
+-                return false;
++                return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+             } else {
+                 // CraftBukkit start - fire VehicleDamageEvent
+                 Vehicle vehicle = (Vehicle) this.getBukkitEntity();
+@@ -246,7 +246,7 @@ public abstract class AbstractMinecart extends Entity {
+                 this.level.getCraftServer().getPluginManager().callEvent(event);
+ 
+                 if (event.isCancelled()) {
+-                    return false;
++                    return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+                 }
+ 
+                 amount = (float) event.getDamage();
+@@ -265,7 +265,7 @@ public abstract class AbstractMinecart extends Entity {
+ 
+                     if (destroyEvent.isCancelled()) {
+                         this.setDamage(40); // Maximize damage so this doesn't get triggered again right away
+-                        return true;
++                        return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                     }
+                     // CraftBukkit end
+                     this.ejectPassengers();
+@@ -276,10 +276,10 @@ public abstract class AbstractMinecart extends Entity {
+                     }
+                 }
+ 
+-                return true;
++                return EntityHurtResult.HURT; // Paper - improved entity damage return value
+             }
+         } else {
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+index aa7c022c4faade23bd9061311d4152cf845d3331..90256afcf6141dde12e98979c3cac7f189ad4a82 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+@@ -174,9 +174,9 @@ public class Boat extends Entity {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         if (this.isInvulnerableTo(source)) {
+-            return false;
++            return EntityHurtResult.NOT_HURT; // Paper - improved entity damage return value
+         } else if (!this.level.isClientSide && !this.isRemoved()) {
+             // CraftBukkit start
+             Vehicle vehicle = (Vehicle) this.getBukkitEntity();
+@@ -186,7 +186,7 @@ public class Boat extends Entity {
+             this.level.getCraftServer().getPluginManager().callEvent(event);
+ 
+             if (event.isCancelled()) {
+-                return false;
++                return EntityHurtResult.BUKKIT_EVENT_CANCELLED; // Paper - improved entity damage return value
+             }
+             // f = event.getDamage(); // TODO Why don't we do this?
+             // CraftBukkit end
+@@ -205,7 +205,7 @@ public class Boat extends Entity {
+ 
+                 if (destroyEvent.isCancelled()) {
+                     this.setDamage(40F); // Maximize damage so this doesn't get triggered again right away
+-                    return true;
++                    return EntityHurtResult.HURT; // Paper - improved entity damage return value
+                 }
+                 // CraftBukkit end
+                 if (!flag && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+@@ -215,9 +215,9 @@ public class Boat extends Entity {
+                 this.discard();
+             }
+ 
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         } else {
+-            return true;
++            return EntityHurtResult.HURT; // Paper - improved entity damage return value
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java b/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
+index 4572a3cf0a067b64f2bd6c31139a773cddf4e872..1af2833b54b9acf95efaddcb4516ba25c86ac045 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
+@@ -67,7 +67,7 @@ public class MinecartTNT extends AbstractMinecart {
+     }
+ 
+     @Override
+-    public boolean hurt(DamageSource source, float amount) {
++    public EntityHurtResult tryToHurt(DamageSource source, float amount) { // Paper - improved entity damage return value
+         Entity entity = source.getDirectEntity();
+         if (entity instanceof AbstractArrow) {
+             AbstractArrow abstractArrow = (AbstractArrow)entity;
+@@ -76,7 +76,7 @@ public class MinecartTNT extends AbstractMinecart {
+             }
+         }
+ 
+-        return super.hurt(source, amount);
++        return super.tryToHurt(source, amount); // Paper - improved entity damage return value
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index fb50ee3daba9f4fe8cc173c209521679a59f23d7..4332b3b80bc2dd9004cf54e858dc24d662bb8bd8 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -247,9 +247,9 @@ public class Explosion {
+                         // entity.damageEntity(this.b(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D)));
+                         CraftEventFactory.entityDamage = this.source;
+                         entity.forceExplosionKnockback = false;
+-                        boolean wasDamaged = entity.hurt(this.getDamageSource(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D)));
++                        final Entity.EntityHurtResult wasDamaged = entity.tryToHurt(this.getDamageSource(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D))); // Paper - use improved damage type
+                         CraftEventFactory.entityDamage = null;
+-                        if (!wasDamaged && !(entity instanceof PrimedTnt || entity instanceof FallingBlockEntity) && !entity.forceExplosionKnockback) {
++                        if (wasDamaged == Entity.EntityHurtResult.BUKKIT_EVENT_CANCELLED && !entity.forceExplosionKnockback) {
+                             continue;
+                         }
+                         // CraftBukkit end
