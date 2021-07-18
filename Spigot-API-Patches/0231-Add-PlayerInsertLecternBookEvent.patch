@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Sat, 29 Aug 2020 21:55:41 +0200
+Subject: [PATCH] Add PlayerInsertLecternBookEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/player/PlayerInsertLecternBookEvent.java b/src/main/java/io/papermc/paper/event/player/PlayerInsertLecternBookEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d291c8e0c1736e4fd6a3dabf82a209c859d3e191
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/player/PlayerInsertLecternBookEvent.java
+@@ -0,0 +1,61 @@
++package io.papermc.paper.event.player;
++
++import org.bukkit.block.Lectern;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++public class PlayerInsertLecternBookEvent extends PlayerEvent implements Cancellable {
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++    private boolean cancelled = false;
++    private final Lectern lectern;
++    private ItemStack book;
++
++    public PlayerInsertLecternBookEvent(@NotNull Player who, @NotNull Lectern lectern, @NotNull ItemStack book) {
++        super(who);
++        this.lectern = lectern;
++        this.book = book;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @NotNull
++    public Lectern getLectern() {
++        return lectern;
++    }
++
++    @NotNull
++    public ItemStack getBook() {
++        return book;
++    }
++
++    @Override
++    public void setCancelled(boolean cancelled) {
++        this.cancelled = cancelled;
++    }
++
++    public void setBook(@Nullable ItemStack book) {
++        if (book == null)
++            setCancelled(true);
++        else
++            this.book = book;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return HANDLER_LIST;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return HANDLER_LIST;
++    }
++}

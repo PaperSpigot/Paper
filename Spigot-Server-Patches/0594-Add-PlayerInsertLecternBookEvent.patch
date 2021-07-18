@@ -1,0 +1,106 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Sat, 29 Aug 2020 21:55:50 +0200
+Subject: [PATCH] Add PlayerInsertLecternBookEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockLectern.java b/src/main/java/net/minecraft/server/BlockLectern.java
+index 87bdc49f90eee5c45ffee1d8fd5085198339fe9c..d3f401733ac3b6ccf57f93ddbaf5c6e54b554e8c 100644
+--- a/src/main/java/net/minecraft/server/BlockLectern.java
++++ b/src/main/java/net/minecraft/server/BlockLectern.java
+@@ -100,9 +100,15 @@ public class BlockLectern extends BlockTileEntity {
+     }
+ 
+     public static boolean a(World world, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack) {
++        // Paper start
++        return interactHandler(world, blockposition, iblockdata, itemstack, null);
++    }
++
++    public static boolean interactHandler(World world, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack, ItemActionContext itemActionContext) {
++        // Paper end
+         if (!(Boolean) iblockdata.get(BlockLectern.c)) {
+             if (!world.isClientSide) {
+-                b(world, blockposition, iblockdata, itemstack);
++                putIfAbsent(world, blockposition, iblockdata, itemstack, itemActionContext); // Paper
+             }
+ 
+             return true;
+@@ -112,12 +118,18 @@ public class BlockLectern extends BlockTileEntity {
+     }
+ 
+     private static void b(World world, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack) {
++        // Paper start
++        putIfAbsent(world, blockposition, iblockdata, itemstack, null);
++    }
++
++    private static void putIfAbsent(World world, BlockPosition blockposition, IBlockData iblockdata, ItemStack itemstack, ItemActionContext itemActionContext) {
++        // Paper end
+         TileEntity tileentity = world.getTileEntity(blockposition);
+ 
+         if (tileentity instanceof TileEntityLectern) {
+             TileEntityLectern tileentitylectern = (TileEntityLectern) tileentity;
+ 
+-            tileentitylectern.setBook(itemstack.cloneAndSubtract(1));
++            tileentitylectern.setBook(itemstack.cloneAndSubtract(1), itemActionContext == null ? null : itemActionContext.getEntity()); // Paper - pass entity
+             setHasBook(world, blockposition, iblockdata, true);
+             world.playSound((EntityHuman) null, blockposition, SoundEffects.ITEM_BOOK_PUT, SoundCategory.BLOCKS, 1.0F, 1.0F);
+         }
+diff --git a/src/main/java/net/minecraft/server/ItemBookAndQuill.java b/src/main/java/net/minecraft/server/ItemBookAndQuill.java
+index acf98fdb67aaaf1c1aaf71a28ff212a637a2e2b1..1e090b9891074de6125b7e8ae2fcc9afc85fbf09 100644
+--- a/src/main/java/net/minecraft/server/ItemBookAndQuill.java
++++ b/src/main/java/net/minecraft/server/ItemBookAndQuill.java
+@@ -14,7 +14,7 @@ public class ItemBookAndQuill extends Item {
+         BlockPosition blockposition = itemactioncontext.getClickPosition();
+         IBlockData iblockdata = world.getType(blockposition);
+ 
+-        return iblockdata.a(Blocks.LECTERN) ? (BlockLectern.a(world, blockposition, iblockdata, itemactioncontext.getItemStack()) ? EnumInteractionResult.a(world.isClientSide) : EnumInteractionResult.PASS) : EnumInteractionResult.PASS;
++        return iblockdata.a(Blocks.LECTERN) ? (BlockLectern.interactHandler(world, blockposition, iblockdata, itemactioncontext.getItemStack(), itemactioncontext) ? EnumInteractionResult.a(world.isClientSide) : EnumInteractionResult.PASS) : EnumInteractionResult.PASS; // Paper
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/ItemWrittenBook.java b/src/main/java/net/minecraft/server/ItemWrittenBook.java
+index da480ba9d9670b2b3ab914bb707f353f965157e8..804fd929358b343033d4fc8b88603291d5645221 100644
+--- a/src/main/java/net/minecraft/server/ItemWrittenBook.java
++++ b/src/main/java/net/minecraft/server/ItemWrittenBook.java
+@@ -50,7 +50,7 @@ public class ItemWrittenBook extends Item {
+         BlockPosition blockposition = itemactioncontext.getClickPosition();
+         IBlockData iblockdata = world.getType(blockposition);
+ 
+-        return iblockdata.a(Blocks.LECTERN) ? (BlockLectern.a(world, blockposition, iblockdata, itemactioncontext.getItemStack()) ? EnumInteractionResult.a(world.isClientSide) : EnumInteractionResult.PASS) : EnumInteractionResult.PASS;
++        return iblockdata.a(Blocks.LECTERN) ? (BlockLectern.interactHandler(world, blockposition, iblockdata, itemactioncontext.getItemStack(), itemactioncontext) ? EnumInteractionResult.a(world.isClientSide) : EnumInteractionResult.PASS) : EnumInteractionResult.PASS; // Paper
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/TileEntityLectern.java b/src/main/java/net/minecraft/server/TileEntityLectern.java
+index cb6f55c4d870ea1ce146f64ac13e7090f2de3bc8..84564be80f0b5de6c4f2a528600cc8f2f1d0e96c 100644
+--- a/src/main/java/net/minecraft/server/TileEntityLectern.java
++++ b/src/main/java/net/minecraft/server/TileEntityLectern.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import io.papermc.paper.event.player.PlayerInsertLecternBookEvent;
+ import javax.annotation.Nullable;
+ // CraftBukkit start
+ import java.util.ArrayList;
+@@ -185,6 +186,7 @@ public class TileEntityLectern extends TileEntity implements Clearable, ITileInv
+         BlockLectern.setHasBook(this.getWorld(), this.getPosition(), this.getBlock(), false);
+     }
+ 
++    public final void setBook(ItemStack itemStack, @Nullable EntityHuman entityHuman) { this.a(itemStack, entityHuman); } // Paper - OBFHELPER
+     public void a(ItemStack itemstack, @Nullable EntityHuman entityhuman) {
+         this.book = this.b(itemstack, entityhuman);
+         this.page = 0;
+@@ -216,6 +218,13 @@ public class TileEntityLectern extends TileEntity implements Clearable, ITileInv
+     private ItemStack b(ItemStack itemstack, @Nullable EntityHuman entityhuman) {
+         if (this.world instanceof WorldServer && itemstack.getItem() == Items.WRITTEN_BOOK) {
+             ItemWrittenBook.a(itemstack, this.a(entityhuman), entityhuman);
++            // Paper start
++            if (entityhuman != null && getWorld() != null && !new PlayerInsertLecternBookEvent(
++                (org.bukkit.entity.Player) entityhuman.getBukkitEntity(),
++                (org.bukkit.block.Lectern) getWorld().getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()).getState(false),
++                org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)
++            ).callEvent()) return ItemStack.NULL_ITEM;
++            // Paper end
+         }
+ 
+         return itemstack;
