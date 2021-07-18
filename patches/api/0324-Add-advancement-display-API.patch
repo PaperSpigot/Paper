@@ -1,0 +1,230 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: syldium <syldium@mailo.com>
+Date: Fri, 9 Jul 2021 18:49:40 +0200
+Subject: [PATCH] Add advancement display API
+
+
+diff --git a/src/main/java/io/papermc/paper/advancement/AdvancementDisplay.java b/src/main/java/io/papermc/paper/advancement/AdvancementDisplay.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b1d3d4f52311dce857d1d15e7d301b0593f0b9c6
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/advancement/AdvancementDisplay.java
+@@ -0,0 +1,163 @@
++package io.papermc.paper.advancement;
++
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.format.Style;
++import net.kyori.adventure.text.format.StyleBuilderApplicable;
++import net.kyori.adventure.text.format.TextColor;
++import net.kyori.adventure.translation.Translatable;
++import net.kyori.adventure.util.Index;
++import org.bukkit.NamespacedKey;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Describes the display of a advancement.
++ * <p>
++ * The display is used in the chat, in the toast messages and the advancements
++ * screen.
++ */
++public interface AdvancementDisplay {
++
++    /**
++     * Gets the {@link Frame}.
++     * <p>
++     * This defines the appearance of the tile in the advancements screen and
++     * the text when it's completed.
++     *
++     * @return the frame type
++     */
++    @NotNull
++    Frame frame();
++
++    /**
++     * Gets the advancement title.
++     *
++     * @return the title
++     */
++    @NotNull
++    Component title();
++
++    /**
++     * Gets the description.
++     *
++     * @return the description
++     */
++    @NotNull
++    Component description();
++
++    /**
++     * Gets the icon shown in the frame in the advancements screen.
++     *
++     * @return a copy of the icon
++     */
++    @NotNull
++    ItemStack icon();
++
++    /**
++     * Gets whether a toast should be displayed.
++     * <p>
++     * A toast is a notification that will be displayed in the top right corner
++     * of the screen.
++     *
++     * @return {@code true} if a toast should be shown
++     */
++    boolean doesShowToast();
++
++    /**
++     * Gets whether a message should be sent in the chat.
++     *
++     * @return {@code true} if a message should be sent
++     * @see org.bukkit.event.player.PlayerAdvancementDoneEvent#message() to edit
++     * the message
++     */
++    boolean doesAnnounceToChat();
++
++    /**
++     * Gets whether this advancement is hidden.
++     * <p>
++     * Hidden advancements cannot be viewed by the player until they have been
++     * unlocked.
++     *
++     * @return {@code true} if hidden
++     */
++    boolean isHidden();
++
++    /**
++     * Gets the texture displayed behind the advancement tree when selected.
++     * <p>
++     * This only affects root advancements without any parent. If the background
++     * is not specified or doesn't exist, the tab background will be the missing
++     * texture.
++     *
++     * @return the background texture path
++     */
++    @Nullable
++    NamespacedKey backgroundPath();
++
++    /**
++     * Defines how the {@link #icon()} appears in the advancements screen and
++     * the color used with the {@link #title() advancement name}.
++     */
++    enum Frame implements Translatable, StyleBuilderApplicable {
++
++        /**
++         * "Challenge complete" advancement.
++         * <p>
++         * The client will play the {@code ui.toast.challenge_complete} sound
++         * when the challenge is completed and the toast is shown.
++         */
++        CHALLENGE("challenge", NamedTextColor.DARK_PURPLE),
++
++        /**
++         * "Goal reached" advancement.
++         */
++        GOAL("goal", NamedTextColor.GREEN),
++
++        /**
++         * "Advancement made" advancement.
++         */
++        TASK("task", NamedTextColor.GREEN);
++
++        /**
++         * The name map.
++         */
++        public static final Index<String, Frame> NAMES = Index.create(Frame.class, color -> color.name);
++        private final String name;
++        private final TextColor color;
++
++        Frame(String name, TextColor color) {
++            this.name = name;
++            this.color = color;
++        }
++
++        /**
++         * Gets the {@link TextColor} used for the advancement name.
++         *
++         * @return the text color
++         */
++        @NotNull
++        public TextColor color() {
++            return this.color;
++        }
++
++        /**
++         * Gets the translation key used when an advancement is completed.
++         * <p>
++         * This is the first line of the toast displayed by the client.
++         *
++         * @return the toast message key
++         */
++        @Override
++        @NotNull
++        public String translationKey() {
++            return "advancements.toast." + this.name;
++        }
++
++        @Override
++        public void styleApply(Style.@NotNull Builder style) {
++            style.color(this.color);
++        }
++    }
++}
+diff --git a/src/main/java/org/bukkit/advancement/Advancement.java b/src/main/java/org/bukkit/advancement/Advancement.java
+index 7c5009974ac8d64d0e738e60cec45acb0d4ca89a..a03c70ee952d3185e1347a4a6c7c60d52d0675d1 100644
+--- a/src/main/java/org/bukkit/advancement/Advancement.java
++++ b/src/main/java/org/bukkit/advancement/Advancement.java
+@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
+  * Represents an advancement that may be awarded to a player. This class is not
+  * reference safe as the underlying advancement may be reloaded.
+  */
+-public interface Advancement extends Keyed {
++public interface Advancement extends net.kyori.adventure.text.ComponentLike, Keyed { // Paper - extends ComponentLike
+ 
+     /**
+      * Get all the criteria present in this advancement.
+@@ -17,4 +17,41 @@ public interface Advancement extends Keyed {
+      */
+     @NotNull
+     Collection<String> getCriteria();
++    // Paper start
++    /**
++     * Get the display info of this advancement.
++     * <p>
++     * Will be {@code null} when totally hidden, for example with crafting
++     * recipes.
++     *
++     * @return the display info
++     */
++    @org.jetbrains.annotations.Nullable
++    io.papermc.paper.advancement.AdvancementDisplay getDisplay();
++
++    /**
++     * Gets the parent advancement, if any.
++     *
++     * @return the parent advancement
++     */
++    @org.jetbrains.annotations.Nullable
++    Advancement getParent();
++
++    /**
++     * Gets all the direct children advancements.
++     *
++     * @return the children advancements
++     */
++    @NotNull
++    @org.jetbrains.annotations.Unmodifiable
++    Collection<Advancement> getChildren();
++
++    /**
++     * Gets the root advancement of the tree this is located in.
++     *
++     * @return the root advancement
++     */
++    @NotNull
++    Advancement getRoot();
++    // Paper end
+ }
