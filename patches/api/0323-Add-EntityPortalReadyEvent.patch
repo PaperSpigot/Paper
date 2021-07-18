@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Wed, 12 May 2021 04:30:53 -0700
+Subject: [PATCH] Add EntityPortalReadyEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/entity/EntityPortalReadyEvent.java b/src/main/java/io/papermc/paper/event/entity/EntityPortalReadyEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4928091458a857a4103ecba7a37585937e6f0382
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/entity/EntityPortalReadyEvent.java
+@@ -0,0 +1,93 @@
++package io.papermc.paper.event.entity;
++
++import org.bukkit.PortalType;
++import org.bukkit.World;
++import org.bukkit.entity.Entity;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.entity.EntityEvent;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++/**
++ * Called when an entity is ready to be teleported by a plugin.
++ * Currently this is only called after the required
++ * ticks have passed for a Nether Portal.
++ * <p>
++ * Cancelling this event resets the entity's readiness
++ * regarding the current portal.
++ */
++public class EntityPortalReadyEvent extends EntityEvent implements Cancellable {
++
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++
++    private World world;
++    private final PortalType portalType;
++    private boolean cancelled;
++
++    public EntityPortalReadyEvent(@NotNull Entity entity, @Nullable World world, @NotNull PortalType portalType) {
++        super(entity);
++        this.world = world;
++        this.portalType = portalType;
++    }
++
++    /**
++     * Gets the world this portal will teleport to.
++     * Can be null if `allow-nether` is false in server.properties
++     * or if there is another situation where there is no world to teleport to.
++     * <p>
++     * This world may be modified by later events such as {@link org.bukkit.event.player.PlayerPortalEvent}
++     * or {@link org.bukkit.event.entity.EntityPortalEvent}.
++     *
++     * @return the world the portal will teleport the entity to.
++     */
++    @Nullable
++    public World getWorld() {
++        return world;
++    }
++
++    /**
++     * Sets the world this portal will teleport to. A null value
++     * will essentially cancel the teleport and prevent further events
++     * such as {@link org.bukkit.event.player.PlayerPortalEvent} from firing.
++     * <p>
++     * This world may be modified by later events such as {@link org.bukkit.event.player.PlayerPortalEvent}
++     * or {@link EntityPortalReadyEvent}.
++     *
++     * @param world the world
++     */
++    public void setWorld(@Nullable World world) {
++        this.world = world;
++    }
++
++    /**
++     * Gets the portal type for this event.
++     *
++     * @return the portal type
++     */
++    @NotNull
++    public PortalType getPortalType() {
++        return portalType;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return HANDLER_LIST;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return HANDLER_LIST;
++    }
++}
