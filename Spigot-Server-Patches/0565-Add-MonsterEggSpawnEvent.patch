@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: BillyGalbreath <Blake.Galbreath@GMail.com>
+Date: Sun, 23 Aug 2020 18:46:49 +0200
+Subject: [PATCH] Add MonsterEggSpawnEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTypes.java b/src/main/java/net/minecraft/server/EntityTypes.java
+index 2767de830bdb9051ae6a6b7c30342175b117e7ed..0b27176eae5f72c8789e6f49835672bfc8ad2745 100644
+--- a/src/main/java/net/minecraft/server/EntityTypes.java
++++ b/src/main/java/net/minecraft/server/EntityTypes.java
+@@ -8,8 +8,10 @@ import java.util.UUID;
+ import java.util.function.Function;
+ import java.util.stream.Stream;
+ import javax.annotation.Nullable;
++import io.papermc.paper.event.entity.MonsterEggSpawnEvent; // Paper
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import org.bukkit.event.entity.CreatureSpawnEvent; // Paper
+ 
+ public class EntityTypes<T extends Entity> {
+ 
+@@ -166,18 +168,43 @@ public class EntityTypes<T extends Entity> {
+ 
+     @Nullable
+     public Entity spawnCreature(WorldServer worldserver, @Nullable ItemStack itemstack, @Nullable EntityHuman entityhuman, BlockPosition blockposition, EnumMobSpawn enummobspawn, boolean flag, boolean flag1) {
+-        return this.spawnCreature(worldserver, itemstack == null ? null : itemstack.getTag(), itemstack != null && itemstack.hasName() ? itemstack.getName() : null, entityhuman, blockposition, enummobspawn, flag, flag1);
++        // Paper start - add itemstack param
++        return this.spawnCreature(worldserver, itemstack == null ? null : itemstack.getTag(), itemstack != null && itemstack.hasName() ? itemstack.getName() : null, entityhuman, blockposition, enummobspawn, flag, flag1, itemstack);
+     }
+ 
+     @Nullable
+     public T spawnCreature(WorldServer worldserver, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, EnumMobSpawn enummobspawn, boolean flag, boolean flag1) {
++        return this.spawnCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1, (ItemStack) null);
++    }
++
++    @Nullable
++    public T spawnCreature(WorldServer worldserver, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, EnumMobSpawn enummobspawn, boolean flag, boolean flag1, ItemStack itemstack) {
+         // CraftBukkit start
+-        return this.spawnCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG);
++        return this.spawnCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG, itemstack);
+     }
+ 
+     @Nullable
+     public T spawnCreature(WorldServer worldserver, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, EnumMobSpawn enummobspawn, boolean flag, boolean flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
+-        T t0 = this.createCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1);
++        return this.spawnCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1, spawnReason, null);
++    }
++
++    @Nullable
++    public T spawnCreature(WorldServer worldserver, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, EnumMobSpawn enummobspawn, boolean flag, boolean flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason, ItemStack itemstack) {
++        // Paper end
++        T t0 = this.createCreature(worldserver, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, enummobspawn, flag, flag1); // Paper - diff on change
++
++        // Paper start - MonsterEggSpawnEvent
++        if (spawnReason == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG && itemstack != null && t0 != null) {
++            MonsterEggSpawnEvent event = new MonsterEggSpawnEvent(entityhuman != null ? (org.bukkit.entity.Player) entityhuman.getBukkitEntity() : null, (org.bukkit.entity.LivingEntity) t0.getBukkitEntity(), itemstack.asBukkitCopy());
++            if (!event.callEvent() || event.getEntity() == null) {
++                if (event.getEntity() != null) worldserver.removeEntity(((org.bukkit.craftbukkit.entity.CraftEntity) event.getEntity()).getHandle()); // A plugin might've spawned an entity and set it.
++                return null;
++            }
++
++            if (!event.getEntity().getUniqueId().equals(t0.uniqueID))
++                t0 = (T) ((org.bukkit.craftbukkit.entity.CraftEntity) event.getEntity()).getHandle();
++        }
++        // Paper end
+ 
+         if (t0 != null) {
+             return worldserver.addAllEntities(t0, spawnReason) ? t0 : null; // Don't return an entity when CreatureSpawnEvent is canceled

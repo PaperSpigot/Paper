@@ -1,0 +1,112 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: BillyGalbreath <Blake.Galbreath@GMail.com>
+Date: Sun, 23 Aug 2020 18:46:39 +0200
+Subject: [PATCH] Add MonsterEggSpawnEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/entity/MonsterEggSpawnEvent.java b/src/main/java/io/papermc/paper/event/entity/MonsterEggSpawnEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e321efeb1bf9b0393c616ca807bfbb6cf29789a1
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/entity/MonsterEggSpawnEvent.java
+@@ -0,0 +1,100 @@
++package io.papermc.paper.event.entity;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.Event;
++import org.bukkit.event.HandlerList;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++import java.util.function.Function;
++
++/**
++ * Called when an entity is being spawned via a monster egg.
++ */
++public class MonsterEggSpawnEvent extends Event implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private boolean cancelled;
++
++    private final Player player;
++    private LivingEntity entity;
++    private final ItemStack item;
++
++    public MonsterEggSpawnEvent(@Nullable Player player, @NotNull LivingEntity entity, @NotNull ItemStack item) {
++        this.player = player;
++        this.entity = entity;
++        this.item = item;
++    }
++
++    /**
++     * @return the player who placed the monster egg; can be {@code null} if placed by a dispenser or the likes
++     */
++    @Nullable
++    public Player getPlayer() {
++        return player;
++    }
++
++    /**
++     * @return the spawned entity, or {@code null} if none (only possible through plugins modifying)
++     */
++    @Nullable
++    public LivingEntity getEntity() {
++        return entity;
++    }
++
++    /**
++     * Sets the spawned entity. {@code null} will cancel the event.
++     *
++     * @param entity the new spawned entity
++     */
++    public void setEntity(@Nullable LivingEntity entity) {
++        if (entity == null) {
++            cancelled = true;
++            return;
++        }
++
++        this.entity = entity;
++    }
++
++    /**
++     * @return the mob spawn egg
++     */
++    @NotNull
++    public ItemStack getItem() {
++        return item;
++    }
++
++    /**
++     * {@inheritDoc}
++     */
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    /**
++     * {@inheritDoc}
++     */
++    @Override
++    public void setCancelled(boolean cancel) {
++        cancelled = cancel;
++    }
++
++    /**
++     * {@inheritDoc}
++     */
++    @Override
++    @NotNull
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}
