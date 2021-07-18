@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jan Tuck <jan@tuck.dk>
+Date: Mon, 6 Jul 2020 02:56:45 +0200
+Subject: [PATCH] Fix anvil not working when level req is 0
+
+Remove noise
+
+Fix check.
+
+Add obfhelper and remove calls to the callPrepareAnvilEvent
+
+Less diff woops
+
+diff --git a/src/main/java/net/minecraft/server/ContainerAnvil.java b/src/main/java/net/minecraft/server/ContainerAnvil.java
+index fc2038df89f25c07f6f853f6df41fe9b203c3585..c742a5a5f3ca51840d608b05b7724fef3a642719 100644
+--- a/src/main/java/net/minecraft/server/ContainerAnvil.java
++++ b/src/main/java/net/minecraft/server/ContainerAnvil.java
+@@ -38,7 +38,7 @@ public class ContainerAnvil extends ContainerAnvilAbstract {
+ 
+     @Override
+     protected boolean b(EntityHuman entityhuman, boolean flag) {
+-        return (entityhuman.abilities.canInstantlyBuild || entityhuman.expLevel >= this.levelCost.get()) && this.levelCost.get() > 0;
++        return (entityhuman.abilities.canInstantlyBuild || entityhuman.expLevel >= this.levelCost.get()) && this.levelCost.get() >= 0; //Paper
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 8fd3c913ac5315a5c1cce002498bfe2ec08aaf42..c1fab5f4671cef13d5cff1bad662f43600babf9f 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -84,7 +84,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     private BlockPosition spawn;
+     private boolean spawnForced;
+     private int containerCounter;
+-    public boolean e;
++    public boolean e; public void setSkipPacketSlotUpdates(boolean skip) {this.e = skip;} public boolean getSkipPacketSlotUpdates() {return this.e;} // Paper - OBFHELPER
+     public int ping;
+     public boolean viewingCredits;
+     private int containerUpdateDelay; // Paper
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index dbc46fcda3f3e006d9e7b7a89ab942b46a05cd9f..bb528f196acaf0e52a61a7862cdbb646f465fedb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1573,6 +1573,25 @@ public class CraftEventFactory {
+         event.callEvent();
+         event.getInventory().setItem(resultSlot, event.getResult());
+         container.notifyListeners();
++
++        /*
++           I only know of this happening frequently with anvils and the level req set to 0, so i will limit it to that.
++         */
++        if (event instanceof PrepareAnvilEvent) {
++             if (((org.bukkit.inventory.AnvilInventory)view.getTopInventory()).getRepairCost() == 0) {
++                event.getViewers().forEach(viewer -> {
++                    if (viewer instanceof Player) {
++                        net.minecraft.server.EntityPlayer player = ((CraftPlayer) viewer).getHandle();
++                        boolean before = player.getSkipPacketSlotUpdates();
++                        if (before) {
++                            player.setSkipPacketSlotUpdates(false);
++                        }
++                        player.broadcastCarriedItem();
++                        player.setSkipPacketSlotUpdates(before);
++                    }
++                });
++            }
++        }
+     }
+     // Paper end
+ 
