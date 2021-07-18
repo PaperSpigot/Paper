@@ -18,7 +18,7 @@ index 8d08c4f2bedddc737dbefb89fa2f99fba2b66e4a..b898690863be9753910bb4af3be13c2e
  }
 diff --git a/src/main/java/com/destroystokyo/paper/entity/ai/MobGoalHelper.java b/src/main/java/com/destroystokyo/paper/entity/ai/MobGoalHelper.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b3a2fc699
+index 0000000000000000000000000000000000000000..79006251a707dd94099db26fbb503f8699b7a8b5
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/entity/ai/MobGoalHelper.java
 @@ -0,0 +1,467 @@
@@ -50,7 +50,6 @@ index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b
 +import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 +import net.minecraft.world.entity.boss.wither.WitherBoss;
 +import net.minecraft.world.entity.monster.AbstractIllager;
-+import net.minecraft.world.entity.monster.AbstractSkeleton;
 +import net.minecraft.world.entity.monster.EnderMan;
 +import net.minecraft.world.entity.monster.PatrollingMonster;
 +import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -59,6 +58,7 @@ index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b
 +import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 +import org.bukkit.NamespacedKey;
 +import org.bukkit.entity.AbstractHorse;
++import org.bukkit.entity.AbstractSkeleton;
 +import org.bukkit.entity.AbstractVillager;
 +import org.bukkit.entity.Ageable;
 +import org.bukkit.entity.Ambient;
@@ -238,7 +238,7 @@ index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b
 +        deobfuscationMap.put("shulker_d", "shulker_nearest");
 +        deobfuscationMap.put("shulker_e", "shulker_peek");
 +        deobfuscationMap.put("squid_a", "squid_flee");
-+        deobfuscationMap.put("abstract_skeleton_1", "skeleton_melee");
++        deobfuscationMap.put("abstract_skeleton_1", "abstract_skeleton_melee");
 +        deobfuscationMap.put("strider_a", "strider_go_to_lava");
 +        deobfuscationMap.put("turtle_a", "turtle_breed");
 +        deobfuscationMap.put("turtle_b", "turtle_go_home");
@@ -309,7 +309,7 @@ index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b
 +        bukkitMap.put(net.minecraft.world.entity.animal.horse.TraderLlama.class, TraderLlama.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.MagmaCube.class, MagmaCube.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.Monster.class, Monster.class);
-+        bukkitMap.put(PatrollingMonster.class, Monster.class); // close enough
++        bukkitMap.put(PatrollingMonster.class, Raider.class); // close enough
 +        bukkitMap.put(net.minecraft.world.entity.animal.MushroomCow.class, MushroomCow.class);
 +        bukkitMap.put(net.minecraft.world.entity.animal.Ocelot.class, Ocelot.class);
 +        bukkitMap.put(net.minecraft.world.entity.animal.Panda.class, Panda.class);
@@ -329,7 +329,7 @@ index 0000000000000000000000000000000000000000..dfc026d183adab1dde5942f36e7a281b
 +        bukkitMap.put(net.minecraft.world.entity.monster.Shulker.class, Shulker.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.Silverfish.class, Silverfish.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.Skeleton.class, Skeleton.class);
-+        bukkitMap.put(AbstractSkeleton.class, Skeleton.class);
++        bukkitMap.put(net.minecraft.world.entity.monster.AbstractSkeleton.class, AbstractSkeleton.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.Stray.class, Stray.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.WitherSkeleton.class, WitherSkeleton.class);
 +        bukkitMap.put(net.minecraft.world.entity.monster.Slime.class, Slime.class);
