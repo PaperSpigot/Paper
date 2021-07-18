@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicklas Ahlskog <kivi@kivibot.fi>
+Date: Sun, 20 Dec 2020 18:13:01 +0200
+Subject: [PATCH] Add EntityPotionEffectImmunityEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/entity/EntityPotionEffectImmunityEvent.java b/src/main/java/io/papermc/paper/event/entity/EntityPotionEffectImmunityEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3bd01648af2a4bf970b1a5c9ea7afc0d1c381bb8
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/entity/EntityPotionEffectImmunityEvent.java
+@@ -0,0 +1,77 @@
++package io.papermc.paper.event.entity;
++
++import org.bukkit.entity.Entity;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.entity.EntityEvent;
++import org.bukkit.event.entity.EntityPotionEffectEvent;
++import org.bukkit.potion.PotionEffect;
++import org.bukkit.potion.PotionEffectType;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Is called when a {@Link org.bukkit.entity.LivingEntity} wouldn't be affected by a {@Link org.bukkit.potion.PotionEffect} because of immunity.
++ * Cancelling this event makes it possible for the entity to be affected by the given effect.
++ */
++public class EntityPotionEffectImmunityEvent extends EntityEvent implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++
++    @NotNull
++    private final EntityPotionEffectEvent.Cause cause;
++    @NotNull
++    private final PotionEffect effect;
++
++    private boolean cancelled;
++
++    public EntityPotionEffectImmunityEvent(@NotNull Entity what, @NotNull EntityPotionEffectEvent.Cause cause, @NotNull PotionEffect effect) {
++        super(what);
++        this.cause = cause;
++        this.effect = effect;
++        this.cancelled = false;
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancelled;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        cancelled = true;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    /**
++     * @return the cause why the effect is being added
++     */
++    @NotNull
++    public EntityPotionEffectEvent.Cause getCause() {
++        return cause;
++    }
++
++    /**
++     * @return the potion effect that the entity is being immune to
++     */
++    @NotNull
++    public PotionEffect getEffect() {
++        return effect;
++    }
++
++    /**
++     * The same as calling getEffect().getType()
++     */
++    @NotNull
++    public PotionEffectType getEffectType() {
++        return effect.getType();
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}

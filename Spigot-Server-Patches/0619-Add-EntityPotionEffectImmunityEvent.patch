@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nicklas Ahlskog <kivi@kivibot.fi>
+Date: Sun, 20 Dec 2020 18:15:04 +0200
+Subject: [PATCH] Add EntityPotionEffectImmunityEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index b88bd19fc3ebaf3ae467b5ad35a155505db77e6c..18745f4a096669c933cd6939012c4fd4ce94450b 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -43,6 +43,8 @@ import org.bukkit.event.entity.EntityTeleportEvent;
+ import org.bukkit.event.player.PlayerItemConsumeEvent;
+ // CraftBukkit end
+ 
++import io.papermc.paper.event.entity.EntityPotionEffectImmunityEvent; // Paper
++import org.bukkit.craftbukkit.potion.CraftPotionUtil; // Paper
+ 
+ public abstract class EntityLiving extends Entity {
+ 
+@@ -909,7 +911,7 @@ public abstract class EntityLiving extends Entity {
+         }
+         // CraftBukkit end
+ 
+-        if (!this.d(mobeffect)) {
++        if (!this.canAddEffect(mobeffect, cause)) { // Paper
+             return false;
+         } else {
+             MobEffect mobeffect1 = (MobEffect) this.effects.get(mobeffect.getMobEffect());
+@@ -941,6 +943,21 @@ public abstract class EntityLiving extends Entity {
+             }
+         }
+     }
++	
++    // Paper start - OBFHELPER
++    private boolean canAddEffect(MobEffect mobEffect, EntityPotionEffectEvent.Cause cause) {
++        if (this.d(mobEffect)) {
++            return true;
++        }
++
++        EntityPotionEffectImmunityEvent event = new EntityPotionEffectImmunityEvent(
++            this.getBukkitEntity(),
++            cause,
++            CraftPotionUtil.toBukkit(mobEffect)
++        );
++        return !event.callEvent();
++    }
++    // Paper end
+ 
+     public boolean d(MobEffect mobeffect) {
+         if (this.getMonsterType() == EnumMonsterType.UNDEAD) {
