@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Tue, 22 Dec 2020 13:52:48 -0800
+Subject: [PATCH] Added EntityDamageItemEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 86aa07827ce0e02939ebb594956b1023ffd83ad4..0dbe4bafb0631ba2d32e177e68f8e169474d1235 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -523,7 +523,7 @@ public final class ItemStack {
+         return this.getItem().getMaxDamage();
+     }
+ 
+-    public boolean hurt(int amount, Random random, @Nullable ServerPlayer player) {
++    public boolean hurt(int amount, Random random, @Nullable LivingEntity player) { // Paper - allow any living entity instead of only ServerPlayers
+         if (!this.isDamageableItem()) {
+             return false;
+         } else {
+@@ -541,8 +541,8 @@ public final class ItemStack {
+ 
+                 amount -= k;
+                 // CraftBukkit start
+-                if (player != null) {
+-                    PlayerItemDamageEvent event = new PlayerItemDamageEvent(player.getBukkitEntity(), CraftItemStack.asCraftMirror(this), amount);
++                if (player instanceof ServerPlayer) { // Paper
++                    PlayerItemDamageEvent event = new PlayerItemDamageEvent(((ServerPlayer) player).getBukkitEntity(), CraftItemStack.asCraftMirror(this), amount); // Paper
+                     event.getPlayer().getServer().getPluginManager().callEvent(event);
+ 
+                     if (amount != event.getDamage() || event.isCancelled()) {
+@@ -553,6 +553,14 @@ public final class ItemStack {
+                     }
+ 
+                     amount = event.getDamage();
++                    // Paper start - EntityItemDamageEvent
++                } else if (player != null) {
++                    io.papermc.paper.event.entity.EntityDamageItemEvent event = new io.papermc.paper.event.entity.EntityDamageItemEvent(player.getBukkitLivingEntity(), CraftItemStack.asCraftMirror(this), amount);
++                    if (!event.callEvent()) {
++                        return false;
++                    }
++                    amount = event.getDamage();
++                    // Paper end
+                 }
+                 // CraftBukkit end
+                 if (amount <= 0) {
+@@ -560,8 +568,8 @@ public final class ItemStack {
+                 }
+             }
+ 
+-            if (player != null && amount != 0) {
+-                CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(player, this, this.getDamageValue() + amount);
++            if (player instanceof ServerPlayer && amount != 0) { // Paper
++                CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger((ServerPlayer) player, this, this.getDamageValue() + amount); // Paper
+             }
+ 
+             j = this.getDamageValue() + amount;
+@@ -573,7 +581,7 @@ public final class ItemStack {
+     public <T extends LivingEntity> void hurtAndBreak(int amount, T entity, Consumer<T> breakCallback) {
+         if (!entity.level.isClientSide && (!(entity instanceof net.minecraft.world.entity.player.Player) || !((net.minecraft.world.entity.player.Player) entity).getAbilities().instabuild)) {
+             if (this.isDamageableItem()) {
+-                if (this.hurt(amount, entity.getRandom(), entity instanceof ServerPlayer ? (ServerPlayer) entity : null)) {
++                if (this.hurt(amount, entity.getRandom(), entity /*instanceof ServerPlayer ? (ServerPlayer) entity : null*/)) { // Paper - pass LivingEntity for EntityItemDamageEvent
+                     breakCallback.accept(entity);
+                     Item item = this.getItem();
+                     // CraftBukkit start - Check for item breaking
