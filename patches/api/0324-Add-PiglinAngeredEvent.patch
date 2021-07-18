@@ -1,0 +1,116 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: thamid-gamer <60953955+thamid-gamer@users.noreply.github.com>
+Date: Sun, 11 Jul 2021 19:59:15 -0400
+Subject: [PATCH] Add PiglinAngeredEvent
+
+
+diff --git a/src/main/java/io/papermc/paper/event/entity/PiglinAngeredEvent.java b/src/main/java/io/papermc/paper/event/entity/PiglinAngeredEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ae834dc0932a7caaf8e4d017042bb8cf81451344
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/event/entity/PiglinAngeredEvent.java
+@@ -0,0 +1,104 @@
++package io.papermc.paper.event.entity;
++
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.entity.PiglinAbstract;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.entity.EntityEvent;
++import org.jetbrains.annotations.NotNull;
++
++/**
++ * Called when a {@link PiglinAbstract} gets angered at a {@link LivingEntity}.
++ * If the event is cancelled and anger would normally be broadcast,
++ * anger will not broadcast to other piglins.
++ */
++public class PiglinAngeredEvent extends EntityEvent implements Cancellable {
++
++    private static final HandlerList handlers = new HandlerList();
++
++    private final LivingEntity target;
++    private final Reason reason;
++    private boolean cancel = false;
++
++    public PiglinAngeredEvent(@NotNull PiglinAbstract piglinAbstract, @NotNull LivingEntity target, @NotNull Reason reason) {
++        super(piglinAbstract);
++        this.target = target;
++        this.reason = reason;
++    }
++
++    /**
++     * Gets the target {@link LivingEntity} the {@link PiglinAbstract} is angered at.
++     * @return The target
++     */
++    @NotNull
++    public LivingEntity getTarget() {
++        return target;
++    }
++
++    /**
++     * Gets the reason the {@link PiglinAbstract} was angered.
++     * @return The reason
++     */
++    @NotNull
++    public Reason getReason() {
++        return reason;
++    }
++
++    @NotNull
++    @Override
++    public PiglinAbstract getEntity() {
++        return (PiglinAbstract) super.getEntity();
++    }
++
++    @Override
++    public boolean isCancelled() {
++        return cancel;
++    }
++
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancel = cancel;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++
++    public enum Reason {
++        /**
++         * Another {@link PiglinAbstract} broadcasted anger towards the target
++         */
++        BROADCAST,
++        /**
++         * Another {@link PiglinAbstract} broadcasted universal anger
++         */
++        BROADCAST_UNIVERSAL,
++        /**
++         * A {@link org.bukkit.entity.Player} destroyed a block guarded by {@link PiglinAbstract}s
++         */
++        DESTROYED_GUARDED_BLOCK,
++        /**
++         * The {@link PiglinAbstract} is hunting a {@link org.bukkit.entity.Hoglin}
++         */
++        HUNT,
++        /**
++         * A {@link org.bukkit.entity.Player} opens a {@link org.bukkit.block.Chest} or destroys a {@link org.bukkit.entity.minecart.StorageMinecart} or {@link org.bukkit.entity.minecart.HopperMinecart}
++         */
++        OPENED_CONTAINER,
++        /**
++         * The {@link PiglinAbstract} is retaliating against an attacker
++         */
++        RETALIATION,
++        /**
++         * Unknown anger reason
++         */
++        UNKNOWN
++    }
++}

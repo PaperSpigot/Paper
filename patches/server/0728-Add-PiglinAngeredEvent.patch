@@ -1,0 +1,133 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: thamid-gamer <60953955+thamid-gamer@users.noreply.github.com>
+Date: Sun, 11 Jul 2021 20:00:55 -0400
+Subject: [PATCH] Add PiglinAngeredEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+index 01d307e0022656509bc8fd02d6bac78a6af3a7be..809414d6c38cd154f2d95233a171023da63129c9 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/PiglinAi.java
+@@ -474,9 +474,9 @@ public class PiglinAi {
+             return !blockOpen || BehaviorUtils.canSee((LivingEntity) entitypiglin, player);
+         }).forEach((entitypiglin) -> {
+             if (entitypiglin.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+-                PiglinAi.setAngerTargetToNearestTargetablePlayerIfFound((AbstractPiglin) entitypiglin, (LivingEntity) player);
++                PiglinAi.setAngerTargetToNearestTargetablePlayerIfFound((AbstractPiglin) entitypiglin, (LivingEntity) player, blockOpen ? io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.OPENED_CONTAINER : io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.DESTROYED_GUARDED_BLOCK); // Paper
+             } else {
+-                PiglinAi.setAngerTarget((AbstractPiglin) entitypiglin, (LivingEntity) player);
++                PiglinAi.setAngerTarget((AbstractPiglin) entitypiglin, (LivingEntity) player, blockOpen ? io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.OPENED_CONTAINER : io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.DESTROYED_GUARDED_BLOCK); // Paper
+             }
+ 
+         });
+@@ -542,11 +542,13 @@ public class PiglinAi {
+             if (Sensor.isEntityAttackableIgnoringLineOfSight(piglin, target)) {
+                 if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(piglin, target, 4.0D)) {
+                     if (target.getType() == EntityType.PLAYER && piglin.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+-                        PiglinAi.setAngerTargetToNearestTargetablePlayerIfFound(piglin, target);
++                        if (PiglinAi.setAngerTargetToNearestTargetablePlayerIfFound(piglin, target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.RETALIATION)) { // Paper
+                         PiglinAi.broadcastUniversalAnger(piglin);
++                        } // Paper
+                     } else {
+-                        PiglinAi.setAngerTarget(piglin, target);
++                        if (PiglinAi.setAngerTarget(piglin, target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.RETALIATION)) { // Paper
+                         PiglinAi.broadcastAngerTarget(piglin, target);
++                        } // Paper
+                     }
+ 
+                 }
+@@ -615,7 +617,7 @@ public class PiglinAi {
+     protected static void broadcastAngerTarget(AbstractPiglin piglin, LivingEntity target) {
+         PiglinAi.getAdultPiglins(piglin).forEach((entitypiglinabstract1) -> {
+             if (target.getType() != EntityType.HOGLIN || entitypiglinabstract1.canHunt() && ((Hoglin) target).canBeHunted()) {
+-                PiglinAi.setAngerTargetIfCloserThanCurrent(entitypiglinabstract1, target);
++                PiglinAi.setAngerTargetIfCloserThanCurrent(entitypiglinabstract1, target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.BROADCAST); // Paper
+             }
+         });
+     }
+@@ -623,7 +625,7 @@ public class PiglinAi {
+     protected static void broadcastUniversalAnger(AbstractPiglin piglin) {
+         PiglinAi.getAdultPiglins(piglin).forEach((entitypiglinabstract1) -> {
+             PiglinAi.getNearestVisibleTargetablePlayer(entitypiglinabstract1).ifPresent((entityhuman) -> {
+-                PiglinAi.setAngerTarget(entitypiglinabstract1, (LivingEntity) entityhuman);
++                PiglinAi.setAngerTarget(entitypiglinabstract1, (LivingEntity) entityhuman, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.BROADCAST_UNIVERSAL); // Paper
+             });
+         });
+     }
+@@ -633,7 +635,12 @@ public class PiglinAi {
+     }
+ 
+     protected static void setAngerTarget(AbstractPiglin piglin, LivingEntity target) {
+-        if (Sensor.isEntityAttackableIgnoringLineOfSight(piglin, target)) {
++        // Paper start
++        setAngerTarget(piglin, target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.UNKNOWN);
++    }
++
++    protected static boolean setAngerTarget(AbstractPiglin piglin, LivingEntity target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason reason) {
++        if (Sensor.isEntityAttackableIgnoringLineOfSight(piglin, target) && new io.papermc.paper.event.entity.PiglinAngeredEvent((org.bukkit.entity.PiglinAbstract) piglin.getBukkitEntity(), target.getBukkitLivingEntity(), reason).callEvent()) {
+             piglin.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+             piglin.getBrain().setMemoryWithExpiry(MemoryModuleType.ANGRY_AT, target.getUUID(), 600L);
+             if (target.getType() == EntityType.HOGLIN && piglin.canHunt()) {
+@@ -643,27 +650,42 @@ public class PiglinAi {
+             if (target.getType() == EntityType.PLAYER && piglin.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+                 piglin.getBrain().setMemoryWithExpiry(MemoryModuleType.UNIVERSAL_ANGER, true, 600L);
+             }
+-
++            return true;
+         }
++
++        return false;
++        // Paper end
+     }
+ 
+     private static void setAngerTargetToNearestTargetablePlayerIfFound(AbstractPiglin piglin, LivingEntity player) {
++        // Paper start
++        setAngerTargetToNearestTargetablePlayerIfFound(piglin, player, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.UNKNOWN);
++    }
++
++    private static boolean setAngerTargetToNearestTargetablePlayerIfFound(AbstractPiglin piglin, LivingEntity player, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason reason) {
+         Optional<Player> optional = PiglinAi.getNearestVisibleTargetablePlayer(piglin);
+ 
+         if (optional.isPresent()) {
+-            PiglinAi.setAngerTarget(piglin, (LivingEntity) optional.get());
++            return PiglinAi.setAngerTarget(piglin, (LivingEntity) optional.get(), reason);
+         } else {
+-            PiglinAi.setAngerTarget(piglin, player);
++            return PiglinAi.setAngerTarget(piglin, player, reason);
++            // Paper end
+         }
+ 
+     }
+ 
+     private static void setAngerTargetIfCloserThanCurrent(AbstractPiglin piglin, LivingEntity target) {
++        // Paper start
++        setAngerTargetIfCloserThanCurrent(piglin, target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.UNKNOWN);
++    }
++
++    private static void setAngerTargetIfCloserThanCurrent(AbstractPiglin piglin, LivingEntity target, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason reason) {
+         Optional<LivingEntity> optional = PiglinAi.getAngerTarget(piglin);
+         LivingEntity entityliving1 = BehaviorUtils.getNearestTarget((LivingEntity) piglin, optional, target);
+ 
+         if (!optional.isPresent() || optional.get() != entityliving1) {
+-            PiglinAi.setAngerTarget(piglin, entityliving1);
++            PiglinAi.setAngerTarget(piglin, entityliving1, reason);
++            // Paper end
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/piglin/StartHuntingHoglin.java b/src/main/java/net/minecraft/world/entity/monster/piglin/StartHuntingHoglin.java
+index 741c5a8bcc168f888260fd42f81683087b464b9d..82ca24a207ccd6b1bf24a1710ac0e3cba0e40531 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/piglin/StartHuntingHoglin.java
++++ b/src/main/java/net/minecraft/world/entity/monster/piglin/StartHuntingHoglin.java
+@@ -20,9 +20,10 @@ public class StartHuntingHoglin<E extends Piglin> extends Behavior<E> {
+     @Override
+     protected void start(ServerLevel world, E entity, long time) {
+         Hoglin hoglin = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_HUNTABLE_HOGLIN).get();
+-        PiglinAi.setAngerTarget(entity, hoglin);
++        if (PiglinAi.setAngerTarget(entity, hoglin, io.papermc.paper.event.entity.PiglinAngeredEvent.Reason.HUNT)) { // Paper
+         PiglinAi.dontKillAnyMoreHoglinsForAWhile(entity);
+         PiglinAi.broadcastAngerTarget(entity, hoglin);
+         PiglinAi.broadcastDontKillAnyMoreHoglinsForAWhile(entity);
++        } // Paper
+     }
+ }
