@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: SirYwell <hannesgreule@outlook.de>
+Date: Sat, 10 Jul 2021 11:11:43 +0200
+Subject: [PATCH] Rewrite LogEvents to contain the source jars in stack traces
+
+
+diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+index 81292899918c4dc880661ee628384cb840a6244f..dde06598caab566a2dad74f4e8aeabb1ef522853 100644
+--- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+@@ -51,7 +51,7 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
+     }
+ 
+     PluginClassLoader(@NotNull final JavaPluginLoader loader, @Nullable final ClassLoader parent, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file, @Nullable ClassLoader libraryLoader) throws IOException, InvalidPluginException, MalformedURLException {
+-        super(new URL[] {file.toURI().toURL()}, parent);
++        super(file.getName(), new URL[] {file.toURI().toURL()}, parent); // Paper - rewrite LogEvents to contain source jar info
+         Validate.notNull(loader, "Loader cannot be null");
+ 
+         this.loader = loader;
