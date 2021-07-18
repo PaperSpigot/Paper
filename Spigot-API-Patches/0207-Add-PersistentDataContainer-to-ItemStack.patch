@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nesaak <52047222+Nesaak@users.noreply.github.com>
+Date: Sat, 23 May 2020 17:07:34 -0400
+Subject: [PATCH] Add PersistentDataContainer to ItemStack
+
+This patch adds two methods and a field to ItemStack to allow for the use of PersistentDataContainer calls without having to deal with ItemMeta.
+
+Doing it this way is faster and more convenient while maintaining all the functionality of normal PDC.
+The live PersistentDataContainer is cached in ItemStack, children of ItemStack such as CraftItemStack may have to override
+createLivePersistentDataContainer to maintain functionality.
+
+diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
+index d7d6a3e83dfd88359708749f5c12be02815c3580..c5b88649c77a8d92c49778682ab0a6fe61b3b3dd 100644
+--- a/src/main/java/org/bukkit/inventory/ItemStack.java
++++ b/src/main/java/org/bukkit/inventory/ItemStack.java
+@@ -30,6 +30,7 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+     private int amount = 0;
+     private MaterialData data = null;
+     private ItemMeta meta;
++    protected org.bukkit.persistence.PersistentDataContainer livePersistentDataContainer; //Paper
+ 
+     @Utility
+     protected ItemStack() {}
+@@ -767,5 +768,57 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+         ItemMeta itemMeta = getItemMeta();
+         return itemMeta.hasItemFlag(flag);
+     }
++
++    /**
++     * Gets the live PersistentDataContainer of this items. Any changes made to this will instantly effect the Item's NBT. This is generally faster than using ItemMeta's PersistentDataContainer.
++     *
++     * @return A live PersistentDataContainer for this ItemStack.
++     */
++    @NotNull
++    public org.bukkit.persistence.PersistentDataContainer getLivePersistentDataContainer() {
++        return (livePersistentDataContainer == null) ? livePersistentDataContainer = createLivePersistentDataContainer() : livePersistentDataContainer;
++    }
++
++    @NotNull
++    protected org.bukkit.persistence.PersistentDataContainer createLivePersistentDataContainer() {
++        return new org.bukkit.persistence.PersistentDataContainer() {
++            @Override
++            public <T, Z> void set(@NotNull org.bukkit.NamespacedKey key, @NotNull org.bukkit.persistence.PersistentDataType<T, Z> type, @NotNull Z value) {
++                if (meta == null) setItemMeta(getItemMeta());
++                meta.getPersistentDataContainer().set(key, type, value);
++            }
++
++            @Override
++            public <T, Z> boolean has(@NotNull org.bukkit.NamespacedKey key, @NotNull org.bukkit.persistence.PersistentDataType<T, Z> type) {
++                return meta != null && meta.getPersistentDataContainer().has(key, type);
++            }
++
++            @Override
++            public <T, Z> @Nullable Z get(@NotNull org.bukkit.NamespacedKey key, @NotNull org.bukkit.persistence.PersistentDataType<T, Z> type) {
++                return (meta == null ? null : meta.getPersistentDataContainer().get(key, type));
++            }
++
++            @Override
++            public <T, Z> @NotNull Z getOrDefault(@NotNull org.bukkit.NamespacedKey key, @NotNull org.bukkit.persistence.PersistentDataType<T, Z> type, @NotNull Z defaultValue) {
++                return (meta == null ? defaultValue : meta.getPersistentDataContainer().getOrDefault(key, type, defaultValue));
++            }
++
++            @Override
++            public void remove(@NotNull org.bukkit.NamespacedKey key) {
++                if (meta != null) meta.getPersistentDataContainer().remove(key);
++            }
++
++            @Override
++            public boolean isEmpty() {
++                return meta == null || meta.getPersistentDataContainer().isEmpty();
++            }
++
++            @Override
++            public @NotNull org.bukkit.persistence.PersistentDataAdapterContext getAdapterContext() {
++                if (meta == null) setItemMeta(getItemMeta());
++                return meta.getPersistentDataContainer().getAdapterContext();
++            }
++        };
++    }
+     // Paper end
+ }

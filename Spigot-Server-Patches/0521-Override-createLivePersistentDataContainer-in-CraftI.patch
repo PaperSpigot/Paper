@@ -1,0 +1,123 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nesaak <52047222+Nesaak@users.noreply.github.com>
+Date: Sat, 23 May 2020 17:19:48 -0400
+Subject: [PATCH] Override createLivePersistentDataContainer in CraftItemStack
+
+Because of how Meta is handled in CraftItemStack, we cannot use any cached meta like we do in ItemStack for live PDC.
+
+In this patch we override how we create the live PDC object in CraftItemStack by tying it directly to the NBT of the NMS Item.
+This patch also adds a small static getter method in CraftMetaItem to return the CraftPersistentDataTypeRegistry instance that
+is private to that class.
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
+index d5e8a7ee6de22d09e563ad1c124a18810a38a0c5..13b3ad93fa687524f0276ab073ae3f076ad9b94f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
+@@ -261,6 +261,95 @@ public final class CraftItemStack extends ItemStack {
+         return (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
+     }
+ 
++    // Paper start - Override ItemStack PDC
++    @Override
++    protected org.bukkit.persistence.PersistentDataContainer createLivePersistentDataContainer() {
++        return new org.bukkit.persistence.PersistentDataContainer() {
++            Map<String, net.minecraft.server.NBTBase> nbtMap;
++            final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry registry = getDataTypeRegistry();
++            final org.bukkit.craftbukkit.persistence.CraftPersistentDataAdapterContext adapterContext = new org.bukkit.craftbukkit.persistence.CraftPersistentDataAdapterContext(registry);
++
++            void setupTag() {
++                if (nbtMap != null) return;
++                Map<String, net.minecraft.server.NBTBase> nbt = getHandle().getOrCreateTag().map;
++
++                net.minecraft.server.NBTBase bukkitTag = nbt.get(BUKKIT_CUSTOM_TAG.NBT);
++                if (bukkitTag != null && bukkitTag instanceof NBTTagCompound) {
++                    nbtMap = ((NBTTagCompound) bukkitTag).map;
++                    return;
++                }
++
++                NBTTagCompound newTag = new NBTTagCompound();
++                nbtMap = newTag.map;
++                nbt.put(BUKKIT_CUSTOM_TAG.NBT, newTag);
++            }
++
++            @Override
++            public <T, Z> void set(org.bukkit.NamespacedKey key, org.bukkit.persistence.PersistentDataType<T, Z> type, Z value) {
++                setupTag();
++                Validate.notNull(key, "The provided key for the custom value was null");
++                Validate.notNull(type, "The provided type for the custom value was null");
++                Validate.notNull(value, "The provided value for the custom value was null");
++
++                this.nbtMap.put(key.toString(), registry.wrap(type.getPrimitiveType(), type.toPrimitive(value, adapterContext)));
++            }
++
++            @Override
++            public <T, Z> boolean has(org.bukkit.NamespacedKey key, org.bukkit.persistence.PersistentDataType<T, Z> type) {
++                setupTag();
++                Validate.notNull(key, "The provided key for the custom value was null");
++                Validate.notNull(type, "The provided type for the custom value was null");
++
++                net.minecraft.server.NBTBase value = this.nbtMap.get(key.toString());
++                if (value == null) {
++                    return false;
++                }
++
++                return registry.isInstanceOf(type.getPrimitiveType(), value);
++            }
++
++            @Override
++            public <T, Z> Z get(org.bukkit.NamespacedKey key, org.bukkit.persistence.PersistentDataType<T, Z> type) {
++                setupTag();
++                Validate.notNull(key, "The provided key for the custom value was null");
++                Validate.notNull(type, "The provided type for the custom value was null");
++
++                net.minecraft.server.NBTBase value = this.nbtMap.get(key.toString());
++                if (value == null) {
++                    return null;
++                }
++
++                return type.fromPrimitive(registry.extract(type.getPrimitiveType(), value), adapterContext);
++            }
++
++            @Override
++            public <T, Z> Z getOrDefault(org.bukkit.NamespacedKey key, org.bukkit.persistence.PersistentDataType<T, Z> type, Z defaultValue) {
++                Z z = get(key, type);
++                return z != null ? z : defaultValue;
++            }
++
++            @Override
++            public void remove(org.bukkit.NamespacedKey key) {
++                setupTag();
++                Validate.notNull(key, "The provided key for the custom value was null");
++
++                this.nbtMap.remove(key.toString());
++            }
++
++            @Override
++            public boolean isEmpty() {
++                setupTag();
++                return nbtMap.isEmpty();
++            }
++
++            @Override
++            public org.bukkit.persistence.PersistentDataAdapterContext getAdapterContext() {
++                return adapterContext;
++            }
++        };
++    }
++    //Paper end
++
+     @Override
+     public CraftItemStack clone() {
+         CraftItemStack itemStack = (CraftItemStack) super.clone();
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+index c28ea1cef0620ba2956139c074fead3c2da2e5cb..7c1c7ef1b1ce09794fedebbed2d61070a0182058 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
+@@ -297,6 +297,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
+ 
+     private static final Set<String> HANDLED_TAGS = Sets.newHashSet();
+     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
++    public static CraftPersistentDataTypeRegistry getDataTypeRegistry() { return DATA_TYPE_REGISTRY; } // Paper
+ 
+     private NBTTagCompound internalTag;
+     private final Map<String, NBTBase> unhandledTags = new TreeMap<>(); // Paper
