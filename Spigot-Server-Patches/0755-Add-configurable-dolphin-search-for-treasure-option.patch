@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HexedHero <6012891+HexedHero@users.noreply.github.com>
+Date: Mon, 31 May 2021 09:48:23 +0100
+Subject: [PATCH] Add configurable dolphin search for treasure option
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 1a368df78feb4afdf522527af5ed1652afffcd15..467c58ed01845ad9c93b466dbe4d93f53b9e23a5 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -830,4 +830,9 @@ public class PaperWorldConfig {
+     private void fixInvulnerableEndCrystalExploit() {
+         fixInvulnerableEndCrystalExploit = getBoolean("unsupported-settings.fix-invulnerable-end-crystal-exploit", fixInvulnerableEndCrystalExploit);
+     }
++
++    public boolean dolphinsSearchForTreasure = true;
++    private void dolphinsSearchForTreasure() {
++        dolphinsSearchForTreasure = getBoolean("settings.dolphins-search-for-treasure", dolphinsSearchForTreasure);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/EntityDolphin.java b/src/main/java/net/minecraft/world/entity/animal/EntityDolphin.java
+index 5d18e19eafd5dc01a6caa45075d8c0598f1bb709..433816ed866722a3e45c3491316d886e67790deb 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/EntityDolphin.java
++++ b/src/main/java/net/minecraft/world/entity/animal/EntityDolphin.java
+@@ -393,7 +393,7 @@ public class EntityDolphin extends EntityWaterAnimal {
+ 
+         @Override
+         public boolean a() {
+-            return this.a.gotFish() && this.a.getAirTicks() >= 100 && this.a.world.getWorld().canGenerateStructures(); // MC-151364, SPIGOT-5494: hangs if generate-structures=false
++            return this.a.gotFish() && this.a.getAirTicks() >= 100 && this.a.world.getWorld().canGenerateStructures() && this.a.getWorld().paperConfig.dolphinsSearchForTreasure; // MC-151364, SPIGOT-5494: hangs if generate-structures=false // Paper - Configurable dolphin search
+         }
+ 
+         @Override
