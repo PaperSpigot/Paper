@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kieran Wallbanks <kieran.wallbanks@gmail.com>
+Date: Mon, 21 Jun 2021 12:33:45 +0100
+Subject: [PATCH] Fix NotePlayEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/NotePlayEvent.java b/src/main/java/org/bukkit/event/block/NotePlayEvent.java
+index a3887067d1b65fb100ac1407a43c455f5d215510..676b31f6f38d4e85cd4bd16ccf42cbc39a5d8423 100644
+--- a/src/main/java/org/bukkit/event/block/NotePlayEvent.java
++++ b/src/main/java/org/bukkit/event/block/NotePlayEvent.java
+@@ -58,9 +58,7 @@ public class NotePlayEvent extends BlockEvent implements Cancellable {
+      * Overrides the {@link Instrument} to be used.
+      *
+      * @param instrument the Instrument. Has no effect if null.
+-     * @deprecated no effect on newer Minecraft versions
+      */
+-    @Deprecated
+     public void setInstrument(@NotNull Instrument instrument) {
+         if (instrument != null) {
+             this.instrument = instrument;
+@@ -71,9 +69,7 @@ public class NotePlayEvent extends BlockEvent implements Cancellable {
+      * Overrides the {@link Note} to be played.
+      *
+      * @param note the Note. Has no effect if null.
+-     * @deprecated no effect on newer Minecraft versions
+      */
+-    @Deprecated
+     public void setNote(@NotNull Note note) {
+         if (note != null) {
+             this.note = note;
