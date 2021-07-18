@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 21 Jun 2021 22:59:10 -0400
+Subject: [PATCH] Add set/getWaitTime for Hooks
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftFishHook.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftFishHook.java
+index 3c18712040da8d6ece24fd817b7846836b8353c1..72f92891f84fa76eaf32fcd085370892298de860 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftFishHook.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftFishHook.java
+@@ -129,4 +129,15 @@ public class CraftFishHook extends CraftProjectile implements FishHook {
+         }
+     }
+     // Paper end
++    // Paper start - set/getWaitTime
++    @Override
++    public int getWaitTime() {
++        return getHandle().timeUntilLured;
++    }
++
++    @Override
++    public void setWaitTime(int ticks) {
++        getHandle().timeUntilLured = ticks;
++    }
++    // Paper end - set/getWaitTime
+ }
