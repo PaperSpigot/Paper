@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: A248 <anandebeh@gmail.com>
+Date: Wed, 5 Aug 2020 13:38:34 -0400
+Subject: [PATCH] Add BukkitScheduler createAsyncExecutor API
+
+
+diff --git a/src/main/java/org/bukkit/scheduler/BukkitScheduler.java b/src/main/java/org/bukkit/scheduler/BukkitScheduler.java
+index ac140fc2c638e22e06b2920db3e376ab9e8c3733..345f8597573ea5788d0f758a1ffd2ff905e478cb 100644
+--- a/src/main/java/org/bukkit/scheduler/BukkitScheduler.java
++++ b/src/main/java/org/bukkit/scheduler/BukkitScheduler.java
+@@ -458,4 +458,21 @@ public interface BukkitScheduler {
+     @Deprecated
+     @NotNull
+     public BukkitTask runTaskTimerAsynchronously(@NotNull Plugin plugin, @NotNull BukkitRunnable task, long delay, long period) throws IllegalArgumentException;
++
++    // Paper start
++    /**
++     * Creates an asynchronous {@link Executor} for a plugin. Runnables submitted through the returned Executor
++     * will be executed on behalf of the plugin specified. <br>
++     * <br>
++     * Unlike using the otherwise equivalent {@link #runTaskAsynchronously(Plugin, Runnable)}, the {@code Executor}
++     * returned will not be coupled to the main thread. If the main thread is blocked, work submitted through
++     * it will execute regardless. Execution through it commences with no regard to the server tick loop.
++     * 
++     * @param plugin the reference to the plugin scheduling the task
++     * @return a {@code Executor} which executes runnables on behalf of the plugin
++     * @throws IllegalArgumentException if plugin is null
++     */
++    @NotNull
++    public java.util.concurrent.Executor createAsyncExecutor(@NotNull Plugin plugin);
++    // Paper end
+ }
