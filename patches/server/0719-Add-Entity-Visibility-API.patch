@@ -1,0 +1,748 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Janmm14 <gitconfig1@janmm14.de>
+Date: Fri, 25 Jun 2021 23:20:19 +0200
+Subject: [PATCH] Add Entity Visibility API
+
+
+diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
+index 7f7bc04a30a0422b2d589adb488082c0aa5326dc..7c32f439078b787bd28407d479530b445e49af6d 100644
+--- a/src/main/java/net/minecraft/server/level/ChunkMap.java
++++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
+@@ -2277,7 +2277,7 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+         // Paper start - use distance map to optimise tracker
+         com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> lastTrackerCandidates;
+ 
+-        final void updatePlayers(com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newTrackerCandidates) {
++        public final void updatePlayers(com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> newTrackerCandidates) {
+             com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> oldTrackerCandidates = this.lastTrackerCandidates;
+             this.lastTrackerCandidates = newTrackerCandidates;
+ 
+@@ -2368,6 +2368,13 @@ Sections go from 0..16. Now whenever a section is not empty, it can potentially
+                 int i = Math.min(this.getEffectiveRange(), (ChunkMap.this.viewDistance - 1) * 16);
+                 boolean flag = vec3d_dx >= (double) (-i) && vec3d_dx <= (double) i && vec3d_dz >= (double) (-i) && vec3d_dz <= (double) i && this.entity.broadcastToPlayer(player); // Paper - remove allocation of Vec3D here
+ 
++                // Paper start - Entity Visibility API
++                if (!(this.entity instanceof ServerPlayer) && flag) {
++                    org.bukkit.craftbukkit.entity.CraftEntity ce = this.entity.getBukkitEntity();
++                    flag = player.getBukkitEntity().canSee(ce);
++                }
++                // Paper end
++
+                 // CraftBukkit start - respect vanish API
+                 if (this.entity instanceof ServerPlayer) {
+                     Player player1 = ((ServerPlayer) this.entity).getBukkitEntity();
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 14bea212adbfa341ca6080a01f87b51891808d2a..7205b90219e61af095dd0301bbb127a5c9fba3fd 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -1293,7 +1293,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+                 double d2 = (double) pos.getZ() - entityplayer.getZ();
+ 
+                 // CraftBukkit start
+-                if (entityhuman != null && entityhuman instanceof ServerPlayer && !entityplayer.getBukkitEntity().canSee(((ServerPlayer) entityhuman).getBukkitEntity())) {
++                if (entityhuman != null && !entityplayer.getBukkitEntity().canSee(entityhuman.getBukkitEntity())) { // Paper - Entity Visibility API
+                     continue;
+                 }
+                 // CraftBukkit end
+@@ -1311,9 +1311,16 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+         this.server.getPlayerList().broadcast(player, x, y, z, volume > 1.0F ? (double) (16.0F * volume) : 16.0D, this.dimension(), new ClientboundSoundPacket(sound, category, x, y, z, volume, pitch));
+     }
+ 
++    // Paper start - Entity Visibility API
++    @Override
++    public void playSound(@Nullable Player player, @Nullable Entity source, double x, double y, double z, SoundEvent sound, SoundSource category, float volume, float pitch) {
++        this.server.getPlayerList().broadcast(player, source, x, y, z, volume > 1.0F ? (double) (16.0F * volume) : 16.0D, this.dimension(), new ClientboundSoundPacket(sound, category, x, y, z, volume, pitch));
++    }
++    // Paper end
++
+     @Override
+     public void playSound(@Nullable Player player, Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
+-        this.server.getPlayerList().broadcast(player, entity.getX(), entity.getY(), entity.getZ(), volume > 1.0F ? (double) (16.0F * volume) : 16.0D, this.dimension(), new ClientboundSoundEntityPacket(sound, category, entity, volume, pitch));
++        this.server.getPlayerList().broadcast(player, entity, entity.getX(), entity.getY(), entity.getZ(), volume > 1.0F ? (double) (16.0F * volume) : 16.0D, this.dimension(), new ClientboundSoundEntityPacket(sound, category, entity, volume, pitch)); // Paper - add entity argument - Entity Visibility API
+     }
+ 
+     @Override
+@@ -1470,14 +1477,26 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+ 
+     public <T extends ParticleOptions> int sendParticles(T particle, double x, double y, double z, int count, double deltaX, double deltaY, double deltaZ, double speed) {
+         // CraftBukkit - visibility api support
+-        return this.sendParticles(null, particle, x, y, z, count, deltaX, deltaY, deltaZ, speed, false);
++        // Paper start - Entity Visibility API
++        return this.sendParticles(particle, null, x, y, z, count, deltaX, deltaY, deltaZ, speed);
++    }
++
++    public <T extends ParticleOptions> int sendParticles(T particle, @Nullable Entity source, double x, double y, double z, int count, double deltaX, double deltaY, double deltaZ, double speed) {
++        return this.sendParticles(null, particle, source, x, y, z, count, deltaX, deltaY, deltaZ, speed, false);
++        // Paper end
+     }
+ 
+     public <T extends ParticleOptions> int sendParticles(ServerPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+-        // Paper start - Particle API Expansion
+-        return sendParticles(players, sender, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
++        // Paper start - Particle API Expansion & Entity Visibility API
++        return sendParticles(sender, t0, null, d0, d1, d2, i, d3, d4, d5, d6, force);
++    }
++    public <T extends ParticleOptions> int sendParticles(ServerPlayer sender, T t0, @Nullable Entity source, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
++        return sendParticles(players, sender, t0, source, d0, d1, d2, i, d3, d4, d5, d6, force);
+     }
+     public <T extends ParticleOptions> int sendParticles(List<ServerPlayer> receivers, ServerPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
++        return sendParticles(receivers, sender, t0, null, d0, d1, d2, i, d3, d4, d5, d6, force);
++    }
++    public <T extends ParticleOptions> int sendParticles(List<ServerPlayer> receivers, ServerPlayer sender, T t0, @Nullable Entity source, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+         // Paper end
+         ClientboundLevelParticlesPacket packetplayoutworldparticles = new ClientboundLevelParticlesPacket(t0, force, d0, d1, d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+         // CraftBukkit end
+@@ -1486,6 +1505,7 @@ public class ServerLevel extends net.minecraft.world.level.Level implements Worl
+         for (Player entityhuman : receivers) { // Paper - Particle API Expansion
+             ServerPlayer entityplayer = (ServerPlayer) entityhuman; // Paper - Particle API Expansion
+             if (sender != null && !entityplayer.getBukkitEntity().canSee(sender.getBukkitEntity())) continue; // CraftBukkit
++            if (source != null && !entityplayer.getBukkitEntity().canSee(source.getBukkitEntity())) continue; // Paper - Entity Visibility API
+ 
+             if (this.sendParticles(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
+                 ++j;
+diff --git a/src/main/java/net/minecraft/server/level/WorldGenRegion.java b/src/main/java/net/minecraft/server/level/WorldGenRegion.java
+index 0f6b534a4c789a2f09f6c4624e5d58b99c7ed0e6..33b2dc3c939f9e200836ca26b6d8c8de32e14898 100644
+--- a/src/main/java/net/minecraft/server/level/WorldGenRegion.java
++++ b/src/main/java/net/minecraft/server/level/WorldGenRegion.java
+@@ -426,6 +426,9 @@ public class WorldGenRegion implements WorldGenLevel {
+     @Override
+     public void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {}
+ 
++    @Override
++    public void playSound(@org.jetbrains.annotations.Nullable Player player, @org.jetbrains.annotations.Nullable Entity source, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {} // Paper - Entity Visibility API
++
+     @Override
+     public void addParticle(ParticleOptions parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {}
+ 
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index a6ecbb7eb1df7923d58366327e0f00512a3a1677..309b277acdc3453b6bdb3f0e9abd6e0ce41fdca2 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1035,7 +1035,7 @@ public abstract class PlayerList {
+     public void sendAll(Packet packet, net.minecraft.world.entity.player.Player entityhuman) {
+         for (int i = 0; i < this.players.size(); ++i) {
+             ServerPlayer entityplayer =  this.players.get(i);
+-            if (entityhuman != null && entityhuman instanceof ServerPlayer && !entityplayer.getBukkitEntity().canSee(((ServerPlayer) entityhuman).getBukkitEntity())) {
++            if (entityhuman != null && !entityplayer.getBukkitEntity().canSee(entityhuman.getBukkitEntity())) { // Paper - Entity Visibility API
+                 continue;
+             }
+             ((ServerPlayer) this.players.get(i)).connection.send(packet);
+@@ -1193,6 +1193,12 @@ public abstract class PlayerList {
+     }
+ 
+     public void broadcast(@Nullable net.minecraft.world.entity.player.Player player, double x, double y, double z, double distance, ResourceKey<Level> worldKey, Packet<?> packet) {
++        // Paper start - Entity Visibility API
++        broadcast(player, null, x, y, z, distance, worldKey, packet);
++    }
++
++    public void broadcast(@Nullable net.minecraft.world.entity.player.Player player, @Nullable Entity source, double x, double y, double z, double distance, ResourceKey<Level> worldKey, Packet<?> packet) {
++        // Paper end
+         ServerLevel world = null;
+         if (player != null && player.level instanceof ServerLevel) {
+             world = (ServerLevel) player.level;
+@@ -1226,7 +1232,15 @@ public abstract class PlayerList {
+             //} // Paper
+             // CraftBukkit end
+ 
+-            if (entityplayer != player && entityplayer.level.dimension() == worldKey && (!(player instanceof ServerPlayer) || entityplayer.getBukkitEntity().canSee(((ServerPlayer) player).getBukkitEntity()))) { // Paper
++            if (entityplayer != player && entityplayer.level.dimension() == worldKey) { // Paper
++                // Paper start - Entity Visibility API
++                if (player != null && !entityplayer.getBukkitEntity().canSee(player.getBukkitEntity())) {
++                    continue;
++                }
++                if (source != null && !entityplayer.getBukkitEntity().canSee(source.getBukkitEntity())) {
++                    continue;
++                }
++                // Paper end
+                 double d4 = x - entityplayer.getX();
+                 double d5 = y - entityplayer.getY();
+                 double d6 = z - entityplayer.getZ();
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 4fd030ef9537d9b31c6167d73349f4c4a6b33a15..b4cd407dc0984f4ae342edb741fc4fc271e5aa28 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1291,7 +1291,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, n
+ 
+     public void playSound(SoundEvent sound, float volume, float pitch) {
+         if (!this.isSilent()) {
+-            this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), volume, pitch);
++            this.level.playSound((Player) null, this, sound, this.getSoundSource(), volume, pitch); // Paper - use method with Entity argument - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 57c448ee93df76fc2a17c75fafc78408d720ced3..28afacac5f318a97cc289763ceb73c4f98251156 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -361,7 +361,7 @@ public abstract class LivingEntity extends Entity {
+                 if (this instanceof ServerPlayer) {
+                     ((ServerLevel) this.level).sendParticles((ServerPlayer) this, new BlockParticleOption(ParticleTypes.BLOCK, landedState), this.getX(), this.getY(), this.getZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D, false);
+                 } else {
+-                    ((ServerLevel) this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, landedState), this.getX(), this.getY(), this.getZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D);
++                    ((ServerLevel) this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, landedState), this, this.getX(), this.getY(), this.getZ(), i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                 }
+                 // CraftBukkit end
+             }
+@@ -4071,7 +4071,7 @@ public abstract class LivingEntity extends Entity {
+     public ItemStack eat(Level world, ItemStack stack) {
+         if (stack.isEdible()) {
+             world.gameEvent((Entity) this, GameEvent.EAT, this.eyeBlockPosition());
+-            world.playSound((net.minecraft.world.entity.player.Player) null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(stack), SoundSource.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F);
++            world.playSound((net.minecraft.world.entity.player.Player) null, this, this.getEatingSound(stack), SoundSource.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F); // Paper - use method with Entity argument - Entity Visibility API
+             this.addEatEffect(stack, world, this);
+             if (!(this instanceof net.minecraft.world.entity.player.Player) || !((net.minecraft.world.entity.player.Player) this).getAbilities().instabuild) {
+                 stack.shrink(1);
+diff --git a/src/main/java/net/minecraft/world/entity/ai/behavior/HarvestFarmland.java b/src/main/java/net/minecraft/world/entity/ai/behavior/HarvestFarmland.java
+index 41b5652578e4a703cb6f03e82654b27ea6302b99..1e0ae3f1db4f939df4c4c86720b8ef90528452ad 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/behavior/HarvestFarmland.java
++++ b/src/main/java/net/minecraft/world/entity/ai/behavior/HarvestFarmland.java
+@@ -141,7 +141,7 @@ public class HarvestFarmland extends Behavior<Villager> {
+                         }
+ 
+                         if (flag) {
+-                            worldserver.playSound((Player) null, (double) this.aboveFarmlandPos.getX(), (double) this.aboveFarmlandPos.getY(), (double) this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
++                            worldserver.playSound((Player) null, entityvillager, (double) this.aboveFarmlandPos.getX(), (double) this.aboveFarmlandPos.getY(), (double) this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F); // Paper - add entity param - Entity Visibility API
+                             itemstack.shrink(1);
+                             if (itemstack.isEmpty()) {
+                                 inventorysubcontainer.setItem(j, ItemStack.EMPTY);
+diff --git a/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java b/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
+index ac5779319081a6894373877067edf958da8a9cf5..9ca996841989f377d29250e323ce2ecc06f5a638 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
++++ b/src/main/java/net/minecraft/world/entity/ai/goal/RemoveBlockGoal.java
+@@ -28,7 +28,7 @@ import org.bukkit.event.entity.EntityInteractEvent;
+ public class RemoveBlockGoal extends MoveToBlockGoal {
+ 
+     private final Block blockToRemove;
+-    private final Mob removerMob;
++    public final Mob removerMob; // Paper - private -> public - Entity Visibility API
+     private int ticksSinceReachedGoal;
+     private static final int WAIT_AFTER_BLOCK_FOUND = 20;
+ 
+@@ -91,7 +91,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
+                 this.removerMob.setDeltaMovement(vec3d.x, 0.3D, vec3d.z);
+                 if (!world.isClientSide) {
+                     d0 = 0.08D;
+-                    ((ServerLevel) world).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EGG)), (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY() + 0.7D, (double) blockposition1.getZ() + 0.5D, 3, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, 0.15000000596046448D);
++                    ((ServerLevel) world).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EGG)), mob, (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY() + 0.7D, (double) blockposition1.getZ() + 0.5D, 3, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, ((double) random.nextFloat() - 0.5D) * 0.08D, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                 }
+             }
+ 
+@@ -119,7 +119,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
+                         double d1 = random.nextGaussian() * 0.02D;
+                         double d2 = random.nextGaussian() * 0.02D;
+ 
+-                        ((ServerLevel) world).sendParticles(ParticleTypes.POOF, (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D, 1, d0, d1, d2, 0.15000000596046448D);
++                        ((ServerLevel) world).sendParticles(ParticleTypes.POOF, mob, (double) blockposition1.getX() + 0.5D, (double) blockposition1.getY(), (double) blockposition1.getZ() + 0.5D, 1, d0, d1, d2, 0.15000000596046448D); // Paper - add entity param - Entity Visibility API
+                     }
+ 
+                     this.playBreakSound(world, blockposition1);
+diff --git a/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java b/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
+index d9fb3df35de94ae5abbb86ace0328bbe6f5403b3..529c103e82a3fd0cf3f77774289b9f4236cd2358 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
++++ b/src/main/java/net/minecraft/world/entity/animal/MushroomCow.java
+@@ -169,7 +169,7 @@ public class MushroomCow extends Cow implements Shearable {
+     public void shear(SoundSource shearedSoundCategory) {
+         this.level.playSound((Player) null, (Entity) this, SoundEvents.MOOSHROOM_SHEAR, shearedSoundCategory, 1.0F, 1.0F);
+         if (!this.level.isClientSide()) {
+-            ((ServerLevel) this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5D), this.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
++            ((ServerLevel) this.level).sendParticles(ParticleTypes.EXPLOSION, this, this.getX(), this.getY(0.5D), this.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D); // Paper - add entity param - Entity Visibility API
+             // this.die(); // CraftBukkit - moved down
+             Cow entitycow = (Cow) EntityType.COW.create(this.level);
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Parrot.java b/src/main/java/net/minecraft/world/entity/animal/Parrot.java
+index 345fe87d5d6c3883c28d2c1b34d1020e18864d97..b174cb3f86107035f5caa80a6fa75aaabf3b5d66 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Parrot.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Parrot.java
+@@ -228,7 +228,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
+                 if (!entityinsentient.isSilent()) {
+                     SoundEvent soundeffect = Parrot.getImitatedSound(entityinsentient.getType());
+ 
+-                    world.playSound((Player) null, parrot.getX(), parrot.getY(), parrot.getZ(), soundeffect, parrot.getSoundSource(), 0.7F, Parrot.getPitch(world.random));
++                    world.playSound((Player) null, parrot, parrot.getX(), parrot.getY(), parrot.getZ(), soundeffect, parrot.getSoundSource(), 0.7F, Parrot.getPitch(world.random)); // Paper - add entity param - Entity Visibility API
+                     return true;
+                 }
+             }
+@@ -249,7 +249,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
+             }
+ 
+             if (!this.isSilent()) {
+-                this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
++                this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F); // Paper - add entity param - Entity Visibility API
+             }
+ 
+             if (!this.level.isClientSide) {
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Squid.java b/src/main/java/net/minecraft/world/entity/animal/Squid.java
+index 56838c9f214c0f75041e75c45ad1a0c72fcacc66..98af01fa657313a4b455fd06fdf8e6f24b622d0c 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Squid.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Squid.java
+@@ -196,7 +196,7 @@ public class Squid extends WaterAnimal {
+             Vec3 vec3d1 = this.rotateVector(new Vec3((double) this.random.nextFloat() * 0.6D - 0.3D, -1.0D, (double) this.random.nextFloat() * 0.6D - 0.3D));
+             Vec3 vec3d2 = vec3d1.scale(0.3D + (double) (this.random.nextFloat() * 2.0F));
+ 
+-            ((ServerLevel) this.level).sendParticles(this.getInkParticle(), vec3d.x, vec3d.y + 0.5D, vec3d.z, 0, vec3d2.x, vec3d2.y, vec3d2.z, 0.10000000149011612D);
++            ((ServerLevel) this.level).sendParticles(this.getInkParticle(), this, vec3d.x, vec3d.y + 0.5D, vec3d.z, 0, vec3d2.x, vec3d2.y, vec3d2.z, 0.10000000149011612D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Turtle.java b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
+index 925f16d5eb092518ef774f69a8d99689feb0f5d7..de97817c24e8588f2854bf2a30a99d75a86eba99 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Turtle.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Turtle.java
+@@ -497,7 +497,7 @@ public class Turtle extends Animal {
+                     int eggCount = this.turtle.random.nextInt(4) + 1;
+                     com.destroystokyo.paper.event.entity.TurtleLayEggEvent layEggEvent = new com.destroystokyo.paper.event.entity.TurtleLayEggEvent((org.bukkit.entity.Turtle) this.turtle.getBukkitEntity(), MCUtil.toLocation(this.turtle.level, this.blockPos.above()), eggCount);
+                     if (layEggEvent.callEvent() && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.turtle, this.blockPos.above(), Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, layEggEvent.getEggCount())).isCancelled()) {
+-                    world.playSound((Player) null, blockposition, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F);
++                    world.playSound((Player) null, turtle, blockposition, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+                     world.setBlock(this.blockPos.above(), (BlockState) Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, layEggEvent.getEggCount()), 3);
+                     }
+                     // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/entity/animal/horse/AbstractHorse.java b/src/main/java/net/minecraft/world/entity/animal/horse/AbstractHorse.java
+index ba58e066cca533dfed7610a730c4dd7423fe124d..9b86a880ccb669041e657ff56b00b36a6b307f61 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/horse/AbstractHorse.java
++++ b/src/main/java/net/minecraft/world/entity/animal/horse/AbstractHorse.java
+@@ -250,7 +250,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
+             SoundEvent soundeffect = this.getEatingSound();
+ 
+             if (soundeffect != null) {
+-                this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), soundeffect, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
++                this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), soundeffect, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F); // Paper - add entity param - Entity Visibility API
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java b/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
+index 5c31519193126b715105e1e83bb54f6a1681d19e..7a323ede4df1211e7703fd2e7ee1369a012a1e35 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
++++ b/src/main/java/net/minecraft/world/entity/animal/horse/Llama.java
+@@ -222,7 +222,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
+             if (!this.isSilent()) {
+                 SoundEvent soundEvent = this.getEatingSound();
+                 if (soundEvent != null) {
+-                    this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
++                    this.level.playSound((Player)null, this, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F); // Paper - add entity argument - Entity Visibility API
+                 }
+             }
+         }
+@@ -393,7 +393,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
+         double g = Math.sqrt(d * d + f * f) * (double)0.2F;
+         llamaSpit.shoot(d, e + g, f, 1.5F, 10.0F);
+         if (!this.isSilent()) {
+-            this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
++            this.level.playSound((Player)null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F); // Paper - add entity argument - Entity Visibility API
+         }
+ 
+         this.level.addFreshEntity(llamaSpit);
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
+index 5fc66d7096afcfe63eba774e1dc330ac3263e4b0..46a5c2e0130bebbbad8472c6b3e0248204dbe575 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/ArmorStand.java
+@@ -577,7 +577,7 @@ public class ArmorStand extends LivingEntity {
+ 
+     private void showBreakingParticles() {
+         if (this.level instanceof ServerLevel) {
+-            ((ServerLevel) this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY(0.6666666666666666D), this.getZ(), 10, (double) (this.getBbWidth() / 4.0F), (double) (this.getBbHeight() / 4.0F), (double) (this.getBbWidth() / 4.0F), 0.05D);
++            ((ServerLevel) this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this, this.getX(), this.getY(0.6666666666666666D), this.getZ(), 10, (double) (this.getBbWidth() / 4.0F), (double) (this.getBbHeight() / 4.0F), (double) (this.getBbWidth() / 4.0F), 0.05D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+@@ -628,7 +628,7 @@ public class ArmorStand extends LivingEntity {
+     }
+ 
+     private void playBrokenSound() {
+-        this.level.playSound((net.minecraft.world.entity.player.Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
++        this.level.playSound((net.minecraft.world.entity.player.Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F); // Paper - add entity param - Entity Visibility API
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Creeper.java b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
+index e8c36e8541f041a0d72a86f49ced2a3ce1549be0..e3d6cac29aee02e22def90faebab7d1a405431ad 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Creeper.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Creeper.java
+@@ -243,7 +243,7 @@ public class Creeper extends Monster implements PowerableMob {
+         ItemStack itemstack = player.getItemInHand(hand);
+ 
+         if (itemstack.is(Items.FLINT_AND_STEEL)) {
+-            this.level.playSound(player, this.getX(), this.getY(), this.getZ(), SoundEvents.FLINTANDSTEEL_USE, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
++            this.level.playSound(player, this, this.getX(), this.getY(), this.getZ(), SoundEvents.FLINTANDSTEEL_USE, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F); // Paper - add entity param - Entity Visibility API
+             if (!this.level.isClientSide) {
+                 this.ignite();
+                 itemstack.hurtAndBreak(1, player, (entityhuman1) -> {
+diff --git a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
+index e1e220b3e4967590a2a77370e2a6ab919ad50eaa..6f47a19a6e92254d689ad116859e439c6e595d09 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
++++ b/src/main/java/net/minecraft/world/entity/monster/EnderMan.java
+@@ -324,7 +324,7 @@ public class EnderMan extends Monster implements NeutralMob {
+             boolean flag2 = this.randomTeleport(x, y, z, true);
+ 
+             if (flag2 && !this.isSilent()) {
+-                this.level.playSound((Player) null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
++                this.level.playSound((Player) null, this, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F); // Paper - add entity param - Entity Visibility API
+                 this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
+             }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Strider.java b/src/main/java/net/minecraft/world/entity/monster/Strider.java
+index 1e81e115fe28fe20c18d25372892ba714699303f..c2eff9c3504959996890712ade2aa363dd55e7c7 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Strider.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Strider.java
+@@ -440,7 +440,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
+                 return itemstack.is(Items.SADDLE) ? itemstack.interactLivingEntity(player, (LivingEntity) this, hand) : InteractionResult.PASS;
+             } else {
+                 if (flag && !this.isSilent()) {
+-                    this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
++                    this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F); // Paper - add entity param - Entity Visibility API
+                 }
+ 
+                 return enuminteractionresult;
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Witch.java b/src/main/java/net/minecraft/world/entity/monster/Witch.java
+index 8c3e8c12d7405ad388342e304430834a5fad12a9..66ac6398d7957c3c873d8e314149e6f6c01f0ea1 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Witch.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Witch.java
+@@ -197,7 +197,7 @@ public class Witch extends Raider implements RangedAttackMob {
+         this.usingTime = this.getMainHandItem().getUseDuration();
+         this.setUsingItem(true);
+         if (!this.isSilent()) {
+-            this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
++            this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         AttributeInstance attributemodifiable = this.getAttribute(Attributes.MOVEMENT_SPEED);
+@@ -277,7 +277,7 @@ public class Witch extends Raider implements RangedAttackMob {
+             entitypotion.setXRot(entitypotion.getXRot() - -20.0F);
+             entitypotion.shoot(d0, d1 + d3 * 0.2D, d2, 0.75F, 8.0F);
+             if (!this.isSilent()) {
+-                this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
++                this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F); // Paper - add entity param - Entity Visibility API
+             }
+ 
+             this.level.addFreshEntity(entitypotion);
+diff --git a/src/main/java/net/minecraft/world/entity/monster/Zombie.java b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+index bb3b932c57fd1e5b1517940c7602c7f4aeeaf17e..dae10c51f46893b4fd0ba3fd4c8695cac9337778 100644
+--- a/src/main/java/net/minecraft/world/entity/monster/Zombie.java
++++ b/src/main/java/net/minecraft/world/entity/monster/Zombie.java
+@@ -610,12 +610,12 @@ public class Zombie extends Monster {
+ 
+         @Override
+         public void playDestroyProgressSound(LevelAccessor world, BlockPos pos) {
+-            world.playSound((Player) null, pos, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
++            world.playSound((Player) null, removerMob, pos, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         @Override
+         public void playBreakSound(Level world, BlockPos pos) {
+-            world.playSound((Player) null, pos, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F);
++            world.playSound((Player) null, removerMob, pos, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + world.random.nextFloat() * 0.2F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         @Override
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 1bccd932851045c374e3092d33dc77fab680d0db..bcc7a20aace71d9a118c12548c8eb3d506accc74 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -605,7 +605,7 @@ public abstract class Player extends LivingEntity {
+                 return entitytypes == EntityType.PARROT;
+             }).ifPresent((entitytypes) -> {
+                 if (!Parrot.imitateNearbyMobs(this.level, (Entity) this)) {
+-                    this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level, this.level.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.level.random));
++                    this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level, this.level.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.level.random)); // Paper - add entity param - Entity Visibility API
+                 }
+ 
+             });
+@@ -1372,7 +1372,7 @@ public abstract class Player extends LivingEntity {
+                             if (this.level instanceof ServerLevel && f5 > 2.0F) {
+                                 int k = (int) ((double) f5 * 0.5D);
+ 
+-                                ((ServerLevel) this.level).sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY(0.5D), target.getZ(), k, 0.1D, 0.0D, 0.1D, 0.2D);
++                                ((ServerLevel) this.level).sendParticles(ParticleTypes.DAMAGE_INDICATOR, this, target.getX(), target.getY(0.5D), target.getZ(), k, 0.1D, 0.0D, 0.1D, 0.2D); // Paper - add entity param - Entity Visibility API
+                             }
+                         }
+ 
+@@ -1423,7 +1423,7 @@ public abstract class Player extends LivingEntity {
+         double d1 = (double) Mth.cos(this.getYRot() * 0.017453292F);
+ 
+         if (this.level instanceof ServerLevel) {
+-            ((ServerLevel) this.level).sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + d0, this.getY(0.5D), this.getZ() + d1, 0, d0, 0.0D, d1, 0.0D);
++            ((ServerLevel) this.level).sendParticles(ParticleTypes.SWEEP_ATTACK, this, this.getX() + d0, this.getY(0.5D), this.getZ() + d1, 0, d0, 0.0D, d1, 0.0D); // Paper - add entity param - Entity Visibility API
+         }
+ 
+     }
+@@ -1816,7 +1816,7 @@ public abstract class Player extends LivingEntity {
+         if (levels > 0 && this.experienceLevel % 5 == 0 && (float) this.lastLevelUpTime < (float) this.tickCount - 100.0F) {
+             float f = this.experienceLevel > 30 ? 1.0F : (float) this.experienceLevel / 30.0F;
+ 
+-            this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), f * 0.75F, 1.0F);
++            this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), f * 0.75F, 1.0F); // Paper - add entity param - Entity Visibility API
+             this.lastLevelUpTime = this.tickCount;
+         }
+ 
+@@ -2253,7 +2253,7 @@ public abstract class Player extends LivingEntity {
+     public ItemStack eat(Level world, ItemStack stack) {
+         this.getFoodData().eat(stack.getItem(), stack);
+         this.awardStat(Stats.ITEM_USED.get(stack.getItem()));
+-        world.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
++        world.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F); // Paper - add entity param - Entity Visibility API
+         if (this instanceof ServerPlayer) {
+             CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer) this, stack);
+         }
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/FireworkRocketEntity.java b/src/main/java/net/minecraft/world/entity/projectile/FireworkRocketEntity.java
+index 3ac0d0419cbdacabf647a530a82ddf67ddaa13b7..f677bf8ab6ce99f37dd5ddf44def71b36f50b4c1 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/FireworkRocketEntity.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/FireworkRocketEntity.java
+@@ -165,7 +165,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
+ 
+         this.updateRotation();
+         if (this.life == 0 && !this.isSilent()) {
+-            this.level.playSound((Player) null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
++            this.level.playSound((Player) null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F); // Paper - add entity param - Entity Visibility API
+         }
+ 
+         ++this.life;
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/FishingHook.java b/src/main/java/net/minecraft/world/entity/projectile/FishingHook.java
+index 852a4edde291bf368b2396e3c94ab402e3c66622..8d31f5dfb29e203f43ff62e7081a400da7581e33 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/FishingHook.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/FishingHook.java
+@@ -352,14 +352,14 @@ public class FishingHook extends Projectile {
+                     iblockdata = worldserver.getBlockState(new BlockPos(d0, d1 - 1.0D, d2));
+                     if (iblockdata.is(Blocks.WATER)) {
+                         if (this.random.nextFloat() < 0.15F) {
+-                            worldserver.sendParticles(ParticleTypes.BUBBLE, d0, d1 - 0.10000000149011612D, d2, 1, (double) f1, 0.1D, (double) f2, 0.0D);
++                            worldserver.sendParticles(ParticleTypes.BUBBLE, this, d0, d1 - 0.10000000149011612D, d2, 1, (double) f1, 0.1D, (double) f2, 0.0D); // Paper - add entity param - Entity Visibility API
+                         }
+ 
+                         float f3 = f1 * 0.04F;
+                         float f4 = f2 * 0.04F;
+ 
+-                        worldserver.sendParticles(ParticleTypes.FISHING, d0, d1, d2, 0, (double) f4, 0.01D, (double) (-f3), 1.0D);
+-                        worldserver.sendParticles(ParticleTypes.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
++                        worldserver.sendParticles(ParticleTypes.FISHING, this, d0, d1, d2, 0, (double) f4, 0.01D, (double) (-f3), 1.0D); // Paper - add entity param - Entity Visibility API
++                        worldserver.sendParticles(ParticleTypes.FISHING, this, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D); // Paper - add entity param - Entity Visibility API
+                     }
+                 } else {
+                     // CraftBukkit start
+@@ -372,8 +372,8 @@ public class FishingHook extends Projectile {
+                     this.playSound(SoundEvents.FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+                     double d3 = this.getY() + 0.5D;
+ 
+-                    worldserver.sendParticles(ParticleTypes.BUBBLE, this.getX(), d3, this.getZ(), (int) (1.0F + this.getBbWidth() * 20.0F), (double) this.getBbWidth(), 0.0D, (double) this.getBbWidth(), 0.20000000298023224D);
+-                    worldserver.sendParticles(ParticleTypes.FISHING, this.getX(), d3, this.getZ(), (int) (1.0F + this.getBbWidth() * 20.0F), (double) this.getBbWidth(), 0.0D, (double) this.getBbWidth(), 0.20000000298023224D);
++                    worldserver.sendParticles(ParticleTypes.BUBBLE, this, this.getX(), d3, this.getZ(), (int) (1.0F + this.getBbWidth() * 20.0F), (double) this.getBbWidth(), 0.0D, (double) this.getBbWidth(), 0.20000000298023224D); // Paper - add entity param - Entity Visibility API
++                    worldserver.sendParticles(ParticleTypes.FISHING, this, this.getX(), d3, this.getZ(), (int) (1.0F + this.getBbWidth() * 20.0F), (double) this.getBbWidth(), 0.0D, (double) this.getBbWidth(), 0.20000000298023224D); // Paper - add entity param - Entity Visibility API
+                     this.nibble = Mth.nextInt(this.random, 20, 40);
+                     this.getEntityData().set(FishingHook.DATA_BITING, true);
+                 }
+@@ -396,7 +396,7 @@ public class FishingHook extends Projectile {
+                     d2 = this.getZ() + (double) (Mth.cos(f1) * f2 * 0.1F);
+                     iblockdata = worldserver.getBlockState(new BlockPos(d0, d1 - 1.0D, d2));
+                     if (iblockdata.is(Blocks.WATER)) {
+-                        worldserver.sendParticles(ParticleTypes.SPLASH, d0, d1, d2, 2 + this.random.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D, 0.0D);
++                        worldserver.sendParticles(ParticleTypes.SPLASH, this, d0, d1, d2, 2 + this.random.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D, 0.0D); // Paper - add entity param - Entity Visibility API
+                     }
+                 }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java b/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
+index 123f9a93b014107c8f609d38a2b8d37261bb5d18..2548287ff61ad0bd942edbcf0cc20788a5da7d96 100644
+--- a/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
++++ b/src/main/java/net/minecraft/world/entity/projectile/ShulkerBullet.java
+@@ -314,7 +314,7 @@ public class ShulkerBullet extends Projectile {
+     @Override
+     protected void onHitBlock(BlockHitResult blockHitResult) {
+         super.onHitBlock(blockHitResult);
+-        ((ServerLevel) this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2D, 0.2D, 0.2D, 0.0D);
++        ((ServerLevel) this.level).sendParticles(ParticleTypes.EXPLOSION, this, this.getX(), this.getY(), this.getZ(), 2, 0.2D, 0.2D, 0.2D, 0.0D); // Paper - add entity param - Entity Visibility API
+         this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
+     }
+ 
+@@ -338,7 +338,7 @@ public class ShulkerBullet extends Projectile {
+         // CraftBukkit end
+         if (!this.level.isClientSide) {
+             this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
+-            ((ServerLevel) this.level).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2D, 0.2D, 0.2D, 0.0D);
++            ((ServerLevel) this.level).sendParticles(ParticleTypes.CRIT, this, this.getX(), this.getY(), this.getZ(), 15, 0.2D, 0.2D, 0.2D, 0.0D); // Paper - add entity param - Entity Visibility API
+             this.discard();
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+index aa7c022c4faade23bd9061311d4152cf845d3331..b3149a20955a4ea5918a62cb6697cd89d382d582 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/Boat.java
+@@ -386,7 +386,7 @@ public class Boat extends Entity {
+                         double d0 = i == 1 ? -vec3d.z : vec3d.z;
+                         double d1 = i == 1 ? vec3d.x : -vec3d.x;
+ 
+-                        this.level.playSound((Player) null, this.getX() + d0, this.getY(), this.getZ() + d1, soundeffect, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
++                        this.level.playSound((Player) null, this, this.getX() + d0, this.getY(), this.getZ() + d1, soundeffect, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat()); // Paper - add entity param - Entity Visibility API
+                         this.level.gameEvent(this.getControllingPassenger(), GameEvent.SPLASH, new BlockPos(this.getX() + d0, this.getY(), this.getZ() + d1));
+                     }
+                 }
+diff --git a/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java b/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
+index 4572a3cf0a067b64f2bd6c31139a773cddf4e872..fe0e6cec58ec3a2795ad656db48238368132c4d5 100644
+--- a/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
++++ b/src/main/java/net/minecraft/world/entity/vehicle/MinecartTNT.java
+@@ -143,7 +143,7 @@ public class MinecartTNT extends AbstractMinecart {
+         if (!this.level.isClientSide) {
+             this.level.broadcastEntityEvent(this, (byte)10);
+             if (!this.isSilent()) {
+-                this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
++                this.level.playSound((Player)null, this, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F); // Paper - add entity param - Entity Visibility API
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index 9da5b7b54c91894b379d41fb8d2b24f7c1c9d96f..3478b5197c0d16483f7ceb17c4b0340ca7f9de74 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -292,8 +292,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+         for (int i = 0, len = entities.size(); i < len; ++i) {
+             Entity entity = entities.get(i);
+ 
+-            if (checkCanSee && source instanceof net.minecraft.server.level.ServerPlayer && entity instanceof net.minecraft.server.level.ServerPlayer
+-                && !((net.minecraft.server.level.ServerPlayer) source).getBukkitEntity().canSee(((net.minecraft.server.level.ServerPlayer) entity).getBukkitEntity())) {
++            if (checkCanSee && source instanceof net.minecraft.server.level.ServerPlayer
++                && !((net.minecraft.server.level.ServerPlayer) source).getBukkitEntity().canSee(entity.getBukkitEntity())) { // Paper - Entity Visibility API
+                 continue;
+             }
+ 
+@@ -780,8 +780,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+         this.playSound(player, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, sound, category, volume, pitch);
+     }
+ 
++    // Paper start - Entity Visibility API
++    @Override
++    public void playSound(@Nullable Player player, @Nullable Entity source, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
++        this.playSound(player, source, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, sound, category, volume, pitch);
++    }
++    // Paper end
++
+     public abstract void playSound(@Nullable Player player, double x, double y, double z, SoundEvent sound, SoundSource category, float volume, float pitch);
+ 
++    public abstract void playSound(@Nullable Player player, @Nullable Entity source, double x, double y, double z, SoundEvent sound, SoundSource category, float volume, float pitch); // Paper - Entity Visibility API
++
+     public abstract void playSound(@Nullable Player player, Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch);
+ 
+     public void playLocalSound(double x, double y, double z, SoundEvent sound, SoundSource category, float volume, float pitch, boolean useDistance) {}
+diff --git a/src/main/java/net/minecraft/world/level/LevelAccessor.java b/src/main/java/net/minecraft/world/level/LevelAccessor.java
+index 2d9fab6ed294480a09753b844bf06f49e3cbf4d1..4dc0aee5ab960e8c3f99276e5e0d4553d336c1d7 100644
+--- a/src/main/java/net/minecraft/world/level/LevelAccessor.java
++++ b/src/main/java/net/minecraft/world/level/LevelAccessor.java
+@@ -52,6 +52,8 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
+ 
+     void playSound(@Nullable Player player, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch);
+ 
++    void playSound(@Nullable Player player, @Nullable Entity source, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch); // Paper - Entity Visibility API
++
+     void addParticle(ParticleOptions parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ);
+ 
+     void levelEvent(@Nullable Player player, int eventId, BlockPos pos, int data);
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 8246ad7ebecdfc0b7519fe4412fef7b07407e850..40eb71c060c11d95e3c4962712d178a83fe2212e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -1207,4 +1207,23 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+         return getHandle().isTicking();
+     }
+     // Paper end
++
++    // Paper start - Entity Visibility API
++    public boolean shownByDefault = true;
++    public final java.util.Set<CraftEntity> visibilityOverrides = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
++
++    @Override
++    public boolean isShownByDefault() {
++        return shownByDefault;
++    }
++
++    @Override
++    public void resetAndSetShownByDefault(boolean shownByDefault) {
++        this.shownByDefault = shownByDefault;
++        visibilityOverrides.clear();
++        if (isValid()) { // only update tracking if spawned
++            getHandle().tracker.updatePlayers(getHandle().getPlayersInTrackRange());
++        }
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 76e2ae09855e0efaaa0856d2f49e4968adbccbdc..ad974da3a046ffa7342fca037bca11f9c10e0cc9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -2473,4 +2473,63 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return this.spigot;
+     }
+     // Spigot end
++
++    // Paper start - Entity Visibility API
++    @Override
++    public boolean canSee(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            return canSee((Player) entity);
++        }
++        CraftEntity ce = (CraftEntity) entity;
++        return Boolean.logicalXor(ce.shownByDefault, ce.visibilityOverrides.contains(this));
++    }
++
++    @Override
++    public void showEntity(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            showPlayer((Player) entity);
++        } else {
++            CraftEntity ce = (CraftEntity) entity;
++            boolean nowShown;
++            if (ce.shownByDefault) {
++                nowShown = ce.visibilityOverrides.remove(this);
++            } else {
++                nowShown = ce.visibilityOverrides.add(this);
++            }
++            if (nowShown) {
++                registerEntity(ce.getHandle());
++            }
++        }
++    }
++
++    @Override
++    public void hideEntity(org.bukkit.entity.Entity entity) {
++        if (entity instanceof Player) {
++            hidePlayer((Player) entity);
++        } else {
++            CraftEntity ce = (CraftEntity) entity;
++            boolean nowHidden;
++            if (ce.shownByDefault) {
++                nowHidden = ce.visibilityOverrides.add(this);
++            } else {
++                nowHidden = ce.visibilityOverrides.remove(this);
++            }
++            if (nowHidden) {
++                unregisterEntity(ce.getHandle());
++            }
++        }
++    }
++
++    private void registerEntity(Entity other) {
++        if (other.tracker != null && !other.tracker.seenBy.contains(this.getHandle().connection)) {
++            other.tracker.updatePlayer(this.getHandle());
++        }
++    }
++
++    private void unregisterEntity(Entity other) {
++        if (other.tracker != null) {
++            other.tracker.removePlayer(this.getHandle());
++        }
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java b/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
+index a430506c31d9ce7a5c90d726a68f097498629545..fd43ba16f8e8a01cf9ed544db80d4ebb43d98067 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/DummyGeneratorAccess.java
+@@ -84,6 +84,13 @@ public class DummyGeneratorAccess implements LevelAccessor {
+         throw new UnsupportedOperationException("Not supported yet.");
+     }
+ 
++    // Paper start - Entity Visibility API 
++    @Override
++    public void playSound(@org.jetbrains.annotations.Nullable Player player, @org.jetbrains.annotations.Nullable Entity source, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
++        throw new UnsupportedOperationException("Not supported yet.");
++    }
++    // Paper end
++
+     @Override
+     public void addParticle(ParticleOptions parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+         throw new UnsupportedOperationException("Not supported yet.");
