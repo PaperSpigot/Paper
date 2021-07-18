@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lexikiq <noellekiq@gmail.com>
+Date: Sat, 17 Jul 2021 20:37:02 -0400
+Subject: [PATCH] Add config to limit End Portal sound
+
+Adds a PaperConfig option to limit the End Portal
+Spawn sound effect to only the originating world,
+rather than all worlds on the server.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index 857ef2377d2e6fd84d70e301860692e670983f0c..c23ce64fb218056e708820dfd4089bb60ed82475 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -840,5 +840,10 @@ public class PaperWorldConfig {
+     private void showSignClickCommandFailureMessagesToPlayer() {
+         showSignClickCommandFailureMessagesToPlayer = getBoolean("show-sign-click-command-failure-msgs-to-player", showSignClickCommandFailureMessagesToPlayer);
+     }
++
++    public boolean globalEndPortalSound = true;
++    private void globalEndPortalSound() {
++        globalEndPortalSound = getBoolean("global-end-portal-sound", globalEndPortalSound);
++    }
+ }
+ 
+diff --git a/src/main/java/net/minecraft/world/item/EnderEyeItem.java b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
+index 7ccfe737fdf7f07b731ea0ff82e897564350705c..f1a1df08684055f519f200b17cc7a35ea03af0dc 100644
+--- a/src/main/java/net/minecraft/world/item/EnderEyeItem.java
++++ b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
+@@ -62,7 +62,7 @@ public class EnderEyeItem extends Item {
+                     // world.b(1038, blockposition1.c(1, 0, 1), 0);
+                     int viewDistance = world.getCraftServer().getViewDistance() * 16;
+                     BlockPos soundPos = blockposition1.offset(1, 0, 1);
+-                    for (ServerPlayer player : world.getServer().getPlayerList().players) {
++                    for (ServerPlayer player : world.paperConfig.globalEndPortalSound ? world.getServer().getPlayerList().players : world.getMinecraftWorld().players()) { // Paper - add config to limit sound event to the originating world
+                         double deltaX = soundPos.getX() - player.getX();
+                         double deltaZ = soundPos.getZ() - player.getZ();
+                         double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
