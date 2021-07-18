@@ -1,0 +1,285 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Trigary <trigary0@gmail.com>
+Date: Sat, 22 Aug 2020 14:43:26 +0200
+Subject: [PATCH] NamespacedKey based plugin chunk tickets
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
+index 3c7b225edbe23dc1959002293a6f8b816287b5a8..d733ff69d44a1ee10f3d7c41b92cd031dbccb035 100644
+--- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
++++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
+@@ -464,6 +464,34 @@ public abstract class ChunkMapDistance {
+     }
+     // CraftBukkit end
+ 
++    // Paper start
++    public <T> int removeIfAllTicketsFor(TicketType<T> ticketType, java.util.function.Predicate<Ticket<T>> predicate) {
++        // logic copied from removeAllTicketsFor
++        int count = 0;
++        for (java.util.Iterator<Entry<ArraySetSorted<Ticket<?>>>> iterator = this.tickets.long2ObjectEntrySet().fastIterator(); iterator.hasNext(); ) {
++            Entry<ArraySetSorted<Ticket<?>>> entry = iterator.next();
++            ArraySetSorted<Ticket<?>> tickets = entry.getValue();
++            for (java.util.Iterator<Ticket<?>> ticketIterator = tickets.iterator(); ticketIterator.hasNext(); ) {
++                Ticket<?> ticket = ticketIterator.next();
++                //noinspection unchecked
++                if (ticket.getTicketType() == ticketType && predicate.test((Ticket<T>) ticket)) {
++                    count++;
++                    ticketIterator.remove();
++                }
++            }
++
++            // copied from removeTicket
++            this.ticketLevelTracker.update(entry.getLongKey(), getLowestTicketLevel(tickets), false);
++
++            // can't use entry after it's removed
++            if (tickets.isEmpty()) {
++                iterator.remove();
++            }
++        }
++        return count;
++    }
++    // Paper end
++
+     class a extends ChunkMap {
+ 
+         public a() {
+diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
+index ff74be14512a947e81b62d53e616131ca7d7f609..736d00761b42bbd982707e7dc9b1d7c77eeb99d5 100644
+--- a/src/main/java/net/minecraft/server/MCUtil.java
++++ b/src/main/java/net/minecraft/server/MCUtil.java
+@@ -5,6 +5,7 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
+ import com.destroystokyo.paper.profile.PlayerProfile;
+ import com.google.common.util.concurrent.ThreadFactoryBuilder;
+ import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
++import io.papermc.paper.world.TickingLevel;
+ import org.apache.commons.lang.exception.ExceptionUtils;
+ import com.google.gson.JsonArray;
+ import com.google.gson.JsonObject;
+@@ -704,4 +705,31 @@ public final class MCUtil {
+         // TODO make sure the constant `33` is correct on future updates. See getChunkAt(int, int, ChunkStatus, boolean)
+         return 33 + ChunkStatus.getTicketLevelOffset(status);
+     }
++
++    public static int getTicketLevelFrom(TickingLevel tickingLevel) {
++        switch (tickingLevel) {
++            case ENTITY:
++                return 31;
++            case BLOCK:
++                return 32;
++            case NONE:
++                return 33;
++            default:
++                throw new AssertionError("Unhandled case: " + tickingLevel);
++        }
++    }
++
++    @Nullable
++    public static TickingLevel tryGetTickingLevelFrom(int ticketLevel) {
++        switch (ticketLevel) {
++            case 31:
++                return TickingLevel.ENTITY;
++            case 32:
++                return TickingLevel.BLOCK;
++            case 33:
++                return TickingLevel.NONE;
++            default:
++                return null;
++        }
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/TicketType.java b/src/main/java/net/minecraft/server/TicketType.java
+index 5c789b25f1df2eae8ea8ceb4ba977ba336fe6d5e..2cb8991b8d2b46478f17388a80fefde1091f6245 100644
+--- a/src/main/java/net/minecraft/server/TicketType.java
++++ b/src/main/java/net/minecraft/server/TicketType.java
+@@ -22,6 +22,7 @@ public class TicketType<T> {
+     public static final TicketType<ChunkCoordIntPair> UNKNOWN = a("unknown", Comparator.comparingLong(ChunkCoordIntPair::pair), 1);
+     public static final TicketType<Unit> PLUGIN = a("plugin", (a, b) -> 0); // CraftBukkit
+     public static final TicketType<org.bukkit.plugin.Plugin> PLUGIN_TICKET = a("plugin_ticket", (plugin1, plugin2) -> plugin1.getClass().getName().compareTo(plugin2.getClass().getName())); // CraftBukkit
++    public static final TicketType<org.bukkit.NamespacedKey> KEYED_PLUGIN_TICKET = a("keyed_plugin_ticket", Comparator.comparing(org.bukkit.NamespacedKey::getNamespace).thenComparing(org.bukkit.NamespacedKey::getKey)); // Paper
+     public static final TicketType<Long> FUTURE_AWAIT = a("future_await", Long::compareTo); // Paper
+     public static final TicketType<Long> ASYNC_LOAD = a("async_load", Long::compareTo); // Paper
+     public static final TicketType<ChunkCoordIntPair> PRIORITY = a("priority", Comparator.comparingLong(ChunkCoordIntPair::pair), 300); // Paper
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index b71316cce3bdbf3485be456f0260c6b3463cff8e..88928a7c12c390c97614a467fb7478e6321129de 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -267,6 +267,7 @@ import org.bukkit.util.BoundingBox;
+ import org.bukkit.util.Consumer;
+ import org.bukkit.util.RayTraceResult;
+ import org.bukkit.util.Vector;
++import io.papermc.paper.world.TickingLevel; // Paper
+ 
+ public class CraftWorld implements World {
+     public static final int CUSTOM_DIMENSION_OFFSET = 10;
+@@ -717,6 +718,171 @@ public class CraftWorld implements World {
+         return ret.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (entry) -> entry.getValue().build()));
+     }
+ 
++    // Paper start
++    @Override
++    public TickingLevel addKeyedPluginChunkTicket(int x, int z, org.bukkit.NamespacedKey key) {
++        return addKeyedPluginChunkTicket(x, z, key, TickingLevel.ENTITY);
++    }
++
++    @Override
++    public TickingLevel addKeyedPluginChunkTicket(int x, int z, org.bukkit.NamespacedKey key, TickingLevel level) {
++        Preconditions.checkArgument(key != null, "null key");
++        Preconditions.checkArgument(level != null, "null level");
++
++        TickingLevel previousLevel = getKeyedPluginChunkTicketLevel(x, z, key);
++        if (previousLevel == level) {
++            return level; //ticket already present at desired level -> do nothing
++        }
++
++        if (previousLevel != null) {
++            //ticket with another level is present -> remove it first
++            // (only 1 level per chunk-key pair is allowed)
++            removeKeyedPluginChunkTicket(x, z, key);
++        }
++
++        //finally actually add the ticket
++        int ticketLevel = MCUtil.getTicketLevelFrom(level);
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        manager.addTicketAtLevel(TicketType.KEYED_PLUGIN_TICKET, new ChunkCoordIntPair(x, z), ticketLevel, key);
++        return previousLevel;
++    }
++
++    @Override
++    public TickingLevel removeKeyedPluginChunkTicket(int x, int z, org.bukkit.NamespacedKey key) {
++        Preconditions.checkArgument(key != null, "null key");
++
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        ChunkCoordIntPair coordPair = new ChunkCoordIntPair(x, z);
++
++        for (TickingLevel level : TickingLevel.values()) {
++            int ticketLevel = MCUtil.getTicketLevelFrom(level);
++            if (manager.removeTicketAtLevel(TicketType.KEYED_PLUGIN_TICKET, coordPair, ticketLevel, key)) {
++                return level;
++            }
++        }
++        return null;
++    }
++
++    @Override
++    public TickingLevel getKeyedPluginChunkTicketLevel(int x, int z, org.bukkit.NamespacedKey key) {
++        Preconditions.checkArgument(key != null, "null key");
++
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        Collection<Ticket<?>> tickets = manager.tickets.get(ChunkCoordIntPair.pair(x, z));
++        if (tickets == null) {
++            return null;
++        }
++
++        for (Ticket<?> ticket : tickets) {
++            if (ticket.getTicketType() == TicketType.KEYED_PLUGIN_TICKET && key.equals(ticket.getObjectReason())) {
++                return MCUtil.tryGetTickingLevelFrom(ticket.getTicketLevel());
++            }
++        }
++        return null;
++    }
++
++    @Override
++    public Collection<org.bukkit.NamespacedKey> getKeyedPluginChunkTicketKeys(int x, int z) {
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        Collection<Ticket<?>> tickets = manager.tickets.get(ChunkCoordIntPair.pair(x, z));
++        if (tickets == null) {
++            return Collections.emptyList();
++        }
++
++        com.google.common.collect.ImmutableSet.Builder<org.bukkit.NamespacedKey> ret = com.google.common.collect.ImmutableSet.builder();
++        for (Ticket<?> ticket : tickets) {
++            if (ticket.getTicketType() == TicketType.KEYED_PLUGIN_TICKET) {
++                ret.add((org.bukkit.NamespacedKey) ticket.getObjectReason());
++            }
++        }
++        return ret.build();
++    }
++
++    @Override
++    public void removeKeyedPluginChunkTickets(Plugin plugin) {
++        Preconditions.checkArgument(plugin != null, "null plugin");
++
++        String namespace = new org.bukkit.NamespacedKey(plugin, "ignored").getNamespace();
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        manager.removeIfAllTicketsFor(TicketType.KEYED_PLUGIN_TICKET,
++                ticket -> namespace.equals(ticket.getObjectReason().getNamespace()));
++    }
++
++    @Override
++    public void removeKeyedPluginChunkTickets(org.bukkit.NamespacedKey key) {
++        Preconditions.checkArgument(key != null, "null key");
++
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++        manager.removeIfAllTicketsFor(TicketType.KEYED_PLUGIN_TICKET,
++                ticket -> key.equals(ticket.getObjectReason()));
++    }
++
++    @Override
++    public Collection<Long> getKeyedPluginChunkTicketChunks(org.bukkit.NamespacedKey key) {
++        Preconditions.checkArgument(key != null, "null key");
++
++        com.google.common.collect.ImmutableSet.Builder<Long> ret = com.google.common.collect.ImmutableSet.builder();
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++
++        for (Long2ObjectMap.Entry<ArraySetSorted<Ticket<?>>> chunkTickets : manager.tickets.long2ObjectEntrySet()) {
++            for (Ticket<?> ticket : chunkTickets.getValue()) {
++                if (ticket.getTicketType() == TicketType.KEYED_PLUGIN_TICKET && key.equals(ticket.getObjectReason())) {
++                    ret.add(chunkTickets.getLongKey());
++                    break;
++                }
++            }
++        }
++        return ret.build();
++    }
++
++    @Override
++    public Collection<Chunk> getKeyedPluginChunkTicketLoadedChunks(org.bukkit.NamespacedKey key) {
++        com.google.common.collect.ImmutableSet.Builder<Chunk> ret = com.google.common.collect.ImmutableSet.builder();
++        for (long chunkKey : getKeyedPluginChunkTicketChunks(key)) {
++            int x = MCUtil.getCoordinateX(chunkKey);
++            int z = MCUtil.getCoordinateZ(chunkKey);
++            net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAtIfLoadedMainThreadNoCache(x, z);
++            if (chunk != null) {
++                ret.add(chunk.bukkitChunk);
++            }
++        }
++        return ret.build();
++    }
++
++    @Override
++    public com.google.common.collect.Multimap<Long, org.bukkit.NamespacedKey> getAllKeyedPluginChunkTickets() {
++        com.google.common.collect.Multimap<Long, org.bukkit.NamespacedKey> ret = com.google.common.collect.HashMultimap.create();
++        ChunkMapDistance manager = this.world.getChunkProvider().playerChunkMap.chunkDistanceManager;
++
++        for (Long2ObjectMap.Entry<ArraySetSorted<Ticket<?>>> chunkTickets : manager.tickets.long2ObjectEntrySet()) {
++            long chunkKey = chunkTickets.getLongKey();
++
++            for (Ticket<?> ticket : chunkTickets.getValue()) {
++                if (ticket.getTicketType() == TicketType.KEYED_PLUGIN_TICKET) {
++                    ret.put(chunkKey, (org.bukkit.NamespacedKey) ticket.getObjectReason());
++                }
++            }
++        }
++        return ret;
++    }
++
++    @Override
++    public com.google.common.collect.Multimap<Chunk, org.bukkit.NamespacedKey> getAllLoadedKeyedPluginChunkTickets() {
++        com.google.common.collect.Multimap<Chunk, org.bukkit.NamespacedKey> ret = com.google.common.collect.HashMultimap.create();
++        com.google.common.collect.Multimap<Long, org.bukkit.NamespacedKey> all = getAllKeyedPluginChunkTickets();
++
++        for (long chunkKey : all.keySet()) {
++            int x = MCUtil.getCoordinateX(chunkKey);
++            int z = MCUtil.getCoordinateZ(chunkKey);
++            net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAtIfLoadedMainThreadNoCache(x, z);
++            if (chunk != null) {
++                ret.putAll(chunk.bukkitChunk, all.get(chunkKey));
++            }
++        }
++        return ret;
++    }
++    // Paper end
++
+     @Override
+     public boolean isChunkForceLoaded(int x, int z) {
+         return getHandle().getForceLoadedChunks().contains(ChunkCoordIntPair.pair(x, z));
