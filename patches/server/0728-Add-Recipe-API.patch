@@ -1,0 +1,183 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lexikiq <noellekiq@gmail.com>
+Date: Thu, 15 Jul 2021 01:39:12 -0400
+Subject: [PATCH] Add Recipe API
+
+Adds methods to utilize a world's RecipeManager to obtain recipes
+
+diff --git a/src/main/java/io/papermc/paper/inventory/CraftRecipeType.java b/src/main/java/io/papermc/paper/inventory/CraftRecipeType.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..890d5e3ffd5da23f05d456232568fc6d7e07b214
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/CraftRecipeType.java
+@@ -0,0 +1,15 @@
++package io.papermc.paper.inventory;
++
++import net.minecraft.core.Registry;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.util.CraftNamespacedKey;
++
++public class CraftRecipeType {
++    public static net.minecraft.world.item.crafting.RecipeType asNMS(RecipeType bukkit) {
++        return Registry.RECIPE_TYPE.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
++    }
++
++    public static RecipeType asBukkit(net.minecraft.world.item.crafting.RecipeType nms) {
++        return RecipeType.getByKey(NamespacedKey.minecraft(nms.toString()));
++    }
++}
+diff --git a/src/main/java/io/papermc/paper/inventory/MenulessContainer.java b/src/main/java/io/papermc/paper/inventory/MenulessContainer.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fa82f292583a862829f9a5c696b82539487f91e4
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/inventory/MenulessContainer.java
+@@ -0,0 +1,41 @@
++package io.papermc.paper.inventory;
++
++import net.minecraft.world.ContainerHelper;
++import net.minecraft.world.inventory.CraftingContainer;
++import net.minecraft.world.item.ItemStack;
++import org.bukkit.Location;
++
++import java.util.Collection;
++
++// "Simulates" an NMS crafting container by removing the need for a menu
++public class MenulessContainer extends CraftingContainer {
++    public MenulessContainer(int width, int height) {
++        super(null, width, height);
++    }
++
++    public MenulessContainer(int width, int height, ItemStack... items) {
++        super(null, width, height);
++        for (int i = 0; i < items.length && i < (width * height); i++) {
++            setItem(i, items[i]);
++        }
++    }
++
++    public MenulessContainer(int width, int height, Collection<ItemStack> items) {
++        this(width, height, items.toArray(new ItemStack[]{}));
++    }
++
++    @Override
++    public Location getLocation() {
++        return null;
++    }
++
++    @Override
++    public ItemStack removeItem(int slot, int amount) {
++        return ContainerHelper.removeItem(getContents(), slot, amount);
++    }
++
++    @Override
++    public void setItem(int slot, ItemStack stack) {
++        getContents().set(slot, stack);
++    }
++}
+diff --git a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
+index 057b92a2948543644618c63abd3f61d1120db4dd..2931f8bf83408eaa41d4ae80e5a6b16fc4fd8ca4 100644
+--- a/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
++++ b/src/main/java/net/minecraft/world/item/crafting/RecipeManager.java
+@@ -108,6 +108,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
+     }
+ 
+     public <C extends Container, T extends Recipe<C>> List<T> getAllRecipesFor(RecipeType<T> recipeType) {
++        if (true) return (List) new java.util.ArrayList<>(this.byType(recipeType).values()); // Paper - fix unnecessary stream/map
+         return (List) this.byType(recipeType).values().stream().map((irecipe) -> {
+             return irecipe;
+         }).collect(Collectors.toList());
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 4607dcfa911ab554e7ad0e043caf9bcc72e94823..7d5a3d0cecaaa82ecfebe5ddcd6a64037981f75b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -342,6 +342,91 @@ public class CraftWorld implements World {
+ 
+         return this.getHandle().clip(new ClipContext(vec3d, vec3d1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null)).getType() == HitResult.Type.MISS;
+     }
++
++    public <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, net.minecraft.world.Container container) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipe cannot be null");
++        Validate.notNull(container, "container parameter in getRecipe cannot be null");
++        java.util.Optional<net.minecraft.world.item.crafting.Recipe> optionalRecipe = this.world.getRecipeManager().getRecipeFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, this.world);
++        return (R) optionalRecipe.map(recipe -> recipe.toBukkitRecipe()).orElse(null);
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe, I extends org.bukkit.inventory.Inventory> R getRecipe(io.papermc.paper.inventory.RecipeType<R, I> recipeType, I inventory) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipe cannot be null");
++        Validate.notNull(inventory, "inventory parameter in getRecipe cannot be null");
++        return getRecipe(recipeType, ((org.bukkit.craftbukkit.inventory.CraftInventory) inventory).getInventory());
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, Collection<ItemStack> items) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipe cannot be null");
++        Validate.notNull(items, "items parameter in getRecipe cannot be null");
++        List<net.minecraft.world.item.ItemStack> nmsItems = new ArrayList<>();
++        for (ItemStack item : items) {
++            nmsItems.add(CraftItemStack.asNMSCopy(item));
++        }
++        return getRecipe(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe> R getRecipe(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, ItemStack[] items) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipe cannot be null");
++        Validate.notNull(items, "items parameter in getRecipe cannot be null");
++        net.minecraft.world.item.ItemStack[] nmsItems = new net.minecraft.world.item.ItemStack[items.length];
++        for (int i = 0; i < items.length; i++) {
++            nmsItems[i] = CraftItemStack.asNMSCopy(items[i]);
++        }
++        return getRecipe(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
++    }
++
++    public <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, net.minecraft.world.Container container) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipes cannot be null");
++        Validate.notNull(container, "container parameter in getRecipes cannot be null");
++        List<R> recipes = new ArrayList<>();
++        for (net.minecraft.world.item.crafting.Recipe recipe : (List<net.minecraft.world.item.crafting.Recipe>) this.world.getRecipeManager().getRecipesFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType), container, this.world)) {
++            recipes.add((R) recipe.toBukkitRecipe());
++        }
++        return recipes;
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe, I extends org.bukkit.inventory.Inventory> List<R> getRecipes(io.papermc.paper.inventory.RecipeType<R, I> recipeType, I inventory) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipes cannot be null");
++        Validate.notNull(inventory, "inventory parameter in getRecipes cannot be null");
++        return getRecipes(recipeType, ((org.bukkit.craftbukkit.inventory.CraftInventory) inventory).getInventory());
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, Collection<ItemStack> items) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipes cannot be null");
++        Validate.notNull(items, "items parameter in getRecipes cannot be null");
++        List<net.minecraft.world.item.ItemStack> nmsItems = new ArrayList<>();
++        for (ItemStack item : items) {
++            nmsItems.add(CraftItemStack.asNMSCopy(item));
++        }
++        return getRecipes(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe> List<R> getRecipes(io.papermc.paper.inventory.RecipeType<R, ?> recipeType, ItemStack[] items) {
++        Validate.notNull(recipeType, "recipeType parameter in getRecipes cannot be null");
++        Validate.notNull(items, "items parameter in getRecipes cannot be null");
++        net.minecraft.world.item.ItemStack[] nmsItems = new net.minecraft.world.item.ItemStack[items.length];
++        for (int i = 0; i < items.length; i++) {
++            nmsItems[i] = CraftItemStack.asNMSCopy(items[i]);
++        }
++        return getRecipes(recipeType, new io.papermc.paper.inventory.MenulessContainer(3, 3, nmsItems));
++    }
++
++    @Override
++    public <R extends org.bukkit.inventory.Recipe> List<R> getAllRecipes(io.papermc.paper.inventory.RecipeType<R, ?> recipeType) {
++        Validate.notNull(recipeType, "recipeType parameter in getAllRecipes cannot be null");
++        List<R> recipes = new ArrayList<>();
++        for (net.minecraft.world.item.crafting.Recipe<?> nmsrecipe : (List<net.minecraft.world.item.crafting.Recipe<?>>) world.getRecipeManager().getAllRecipesFor(io.papermc.paper.inventory.CraftRecipeType.asNMS(recipeType))) {
++            recipes.add((R) nmsrecipe.toBukkitRecipe());
++        }
++        return recipes;
++    }
+     // Paper end
+ 
+     private static final Random rand = new Random();
