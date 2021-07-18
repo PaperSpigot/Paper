@@ -1,0 +1,87 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 3 Jan 2021 17:58:11 -0800
+Subject: [PATCH] Add BlockBreakBlockEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/Block.java b/src/main/java/net/minecraft/world/level/block/Block.java
+index d6a3f3a2edae806b0ebf5bf5ac445116c0d64535..b78112276761da7aa502639e8803b2fc440d659a 100644
+--- a/src/main/java/net/minecraft/world/level/block/Block.java
++++ b/src/main/java/net/minecraft/world/level/block/Block.java
+@@ -331,6 +331,23 @@ public class Block extends BlockBehaviour implements ItemLike {
+         }
+ 
+     }
++    // Paper start
++    public static boolean dropResources(BlockState blockState, LevelAccessor generatorAccess, BlockPos blockPosition, BlockPos source, @Nullable BlockEntity tileEntity) {
++        if (generatorAccess instanceof ServerLevel) {
++            List<org.bukkit.inventory.ItemStack> items = com.google.common.collect.Lists.newArrayList();
++            for (net.minecraft.world.item.ItemStack drop : net.minecraft.world.level.block.Block.getDrops(blockState, generatorAccess.getMinecraftWorld(), blockPosition, tileEntity)) {
++                items.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(drop));
++            }
++            io.papermc.paper.event.block.BlockBreakBlockEvent event = new io.papermc.paper.event.block.BlockBreakBlockEvent(org.bukkit.craftbukkit.block.CraftBlock.at(generatorAccess, blockPosition), org.bukkit.craftbukkit.block.CraftBlock.at(generatorAccess, source), items);
++            event.callEvent();
++            for (org.bukkit.inventory.ItemStack drop : event.getDrops()) {
++                popResource(generatorAccess.getMinecraftWorld(), blockPosition, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(drop));
++            }
++            blockState.spawnAfterBreak(generatorAccess.getMinecraftWorld(), blockPosition, ItemStack.EMPTY);
++        }
++        return true;
++    }
++    // Paper end
+ 
+     public static void dropResources(BlockState state, Level world, BlockPos pos, @Nullable BlockEntity blockEntity, Entity entity, ItemStack stack) {
+         if (world instanceof ServerLevel) {
+diff --git a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+index dd50a29d47a62df8cdfd69358218d1559b6794ef..058ec4cdb2d00d347d4ec05d52a4abf63d35df32 100644
+--- a/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/piston/PistonBaseBlock.java
+@@ -401,7 +401,7 @@ public class PistonBaseBlock extends DirectionalBlock {
+                 iblockdata1 = world.getBlockState(blockposition3);
+                 BlockEntity tileentity = iblockdata1.hasBlockEntity() ? world.getBlockEntity(blockposition3) : null;
+ 
+-                dropResources(iblockdata1, (LevelAccessor) world, blockposition3, tileentity);
++                dropResources(iblockdata1, (LevelAccessor) world, blockposition3, pos, tileentity); // Paper
+                 world.setBlock(blockposition3, Blocks.AIR.defaultBlockState(), 18);
+                 if (!iblockdata1.is((Tag) BlockTags.FIRE)) {
+                     world.addDestroyBlockEffect(blockposition3, iblockdata1);
+diff --git a/src/main/java/net/minecraft/world/level/material/FlowingFluid.java b/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
+index 6e3e873efa1f50f53cb6503bde8a981f9cefd006..d116a7658d984c5aac7863a510ad6e18b6b23b91 100644
+--- a/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
++++ b/src/main/java/net/minecraft/world/level/material/FlowingFluid.java
+@@ -295,7 +295,7 @@ public abstract class FlowingFluid extends Fluid {
+             ((LiquidBlockContainer) state.getBlock()).placeLiquid(world, pos, state, fluidState);
+         } else {
+             if (!state.isAir()) {
+-                this.beforeDestroyingBlock(world, pos, state);
++                this.beforeDestroyingBlock(world, pos, pos.relative(direction.getOpposite()), state); // Paper
+             }
+ 
+             world.setBlock(pos, fluidState.createLegacyBlock(), 3);
+@@ -303,6 +303,7 @@ public abstract class FlowingFluid extends Fluid {
+ 
+     }
+ 
++    protected void beforeDestroyingBlock(LevelAccessor generatorAccess, BlockPos blockPosition, BlockPos source, BlockState blockState) { beforeDestroyingBlock(generatorAccess, blockPosition, blockState); } // Paper - add source parameter
+     protected abstract void beforeDestroyingBlock(LevelAccessor world, BlockPos pos, BlockState state);
+ 
+     private static short getCacheKey(BlockPos blockposition, BlockPos blockposition1) {
+diff --git a/src/main/java/net/minecraft/world/level/material/WaterFluid.java b/src/main/java/net/minecraft/world/level/material/WaterFluid.java
+index c2beaba9095c9163f25a46c8b2c423e820639cf6..65e161dc7e3caecaae38ad6dd61fb385bb9cffa8 100644
+--- a/src/main/java/net/minecraft/world/level/material/WaterFluid.java
++++ b/src/main/java/net/minecraft/world/level/material/WaterFluid.java
+@@ -63,6 +63,14 @@ public abstract class WaterFluid extends FlowingFluid {
+         return true;
+     }
+ 
++    // Paper start
++    @Override
++    protected void beforeDestroyingBlock(LevelAccessor generatorAccess, BlockPos blockPosition, BlockPos source, BlockState blockState) {
++        BlockEntity tileentity = blockState.hasBlockEntity() ? generatorAccess.getBlockEntity(blockPosition) : null;
++
++        Block.dropResources(blockState, generatorAccess, blockPosition, source, tileentity);
++    }
++    // Paper end
+     @Override
+     protected void beforeDestroyingBlock(LevelAccessor world, BlockPos pos, BlockState state) {
+         BlockEntity blockEntity = state.hasBlockEntity() ? world.getBlockEntity(pos) : null;
