@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: LemonCaramel <admin@caramel.moe>
+Date: Fri, 16 Jul 2021 00:38:52 +0900
+Subject: [PATCH] Add more Campfire API
+
+
+diff --git a/src/main/java/org/bukkit/block/Campfire.java b/src/main/java/org/bukkit/block/Campfire.java
+index f8a344cabb7b5a6d1c5409798a0a98b023bcd756..cece1bdf533fc58c5eabdc391f5eaa8e6a9dd3dc 100644
+--- a/src/main/java/org/bukkit/block/Campfire.java
++++ b/src/main/java/org/bukkit/block/Campfire.java
+@@ -69,4 +69,36 @@ public interface Campfire extends TileState {
+      * @param cookTimeTotal Cook time total
+      */
+     void setCookTimeTotal(int index, int cookTimeTotal);
++
++    // Paper start
++    /**
++     * Stop cooking all indexes.
++     *
++     * @param stopCook true if stop all cooking
++     */
++    void setStopCook(boolean stopCook);
++
++    /**
++     * Set stop cook.
++     *
++     * @param index index to set the state
++     * @param stopCook true if stop cooking
++     */
++    void setStopCook(int index, boolean stopCook);
++
++    /**
++     * State of all indexes.
++     *
++     * @return <code>true</code> if all indexes stop cooking.
++     */
++    boolean isStopCook();
++
++    /**
++     * State of index.
++     *
++     * @param index index to check state
++     * @return <code>true</code> if index is stop cooking
++     */
++    boolean isStopCook(int index);
++    // Paper end
+ }
