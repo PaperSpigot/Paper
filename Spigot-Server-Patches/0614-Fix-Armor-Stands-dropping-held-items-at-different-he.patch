@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: jmp <jasonpenilla2@me.com>
+Date: Thu, 10 Dec 2020 00:56:43 -0800
+Subject: [PATCH] Fix Armor Stands dropping held items at different height than
+ vanilla
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
+index 8fef94ad9ac795311fb083a384ed98f1ea860f0a..fc3193a175f7a02160633cebe024ce1869d732a8 100644
+--- a/src/main/java/net/minecraft/server/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
+@@ -557,10 +557,11 @@ public class EntityArmorStand extends EntityLiving {
+         ItemStack itemstack;
+         int i;
+ 
++        this.forceDrops = true; // Paper - Drop held/worn items at same height as vanilla
+         for (i = 0; i < this.handItems.size(); ++i) {
+             itemstack = (ItemStack) this.handItems.get(i);
+             if (!itemstack.isEmpty()) {
+-                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)); // CraftBukkit - add to drops // Paper - mirror so we can destroy it later - though this call site was safe
++                this.dropItem(itemstack, 1.0f); // Paper - Drop held/worn items at same height as vanilla
+                 this.handItems.set(i, ItemStack.b);
+             }
+         }
+@@ -568,10 +569,11 @@ public class EntityArmorStand extends EntityLiving {
+         for (i = 0; i < this.armorItems.size(); ++i) {
+             itemstack = (ItemStack) this.armorItems.get(i);
+             if (!itemstack.isEmpty()) {
+-                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack)); // CraftBukkit - add to drops // Paper - mirror so we can destroy it later - though this call site was safe
++                this.dropItem(itemstack, 1.0f); // Paper - Drop held/worn items at same height as vanilla
+                 this.armorItems.set(i, ItemStack.b);
+             }
+         }
++        this.forceDrops = false; // Paper - Drop held/worn items at same height as vanilla
+         this.d(damagesource); // CraftBukkit - moved from above
+ 
+     }
