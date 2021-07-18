@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mariell Hoversholm <proximyst@proximyst.com>
+Date: Sun, 21 Jun 2020 16:19:26 +0200
+Subject: [PATCH] Allow fake players to deny chunk packets
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 4ed4ad6bc3b4ab6702ca500dc26e889dca6ed2d7..8c0980846dd098ffdd0cc20ba4ec3f05ed906283 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -90,6 +90,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public final int[] mobCounts = new int[ENUMCREATURETYPE_TOTAL_ENUMS]; // Paper
+     public final com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleMobDistanceMap;
+     // Paper end
++    public boolean forceAcceptChunkPackets = false; // Paper - deny fake players chunk packets by default
+ 
+     // CraftBukkit start
+     public String displayName;
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 8abf276a325cbc3a863fb89276526790c4de2692..9fad0957a7c2785c6a460ac5fc8fc3fc5b07bc9d 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -1462,6 +1462,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+     // Paper end - no-tick view distance
+ 
+     protected void sendChunk(EntityPlayer entityplayer, ChunkCoordIntPair chunkcoordintpair, Packet<?>[] apacket, boolean flag, boolean flag1) {
++        if (!entityplayer.forceAcceptChunkPackets && (entityplayer.playerConnection == null || entityplayer.playerConnection.getClass() != PlayerConnection.class)) return; // Paper - deny fake players chunk packets by default
+         if (entityplayer.world == this.world) {
+             if (flag1 && !flag) {
+                 PlayerChunk playerchunk = this.getVisibleChunk(chunkcoordintpair.pair());
