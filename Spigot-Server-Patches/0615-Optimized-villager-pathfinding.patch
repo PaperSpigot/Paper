@@ -1,0 +1,282 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lukas81298 <lukas81298@gmail.com>
+Date: Sat, 12 Dec 2020 16:09:32 +0100
+Subject: [PATCH] Optimized villager pathfinding
+
+The villager pathfinding searches for structures in villages a villager might navigate to (e.g. lecterns). By default, this scans all chunk sections in a horizontal range of 48 blocks. The vanilla implementation uses a very complex chain of streams performing lots of redundant computations. Furthermore, way more chunk sections are checked than actually necessary. This patch contains a rewritten version of this algorithm, which should be about 10 times faster and reduces the pressure on the garbage collector.
+Using the default configuration, the behavior should not differ from vanilla, however lowering "villageSearchRadius" in the "paper.yml" should boost the performance significantly with just a little impact on the gameplay.
+
+Furthermore, this patch adds the option to modify the "cooldown" between consecutive pathfinding calls to the same villager by modifying "villagerBehaviorMinCooldown" and
+"villagerBehaviorMaxCooldown". The cooldown will be a random number of ticks between these two values. The default config values do not change the vanilla behavior at all.
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index ae5ed3bd0b663092a4658b24cbd69d37b4e141cb..61fb44c2efa2771e05c9c0d4a833385194316a47 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -709,4 +709,14 @@ public class PaperWorldConfig {
+     private void fixCuringExploit() {
+         fixCuringZombieVillagerDiscountExploit = getBoolean("game-mechanics.fix-curing-zombie-villager-discount-exploit", fixCuringZombieVillagerDiscountExploit);
+     }
++
++    public int villageSearchRadius = 48;
++    public int villagerBehaviorMinCooldown = 0;
++    public int villagerBehaviorMaxCooldown = 20;
++    private void villagerBehaviorSettings() {
++        villageSearchRadius = getInt("villager-behavior.village-search-radius", villageSearchRadius);
++        villagerBehaviorMinCooldown = getInt("villager-behavior.cooldown-min", villagerBehaviorMinCooldown);
++        villagerBehaviorMaxCooldown = getInt("villager-behavior.cooldown-max", villagerBehaviorMaxCooldown);
++    }
++
+ }
+diff --git a/src/main/java/net/minecraft/server/BehaviorFindPosition.java b/src/main/java/net/minecraft/server/BehaviorFindPosition.java
+index 63a761ebef80d4af09cdc2682e496d78492c4a3a..26714efe22b85817b9a65bd5ff208bf93745ac13 100644
+--- a/src/main/java/net/minecraft/server/BehaviorFindPosition.java
++++ b/src/main/java/net/minecraft/server/BehaviorFindPosition.java
+@@ -48,7 +48,7 @@ public class BehaviorFindPosition extends Behavior<EntityCreature> {
+         if (this.d && entitycreature.isBaby()) {
+             return false;
+         } else if (this.f == 0L) {
+-            this.f = entitycreature.world.getTime() + (long) worldserver.random.nextInt(20);
++            this.f = entitycreature.world.getTime() + worldserver.paperConfig.villagerBehaviorMinCooldown + (long)worldserver.random.nextInt(worldserver.paperConfig.villagerBehaviorMaxCooldown - worldserver.paperConfig.villagerBehaviorMinCooldown); // Paper - Option to slow down villagers
+             return false;
+         } else {
+             return worldserver.getTime() >= this.f;
+@@ -56,7 +56,7 @@ public class BehaviorFindPosition extends Behavior<EntityCreature> {
+     }
+ 
+     protected void a(WorldServer worldserver, EntityCreature entitycreature, long i) {
+-        this.f = i + 20L + (long) worldserver.getRandom().nextInt(20);
++        this.f = i + worldserver.paperConfig.villagerBehaviorMinCooldown + (long)worldserver.random.nextInt(worldserver.paperConfig.villagerBehaviorMaxCooldown - worldserver.paperConfig.villagerBehaviorMinCooldown); // Paper - Option to slow down villagers
+         VillagePlace villageplace = worldserver.y();
+ 
+         this.g.long2ObjectEntrySet().removeIf((entry) -> {
+@@ -74,7 +74,8 @@ public class BehaviorFindPosition extends Behavior<EntityCreature> {
+                 return true;
+             }
+         };
+-        Set<BlockPosition> set = (Set) villageplace.b(this.b.c(), predicate, entitycreature.getChunkCoordinates(), 48, VillagePlace.Occupancy.HAS_SPACE).limit(5L).collect(Collectors.toSet());
++        //Set<BlockPosition> set = (Set) villageplace.b(this.b.c(), predicate, entitycreature.getChunkCoordinates(), 48, VillagePlace.Occupancy.HAS_SPACE).limit(5L).collect(Collectors.toSet());
++        Set<BlockPosition> set  = worldserver.paperConfig.villageSearchRadius == 0 ?  java.util.Collections.emptySet() : villageplace.getPOIs(predicate, this.b.c(), entitycreature.getChunkCoordinates(), worldserver.paperConfig.villageSearchRadius, 5, VillagePlace.Occupancy.HAS_SPACE); // Paper - faster implementation
+         PathEntity pathentity = entitycreature.getNavigation().a(set, this.b.d());
+ 
+         if (pathentity != null && pathentity.j()) {
+@@ -84,7 +85,7 @@ public class BehaviorFindPosition extends Behavior<EntityCreature> {
+                 villageplace.a(this.b.c(), (blockposition1) -> {
+                     return blockposition1.equals(blockposition);
+                 }, blockposition, 1);
+-                entitycreature.getBehaviorController().setMemory(this.c, (Object) GlobalPos.create(worldserver.getDimensionKey(), blockposition));
++                entitycreature.getBehaviorController().setMemory(this.c, GlobalPos.create(worldserver.getDimensionKey(), blockposition)); // Paper - decompile fix
+                 this.e.ifPresent((obyte) -> {
+                     worldserver.broadcastEntityEffect(entitycreature, obyte);
+                 });
+diff --git a/src/main/java/net/minecraft/server/RegionFileSection.java b/src/main/java/net/minecraft/server/RegionFileSection.java
+index 04256a95108b8182e8f808e856e0d2b62165e242..605bd1ff5a228c0ce076ec5d7ddb5ed274df2d9f 100644
+--- a/src/main/java/net/minecraft/server/RegionFileSection.java
++++ b/src/main/java/net/minecraft/server/RegionFileSection.java
+@@ -50,24 +50,33 @@ public class RegionFileSection<R> extends RegionFileCache implements AutoCloseab
+ 
+     }
+ 
++    @Nullable Optional<R> get(long index) { return c(index); } // Paper - OBFHELPER
+     @Nullable
+     protected Optional<R> c(long i) {
+         return (Optional) this.c.get(i);
+     }
+ 
++    // Paper start - skip redundant chunk section lookups
+     protected Optional<R> d(long i) {
+-        SectionPosition sectionposition = SectionPosition.a(i);
++        return getBySection(SectionPosition.fromLong(i), i);
++    }
++
++    protected Optional<R> getBySection(long sectionAsLong) {
++        return getBySection(SectionPosition.fromLong(sectionAsLong), sectionAsLong);
++    }
+ 
++    protected Optional<R> getBySection(SectionPosition sectionposition, long sectionAsLong) { // This method can be called if the sectionposition corresponding to this index is already known
++        // Paper end
+         if (this.b(sectionposition)) {
+             return Optional.empty();
+         } else {
+-            Optional<R> optional = this.c(i);
++            Optional<R> optional = this.c(sectionAsLong);
+ 
+             if (optional != null) {
+                 return optional;
+             } else {
+                 this.b(sectionposition.r());
+-                optional = this.c(i);
++                optional = this.c(sectionAsLong);
+                 if (optional == null) {
+                     throw (IllegalStateException) SystemUtils.c((Throwable) (new IllegalStateException()));
+                 } else {
+diff --git a/src/main/java/net/minecraft/server/SectionPosition.java b/src/main/java/net/minecraft/server/SectionPosition.java
+index f95925f1c5d091f1a129d0437bb6e175c6ac080f..c89a1514b434221e1226ee9a68aa4e36aac1d3de 100644
+--- a/src/main/java/net/minecraft/server/SectionPosition.java
++++ b/src/main/java/net/minecraft/server/SectionPosition.java
+@@ -11,6 +11,7 @@ public class SectionPosition extends BaseBlockPosition {
+         super(i, j, k);
+     }
+ 
++    public static SectionPosition fromChunkCoordinates(int x, int y, int z) { return a(x, y, z); } // Paper - OBFHELPER
+     public static SectionPosition a(int i, int j, int k) {
+         return new SectionPosition(i, j, k);
+     }
+@@ -27,6 +28,7 @@ public class SectionPosition extends BaseBlockPosition {
+         return new SectionPosition(a(MathHelper.floor(entity.locX())), a(MathHelper.floor(entity.locY())), a(MathHelper.floor(entity.locZ())));
+     }
+ 
++    public static SectionPosition fromLong(long l) { return a(l); } // Paper - OBFHELPER
+     public static SectionPosition a(long i) {
+         return new SectionPosition((int) (i >> 42), (int) (i << 44 >> 44), (int) (i << 22 >> 42)); // Paper
+     }
+@@ -173,6 +175,7 @@ public class SectionPosition extends BaseBlockPosition {
+         return (((long) i & 4194303L) << 42) | (((long) j & 1048575L)) | (((long) k & 4194303L) << 20); // Paper - Simplify to reduce instruction count
+     }
+ 
++    public long toLong() { return s(); } // Paper - OBFHELPER
+     public long s() {
+         return (((long) getX() & 4194303L) << 42) | (((long) getY() & 1048575L)) | (((long) getZ() & 4194303L) << 20); // Paper - Simplify to reduce instruction count
+     }
+diff --git a/src/main/java/net/minecraft/server/VillagePlace.java b/src/main/java/net/minecraft/server/VillagePlace.java
+index b926cebd053bef829517c9d9bbf1c609c23ca04a..e04dd5c8215cad6b21d0dd7acedb9b8cd19d54ed 100644
+--- a/src/main/java/net/minecraft/server/VillagePlace.java
++++ b/src/main/java/net/minecraft/server/VillagePlace.java
+@@ -36,6 +36,91 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+         this.world = world;
+         // Paper end - add world parameter
+     }
++    // Paper start - optimized poi search
++    // replacement for b(Predicate<VillagePlaceType>, Predicate<BlockPosition>, BlockPosition, int, VillagePlace.Occupancy) but already limits the results before sorting
++    public Set<BlockPosition> getPOIs(Predicate<BlockPosition> posFilter, Predicate<VillagePlaceType> typeFilter, BlockPosition blockposition, int range, int limit, VillagePlace.Occupancy occupancy) {
++        int chunkRange = Math.floorDiv(range, 16) + 2;
++        int squaredDistance = range * range;
++
++        // compute the indices of this chunk
++        int chunkX = blockposition.getX() >> 4;
++        int chunkZ = blockposition.getZ() >> 4;
++
++        int offset = 0;
++        boolean lastRound = false;
++
++
++        int sect = blockposition.getY() / 16;
++        int rangeSection = (int) Math.ceil(range / 16.0);
++        int minYSection = Math.max(0, sect - rangeSection); // compute the vertical chunk sections we need to consider
++        int maxYSection = Math.min(15, sect + rangeSection);
++
++        List<BlockPosition> results = new java.util.ArrayList<>();
++        while (offset <= chunkRange) {
++
++            if(offset == 0) {
++                processChunk(posFilter, typeFilter, blockposition, occupancy, results, squaredDistance, chunkX, chunkZ, minYSection, maxYSection);
++            } else {
++                for(int x = -offset; x <= offset; x++) {
++                    for(int z = -offset; z <= offset; z++) {
++                        if(x == offset || z == offset || x == -offset || z == -offset) {
++                            processChunk(posFilter, typeFilter, blockposition, occupancy, results, squaredDistance, chunkX + x, chunkZ + z, minYSection, maxYSection);
++                        }
++                    }
++                }
++            }
++
++            if(results.size() >= limit) { // once the desired number of places has been found, do one more iteration as there could be a place in it which is closer
++                if(lastRound) {
++                    break;
++                } else {
++                    lastRound = true;
++                }
++            }
++            offset++;
++        }
++
++        // we only need to sort if we got more candidates than the limit
++        if(results.size() > limit) {
++            results.sort(Comparator.<BlockPosition>comparingInt(b -> b.getX()).thenComparingInt(b -> b.getZ()));
++        }
++        // select the closest positions and add it to the resulting set
++        Set<BlockPosition> ret = new java.util.HashSet<>(limit);
++        for (BlockPosition result : results) {
++            if(limit <= 0) {
++                return ret;
++            }
++            ret.add(result);
++            limit--;
++        }
++        return ret;
++    }
++
++    private void processChunk(Predicate<BlockPosition> posFilter, Predicate<VillagePlaceType> typeFilter, BlockPosition blockposition, Occupancy occupancy, List<BlockPosition> results, int squaredDistances, int chunkX, int chunkZ, int minYSection, int maxYSection) {
++        for (int yIndex = minYSection; yIndex <= maxYSection; yIndex++) {
++            SectionPosition sectionPosition = SectionPosition.fromChunkCoordinates(chunkX, yIndex, chunkZ);
++            Optional<VillagePlaceSection> section = this.getBySection(sectionPosition, sectionPosition.toLong());
++            if(section.isPresent()) {
++                for (java.util.Map.Entry<VillagePlaceType, Set<VillagePlaceRecord>> recordEntry : section.get().getRecords()) {
++                    // check if this type should be matched
++                    if(!typeFilter.test(recordEntry.getKey())) {
++                        continue;
++                    }
++                    // iterate through all entries of this type and only consider items which match the occupancy predicate
++                    for (VillagePlaceRecord record : recordEntry.getValue()) {
++                        if(occupancy.getPredicate().test(record)) {
++                            BlockPosition pos = record.getPosition();
++                            // Checks if the candidate is in range
++                            if(pos.distanceSquared(blockposition) <= squaredDistances && posFilter.test(pos)) {
++                                results.add(pos);
++                            }
++                        }
++                    }
++                }
++            }
++        }
++    }
++    // Paper end
+ 
+     public void a(BlockPosition blockposition, VillagePlaceType villageplacetype) {
+         ((VillagePlaceSection) this.e(SectionPosition.a(blockposition).s())).a(blockposition, villageplacetype);
+@@ -309,6 +394,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+             this.d = predicate;
+         }
+ 
++        public Predicate<? super VillagePlaceRecord> getPredicate() { return a(); } // Paper - OBFHELPER
+         public Predicate<? super VillagePlaceRecord> a() {
+             return this.d;
+         }
+diff --git a/src/main/java/net/minecraft/server/VillagePlaceRecord.java b/src/main/java/net/minecraft/server/VillagePlaceRecord.java
+index 0b40c2f4dada7d8432e3f91e9cf206c2bda3b24b..05a4fb6353120eab6dbce36fb779330b060862f3 100644
+--- a/src/main/java/net/minecraft/server/VillagePlaceRecord.java
++++ b/src/main/java/net/minecraft/server/VillagePlaceRecord.java
+@@ -62,6 +62,7 @@ public class VillagePlaceRecord {
+         return this.c != this.b.b();
+     }
+ 
++    public BlockPosition getPosition() { return f(); } // Paper - OBFHELPER
+     public BlockPosition f() {
+         return this.a;
+     }
+diff --git a/src/main/java/net/minecraft/server/VillagePlaceSection.java b/src/main/java/net/minecraft/server/VillagePlaceSection.java
+index 77c66bc9952542d2444b402896a3d9f622ca2ff9..efb116d44afac2ba87836a62f3e30e0d9d10c068 100644
+--- a/src/main/java/net/minecraft/server/VillagePlaceSection.java
++++ b/src/main/java/net/minecraft/server/VillagePlaceSection.java
+@@ -28,7 +28,7 @@ public class VillagePlaceSection {
+     private boolean e;
+ 
+     public static Codec<VillagePlaceSection> a(Runnable runnable) {
+-        Codec codec = RecordCodecBuilder.create((instance) -> {
++        Codec codec = RecordCodecBuilder.<VillagePlaceSection>create((instance) -> { // Paper - decompile fix
+             return instance.group(RecordCodecBuilder.point(runnable), Codec.BOOL.optionalFieldOf("Valid", false).forGetter((villageplacesection) -> {
+                 return villageplacesection.e;
+             }), VillagePlaceRecord.a(runnable).listOf().fieldOf("Records").forGetter((villageplacesection) -> {
+@@ -55,6 +55,12 @@ public class VillagePlaceSection {
+         list.forEach(this::a);
+     }
+ 
++    // Paper - start
++    public Set<Map.Entry<VillagePlaceType, Set<VillagePlaceRecord>>> getRecords() {
++        return this.c.entrySet();
++    }
++    // Paper - end
++
+     public Stream<VillagePlaceRecord> a(Predicate<VillagePlaceType> predicate, VillagePlace.Occupancy villageplace_occupancy) {
+         return this.c.entrySet().stream().filter((entry) -> {
+             return predicate.test(entry.getKey());
