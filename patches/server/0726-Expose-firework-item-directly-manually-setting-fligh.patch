@@ -1,0 +1,107 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Tue, 22 Jun 2021 23:41:11 -0400
+Subject: [PATCH] Expose firework item directly + manually setting flight ticks
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftFirework.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftFirework.java
+index be86114eac3975b82ca74d4d6ed3f0402a642e8a..3934a15dec286aa7d2130c8e8a53380a8e40590f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftFirework.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftFirework.java
+@@ -14,11 +14,12 @@ import org.bukkit.inventory.meta.FireworkMeta;
+ public class CraftFirework extends CraftProjectile implements Firework {
+ 
+     private final Random random = new Random();
+-    private final CraftItemStack item;
++    //private final CraftItemStack item; Paper - Expose firework item directly
+ 
+     public CraftFirework(CraftServer server, FireworkRocketEntity entity) {
+         super(server, entity);
+ 
++        /* Paper Start - Expose firework item directly
+         ItemStack item = this.getHandle().getEntityData().get(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
+ 
+         if (item.isEmpty()) {
+@@ -32,6 +33,7 @@ public class CraftFirework extends CraftProjectile implements Firework {
+         if (this.item.getType() != Material.FIREWORK_ROCKET) {
+             this.item.setType(Material.FIREWORK_ROCKET);
+         }
++        */ // Paper End - Expose firework item directly
+     }
+ 
+     @Override
+@@ -51,17 +53,28 @@ public class CraftFirework extends CraftProjectile implements Firework {
+ 
+     @Override
+     public FireworkMeta getFireworkMeta() {
+-        return (FireworkMeta) this.item.getItemMeta();
++        // Paper Start - Expose firework item directly
++        org.bukkit.inventory.ItemStack itemStack = getItem();
++        if (itemStack.getType() != Material.FIREWORK_ROCKET) {
++            return (FireworkMeta) org.bukkit.craftbukkit.inventory.CraftItemFactory.instance().getItemMeta(Material.FIREWORK_ROCKET); // Return normal meta
++        }
++        return (FireworkMeta) itemStack.getItemMeta();
++        // Paper End - Expose firework item directly
+     }
+ 
+     @Override
+     public void setFireworkMeta(FireworkMeta meta) {
+-        this.item.setItemMeta(meta);
+-
++        // Paper Start - Expose firework item directly
++        org.bukkit.inventory.ItemStack itemStack = getItem();
++        if (itemStack.getType() != Material.FIREWORK_ROCKET) {
++            itemStack.setType(Material.FIREWORK_ROCKET);
++        }
++        itemStack.setItemMeta(meta);
++        // Paper End - Expose firework item directly
+         // Copied from EntityFireworks constructor, update firework lifetime/power
+         this.getHandle().lifetime = 10 * (1 + meta.getPower()) + this.random.nextInt(6) + this.random.nextInt(7);
+ 
+-        this.getHandle().getEntityData().markDirty(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
++        setItem(itemStack); // Paper - Expose firework item directly
+     }
+ 
+     @Override
+@@ -91,4 +104,41 @@ public class CraftFirework extends CraftProjectile implements Firework {
+         return boostedEntity != null ? (org.bukkit.entity.LivingEntity) boostedEntity.getBukkitEntity() : null;
+     }
+     // Paper end
++    // Paper start - Expose firework item directly + manually setting flight
++    @Override
++    public org.bukkit.inventory.ItemStack getItem() {
++        ItemStack itemStack = getHandle().getEntityData().get(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
++
++        if (itemStack.isEmpty()) {
++            return new org.bukkit.inventory.ItemStack(Material.FIREWORK_ROCKET);
++        } else {
++            return CraftItemStack.asBukkitCopy(itemStack);
++        }
++    }
++
++    @Override
++    public void setItem(org.bukkit.inventory.ItemStack itemStack) {
++        getHandle().getEntityData().set(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM, itemStack == null ? ItemStack.EMPTY : CraftItemStack.asNMSCopy(itemStack));
++    }
++
++    @Override
++    public int getTicksFlown() {
++        return getHandle().life;
++    }
++
++    @Override
++    public void setTicksFlown(int ticks) {
++        getHandle().life = ticks;
++    }
++
++    @Override
++    public int getTicksToDetonate() {
++        return getHandle().lifetime;
++    }
++
++    @Override
++    public void setTicksToDetonate(int ticks) {
++        getHandle().lifetime = ticks;
++    }
++    // Paper end - Expose firework item directly + manually setting flight
+ }
