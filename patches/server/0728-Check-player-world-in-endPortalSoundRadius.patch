@@ -6,7 +6,7 @@ Subject: [PATCH] Check player world in endPortalSoundRadius
 Fixes Spigot's endPortalSoundRadius not checking player worlds
 
 diff --git a/src/main/java/net/minecraft/world/item/EnderEyeItem.java b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
-index 7ccfe737fdf7f07b731ea0ff82e897564350705c..42e8f1c269bfbd4f6205ef72ab6026c662551b12 100644
+index 7ccfe737fdf7f07b731ea0ff82e897564350705c..3baf07e7c533ec6f2c3b7fd716f0da2a765e3f00 100644
 --- a/src/main/java/net/minecraft/world/item/EnderEyeItem.java
 +++ b/src/main/java/net/minecraft/world/item/EnderEyeItem.java
 @@ -66,7 +66,7 @@ public class EnderEyeItem extends Item {
@@ -14,7 +14,7 @@ index 7ccfe737fdf7f07b731ea0ff82e897564350705c..42e8f1c269bfbd4f6205ef72ab6026c6
                          double deltaZ = soundPos.getZ() - player.getZ();
                          double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
 -                        if (world.spigotConfig.endPortalSoundRadius > 0 && distanceSquared > world.spigotConfig.endPortalSoundRadius * world.spigotConfig.endPortalSoundRadius) continue; // Spigot
-+                        if (world.spigotConfig.endPortalSoundRadius > 0 && (distanceSquared > world.spigotConfig.endPortalSoundRadius * world.spigotConfig.endPortalSoundRadius || !player.getLevel().uuid.equals(world.getMinecraftWorld().uuid))) continue; // Spigot // Paper - ensure recipient is in same world as portal
++                        if (world.spigotConfig.endPortalSoundRadius > 0 && (distanceSquared > world.spigotConfig.endPortalSoundRadius * world.spigotConfig.endPortalSoundRadius || !player.getLevel().getWorld().equals(world.getWorld()))) continue; // Spigot // Paper - ensure recipient is in same world as portal
                          if (distanceSquared > viewDistance * viewDistance) {
                              double deltaLength = Math.sqrt(distanceSquared);
                              double relativeX = player.getX() + (deltaX / deltaLength) * viewDistance;
