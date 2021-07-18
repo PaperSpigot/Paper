@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: VADemon <vad@syping.de>
+Date: Sun, 27 Dec 2020 08:56:22 -0500
+Subject: [PATCH] Add HalloweenChecker to optimize halloween-related mobs
+
+Affected mobs: Zombie, Bats, SkeletonAbstract
+By default MC checks on every spawn attempt whether it's "halloween time", it's probably not. This patch keeps track of the next upcoming date to schedule the toggle at the right time, using logarithmic back-off.
+Both Halloween-Season and -Day checks are reduced to boolean comparisons.
+
+Supersedes #4939 (only included Bats).
+
+diff --git a/src/main/java/com/destroystokyo/paper/entity/HalloweenChecker.java b/src/main/java/com/destroystokyo/paper/entity/HalloweenChecker.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..52fb46f27cbc2a830a17af84561a9aace6eb0635
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/entity/HalloweenChecker.java
+@@ -0,0 +1,107 @@
++package com.destroystokyo.paper.entity;
++
++import java.time.LocalDate;
++import java.time.LocalDateTime;
++import java.time.temporal.ChronoUnit;
++import net.minecraft.server.MinecraftServer;
++
++public class HalloweenChecker {
++    private static boolean isHalloweenSeason = false;
++    private static boolean isHalloweenDay = false;
++    private static int nextCheckTick = 0;
++    
++    private static LocalDate nextThreshold = LocalDate.now();
++    
++    public static boolean isHalloweenSeason() {
++        if (MinecraftServer.currentTick > nextCheckTick) {
++            LocalDateTime timeNow = LocalDateTime.now();
++            
++            if (!timeNow.isBefore(nextThreshold.atTime(0,0,0))) {
++                StatusTuple result = computeNextThreshold(timeNow.toLocalDate());
++                nextThreshold = result.nextThreshold;
++                result.currentStatus.setGlobalValues();
++            }
++            // I wrote logic assuming LocalDate would compute using 00:00:00 for time
++            int s = (int)timeNow.until(nextThreshold.atTime(0,0,0), ChronoUnit.SECONDS);
++            
++            // add half of the duration, in ticks
++            nextCheckTick += s * (MinecraftServer.TPS/2);
++        }
++        return isHalloweenSeason;
++    }
++    
++    public static boolean isHalloweenDay() {
++        return isHalloweenDay;
++    }
++    
++    public enum SEASON_DATE {
++        SEASON_START(10, 20, true, false),
++        HALLOWEEN_DAY(10, 31, true, true),
++        HALLOWEEN_DAY_END(11, 1, true, false),
++        SEASON_END(10, 4, false, false);
++        
++        private final int month;
++        private final int day;
++        private final boolean setSeasonTo;
++        private final boolean setHalloweenDayTo;
++        
++        public int getMonth() {
++            return month;
++        }
++        
++        public int getDay() {
++            return day;
++        }
++        
++        public boolean isSeason() {
++            return setSeasonTo;
++        }
++    
++        public boolean isHalloween() {
++            return setHalloweenDayTo;
++        }
++    
++        SEASON_DATE(int month, int day, boolean setSeasonTo, boolean setHalloweenDayTo) {
++            this.month = month;
++            this.day = day;
++            this.setSeasonTo = setSeasonTo;
++            this.setHalloweenDayTo = setHalloweenDayTo;
++        }
++        void setGlobalValues() {
++            isHalloweenSeason = this.setSeasonTo;
++            isHalloweenDay = this.setHalloweenDayTo;
++        }
++        LocalDate getDateStart(int year) {
++            return LocalDate.of(year, this.getMonth(), this.getDay());
++        }
++    }
++    
++    private static class StatusTuple {
++        public SEASON_DATE currentStatus;
++        public LocalDate nextThreshold;
++    
++        public StatusTuple(SEASON_DATE currentStatus, LocalDate nextThreshold) {
++            this.currentStatus = currentStatus;
++            this.nextThreshold = nextThreshold;
++        }
++    }
++    
++    public static StatusTuple computeNextThreshold(LocalDate currentDate) {
++        SEASON_DATE lastN = SEASON_DATE.SEASON_END;
++        
++        for (SEASON_DATE n : SEASON_DATE.values()) {
++            LocalDate nextDate = LocalDate.of(currentDate.getYear(), n.getMonth(), n.getDay());
++            
++            // the first init date is always .now() - the value gets set, or updated
++            if (nextThreshold.isBefore(nextDate)) return new StatusTuple(lastN, nextDate);
++            // if fell through, keep checking later dates
++            lastN = n;
++        }
++        // We're past the Halloween season
++        return new StatusTuple(
++            SEASON_DATE.SEASON_END,
++            LocalDate.of(currentDate.getYear()+1,
++                SEASON_DATE.SEASON_START.getMonth(), SEASON_DATE.SEASON_START.getDay())
++        );
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/EntityBat.java b/src/main/java/net/minecraft/server/EntityBat.java
+index 0a59e02d762a096cb3de62e0f8105cc5a5fab8d4..4afe8f4678c18d535c5846ef130ecf6c0661cfbc 100644
+--- a/src/main/java/net/minecraft/server/EntityBat.java
++++ b/src/main/java/net/minecraft/server/EntityBat.java
+@@ -208,7 +208,6 @@ public class EntityBat extends EntityAmbient {
+         if (blockposition.getY() >= generatoraccess.getSeaLevel()) {
+             return false;
+         } else {
+-            int i = generatoraccess.getLightLevel(blockposition);
+             byte b0 = 4;
+ 
+             if (eJ()) {
+@@ -216,17 +215,14 @@ public class EntityBat extends EntityAmbient {
+             } else if (random.nextBoolean()) {
+                 return false;
+             }
+-
++            int i = generatoraccess.getLightLevel(blockposition); // Paper - moved getLightLevel() down here
+             return i > random.nextInt(b0) ? false : a(entitytypes, generatoraccess, enummobspawn, blockposition, random);
+         }
+     }
+ 
++    
+     private static boolean eJ() {
+-        LocalDate localdate = LocalDate.now();
+-        int i = localdate.get(ChronoField.DAY_OF_MONTH);
+-        int j = localdate.get(ChronoField.MONTH_OF_YEAR);
+-
+-        return j == 10 && i >= 20 || j == 11 && i <= 3;
++        return com.destroystokyo.paper.entity.HalloweenChecker.isHalloweenSeason(); // Paper
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java b/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
+index ced89af70ca791bfe42c4e2d21604997a0cf3e0f..ffba0b31811a658b1b3ae4397de8dc495367be67 100644
+--- a/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
++++ b/src/main/java/net/minecraft/server/EntitySkeletonAbstract.java
+@@ -109,11 +109,7 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
+         this.eL();
+         this.setCanPickupLoot(this.random.nextFloat() < 0.55F * difficultydamagescaler.d());
+         if (this.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
+-            LocalDate localdate = LocalDate.now();
+-            int i = localdate.get(ChronoField.DAY_OF_MONTH);
+-            int j = localdate.get(ChronoField.MONTH_OF_YEAR);
+-
+-            if (j == 10 && i == 31 && this.random.nextFloat() < 0.25F) {
++            if (com.destroystokyo.paper.entity.HalloweenChecker.isHalloweenDay() && this.random.nextFloat() < 0.25F) { // Paper
+                 this.setSlot(EnumItemSlot.HEAD, new ItemStack(this.random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+                 this.dropChanceArmor[EnumItemSlot.HEAD.b()] = 0.0F;
+             }
+diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
+index e3606722cb1b3f6a11d34e1cdef7210280dba677..3745916f3e18fdf3e487e9ce6eda65b872c36553 100644
+--- a/src/main/java/net/minecraft/server/EntityZombie.java
++++ b/src/main/java/net/minecraft/server/EntityZombie.java
+@@ -469,11 +469,7 @@ public class EntityZombie extends EntityMonster {
+         }
+ 
+         if (this.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
+-            LocalDate localdate = LocalDate.now();
+-            int i = localdate.get(ChronoField.DAY_OF_MONTH);
+-            int j = localdate.get(ChronoField.MONTH_OF_YEAR);
+-
+-            if (j == 10 && i == 31 && this.random.nextFloat() < 0.25F) {
++            if (com.destroystokyo.paper.entity.HalloweenChecker.isHalloweenDay() && this.random.nextFloat() < 0.25F) { // Paper
+                 this.setSlot(EnumItemSlot.HEAD, new ItemStack(this.random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+                 this.dropChanceArmor[EnumItemSlot.HEAD.b()] = 0.0F;
+             }
