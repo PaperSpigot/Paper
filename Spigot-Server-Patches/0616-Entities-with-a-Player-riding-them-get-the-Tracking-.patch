@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aurora <aurora@relanet.eu>
+Date: Tue, 15 Dec 2020 13:26:14 +0100
+Subject: [PATCH] Entities with a Player riding them get the Tracking Range of
+ Players
+
+
+diff --git a/src/main/java/org/spigotmc/TrackingRange.java b/src/main/java/org/spigotmc/TrackingRange.java
+index 5cfe16ef8c5a7b4405efa58b8fc532e14353f88d..e5cd46778b8363e78614a07a5930643e4f362811 100644
+--- a/src/main/java/org/spigotmc/TrackingRange.java
++++ b/src/main/java/org/spigotmc/TrackingRange.java
+@@ -2,6 +2,7 @@ package org.spigotmc;
+ 
+ import net.minecraft.server.Entity;
+ import net.minecraft.server.EntityEnderDragon; // Paper
++import net.minecraft.server.EntityHorseAbstract;
+ import net.minecraft.server.WorldServer; // Paper
+ import net.minecraft.server.EntityExperienceOrb;
+ import net.minecraft.server.EntityGhast;
+@@ -56,6 +57,7 @@ public class TrackingRange
+     public static TrackingRangeType getTrackingRangeType(Entity entity)
+     {
+         if (entity instanceof EntityEnderDragon) return TrackingRangeType.ENDERDRAGON; // Paper - enderdragon is exempt
++        if ( entity instanceof EntityHorseAbstract && entity.hasSinglePlayerPassenger()) return TrackingRangeType.PLAYER; // Paper - horses get the player tracking range when a player rides them
+         if ( entity instanceof EntityPlayer )
+         {
+             return TrackingRangeType.PLAYER;
