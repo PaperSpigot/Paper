@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 6 Dec 2020 18:06:50 -0800
+Subject: [PATCH] Spawner API - NerfState
+
+
+diff --git a/src/main/java/org/bukkit/block/CreatureSpawner.java b/src/main/java/org/bukkit/block/CreatureSpawner.java
+index 5bbae759ce39d42886994e500fd9454ec328f804..e8621e1656d8390a3a51430d8be314e64c2cb170 100644
+--- a/src/main/java/org/bukkit/block/CreatureSpawner.java
++++ b/src/main/java/org/bukkit/block/CreatureSpawner.java
+@@ -224,5 +224,35 @@ public interface CreatureSpawner extends TileState {
+      * @see #setSpawnedType(EntityType)
+      */
+     void setSpawnedItem(@NotNull org.bukkit.inventory.ItemStack itemStack);
++
++    /**
++     * Gets the nerf state of this mob spawner.
++     *
++     * @return the nerf state
++     */
++    @NotNull
++    NerfStatus getNerfStatus();
++
++    /**
++     * Sets the nerf state of this mob spawner.
++     *
++     * @param nerfStatus the new nerf state
++     */
++    void setNerfStatus(@NotNull NerfStatus nerfStatus);
++
++    enum NerfStatus {
++        /**
++         * Spawner is nerfing mobs spawned from it.
++         */
++        ENABLED,
++        /**
++         * Spawner is <b>not</b> nerfing mobs spawned from it.
++         */
++        DISABLED,
++        /**
++         * Spawner is using whatever is configured in the spigot.yml.
++         */
++        DEFAULT,
++    }
+     // Paper end
+ }
