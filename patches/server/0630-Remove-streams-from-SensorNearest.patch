@@ -63,6 +63,34 @@ index 66c90013e52170a657b1a5dbdb99748a19fe55e8..ffd83db0a419ab589e89feeddd3fb038
      }
  
      @Override
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestVisibleLivingEntitySensor.java b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestVisibleLivingEntitySensor.java
+index 52bf24959de40fe52a721b8ffa3124cc8db63a0d..e833a0bb85cb7236bc20a78826d789623d82edb9 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/NearestVisibleLivingEntitySensor.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/NearestVisibleLivingEntitySensor.java
+@@ -25,11 +25,18 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
+     }
+ 
+     private Optional<LivingEntity> getNearestEntity(LivingEntity entity) {
+-        return this.getVisibleEntities(entity).flatMap((list) -> {
+-            return list.stream().filter((livingEntity2) -> {
+-                return this.isMatchingEntity(entity, livingEntity2);
+-            }).min(Comparator.comparingDouble(entity::distanceToSqr));
+-        });
++        Optional<List<LivingEntity>> visibleEntities = this.getVisibleEntities(entity); // Paper Start - Remove Streams
++        if (visibleEntities.isEmpty()) {
++            return Optional.empty();
++        } else {
++            List<LivingEntity> visibleEntityList = visibleEntities.get();
++            visibleEntityList.removeIf((visibleEntity) -> !this.isMatchingEntity(entity, visibleEntity));
++            if (visibleEntityList.isEmpty()) {
++                return Optional.empty();
++            }
++
++            return Optional.of(java.util.Collections.min(visibleEntityList, Comparator.comparingDouble(entity::distanceToSqr)));
++        } // Paper end - Remove Streams
+     }
+ 
+     protected Optional<List<LivingEntity>> getVisibleEntities(LivingEntity entity) {
 diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/PlayerSensor.java b/src/main/java/net/minecraft/world/entity/ai/sensing/PlayerSensor.java
 index b51574548b370f8a86d27835e9888ce1cd1d18be..457ea75137b8b02dc32bf1769ae8d57c470da470 100644
 --- a/src/main/java/net/minecraft/world/entity/ai/sensing/PlayerSensor.java

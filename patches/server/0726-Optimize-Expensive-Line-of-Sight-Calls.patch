@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Sat, 3 Jul 2021 00:38:44 -0400
+Subject: [PATCH] Optimize Expensive Line of Sight Calls
+
+Lots of entities nearby could cause the has light of sight calls to be very expensive due to the list contains check. Additionally, Axolotls were doing an expensive raycast check BEFORE checking if they could actually attack this entity.
+
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/AxolotlAttackablesSensor.java b/src/main/java/net/minecraft/world/entity/ai/sensing/AxolotlAttackablesSensor.java
+index 4433c567cce113dc7cd53b517beb94f63ed2606c..906f8d9c96b3e4498ae46d6cb40319a2999dc556 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/AxolotlAttackablesSensor.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/AxolotlAttackablesSensor.java
+@@ -9,11 +9,12 @@ public class AxolotlAttackablesSensor extends NearestVisibleLivingEntitySensor {
+ 
+     @Override
+     protected boolean isMatchingEntity(LivingEntity entity, LivingEntity target) {
+-        if (Sensor.isEntityAttackable(entity, target) && (this.isHostileTarget(target) || this.isHuntTarget(entity, target))) {
+-            return this.isClose(entity, target) && target.isInWaterOrBubble();
+-        } else {
+-            return false;
+-        }
++        // Paper Start - Favor less expensive calls to prevent expensive isEntityAttackable raycast
++        return this.isClose(entity, target)
++            && (this.isHostileTarget(target) || this.isHuntTarget(entity, target))
++            && target.isInWaterOrBubble()
++            && Sensor.isEntityAttackable(entity, target);
++        // Paper end
+     }
+ 
+     private boolean isHuntTarget(LivingEntity axolotl, LivingEntity target) {
+diff --git a/src/main/java/net/minecraft/world/entity/ai/sensing/Sensing.java b/src/main/java/net/minecraft/world/entity/ai/sensing/Sensing.java
+index 9b70c76ac64e61af8c1c2c2d038aa38a1a26d7d2..0c75821252cd58225598351721a0acbaf7f090b0 100644
+--- a/src/main/java/net/minecraft/world/entity/ai/sensing/Sensing.java
++++ b/src/main/java/net/minecraft/world/entity/ai/sensing/Sensing.java
+@@ -7,8 +7,8 @@ import net.minecraft.world.entity.Mob;
+ 
+ public class Sensing {
+     private final Mob mob;
+-    private final List<Entity> seen = Lists.newArrayList();
+-    private final List<Entity> unseen = Lists.newArrayList();
++    private final java.util.Set<Entity> seen = com.google.common.collect.Sets.newIdentityHashSet(); // Paper - Use a map for less expensive contain
++    private final java.util.Set<Entity> unseen = com.google.common.collect.Sets.newIdentityHashSet(); // Paper - Use a map for less expensive contain
+ 
+     public Sensing(Mob owner) {
+         this.mob = owner;
