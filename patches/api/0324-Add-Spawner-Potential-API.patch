@@ -1,0 +1,377 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: thamid-gamer <60953955+thamid-gamer@users.noreply.github.com>
+Date: Sat, 17 Jul 2021 20:31:04 -0400
+Subject: [PATCH] Add Spawner Potential API
+
+
+diff --git a/src/main/java/io/papermc/paper/world/Spawner.java b/src/main/java/io/papermc/paper/world/Spawner.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4cf7b51f953ed75cf2d4131a9bc5fc501daf649f
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/world/Spawner.java
+@@ -0,0 +1,316 @@
++package io.papermc.paper.world;
++
++import org.bukkit.entity.EntityType;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.List;
++
++/**
++ * Represents a spawner.
++ * This includes {@link org.bukkit.block.CreatureSpawner}s and {@link org.bukkit.entity.minecart.SpawnerMinecart}s.
++ */
++public interface Spawner {
++
++
++    /**
++     * Get the spawner's entity type.
++     *
++     * @return The entity type.
++     */
++    @NotNull
++    EntityType getSpawnedType();
++
++    /**
++     * Set the spawner's entity type.
++     * This will clear its spawn potential list.
++     *
++     * @param entityType The creature type.
++     */
++    void setSpawnedType(@NotNull EntityType entityType);
++
++    /**
++     * Get the spawner's delay.
++     * <br>
++     * This is the delay, in ticks, until the spawner will spawn its next mob.
++     *
++     * @return The delay.
++     */
++    int getDelay();
++
++    /**
++     * Set the spawner's delay.
++     * <br>
++     * If set to -1, the spawn delay will be reset to a random value between
++     * {@link #getMinSpawnDelay} and {@link #getMaxSpawnDelay()}.
++     *
++     * @param delay The delay.
++     */
++    void setDelay(int delay);
++
++    /**
++     * The minimum spawn delay amount (in ticks).
++     * <br>
++     * This value is used when the spawner resets its delay (for any reason).
++     * It will choose a random number between {@link #getMinSpawnDelay()}
++     * and {@link #getMaxSpawnDelay()} for its next {@link #getDelay()}.
++     *
++     * Default value is 200 ticks.
++     *
++     * @return the minimum spawn delay amount
++     */
++    int getMinSpawnDelay();
++
++    /**
++     * Set the minimum spawn delay amount (in ticks).
++     *
++     * @param delay the minimum spawn delay amount
++     * @see #getMinSpawnDelay()
++     */
++    void setMinSpawnDelay(int delay);
++
++    /**
++     * The maximum spawn delay amount (in ticks).
++     * <br>
++     * This value is used when the spawner resets its delay (for any reason).
++     * It will choose a random number between {@link #getMinSpawnDelay()}
++     * and {@link #getMaxSpawnDelay()} for its next {@link #getDelay()}.
++     * <br>
++     * This value <b>must</b> be greater than 0 and less than or equal to
++     * {@link #getMaxSpawnDelay()}.
++     *
++     * Default value is 800 ticks.
++     *
++     * @return the maximum spawn delay amount
++     */
++    int getMaxSpawnDelay();
++
++    /**
++     * Set the maximum spawn delay amount (in ticks).
++     * <br>
++     * This value <b>must</b> be greater than 0, as well as greater than or
++     * equal to {@link #getMinSpawnDelay()}
++     *
++     * @param delay the new maximum spawn delay amount
++     * @see #getMaxSpawnDelay()
++     */
++    void setMaxSpawnDelay(int delay);
++
++    /**
++     * Get how many mobs attempt to spawn.
++     * <br>
++     * Default value is 4.
++     *
++     * @return the current spawn count
++     */
++    int getSpawnCount();
++
++    /**
++     * Set how many mobs attempt to spawn.
++     *
++     * @param count the new spawn count
++     */
++    void setSpawnCount(int count);
++
++    /**
++     * Set the new maximum amount of similar entities that are allowed to be
++     * within spawning range of this spawner.
++     * <br>
++     * If more than the maximum number of entities are within range, the spawner
++     * will not spawn and try again with a new {@link #getDelay()}.
++     * <br>
++     * Default value is 16.
++     *
++     * @return the maximum number of nearby, similar, entities
++     */
++    int getMaxNearbyEntities();
++
++    /**
++     * Set the maximum number of similar entities that are allowed to be within
++     * spawning range of this spawner.
++     * <br>
++     * Similar entities are entities that are of the same {@link EntityType}
++     *
++     * @param maxNearbyEntities the maximum number of nearby, similar, entities
++     */
++    void setMaxNearbyEntities(int maxNearbyEntities);
++
++    /**
++     * Get the maximum distance(squared) a player can be in order for this
++     * spawner to be active.
++     * <br>
++     * If this value is less than or equal to 0, this spawner is always active
++     * (given that there are players online).
++     * <br>
++     * Default value is 16.
++     *
++     * @return the maximum distance(squared) a player can be in order for this
++     * spawner to be active.
++     */
++    int getRequiredPlayerRange();
++
++    /**
++     * Set the maximum distance (squared) a player can be in order for this
++     * spawner to be active.
++     * <br>
++     * Setting this value to less than or equal to 0 will make this spawner
++     * always active (given that there are players online).
++     *
++     * @param requiredPlayerRange the maximum distance (squared) a player can be
++     * in order for this spawner to be active.
++     */
++    void setRequiredPlayerRange(int requiredPlayerRange);
++
++    /**
++     * Get the radius around which the spawner will attempt to spawn mobs in.
++     * <br>
++     * This area is square, includes the block the spawner is in, and is
++     * centered on the spawner's x,z coordinates - not the spawner itself.
++     * <br>
++     * It is 2 blocks high, centered on the spawner's y-coordinate (its bottom);
++     * thus allowing mobs to spawn as high as its top surface and as low
++     * as 1 block below its bottom surface.
++     * <br>
++     * Default value is 4.
++     *
++     * @return the spawn range
++     */
++    int getSpawnRange();
++
++    /**
++     * Set the new spawn range.
++     * <br>
++     *
++     * @param range the new spawn range
++     * @see #getSpawnRange()
++     */
++    void setSpawnRange(int range);
++
++    /**
++     * Check if spawner is activated (a player is close enough)
++     *
++     * @return True if a player is close enough to activate it
++     */
++    boolean isActivated();
++
++    /**
++     * Resets the spawn delay timer within the min/max range
++     */
++    void resetTimer();
++
++    /**
++     * Gets the potential spawns for this spawner.
++     *
++     * @return The potential spawns
++     */
++    @NotNull
++    List<SpawnerEntry> getSpawnPotentials();
++
++    /**
++     * Sets the potential spawns for this spawner.
++     * The sum of its weights <b>must not</b> exceed 2147483647.
++     *
++     * @param spawnPotentials The potential spawns
++     */
++    void setSpawnPotentials(@NotNull List<SpawnerEntry> spawnPotentials);
++
++    /**
++     * A basic spawner entry
++     */
++    class SpawnerEntry {
++
++        private final EntityType entityType;
++        private final int weight;
++
++        /**
++         * Creates a basic spawner entry based on an {@link EntityType} and a weight of 1
++         *
++         * @param entityType The {@link EntityType} for this entry
++         */
++        public SpawnerEntry(@NotNull EntityType entityType) {
++            this(entityType, 1);
++        }
++
++        /**
++         * Creates a basic spawner entry with a weight that determines the chance that this entry will be chosen
++         *
++         * @param entityType The {@link EntityType} for this entry
++         * @param weight The weighting for this entry
++         */
++        public SpawnerEntry(@NotNull EntityType entityType, int weight) {
++            this.entityType = entityType;
++            this.weight = weight;
++        }
++
++        /**
++         * Gets the {@link EntityType} associated with this entry
++         *
++         * @return The {@link EntityType}
++         */
++        @NotNull
++        public EntityType getEntityType() {
++            return entityType;
++        }
++
++        /**
++         * Gets the weighting for this entry
++         *
++         * @return The weight
++         */
++        public int getWeight() {
++            return weight;
++        }
++    }
++
++    /**
++     * A spawner entry of an {@link ItemStack}
++     */
++    class ItemStackEntry extends SpawnerEntry {
++
++        private final ItemStack itemStack;
++
++        /**
++         * Creates an item stack entry with a weight of 1
++         *
++         * @param itemStack The item associated with this entry
++         */
++        public ItemStackEntry(@NotNull ItemStack itemStack) {
++            this(itemStack, 1);
++        }
++
++        /**
++         * Creates an item stack entry with a weight that determines the chance that this entry will be chosen
++         *
++         * @param itemStack The item associated with this entry
++         * @param weight The weighting for this entry
++         */
++        public ItemStackEntry(@NotNull ItemStack itemStack, int weight) {
++            super(EntityType.DROPPED_ITEM, weight);
++            this.itemStack = itemStack;
++        }
++
++        /**
++         * Gets the {@link ItemStack} associated with this entry
++         *
++         * @return The stack
++         */
++        @NotNull
++        public ItemStack getItemStack() {
++            return this.itemStack;
++        }
++    }
++
++    /**
++     * Sets the {@link EntityType} to {@link EntityType#DROPPED_ITEM} and sets the data to the given
++     * {@link ItemStack ItemStack}.
++     * <p>
++     * {@link #setSpawnCount(int)} does not dictate the amount of items in the stack spawned, but rather how many
++     * stacks should be spawned.
++     * This will clear its spawn potential list.
++     *
++     * @param itemStack The item to spawn. Must not {@link org.bukkit.Material#isAir be air}.
++     * @see #setSpawnedType(EntityType)
++     */
++    void setSpawnedItem(@NotNull ItemStack itemStack);
++
++}
+diff --git a/src/main/java/org/bukkit/block/CreatureSpawner.java b/src/main/java/org/bukkit/block/CreatureSpawner.java
+index 5bbae759ce39d42886994e500fd9454ec328f804..6492ddd41782bc2faa1e4a6e190c2a3d0806163d 100644
+--- a/src/main/java/org/bukkit/block/CreatureSpawner.java
++++ b/src/main/java/org/bukkit/block/CreatureSpawner.java
+@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a captured state of a creature spawner.
+  */
+-public interface CreatureSpawner extends TileState {
++public interface CreatureSpawner extends TileState, io.papermc.paper.world.Spawner { // Paper - extend Spawner
+ 
+     /**
+      * Get the spawner's creature type.
+@@ -16,8 +16,10 @@ public interface CreatureSpawner extends TileState {
+     @NotNull
+     public EntityType getSpawnedType();
+ 
++    // Paper - update javadoc
+     /**
+      * Set the spawner's creature type.
++     * This will clear its spawn potential list.
+      *
+      * @param creatureType The creature type.
+      */
+@@ -219,6 +221,7 @@ public interface CreatureSpawner extends TileState {
+      * <p>
+      * {@link #setSpawnCount(int)} does not dictate the amount of items in the stack spawned, but rather how many
+      * stacks should be spawned.
++     * This will clear its spawn potential list.
+      *
+      * @param itemStack The item to spawn. Must not {@link org.bukkit.Material#isAir be air}.
+      * @see #setSpawnedType(EntityType)
+diff --git a/src/main/java/org/bukkit/entity/minecart/SpawnerMinecart.java b/src/main/java/org/bukkit/entity/minecart/SpawnerMinecart.java
+index 0ce3592ec7b121413bb2203f3d6056e450b89736..b4f33aefa5dff2b21ed46d33511a2328a4e2933f 100644
+--- a/src/main/java/org/bukkit/entity/minecart/SpawnerMinecart.java
++++ b/src/main/java/org/bukkit/entity/minecart/SpawnerMinecart.java
+@@ -2,9 +2,9 @@ package org.bukkit.entity.minecart;
+ 
+ import org.bukkit.entity.Minecart;
+ 
++// Paper start - update javadoc
+ /**
+- * Represents a Minecart with an {@link org.bukkit.block.CreatureSpawner
+- * entity spawner} inside it.
++ * Represents a Minecart with an {@link io.papermc.paper.world.Spawner entity spawner} inside it.
+  */
+-public interface SpawnerMinecart extends Minecart {
++public interface SpawnerMinecart extends Minecart, io.papermc.paper.world.Spawner { // Paper end - extend Spawner
+ }
