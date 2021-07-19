@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Tue, 22 Jun 2021 23:16:11 -0400
+Subject: [PATCH] Stinger API
+
+
+diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
+index cda05df6784dd4d6a09710a416dcb71c016dabfc..06812f127e29b5c4cd4328a09b822cdb880ca4b3 100644
+--- a/src/main/java/org/bukkit/entity/LivingEntity.java
++++ b/src/main/java/org/bukkit/entity/LivingEntity.java
+@@ -336,6 +336,36 @@ public interface LivingEntity extends Attributable, Damageable, ProjectileSource
+      */
+     public void setArrowsInBody(int count);
+ 
++    // Paper Start - Stinger API
++    /**
++     * Gets the time in ticks until the next stinger leaves the entity's body.
++     *
++     * @return ticks until stinger leaves
++     */
++    public int getStingerCooldown();
++
++    /**
++     * Sets the time in ticks until the next stinger leaves the entity's body.
++     *
++     * @param ticks time until stinger leaves
++     */
++    public void setStingerCooldown(int ticks);
++
++    /**
++     * Gets the amount of stingers in an entity's body.
++     *
++     * @return amount of stingers in body
++     */
++    public int getStingersInBody();
++
++    /**
++     * Set the amount of stingers in the entity's body.
++     *
++     * @param count amount of stingers in entity's body
++     */
++    public void setStingersInBody(int count);
++    // Paper End - Stinger API
++
+     /**
+      * Returns the living entity's current maximum no damage ticks.
+      * <p>
