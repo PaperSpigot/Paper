@@ -4,6 +4,12 @@ PaperMC is happy you're willing to contribute to our projects. We are usually
 very lenient with all submitted PRs, but there are still some guidelines you
 can follow to make the approval process go more smoothly.
 
+## Notice
+This guide was written for an old build system which is no longer in use and
+has been replaced by [Paperweight](https://github.com/PaperMC/paperweight).
+This file will be updated shortly, but, in the meantime, simply
+run `./gradlew tasks` for a list of all tasks in Paperweight.
+
 **Table of contents:**
 <!-- Please don't remove the following comments.
 To generate and update the TOC: https://github.com/mzlogin/vim-markdown-toc -->
