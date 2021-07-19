@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DoctaEnkoda <bierquejason@gmail.com>
+Date: Sun, 18 Jul 2021 12:28:04 +0200
+Subject: [PATCH] Fix Issue PaperMC#6028
+
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/TreeFeature.java b/src/main/java/net/minecraft/world/level/levelgen/feature/TreeFeature.java
+index 0be9ce0734e3ba72893a7349bb9f83a94f4af30c..0978b40e17459bd25a5b05c53199b538f9eb20d0 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/TreeFeature.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/TreeFeature.java
+@@ -147,7 +147,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
+             worldGenLevel.setBlock(pos, state, 19);
+         };
+         boolean bl = this.doPlace(worldGenLevel, random, blockPos, biConsumer, biConsumer2, treeConfiguration);
+-        if (bl && (!set.isEmpty() || !set2.isEmpty())) {
++        if (bl && !set.isEmpty() && !set2.isEmpty()) { // PaperMC - Fix PaperMC#6028
+             if (!treeConfiguration.decorators.isEmpty()) {
+                 List<BlockPos> list = Lists.newArrayList(set);
+                 List<BlockPos> list2 = Lists.newArrayList(set2);
