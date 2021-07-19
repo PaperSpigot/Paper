@@ -1,0 +1,65 @@
+From 740233544fc103e8aac6d8c4c9aa02f6051c47a1 Mon Sep 17 00:00:00 2001
+From: jeffry1829 <jeffry1829@gmail.com>
+Date: Thu, 13 Feb 2020 22:01:19 +0800
+Subject: [PATCH] make itemWorldMapUpdateRenderRadiusWorldNoCeiling/HasCeiling
+ a configuable value
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+index bce502181..b5a806d8f 100644
+--- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
++++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
+@@ -653,4 +653,13 @@ public class PaperWorldConfig {
+         disableHopperMoveEvents = getBoolean("hopper.disable-move-event", disableHopperMoveEvents);
+         log("Hopper Move Item Events: " + (disableHopperMoveEvents ? "disabled" : "enabled"));
+     }
++    
++    public int itemWorldMapUpdateRenderRadiusWorldHasCeiling = 128;
++    public int itemWorldMapUpdateRenderRadiusWorldNoCeiling = 64;
++    private void itemWorldMapUpdateRenderRadiusWorldHasCeiling() {
++    	itemWorldMapUpdateRenderRadiusWorldHasCeiling = getInt("itemWorldMapUpdateRenderRadiusWorldHasCeiling", itemWorldMapUpdateRenderRadiusWorldHasCeiling);
++    }
++    private void itemWorldMapUpdateRenderRadiusWorldNoCeiling() {
++    	itemWorldMapUpdateRenderRadiusWorldNoCeiling = getInt("itemWorldMapUpdateRenderRadiusWorldNoCeiling", itemWorldMapUpdateRenderRadiusWorldNoCeiling);
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/ItemWorldMap.java b/src/main/java/net/minecraft/server/ItemWorldMap.java
+index 189e6d753..37a5fde7f 100644
+--- a/src/main/java/net/minecraft/server/ItemWorldMap.java
++++ b/src/main/java/net/minecraft/server/ItemWorldMap.java
+@@ -70,21 +70,23 @@ public class ItemWorldMap extends ItemWorldMapBase {
+             int i = 1 << worldmap.scale;
+             int j = worldmap.centerX;
+             int k = worldmap.centerZ;
+-            int l = MathHelper.floor(entity.locX() - (double) j) / i + 64;
+-            int i1 = MathHelper.floor(entity.locZ() - (double) k) / i + 64;
+-            int j1 = 128 / i;
+-
+-            if (world.worldProvider.g()) {
+-                j1 /= 2;
++            int l = MathHelper.floor(entity.locX() - (double) j) / i + 64; // Paper - positive x axis of item map
++            int i1 = MathHelper.floor(entity.locZ() - (double) k) / i + 64; // Paper - positive z axis of item map
++            // Paper start - make itemWorldMapUpdateRenderRadiusWorldNoCeiling/HasCeiling a configuable value
++            int j1 = world.paperConfig.itemWorldMapUpdateRenderRadiusWorldHasCeiling / i;
++            
++            if (world.worldProvider.g()) { // Paper - world.worldProvider.hasCeiling() - OBFHELPER
++            	j1 = world.paperConfig.itemWorldMapUpdateRenderRadiusWorldNoCeiling / i;
+             }
+-
++            // Paper end
+             WorldMap.WorldMapHumanTracker worldmap_worldmaphumantracker = worldmap.a((EntityHuman) entity);
+ 
+-            ++worldmap_worldmaphumantracker.b;
++            ++worldmap_worldmaphumantracker.b; // Paper - 15==0b1111, make .b to 1 - OBFHELPER
+             boolean flag = false;
+ 
+             for (int k1 = l - j1 + 1; k1 < l + j1; ++k1) {
+-                if ((k1 & 15) == (worldmap_worldmaphumantracker.b & 15) || flag) {
++            	// Paper - 15==0b1111, worldmap_worldmaphumantracker.step->if map-x-axis≡human-track-step (mod 16) then the update start - OBFHELPER
++                if ((k1 & 15) == (worldmap_worldmaphumantracker.b & 15) || flag) { 
+                     flag = false;
+                     double d0 = 0.0D;
+ 
+-- 
+2.16.2.windows.1
+
