@@ -494,10 +494,10 @@ index 0000000000000000000000000000000000000000..eeedc30a45d9637d68f04f185b3dd90d
 +}
 diff --git a/src/main/java/io/papermc/paper/adventure/PaperAdventure.java b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d24c569f00786b2bde953429aad57025abee72d6
+index 0000000000000000000000000000000000000000..f63b80a1120b2bf5f77f1c1edb928309a1272f79
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/adventure/PaperAdventure.java
-@@ -0,0 +1,342 @@
+@@ -0,0 +1,370 @@
 +package io.papermc.paper.adventure;
 +
 +import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -531,6 +531,7 @@ index 0000000000000000000000000000000000000000..d24c569f00786b2bde953429aad57025
 +import net.minecraft.sounds.SoundSource;
 +import net.minecraft.world.BossEvent;
 +import net.minecraft.world.item.ItemStack;
++import net.minecraft.world.item.WrittenBookItem;
 +import org.bukkit.ChatColor;
 +import org.checkerframework.checker.nullness.qual.NonNull;
 +import org.checkerframework.checker.nullness.qual.Nullable;
@@ -682,6 +683,18 @@ index 0000000000000000000000000000000000000000..d24c569f00786b2bde953429aad57025
 +        return net.minecraft.network.chat.Component.Serializer.toJson(component);
 +    }
 +
++    public static String asPlain(final Component component, final Locale locale) {
++        return PLAIN.serialize(
++            GlobalTranslator.render(
++                component,
++                // play it safe
++                locale != null
++                    ? locale
++                    : Locale.US
++            )
++        );
++    }
++
 +    // thank you for being worse than wet socks, Bukkit
 +    public static String superHackyLegacyRepresentationOfComponent(final Component component, final String string) {
 +        return LEGACY_SECTION_UXRC.serialize(component) + ChatColor.getLastColors(string);
@@ -770,14 +783,29 @@ index 0000000000000000000000000000000000000000..d24c569f00786b2bde953429aad57025
 +    public static ItemStack asItemStack(final Book book, final Locale locale) {
 +        final ItemStack item = new ItemStack(net.minecraft.world.item.Items.WRITTEN_BOOK, 1);
 +        final CompoundTag tag = item.getOrCreateTag();
-+        tag.putString("title", asJsonString(book.title(), locale));
-+        tag.putString("author", asJsonString(book.author(), locale));
++        tag.putString(WrittenBookItem.TAG_TITLE, validateField(asPlain(book.title(), locale), WrittenBookItem.TITLE_MAX_LENGTH, WrittenBookItem.TAG_TITLE));
++        tag.putString(WrittenBookItem.TAG_AUTHOR, asPlain(book.author(), locale));
 +        final ListTag pages = new ListTag();
-+        for (final Component page : book.pages()) {
-+            pages.add(StringTag.valueOf(asJsonString(page, locale)));
++        if (book.pages().size() > WrittenBookItem.MAX_PAGES) {
++            throw new IllegalArgumentException("Book provided had " + book.pages().size() + " pages, but is only allowed a maximum of " + WrittenBookItem.MAX_PAGES);
 +        }
-+        tag.put("pages", pages);
++        for (final Component page : book.pages()) {
++            pages.add(StringTag.valueOf(validateField(asJsonString(page, locale), WrittenBookItem.PAGE_LENGTH, "page")));
++        }
++        tag.put(WrittenBookItem.TAG_PAGES, pages);
 +        return item;
++    }
++
++    private static String validateField(final String content, final int length, final String name) {
++        if (content == null) {
++            return content;
++        }
++
++        final int actual = content.length();
++        if (actual > length) {
++            throw new IllegalArgumentException("Field '" + name + "' has a maximum length of " + length + " but was passed '" + content + "', which was " + actual + " characters long.");
++        }
++        return content;
 +    }
 +
 +    // Sounds
