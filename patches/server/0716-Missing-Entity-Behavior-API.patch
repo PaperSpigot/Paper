@@ -4,6 +4,76 @@ Date: Mon, 21 Jun 2021 23:56:07 -0400
 Subject: [PATCH] Missing Entity Behavior API
 
 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
+index 69c95644b2531c1fe1c4a6cf7fee12e997dd67f4..0f448d33d69ea29df2e148cd1c0162a74f6d4926 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftAbstractHorse.java
+@@ -105,4 +105,35 @@ public abstract class CraftAbstractHorse extends CraftAnimals implements Abstrac
+     public AbstractHorseInventory getInventory() {
+         return new CraftSaddledInventory(getHandle().inventory);
+     }
++    // Paper start - Horse API
++    @Override
++    public boolean isEatingGrass() {
++        return getHandle().isEating();
++    }
++
++    @Override
++    public void setEatingGrass(boolean eating) {
++        getHandle().setEating(eating);
++    }
++
++    @Override
++    public boolean isRearing() {
++        return getHandle().isStanding();
++    }
++
++    @Override
++    public void setRearing(boolean rearing) {
++        getHandle().setFlag(net.minecraft.world.entity.animal.horse.AbstractHorse.FLAG_STANDING, rearing); // Allow directly setting is rearing
++    }
++
++    @Override
++    public boolean isEating() {
++        return getHandle().isEating();
++    }
++
++    @Override
++    public void setEating(boolean eating) {
++        getHandle().setEating(eating);
++    }
++    // Paper end - Horse API
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftCat.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftCat.java
+index a4f909123de26d911aea7cd767d2315ed1f697c9..af188e3663c016ff716401f648878488c06cfab2 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftCat.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftCat.java
+@@ -49,4 +49,25 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
+     public void setCollarColor(DyeColor color) {
+         this.getHandle().setCollarColor(net.minecraft.world.item.DyeColor.byId(color.getWoolData()));
+     }
++    // Paper Start - More cat api
++    @Override
++    public void setIsResting(boolean resting) {
++        getHandle().setLying(resting);
++    }
++
++    @Override
++    public boolean isResting() {
++        return getHandle().isLying();
++    }
++
++    @Override
++    public void setHeadUp(boolean headUp) {
++        getHandle().setRelaxStateOne(headUp);
++    }
++
++    @Override
++    public boolean isHeadUp() {
++        return getHandle().isRelaxStateOne();
++    }
++    // Paper End - More cat api
+ }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java
 index b647a5b9fdc1da61c4035d6f2cef7814033dc608..887512ec0945d71be9ab46424d92074e24cb71fb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftFox.java
